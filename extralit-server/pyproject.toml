@@ -3,7 +3,7 @@ name = "extralit-server"
 dynamic = ["version"]
 description = "Open-source tool for accurate & fast scientific literature data extraction with LLM and human-in-the-loop."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 keywords = [
     "literature-review",
@@ -48,7 +48,8 @@ dependencies = [
     "oauthlib ~= 3.2.0",
     "social-auth-core ~= 4.5.0",
     # Background processing
-    "rq ~= 1.16.2",
+    "rq~=2.4.1",
+    "lazy-loader>=0.4",
     # Info status
     "psutil ~= 5.8, <5.10",
     # For logging, tracebacks, printing, progressbars
@@ -60,12 +61,16 @@ dependencies = [
     "standardwebhooks>=1.0.0",
     # For HF dataset import
     "datasets >= 3.0.1",
-    "pillow >= 10.4.0",
+    "pillow>=11.3.0",
     # For Telemetry
     "huggingface-hub>=0.26.2",
     "Jinja2>=3.1.4",           # Used by huggingface-hub to render dataset card templates
     # For file storage
     "minio>=7.2.7",
+    # For document processing
+    "ocrmypdf>=16.10.4",
+    "pdf2image>=1.17.0",
+    "opencv-python-headless>=4.11.0.86",
 ]
 
 [project.optional-dependencies]
@@ -104,11 +109,9 @@ test = [
     "pytest-env>=1.1.3",
     "factory-boy~=3.2.1",
     "httpx>=0.26.0",
-    "pytest-randomly>=3.15.0",
+    "pytest-randomly>=3.16.0",
     # For mocking httpx requests and responses
     "respx>=0.21.1",
-    # pytest-randomly requires numpy < 2.0.0
-    "numpy<2.0.0",
 ]
 
 [tool.pytest.ini_options]
@@ -133,14 +136,7 @@ exclude_lines = [
     "if typing.TYPE_CHECKING:",
 ]
 
-[tool.isort]
-profile = "black"
-
 [tool.ruff]
-# Ignore line length violations
-ignore = ["E501"]
-
-# Exclude a variety of commonly ignored directories.
 exclude = [
     ".bzr",
     ".direnv",
@@ -163,13 +159,42 @@ exclude = [
     "venv",
 ]
 line-length = 120
+target-version = "py310"
 
-[tool.ruff.per-file-ignores]
-# Ignore imported but unused;
-"__init__.py" = ["F401"]
+[tool.ruff.lint]
+select = [
+    "F",    # Pyflakes (undefined names, logical issues)
+    "E7",   # Syntax/indentation errors
+    "E9",   # Runtime-like errors
+    "E4",   # Import-related errors (E401, E402, etc.)
+    "B012", # return in finally (can suppress real exceptions)
+    "B",    # flake8-bugbear (broader than just B012)
+    "C4",   # flake8-comprehensions
+    "I",    # isort (import sorting)
+    "UP",   # pyupgrade (modern Python syntax)
+    "ASYNC", # flake8-async - async/await specific rules
+    "PLE",   # pylint errors (includes await-outside-async)
+    "FAST",  # FastAPI-specific rules (valuable for your backend)
+    "RUF",   # ruff-specific rules
+]
 
-[tool.black]
-line-length = 120
+ignore = [
+    "E402",   # imports not at top (lazy / optional import patterns)
+    "B904",   # exception chaining (will phase in later)
+    "UP007",  # | union syntax modernization
+    "UP045",  # Optional[...] -> X | None modernization
+    "B027",   # empty abstract method not marked abstract
+    "B024",   # abstract base class without abstract methods
+    "B017",   # broad exception asserts in tests
+    "RUF012", # mutable class var typing inference
+    "B008",   # FastAPI Depends pattern
+    "FAST002" # FastAPI Depends suggestion
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "I001"]  # Ignore unused imports and wildcard imports in __init__.py
+"tests/**/*.py" = ["ASYNC", "F821"]  # More lenient async rules in tests (ignore undefined names like forward refs/fixtures)
+"src/extralit_server/cli/**/*.py" = ["UP007", "UP045"]  # Typer doesn't support new union syntax
 
 [tool.pdm.scripts]
 _.env_file = ".env.dev"
@@ -182,9 +207,11 @@ worker = { cmd = "python -m extralit_server worker" }
 server-dev.composite = [
     "migrate",
     "cli database users create_default",
-    "server",
+    "server-and-worker",
 ]
+server-and-worker = { shell = "pdm run server & pdm run worker & wait" }
 test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test" }
 test-cov = { cmd = "pytest tests --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings", env_file = ".env.test" }
+lint = "ruff check"
 
 docker-build-extralit-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }

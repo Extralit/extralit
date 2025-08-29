@@ -1,28 +1,27 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from uuid import UUID
-from typing import Optional, List
 from datetime import datetime
+from uuid import UUID
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserEventSchema(BaseModel):
     id: UUID
     first_name: str
-    last_name: Optional[str] = None
+    last_name: str | None = None
     username: str
     role: str
     inserted_at: datetime
@@ -44,7 +43,7 @@ class DatasetQuestionEventSchema(BaseModel):
     id: UUID
     name: str
     title: str
-    description: Optional[str] = None
+    description: str | None = None
     required: bool
     settings: dict
     inserted_at: datetime
@@ -91,15 +90,15 @@ class DatasetVectorSettingsEventSchema(BaseModel):
 class DatasetEventSchema(BaseModel):
     id: UUID
     name: str
-    guidelines: Optional[str] = None
+    guidelines: str | None = None
     allow_extra_metadata: bool
     status: str
     distribution: dict
     workspace: WorkspaceEventSchema
-    questions: List[DatasetQuestionEventSchema]
-    fields: List[DatasetFieldEventSchema]
-    metadata_properties: List[DatasetMetadataPropertyEventSchema]
-    vectors_settings: List[DatasetVectorSettingsEventSchema]
+    questions: list[DatasetQuestionEventSchema]
+    fields: list[DatasetFieldEventSchema]
+    metadata_properties: list[DatasetMetadataPropertyEventSchema]
+    vectors_settings: list[DatasetVectorSettingsEventSchema]
     last_activity_at: datetime
     inserted_at: datetime
     updated_at: datetime
@@ -113,8 +112,8 @@ class RecordEventSchema(BaseModel):
     # TODO: Truncate fields so we don't respond with big field values.
     # Or find another possible solution.
     fields: dict
-    metadata: Optional[dict] = Field(None, alias="metadata_")
-    external_id: Optional[str] = None
+    metadata: dict | None = Field(None, alias="metadata_")
+    external_id: str | None = None
     # TODO:
     # responses:
     # - Create a new `GET /api/v1/records/{record_id}/responses` endpoint.
@@ -140,7 +139,7 @@ class RecordEventSchema(BaseModel):
 
 class ResponseEventSchema(BaseModel):
     id: UUID
-    values: Optional[dict] = None
+    values: dict | None = None
     status: str
     record: RecordEventSchema
     user: UserEventSchema

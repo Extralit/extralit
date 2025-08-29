@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
 
-from extralit_server.api.schemas.v1.settings import ExtralitSettings, Settings, HuggingfaceSettings
+from extralit_server.api.schemas.v1.settings import ExtralitSettings, HuggingfaceSettings, Settings
 from extralit_server.integrations.huggingface.spaces import HUGGINGFACE_SETTINGS
 from extralit_server.settings import settings
 
@@ -37,6 +36,6 @@ def _get_extralit_settings() -> ExtralitSettings:
     return extralit_settings
 
 
-def _get_huggingface_settings() -> Union[HuggingfaceSettings, None]:
+def _get_huggingface_settings() -> HuggingfaceSettings | None:
     if HUGGINGFACE_SETTINGS.is_running_on_huggingface:
         return HuggingfaceSettings.model_validate(HUGGINGFACE_SETTINGS)

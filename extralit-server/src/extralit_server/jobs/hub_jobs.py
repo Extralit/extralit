@@ -1,16 +1,16 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from uuid import UUID
 
@@ -18,18 +18,18 @@ from rq import Retry
 from rq.decorators import job
 from sqlalchemy.orm import selectinload
 
-from extralit_server.models import Dataset
-from extralit_server.settings import settings
+from extralit_server.api.schemas.v1.datasets import DatasetMapping
 from extralit_server.contexts.hub import HubDataset, HubDatasetExporter
 from extralit_server.database import AsyncSessionLocal
+from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
+from extralit_server.models import Dataset
 from extralit_server.search_engine.base import SearchEngine
-from extralit_server.api.schemas.v1.datasets import HubDatasetMapping
-from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
+from extralit_server.settings import settings
 
 HUB_DATASET_TAKE_ROWS = 10_000
 
 
-@job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
+@job(DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
 async def import_dataset_from_hub_job(name: str, subset: str, split: str, dataset_id: UUID, mapping: dict) -> None:
     async with AsyncSessionLocal() as db:
         dataset = await Dataset.get_or_raise(
@@ -43,7 +43,7 @@ async def import_dataset_from_hub_job(name: str, subset: str, split: str, datase
         )
 
         async with SearchEngine.get_by_name(settings.search_engine) as search_engine:
-            parsed_mapping = HubDatasetMapping.model_validate(mapping)
+            parsed_mapping = DatasetMapping.model_validate(mapping)
 
             await (
                 HubDataset(name, subset, split, parsed_mapping)
@@ -52,7 +52,7 @@ async def import_dataset_from_hub_job(name: str, subset: str, split: str, datase
             )
 
 
-@job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
+@job(DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
 async def export_dataset_to_hub_job(
     name: str, subset: str, split: str, private: bool, token: str, dataset_id: UUID
 ) -> None:

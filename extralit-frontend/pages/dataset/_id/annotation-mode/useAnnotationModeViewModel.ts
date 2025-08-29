@@ -1,8 +1,11 @@
-import { computed, onBeforeMount, ref, useRouter } from "@nuxtjs/composition-api";
+import { computed, onBeforeMount, ref, useRouter, watch } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
 import { useDatasetViewModel } from "../useDatasetViewModel";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";
+import { GetWorkspacesUseCase } from "@/v1/domain/usecases/get-workspaces-use-case";
+import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
+import { useWorkspaces } from "@/v1/infrastructure/storage/WorkspaceStorage";
 import { RecordCriteria } from "~/v1/domain/entities/record/RecordCriteria";
 import { useRoutes, useUser, useRole } from "~/v1/infrastructure/services";
 import { RecordStatus } from "~/v1/domain/entities/record/RecordAnswer";
@@ -13,7 +16,10 @@ export const useAnnotationModeViewModel = () => {
   const routes = useRoutes();
   const { user } = useUser();
   const { state: dataset } = useDataset();
+  const workspaceStore = useWorkspaces();
   const getDatasetUseCase = useResolve(GetDatasetByIdUseCase);
+  const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
+  const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
 
   const { datasetId, isLoadingDataset, handleError, createRootBreadCrumbs } = useDatasetViewModel();
 
@@ -96,8 +102,29 @@ export const useAnnotationModeViewModel = () => {
     }
   };
 
-  onBeforeMount(() => {
-    loadDataset();
+  const ensureWorkspaceSync = async () => {
+    try {
+      await Promise.all([getWorkspacesUseCase.execute(), getDatasetsUseCase.execute()]);
+
+      if (dataset && dataset.workspaceId) {
+        const currentState = workspaceStore.get();
+        const workspaceFromDataset = currentState.workspaces.find((w) => w.id === dataset.workspaceId);
+
+        if (
+          workspaceFromDataset &&
+          (!currentState.selectedWorkspace || currentState.selectedWorkspace.id !== dataset.workspaceId)
+        ) {
+          workspaceStore.saveSelectedWorkspace(workspaceFromDataset);
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to sync workspace:", error);
+    }
+  };
+
+  onBeforeMount(async () => {
+    await loadDataset();
+    await ensureWorkspaceSync();
   });
 
   return {

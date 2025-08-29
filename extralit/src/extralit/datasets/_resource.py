@@ -21,7 +21,7 @@ except ImportError:
     from typing_extensions import Self
 
 from extralit._api import DatasetsAPI
-from extralit._exceptions import NotFoundError, SettingsError, ForbiddenError
+from extralit._exceptions import ForbiddenError, NotFoundError, SettingsError
 from extralit._models import DatasetModel
 from extralit._resource import Resource
 from extralit.client import Extralit
@@ -78,7 +78,11 @@ class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
         self._model = DatasetModel(name=name)
         self._settings = settings._copy() if settings else Settings(_dataset=self)
         self._settings.dataset = self
-        self.__records = DatasetRecords(client=self._client, dataset=self, mapping=self._settings.mapping)
+        self.__records = DatasetRecords(
+            client=self._client,
+            dataset=self,
+            mapping=self._settings.mapping.to_dict() if self._settings.mapping else None,
+        )
 
     #####################
     #  Properties       #
@@ -261,7 +265,9 @@ class Dataset(Resource, HubImportExportMixin, DiskImportExportMixin):
 
         if workspace is None:
             workspace = self._client.workspaces.default
-            warnings.warn(f"Workspace not provided. Using default workspace: {workspace.name} id: {workspace.id}")
+            warnings.warn(
+                f"Workspace not provided. Using default workspace: {workspace.name} id: {workspace.id}", stacklevel=2
+            )
         elif isinstance(workspace, str):
             workspace = self._client.workspaces(workspace)
             if workspace is None:

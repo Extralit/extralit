@@ -9,7 +9,7 @@ First, you need to install `docker` on your machine and make sure you can run `d
 Then, create a folder (you can modify the folder name):
 
 ```console
-mkdir argilla && cd argilla
+mkdir extralit && cd extralit
 ```
 
 Download `docker-compose.yaml`:

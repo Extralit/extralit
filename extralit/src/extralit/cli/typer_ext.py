@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import sys
+from collections.abc import Coroutine
 from functools import wraps
-from typing import Any, Callable, Coroutine, Dict, Type, TypeVar
+from typing import Any, Callable, TypeVar
 
 import typer
 
@@ -45,7 +46,7 @@ HandleErrorFunc = Callable[[Exception], None]
 
 
 class ExtralitTyper(typer.Typer):
-    error_handlers: Dict[Type[Exception], HandleErrorFunc] = {}
+    error_handlers: dict[type[Exception], HandleErrorFunc] = {}
 
     def command(
         self, *args: Any, **kwargs: Any
@@ -68,7 +69,7 @@ class ExtralitTyper(typer.Typer):
 
         return decorator
 
-    def error_handler(self, exc: Type[Exception]) -> Callable[[HandleErrorFunc], None]:
+    def error_handler(self, exc: type[Exception]) -> Callable[[HandleErrorFunc], None]:
         def decorator(func: HandleErrorFunc) -> None:
             self.error_handlers[exc] = func
 

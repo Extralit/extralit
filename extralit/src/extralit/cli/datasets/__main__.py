@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import typer
+from rich.console import Console
 
 from extralit.cli.callback import init_callback
-from extralit.cli.rich import get_themed_panel
-from extralit.cli.rich import print_rich_table
-from rich.console import Console
+from extralit.cli.rich import get_themed_panel, print_rich_table
 
 if TYPE_CHECKING:
     pass
@@ -156,7 +155,7 @@ def push_to_huggingface(
         Console().print(panel)
     except ValueError as ve:
         panel = get_themed_panel(
-            "The dataset has no records to push to the HuggingFace Hub. Make sure to add records before" " pushing it.",
+            "The dataset has no records to push to the HuggingFace Hub. Make sure to add records before pushing it.",
             title="No records to push",
             title_align="left",
             success=False,
@@ -195,8 +194,8 @@ def create_dataset(
     try:
         client = init_callback()
 
-        from extralit.settings import Settings, TextField, TextQuestion
         from extralit.datasets._resource import Dataset
+        from extralit.settings import Settings, TextField, TextQuestion
 
         fields = [TextField(name="text", title="Text")]
         questions = [TextQuestion(name="comment", title="Comment", description="Add your comments here")]

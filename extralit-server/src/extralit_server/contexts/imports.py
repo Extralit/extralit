@@ -13,31 +13,32 @@
 # limitations under the License.
 
 import logging
-from uuid import UUID
 from os.path import basename
-from typing import Dict, List, Optional
+from uuid import UUID, uuid4
 
-from fastapi import HTTPException, status, UploadFile
+from fastapi import HTTPException, UploadFile, status
+from sqlalchemy import and_, case, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import and_, or_, select
 
-from extralit_server.models.database import Document, ImportHistory
-from extralit_server.models import Document
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentListItem
 from extralit_server.api.schemas.v1.imports import (
-    FileInfo,
-    DocumentMetadata,
-    ImportAnalysisRequest,
-    ImportAnalysisResponse,
+    BulkDocumentInfo,
     DocumentImportAnalysis,
-    ImportStatus,
-    ImportSummary,
+    DocumentMetadata,
     DocumentsBulkCreate,
     DocumentsBulkResponse,
+    FileInfo,
+    ImportAnalysisRequest,
+    ImportAnalysisResponse,
     ImportHistoryCreate,
     ImportHistoryCreateResponse,
+    ImportStatus,
+    ImportSummary,
 )
-from extralit_server.jobs.document_jobs import upload_reference_documents_job
+from extralit_server.contexts import files as file_context
+from extralit_server.database import AsyncSessionLocal
+from extralit_server.models.database import Document, ImportHistory, Workspace
+from extralit_server.workflows.documents import create_document_workflow
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,26 +68,25 @@ async def update_document(db: "AsyncSession", document: Document) -> Document:
 async def delete_documents(
     db: "AsyncSession",
     workspace_id: UUID,
-    id: Optional[UUID] = None,
-    reference: Optional[str] = None,
-) -> List[DocumentListItem]:
+    id: UUID | None = None,
+    reference: str | None = None,
+) -> list[DocumentListItem]:
     async with db.begin_nested():
         params = [Document.workspace_id == workspace_id]
         if id is not None and id != "":
             params.append(Document.id == id)
         if reference:
             params.append(Document.reference == reference)
-        documents = await Document.delete_many(db=db, conditions=params, autocommit=False)
+        documents = await Document.delete_many(db=db, conditions=params, autocommit=False)  # type: ignore
 
     await db.commit()
     documents = [DocumentListItem.model_validate(doc) for doc in documents]
     return documents
 
 
-async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[DocumentListItem]:
+async def list_documents(db: "AsyncSession", workspace_id: UUID) -> list[DocumentListItem]:
     result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
-    documents: List[Document] = result.scalars().all()
-    documents = [DocumentListItem.model_validate(doc) for doc in documents]
+    documents = [DocumentListItem.model_validate(doc) for doc in result.scalars().all()]
 
     return documents
 
@@ -94,13 +94,14 @@ async def list_documents(db: "AsyncSession", workspace_id: UUID) -> List[Documen
 async def find_existing_documents(
     db: AsyncSession,
     workspace_id: UUID,
-    document_id: Optional[UUID] = None,
-    reference: Optional[str] = None,
-    file_name: Optional[str] = None,
-    pmid: Optional[str] = None,
-    doi: Optional[str] = None,
-    url: Optional[str] = None,
-) -> List[DocumentListItem]:
+    document_id: UUID | None = None,
+    reference: str | None = None,
+    file_name: str | None = None,
+    pmid: str | None = None,
+    doi: str | None = None,
+    url: str | None = None,
+    limit: int | None = None,
+) -> list[DocumentListItem]:
     """
     Find existing documents that matches any of provided criteria.
 
@@ -112,6 +113,7 @@ async def find_existing_documents(
         pmid: Optional PMID to match
         doi: Optional DOI to match
         url: Optional URL to match
+        limit: Optional limit on the number of results returned
 
     Returns:
         List of existing documents matching the criteria (empty if none found)
@@ -120,22 +122,32 @@ async def find_existing_documents(
 
     if document_id:
         conditions.append(Document.id == document_id)
+    if url:
+        conditions.append(Document.url == url)
     if reference:
         conditions.append(Document.reference == reference)
-    if file_name:
-        conditions.append(Document.file_name == file_name)
     if pmid:
         conditions.append(Document.pmid == pmid)
     if doi:
         conditions.append(Document.doi == doi)
-    if url:
-        conditions.append(Document.url == url)
+    if file_name:
+        conditions.append(Document.file_name == file_name)
 
     if not conditions:
         return []
 
     # Find documents matching any of the conditions within the workspace
-    result = await db.execute(select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions))))
+    query = select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions)))
+
+    if conditions:
+        # Create a CASE statement for ordering based on ordinal position
+        order_case = case(*[(condition, i) for i, condition in enumerate(conditions)], else_=len(conditions))
+        query = query.order_by(order_case)
+
+    if limit is not None:
+        query = query.limit(limit)
+
+    result = await db.execute(query)
     existing_documents = result.scalars().all()
 
     return [DocumentListItem.model_validate(doc) for doc in existing_documents]
@@ -153,7 +165,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     Returns:
         ImportAnalysisResponse with document statuses and summary
     """
-    documents_info: Dict[str, DocumentImportAnalysis] = {}
+    documents_info: dict[str, DocumentImportAnalysis] = {}
     add_count = update_count = skip_count = failed_count = 0
 
     for reference, file_metadata in analysis_request.documents.items():
@@ -202,12 +214,12 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
             )
 
         except Exception as e:
-            _LOGGER.error(f"Error analyzing document {reference}: {str(e)}")
+            _LOGGER.error(f"Error analyzing document {reference}: {e!s}")
             documents_info[reference] = DocumentImportAnalysis(
                 document_create=file_metadata.document_create,
                 associated_files=[f.filename for f in file_metadata.associated_files],
                 status=ImportStatus.FAILED,
-                validation_errors=[f"Error analyzing document: {str(e)}"],
+                validation_errors=[f"Error analyzing document: {e!s}"],
             )
             failed_count += 1
 
@@ -222,7 +234,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
     return ImportAnalysisResponse(documents=documents_info, summary=summary)
 
 
-async def _has_new_files(existing_documents: List[Document], new_files: List[FileInfo]) -> bool:
+async def _has_new_files(existing_documents: list[Document], new_files: list[FileInfo]) -> bool:
     """
     Check if there are new files to add to existing documents.
 
@@ -263,7 +275,7 @@ async def _has_new_files(existing_documents: List[Document], new_files: List[Fil
     return False
 
 
-def validate_document_metadata(file_metadata: DocumentMetadata) -> List[str]:
+def validate_document_metadata(file_metadata: DocumentMetadata) -> list[str]:
     """
     Validate DocumentCreate object for import requirements.
 
@@ -321,15 +333,14 @@ def _is_valid_pmid(pmid: str) -> bool:
 
 async def process_bulk_upload(
     bulk_create: DocumentsBulkCreate,
-    files: List[UploadFile],
+    files: list[UploadFile],
     user_id: str,
 ) -> DocumentsBulkResponse:
     """
-    Process bulk document upload with associated PDF files using reference-based jobs.
+    Process bulk document upload with associated PDF files using new workflow orchestrator.
 
-    This function creates one job per reference that handles multiple files for that reference.
-    It validates all files, groups them by reference, and creates reference-based upload jobs
-    for efficient processing and progress tracking.
+    This function now handles file upload to S3 before job enqueueing, creates document records
+    in database, and uses the new start_document_workflow() orchestrator for processing.
 
     Args:
         bulk_create: DocumentsBulkCreate with reference-based document information
@@ -337,12 +348,11 @@ async def process_bulk_upload(
         user_id: ID of the user creating the documents
 
     Returns:
-        DocumentsBulkResponse with job IDs indexed by reference and validation results
+        DocumentsBulkResponse with workflow_id and job_ids for tracking
     """
-    from extralit_server.jobs import DEFAULT_QUEUE
 
     # Create a mapping of filenames to file objects for quick lookup
-    file_mapping = {file.filename: file for file in files} if files else {}
+    file_mapping: dict[str, UploadFile] = {file.filename: file for file in files if file.filename} if files else {}
 
     # Validate that all referenced files are included in the upload
     missing_files = []
@@ -361,8 +371,7 @@ async def process_bulk_upload(
             detail=f"Referenced files not found in upload: {', '.join(missing_files)}",
         )
 
-    # Group documents by reference (should be 1:1 but validate)
-    reference_to_doc = {}
+    reference_to_doc: dict[str, BulkDocumentInfo] = {}
     for doc in bulk_create.documents:
         if doc.reference in reference_to_doc:
             raise HTTPException(
@@ -371,88 +380,139 @@ async def process_bulk_upload(
             )
         reference_to_doc[doc.reference] = doc
 
-    # Process each reference and create reference-based jobs
-    job_ids = {}
+    # Get storage client
+    client = file_context.get_minio_client()
+    if client is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get storage client")
+
+    # Process each reference: upload files to S3, create documents, start workflows
+    job_ids: dict[str, str] = {}
     failed_validations = []
 
-    for reference, doc in reference_to_doc.items():
-        try:
-            # Validate and read all files for this reference
-            file_data_list = []
-            reference_failed = False
+    async with AsyncSessionLocal() as db:
+        for reference, doc in reference_to_doc.items():
+            try:
+                # Get workspace for bucket name
+                workspace = await Workspace.get(db, doc.document_create.workspace_id)
+                if not workspace:
+                    failed_validations.append(f"{reference}: Workspace not found")
+                    continue
 
-            # Handle documents with no associated files
-            if not doc.associated_files:
-                # Create a reference-based job for documents without files
-                job = DEFAULT_QUEUE.enqueue(
-                    upload_reference_documents_job,
-                    reference=reference,
-                    reference_data=doc.document_create.model_dump(),
-                    file_data_list=[],
-                    user_id=user_id,
-                    job_timeout=None,  # No timeout for large uploads
-                )
+                # Handle documents with no associated files
+                if not doc.associated_files:
+                    # Create document record without file (uses remote url)
+                    document = await create_document(db, doc.document_create)
+                    continue
 
-                # Store job ID mapped to reference key for frontend tracking
-                job_ids[reference] = job.id
-                _LOGGER.info(f"Created reference-based job {job.id} for reference {reference} with no files")
-                continue
+                # Process files for this reference
+                reference_failed = False
+                uploaded_documents: list[DocumentListItem] = []
 
-            for filename in doc.associated_files:
-                try:
-                    file = file_mapping[filename]
+                for filename in doc.associated_files:
+                    try:
+                        file = file_mapping[filename]
 
-                    if not file.filename or not file.filename.lower().endswith(".pdf"):
-                        failed_validations.append(f"{filename}: Not a PDF file")
+                        if not file.filename or not file.filename.lower().endswith(".pdf"):
+                            failed_validations.append(f"{filename}: Not a PDF file")
+                            reference_failed = True
+                            continue
+
+                        # Read file content
+                        file_content = await file.read()
+
+                        # Reset file position for potential future reads
+                        await file.seek(0)
+
+                        # Create document record first
+                        file_document_create = DocumentCreate(
+                            id=uuid4(),
+                            reference=doc.document_create.reference,
+                            pmid=doc.document_create.pmid,
+                            doi=doc.document_create.doi,
+                            url=None,  # Will be set after S3 upload
+                            file_name=filename,
+                            workspace_id=doc.document_create.workspace_id,
+                            metadata=doc.document_create.metadata,
+                        )
+
+                        # Check for existing documents
+                        existing_documents = await find_existing_documents(
+                            db=db,
+                            workspace_id=file_document_create.workspace_id,
+                            document_id=file_document_create.id,
+                            file_name=file_document_create.file_name,
+                            limit=1,
+                        )
+
+                        if existing_documents:
+                            existing_document_id = existing_documents[0].id
+                            _LOGGER.info(f"Document already exists for file {filename} with ID {existing_document_id}")
+                            continue
+
+                        # Upload file to S3
+                        file_url = file_context.put_document_file(
+                            client=client,
+                            workspace_name=workspace.name,
+                            document_id=file_document_create.id,  # type: ignore[arg-type]
+                            file_data=file_content,
+                            filename=filename,
+                        )
+
+                        if file_url:
+                            file_document_create.url = file_url
+
+                            # Create document in database
+                            document = await create_document(db, file_document_create)
+                            uploaded_documents.append(document)
+
+                            _LOGGER.info(f"Uploaded file {filename} to S3 and created document {document.id}")
+
+                    except Exception as e:
+                        error_msg = f"Error processing file {filename} for reference {reference}: {e!s}"
+                        _LOGGER.error(error_msg)
+
+                        # Provide more specific error information for S3 issues
+                        if "bucket" in str(e).lower() or "storage" in str(e).lower():
+                            error_msg += " - This may be a storage configuration issue. Please check S3 endpoint and credentials."
+                        elif "404" in str(e) or "not found" in str(e).lower():
+                            error_msg += " - The storage bucket or endpoint may not be accessible."
+
+                        failed_validations.append(f"{filename}: {error_msg}")
                         reference_failed = True
-                        continue
 
-                    # Read file content
-                    file_content = await file.read()
+                # Skip this reference if any files failed validation
+                if reference_failed or not uploaded_documents:
+                    continue
 
-                    # Validate file size (100 MB limit)
-                    if len(file_content) > 100 * 1024 * 1024:
-                        failed_validations.append(f"{filename}: File exceeds maximum size of 100 MB")
-                        reference_failed = True
-                        continue
+                # Start workflows for each uploaded document
+                document_job_group = {}
+                for document in uploaded_documents:
+                    try:
+                        job_group = await create_document_workflow(
+                            document_id=document.id,
+                            s3_url=document.url,
+                            reference=reference,
+                            workspace_name=workspace.name,
+                            workspace_id=workspace.id,
+                        )
 
-                    # Reset file position for potential future reads
-                    await file.seek(0)
+                        # Store the group object for later use
+                        document_job_group[str(document.id)] = job_group
 
-                    file_data_list.append((filename, file_content))
+                    except Exception as e:
+                        _LOGGER.error(f"Error starting workflow for document {document.id}: {e}")
+                        failed_validations.append(f"{reference}/{document.file_name}: Workflow start failed: {e}")
 
-                except Exception as e:
-                    _LOGGER.error(f"Error processing file {filename} for reference {reference}: {str(e)}")
-                    failed_validations.append(f"{filename}: {str(e)}")
-                    reference_failed = True
+                # For each reference, select first job id
+                # TODO handle multiple jobs per reference or skip reporting job status during frontend upload
+                if document_job_group:
+                    first_job_group = next(iter(document_job_group.values()))
+                    first_job = first_job_group.get_jobs()[0]
+                    job_ids[reference] = first_job.id
 
-            # Skip this reference if any files failed validation
-            if reference_failed:
-                continue
-
-            # Set a default filename if not already set (use first file)
-            if not doc.document_create.file_name and file_data_list:
-                doc.document_create.file_name = file_data_list[0][0]
-
-            # Create a reference-based job for multiple files
-            job = DEFAULT_QUEUE.enqueue(
-                upload_reference_documents_job,
-                reference=reference,
-                reference_data=doc.document_create.model_dump(),
-                file_data_list=file_data_list,
-                user_id=user_id,
-                job_timeout=None,  # No timeout for large uploads
-            )
-
-            # Store job ID mapped to reference key for frontend tracking
-            job_ids[reference] = job.id
-            _LOGGER.info(
-                f"Created reference-based job {job.id} for reference {reference} with {len(file_data_list)} files"
-            )
-
-        except Exception as e:
-            _LOGGER.error(f"Error processing reference {reference}: {str(e)}")
-            failed_validations.append(f"{reference}: {str(e)}")
+            except Exception as e:
+                _LOGGER.error(f"Error processing reference {reference}: {e!s}")
+                failed_validations.append(f"{reference}: {e!s}")
 
     return DocumentsBulkResponse(
         job_ids=job_ids, total_documents=len(reference_to_doc), failed_validations=failed_validations
@@ -507,9 +567,9 @@ async def create_import_history(
         )
 
     except Exception as e:
-        _LOGGER.error(f"Error creating import history: {str(e)}")
+        _LOGGER.error(f"Error creating import history: {e!s}")
         await db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating import history: {str(e)}",
+            detail=f"Error creating import history: {e!s}",
         )

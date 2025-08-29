@@ -18,6 +18,7 @@ from extralit._models._resource import ResourceModel
 from extralit._models._workspace import WorkspaceModel
 from extralit._models._user import UserModel, Role
 from extralit._models._dataset import DatasetModel
+from extralit._models._document import DocumentModel
 from extralit._models._record._record import RecordModel, FieldValue
 from extralit._models._record._suggestion import SuggestionModel
 from extralit._models._record._response import UserResponseModel, ResponseStatus

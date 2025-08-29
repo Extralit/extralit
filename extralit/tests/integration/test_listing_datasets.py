@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from extralit import Extralit, Dataset, Settings, TextField, TextQuestion, Workspace, TaskDistribution
+from extralit import Dataset, Extralit, Settings, TaskDistribution, TextField, TextQuestion, Workspace
 
 
 class TestDatasetsList:

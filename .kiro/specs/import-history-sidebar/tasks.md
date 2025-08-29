@@ -103,13 +103,13 @@
     - Update `extralit-frontend/pages/index.vue` to replace example datasets with RecentImports component
     - Add event handlers for import selection and modal opening
     - Integrate with existing workspace selection functionality
-    - Maintain existing ImportModal and ImportHistoryList modal functionality
+    - Maintain existing ImportFlow and ImportHistoryList modal functionality
     - _Requirements: 1.1, 1.5, 2.1, 6.2, 6.4_
 
   - [x] 8.2 Update home page view model
     - Modify useHomeViewModel to handle Recent Imports integration
     - Add navigation methods for import configuration routing
-    - Integrate modal opening logic for ImportHistoryList and ImportModal
+    - Integrate modal opening logic for ImportHistoryList and ImportFlow
     - _Requirements: 2.1, 6.2, 6.4, 6.5_
 
 - [x] 9. Add Import Configuration Route

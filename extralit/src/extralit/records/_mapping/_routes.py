@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -27,7 +27,7 @@ class ParameterType(str, Enum):
     AGENT = "agent"
 
     @classmethod
-    def values(cls) -> List[str]:
+    def values(cls) -> list[str]:
         return [param.value for param in cls]
 
 
@@ -42,7 +42,7 @@ class AttributeType(str, Enum):
     ID = "id"
 
     @classmethod
-    def values(cls) -> List[str]:
+    def values(cls) -> list[str]:
         return [attr.value for attr in cls]
 
 
@@ -64,7 +64,7 @@ class AttributeRoute(BaseModel):
     source: str
     name: str
     type: Optional[AttributeType] = None
-    parameters: List[AttributeParameter] = []
+    parameters: list[AttributeParameter] = []
 
     def set_parameter(self, parameter: AttributeParameter):
         """Set a parameter for the route.
@@ -80,11 +80,11 @@ class AttributeRoute(BaseModel):
 class RecordAttributesMap(BaseModel):
     """RecordAttributesMap is a representation of a record attribute mapping that is used to parse data into a record."""
 
-    suggestion: Dict[str, AttributeRoute] = Field(default_factory=dict)
-    response: Dict[str, AttributeRoute] = Field(default_factory=dict)
-    field: Dict[str, AttributeRoute] = Field(default_factory=dict)
-    metadata: Dict[str, AttributeRoute] = Field(default_factory=dict)
-    vector: Dict[str, AttributeRoute] = Field(default_factory=dict)
+    suggestion: dict[str, AttributeRoute] = Field(default_factory=dict)
+    response: dict[str, AttributeRoute] = Field(default_factory=dict)
+    field: dict[str, AttributeRoute] = Field(default_factory=dict)
+    metadata: dict[str, AttributeRoute] = Field(default_factory=dict)
+    vector: dict[str, AttributeRoute] = Field(default_factory=dict)
 
     id: AttributeRoute = AttributeRoute(source="id", name="id", type=AttributeType.ID)
 
@@ -112,7 +112,7 @@ class RecordAttributesMap(BaseModel):
         else:
             self._get_routes_group_by_type(attribute_route.type)[attribute_route.name] = attribute_route
 
-    def keys(self) -> List[str]:
+    def keys(self) -> list[str]:
         """Utility method to get all the keys in the mapping"""
         return (
             list(self.suggestion.keys())

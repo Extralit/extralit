@@ -13,20 +13,17 @@
 # limitations under the License.
 
 from collections import defaultdict
+from collections.abc import Iterable, Sequence
 from datetime import datetime
 from typing import (
     TYPE_CHECKING,
-    Iterable,
-    List,
     Optional,
-    Sequence,
-    Union,
 )
 from uuid import UUID
 
 import sqlalchemy
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy import Select, and_, or_, case, func, select, exists
+from sqlalchemy import Select, and_, case, exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
@@ -44,16 +41,6 @@ from extralit_server.api.schemas.v1.responses import (
 from extralit_server.api.schemas.v1.vector_settings import (
     VectorSettingsCreate,
 )
-from extralit_server.models.database import DatasetUser
-from extralit_server.webhooks.v1.enums import DatasetEvent, ResponseEvent
-from extralit_server.webhooks.v1.responses import (
-    build_response_event as build_response_event_v1,
-    notify_response_event as notify_response_event_v1,
-)
-from extralit_server.webhooks.v1.datasets import (
-    build_dataset_event as build_dataset_event_v1,
-    notify_dataset_event as notify_dataset_event_v1,
-)
 from extralit_server.contexts import distribution
 from extralit_server.database import get_async_db  # noqa: F401
 from extralit_server.enums import DatasetStatus, UserRole
@@ -66,13 +53,14 @@ from extralit_server.models import (
     Question,
     Record,
     Response,
+    ResponseStatus,
     Suggestion,
     User,
     Vector,
     VectorSettings,
     WorkspaceUser,
-    ResponseStatus,
 )
+from extralit_server.models.database import DatasetUser
 from extralit_server.models.suggestions import SuggestionCreateWithRecordId
 from extralit_server.search_engine import SearchEngine
 from extralit_server.validators.datasets import DatasetCreateValidator, DatasetPublishValidator, DatasetUpdateValidator
@@ -82,6 +70,19 @@ from extralit_server.validators.responses import (
     ResponseUpsertValidator,
 )
 from extralit_server.validators.suggestions import SuggestionCreateValidator
+from extralit_server.webhooks.v1.datasets import (
+    build_dataset_event as build_dataset_event_v1,
+)
+from extralit_server.webhooks.v1.datasets import (
+    notify_dataset_event as notify_dataset_event_v1,
+)
+from extralit_server.webhooks.v1.enums import DatasetEvent, ResponseEvent
+from extralit_server.webhooks.v1.responses import (
+    build_response_event as build_response_event_v1,
+)
+from extralit_server.webhooks.v1.responses import (
+    notify_response_event as notify_response_event_v1,
+)
 
 if TYPE_CHECKING:
     from extralit_server.api.schemas.v1.fields import FieldUpdate
@@ -105,7 +106,7 @@ async def _touch_dataset_last_activity_at(db: AsyncSession, dataset: Dataset) ->
     )
 
 
-async def list_datasets(db: AsyncSession, user: Optional[User] = None, **filters) -> Sequence[Dataset]:
+async def list_datasets(db: AsyncSession, user: User | None = None, **filters) -> Sequence[Dataset]:
     """
     List stored datasets. If `user` is provided, only datasets available to the user will be returned.
     Additionally, filters based on `Dataset` class attributes can be applied
@@ -153,7 +154,7 @@ async def create_dataset(db: AsyncSession, dataset_attrs: dict) -> Dataset:
     return dataset
 
 
-def _allowed_roles_for_metadata_property_create(metadata_property_create: MetadataPropertyCreate) -> List[UserRole]:
+def _allowed_roles_for_metadata_property_create(metadata_property_create: MetadataPropertyCreate) -> list[UserRole]:
     if metadata_property_create.visible_for_annotators:
         return VISIBLE_FOR_ANNOTATORS_ALLOWED_ROLES
     else:
@@ -324,11 +325,11 @@ async def create_vector_settings(
 async def get_records_by_ids(
     db: AsyncSession,
     records_ids: Iterable[UUID],
-    dataset_id: Optional[UUID] = None,
+    dataset_id: UUID | None = None,
     include: Optional["RecordIncludeParam"] = None,
-    user_id: Optional[UUID] = None,
-    workspace_user_ids: Optional[Iterable[UUID]] = None,
-) -> List[Union[Record, None]]:
+    user_id: UUID | None = None,
+    workspace_user_ids: Iterable[UUID] | None = None,
+) -> list[Record | None]:
     query = select(Record)
 
     if dataset_id:
@@ -451,7 +452,7 @@ async def get_users_with_responses_for_dataset(
     return [r.user for r in result.all()]
 
 
-async def get_dataset_users_progress(db: AsyncSession, dataset: Dataset) -> List[dict]:
+async def get_dataset_users_progress(db: AsyncSession, dataset: Dataset) -> list[dict]:
     query = (
         select(User.username, Record.status, Response.status, func.count(Response.id))
         .join(Record)
@@ -470,7 +471,7 @@ async def get_dataset_users_progress(db: AsyncSession, dataset: Dataset) -> List
     return [{"username": username, **progress} for username, progress in annotators_progress.items()]
 
 
-async def _load_users_from_responses(responses: Union[Response, Iterable[Response]]) -> None:
+async def _load_users_from_responses(responses: Response | Iterable[Response]) -> None:
     if isinstance(responses, Response):
         responses = [responses]
 
@@ -480,7 +481,7 @@ async def _load_users_from_responses(responses: Union[Response, Iterable[Respons
         await response.awaitable_attrs.user
 
 
-async def preload_records_relationships_before_validate(db: AsyncSession, records: List[Record]) -> None:
+async def preload_records_relationships_before_validate(db: AsyncSession, records: list[Record]) -> None:
     await db.execute(
         select(Record)
         .filter(Record.id.in_([record.id for record in records]))
@@ -651,7 +652,7 @@ async def upsert_suggestion(
 
 
 async def delete_suggestions(
-    db: AsyncSession, search_engine: SearchEngine, record: Record, suggestions_ids: List[UUID]
+    db: AsyncSession, search_engine: SearchEngine, record: Record, suggestions_ids: list[UUID]
 ) -> None:
     suggestions = await list_suggestions_by_id_and_record_id(db, suggestions_ids, record.id)
 
@@ -665,7 +666,7 @@ async def delete_suggestions(
 
 
 async def list_suggestions_by_id_and_record_id(
-    db: AsyncSession, suggestion_ids: List[UUID], record_id: UUID
+    db: AsyncSession, suggestion_ids: list[UUID], record_id: UUID
 ) -> Sequence[Suggestion]:
     result = await db.execute(
         select(Suggestion)

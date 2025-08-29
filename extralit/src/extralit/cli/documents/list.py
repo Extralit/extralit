@@ -14,15 +14,18 @@
 
 """List documents in a workspace."""
 
+from typing import Optional
+
 import typer
 from rich.console import Console
 
-from extralit.client import Extralit
 from extralit.cli.rich import get_themed_panel, print_rich_table
+from extralit.client import Extralit
 
 
 def list_documents(
     workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
+    reference: Optional[str] = typer.Option(None, "--reference", "-r", help="Reference filter"),
 ) -> None:
     """List documents in a workspace."""
     console = Console()
@@ -41,7 +44,8 @@ def list_documents(
             console.print(panel)
             raise typer.Exit(code=1)
 
-        documents = workspace_obj.documents
+        # Get all documents in the workspace (using efficient call without metadata)
+        documents = workspace_obj.documents(reference=reference)
 
         if not documents:
             panel = get_themed_panel(
@@ -53,7 +57,8 @@ def list_documents(
             console.print(panel)
             return
 
-        print_rich_table(documents, title=f"Documents in workspace '{workspace}'")
+        # Use type: ignore since Document is a Resource but type system doesn't recognize the inheritance
+        print_rich_table(documents, title=f"Documents in workspace '{workspace}'")  # type: ignore
 
         panel = get_themed_panel(
             f"Found {len(documents)} documents in workspace '{workspace}'.",
@@ -65,7 +70,7 @@ def list_documents(
 
     except Exception as e:
         panel = get_themed_panel(
-            f"Error listing documents: {str(e)}",
+            f"Error listing documents: {e!s}",
             title="Error",
             title_align="left",
             success=False,

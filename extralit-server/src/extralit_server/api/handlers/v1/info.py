@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 
 from extralit_server.api.schemas.v1.info import Status, Version
@@ -27,7 +29,7 @@ async def get_version():
 
 
 @router.get("/status", response_model=Status)
-async def get_status(search_engine: SearchEngine = Depends(get_search_engine)):
+async def get_status(search_engine: Annotated[SearchEngine, Depends(get_search_engine)]):
     return Status(
         version=info.extralit_version(),
         search_engine=await search_engine.info(),

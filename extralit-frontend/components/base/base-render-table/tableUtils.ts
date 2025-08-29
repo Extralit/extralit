@@ -5,7 +5,7 @@ import { SuggestionCheck, ValidationSchema, Validator, Validators } from "@/v1/d
 
 export function isValidJSON(value: string): boolean {
   if (!value?.length || (!value.startsWith('{') && !value.startsWith('['))) { return false; }
-  
+
   try {
     JSON.parse(value);
     return true;
@@ -69,14 +69,14 @@ export function headerTooltip(e, column: ColumnComponent, onRendered, validation
 }
 
 export function columnSchemaToDesc(
-  fieldName: string, 
-  validation: ValidationSchema, 
+  fieldName: string,
+  validation: ValidationSchema,
   columnValidators: Validators): string | undefined {
   // returns a string describing the column schema and validators
   if (!validation || !fieldName) return;
-  
+
   var desc = `<b>${fieldName}</b>: ` || "";
-  
+
   if (validation.columns.hasOwnProperty(fieldName)) {
     const column = validation.columns[fieldName];
     desc += column.description || "";
@@ -156,7 +156,7 @@ export function getRangeColumns(range: RangeComponent): string[] {
 function regexToHumanReadable(regex: string): string {
   // Replace regex patterns with example strings
   let example = regex;
-  
+
   example = example.replace(/\\d/g, '1');
   example = example.replace(/\\w/g, 'a');
   example = example.replace(/\\s/g, ' ');

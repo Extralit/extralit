@@ -20,33 +20,33 @@ import os
 import shutil
 import tempfile
 import textwrap
-from urllib.parse import urlencode
-
-import redis
 from datetime import datetime
 from pathlib import Path
+from typing import Annotated
+from urllib.parse import urlencode
 
 import backoff
+import redis
 from brotli_asgi import BrotliMiddleware
-from fastapi import FastAPI, Request, Query
+from fastapi import FastAPI, Query, Request
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.datastructures import URL
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import RedirectResponse, HTMLResponse
+from starlette.responses import HTMLResponse, RedirectResponse
 
 from extralit_server import helpers
 from extralit_server._version import __version__ as extralit_version
 from extralit_server.api.routes import api_v1
 from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
-from extralit_server.contexts import accounts
+from extralit_server.contexts import accounts, files
 from extralit_server.database import get_async_db
+from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.logging import configure_logging
 from extralit_server.models import User, Workspace
 from extralit_server.search_engine import get_search_engine
 from extralit_server.settings import settings
 from extralit_server.static_rewrite import RewriteStaticFiles
-from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.telemetry import get_telemetry_client
 
 _LOGGER = logging.getLogger("extralit")
@@ -135,11 +135,11 @@ I've just contributed <span weight="bold">{submitted}</span> examples to this da
     @app.get("/share-your-progress", include_in_schema=False)
     async def share_your_progress_page(
         request: Request,
-        dataset_name: str = Query(),
-        dataset_id: str = Query(),
-        user_name: str = Query(),
-        team_progress: float = Query(default=0.0),
-        records_submitted: int = Query(default=0),
+        dataset_name: Annotated[str, Query()],
+        dataset_id: Annotated[str, Query()],
+        user_name: Annotated[str, Query()],
+        team_progress: Annotated[float, Query()] = 0.0,
+        records_submitted: Annotated[int, Query()] = 0,
     ):
         share_image = create_image_link(user_name, dataset_name, records_submitted, team_progress)
         share_page = create_share_html(dataset_name, dataset_id, share_image, request.url)
@@ -231,8 +231,7 @@ def configure_telemetry(app: FastAPI):
             await get_telemetry_client().track_api_request(request, response)
         except Exception as e:
             _LOGGER.warning(f"Error tracking request: {e}")
-        finally:
-            return response
+        return response
 
 
 def configure_app_statics(app: FastAPI):
@@ -298,7 +297,7 @@ def _show_telemetry_warning():
         "    https://docs.extralit.ai/latest/reference/extralit-server/telemetry/\n\n"
         "Telemetry is currently enabled. If you want to disable it, you can configure\n"
         "the environment variable before relaunching the server:\n\n"
-        f'{"#set HF_HUB_DISABLE_TELEMETRY=1" if os.name == "nt" else "$>export HF_HUB_DISABLE_TELEMETRY=1"}'
+        f"{'#set HF_HUB_DISABLE_TELEMETRY=1' if os.name == 'nt' else '$>export HF_HUB_DISABLE_TELEMETRY=1'}"
     )
     _LOGGER.warning(message)
 
@@ -309,6 +308,11 @@ async def _create_oauth_allowed_workspaces(db: AsyncSession):
     for allowed_workspace in security_settings.oauth.allowed_workspaces:
         if await Workspace.get_by(db, name=allowed_workspace.name) is None:
             _LOGGER.info(f"Creating workspace with name {allowed_workspace.name!r}")
+            try:
+                files.create_bucket(files.get_minio_client(), allowed_workspace.name)
+            except Exception as e:
+                _LOGGER.error(f"Failed to create bucket for workspace {allowed_workspace.name!r}: {e}")
+
             await accounts.create_workspace(db, {"name": allowed_workspace.name})
 
 

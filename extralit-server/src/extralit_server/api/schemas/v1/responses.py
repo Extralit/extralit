@@ -1,26 +1,26 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
-from typing import Annotated, Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Literal, Union
 from uuid import UUID
 
 from fastapi import Body
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr, model_validator
 
 from extralit_server.api.schemas.v1.questions import QuestionName
 from extralit_server.enums import ResponseStatus
-from pydantic import BaseModel, Field, StrictInt, StrictStr, root_validator, ConfigDict, model_validator
 
 RESPONSES_BULK_CREATE_MIN_ITEMS = 1
 RESPONSES_BULK_CREATE_MAX_ITEMS = 100
@@ -33,7 +33,7 @@ SPAN_QUESTION_RESPONSE_VALUE_ITEM_END_GREATER_THAN_OR_EQUAL = 1
 
 class RankingQuestionResponseValueItem(BaseModel):
     value: str
-    rank: Optional[int] = None
+    rank: int | None = None
 
 
 class SpanQuestionResponseValueItem(BaseModel):
@@ -52,14 +52,14 @@ class SpanQuestionResponseValueItem(BaseModel):
         return instance
 
 
-RankingQuestionResponseValue = List[RankingQuestionResponseValueItem]
+RankingQuestionResponseValue = list[RankingQuestionResponseValueItem]
 SpanQuestionResponseValue = Annotated[
-    List[SpanQuestionResponseValueItem], Field(..., max_length=SPAN_QUESTION_RESPONSE_VALUE_MAX_ITEMS)
+    list[SpanQuestionResponseValueItem], Field(..., max_length=SPAN_QUESTION_RESPONSE_VALUE_MAX_ITEMS)
 ]
-MultiLabelSelectionQuestionResponseValue = List[str]
+MultiLabelSelectionQuestionResponseValue = list[str]
 RatingQuestionResponseValue = StrictInt
 TextAndLabelSelectionQuestionResponseValue = StrictStr
-TableQuestionResponseValue = Dict[str, Any]
+TableQuestionResponseValue = dict[str, Any]
 
 ResponseValueTypes = Union[
     SpanQuestionResponseValue,
@@ -87,14 +87,14 @@ class ResponseValueUpdate(BaseModel):
     model_config = ConfigDict(coerce_numbers_to_str=True)
 
 
-ResponseValues = Dict[str, ResponseValue]
-ResponseValuesCreate = Dict[QuestionName, ResponseValueCreate]
-ResponseValuesUpdate = Dict[QuestionName, ResponseValueUpdate]
+ResponseValues = dict[str, ResponseValue]
+ResponseValuesCreate = dict[QuestionName, ResponseValueCreate]
+ResponseValuesUpdate = dict[QuestionName, ResponseValueUpdate]
 
 
 class Response(BaseModel):
     id: UUID
-    values: Optional[ResponseValues] = None
+    values: ResponseValues | None = None
     status: ResponseStatus
     record_id: UUID
     user_id: UUID
@@ -105,14 +105,14 @@ class Response(BaseModel):
 
 
 class ResponseCreate(BaseModel):
-    values: Optional[ResponseValuesCreate] = None
+    values: ResponseValuesCreate | None = None
     status: ResponseStatus
 
 
 class ResponseFilterScope(BaseModel):
     entity: Literal["response"]
-    question: Optional[QuestionName] = None
-    property: Optional[Literal["status"]] = None
+    question: QuestionName | None = None
+    property: Literal["status"] | None = None
 
 
 class SubmittedResponseUpdate(BaseModel):
@@ -121,17 +121,17 @@ class SubmittedResponseUpdate(BaseModel):
 
 
 class DiscardedResponseUpdate(BaseModel):
-    values: Optional[ResponseValuesUpdate] = None
+    values: ResponseValuesUpdate | None = None
     status: Literal[ResponseStatus.discarded]
 
 
 class DraftResponseUpdate(BaseModel):
-    values: Optional[ResponseValuesUpdate] = None
+    values: ResponseValuesUpdate | None = None
     status: Literal[ResponseStatus.draft]
 
 
 ResponseUpdate = Annotated[
-    Union[SubmittedResponseUpdate, DiscardedResponseUpdate, DraftResponseUpdate],
+    SubmittedResponseUpdate | DiscardedResponseUpdate | DraftResponseUpdate,
     Body(..., discriminator="status"),
 ]
 
@@ -143,25 +143,25 @@ class SubmittedResponseUpsert(BaseModel):
 
 
 class DiscardedResponseUpsert(BaseModel):
-    values: Optional[ResponseValuesUpdate] = None
+    values: ResponseValuesUpdate | None = None
     status: Literal[ResponseStatus.discarded]
     record_id: UUID
 
 
 class DraftResponseUpsert(BaseModel):
-    values: Optional[ResponseValuesUpdate] = None
+    values: ResponseValuesUpdate | None = None
     status: Literal[ResponseStatus.draft]
     record_id: UUID
 
 
 ResponseUpsert = Annotated[
-    Union[SubmittedResponseUpsert, DiscardedResponseUpsert, DraftResponseUpsert],
+    SubmittedResponseUpsert | DiscardedResponseUpsert | DraftResponseUpsert,
     Body(..., discriminator="status"),
 ]
 
 
 class ResponsesBulkCreate(BaseModel):
-    items: List[ResponseUpsert] = Field(
+    items: list[ResponseUpsert] = Field(
         ...,
         min_length=RESPONSES_BULK_CREATE_MIN_ITEMS,
         max_length=RESPONSES_BULK_CREATE_MAX_ITEMS,
@@ -173,12 +173,12 @@ class ResponseBulkError(BaseModel):
 
 
 class ResponseBulk(BaseModel):
-    item: Optional[Response] = None
-    error: Optional[ResponseBulkError] = None
+    item: Response | None = None
+    error: ResponseBulkError | None = None
 
 
 class ResponsesBulk(BaseModel):
-    items: List[ResponseBulk]
+    items: list[ResponseBulk]
 
 
 class UserDraftResponseCreate(BaseModel):
@@ -189,7 +189,7 @@ class UserDraftResponseCreate(BaseModel):
 
 class UserDiscardedResponseCreate(BaseModel):
     user_id: UUID
-    values: Optional[ResponseValuesCreate] = None
+    values: ResponseValuesCreate | None = None
     status: Literal[ResponseStatus.discarded]
 
 
@@ -200,6 +200,6 @@ class UserSubmittedResponseCreate(BaseModel):
 
 
 UserResponseCreate = Annotated[
-    Union[UserSubmittedResponseCreate, UserDraftResponseCreate, UserDiscardedResponseCreate],
+    UserSubmittedResponseCreate | UserDraftResponseCreate | UserDiscardedResponseCreate,
     Field(discriminator="status"),
 ]

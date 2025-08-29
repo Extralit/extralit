@@ -82,7 +82,8 @@ jobs:
           uv cache prune --ci
       - name: Wait for extralit-server to start
         run: |
-          while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
+          while ! curl -s -o /dev/null -XGET http://localhost:6900/api/_status; do sleep 10; done
+
           # Create a directory for local storage that the container can access
           mkdir -p /tmp/extralit-files
           chmod -R 777 /tmp/extralit-files
@@ -95,6 +96,10 @@ jobs:
         continue-on-error: true
         run: |
             pdm run test-cov tests/unit
+
+      - name: Check test status
+        if: steps.tests-unit.outcome == 'failure'
+        run: exit 1
 
       - name: Run integration tests
         id: tests-integration
@@ -119,7 +124,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Check test status
-        if: steps.tests-unit.outcome == 'failure' || steps.tests-integration.outcome == 'failure'
+        if: steps.tests-integration.outcome == 'failure'
         run: exit 1
 
       - name: Build package

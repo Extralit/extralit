@@ -1,17 +1,18 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Security
@@ -38,10 +39,10 @@ router = APIRouter(tags=["metadata properties"])
 @router.get("/metadata-properties/{metadata_property_id}/metrics", response_model=MetadataMetrics)
 async def get_metadata_property_metrics(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     metadata_property_id: UUID,
-    search_engine: SearchEngine = Depends(get_search_engine),
-    current_user: User = Security(auth.get_current_user),
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     metadata_property = await MetadataProperty.get_or_raise(
         db,
@@ -57,10 +58,10 @@ async def get_metadata_property_metrics(
 @router.patch("/metadata-properties/{metadata_property_id}", response_model=MetadataPropertySchema)
 async def update_metadata_property(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     metadata_property_id: UUID,
     metadata_property_update: MetadataPropertyUpdate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     metadata_property = await MetadataProperty.get_or_raise(
         db,
@@ -76,9 +77,9 @@ async def update_metadata_property(
 @router.delete("/metadata-properties/{metadata_property_id}", response_model=MetadataPropertySchema)
 async def delete_metadata_property(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     metadata_property_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     metadata_property = await MetadataProperty.get_or_raise(
         db,

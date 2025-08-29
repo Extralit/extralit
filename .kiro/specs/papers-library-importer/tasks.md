@@ -33,7 +33,7 @@
   - Enable easy testing of backend import analysis before building frontend
   - _Requirements: 1.1, 2.1, 2.2_
 
-- [ ] 3. Create bulk document upload endpoint
+- [x] 3. Create bulk document upload endpoint
 - [x] 3.1 Implement bulk upload API handler
   - Create POST /documents/bulk endpoint in documents.py handler
   - Handle multipart form data with documents_metadata and files
@@ -63,7 +63,7 @@
   - Remove import history creation from bulk upload (moved to separate endpoint)
   - _Requirements: 3.2, 3.5, 4.1, 4.6_
 
-- [ ] 4. Create frontend domain architecture and implement BibTeX parsing
+- [x] 4. Create frontend domain architecture and implement BibTeX parsing
 - [x] 4.0 Create frontend domain entities and use cases
   - Create ImportAnalysis.ts in ~/v1/domain/entities/import/ with backend API data structures
   - Create get-import-analysis-use-case.ts in ~/v1/domain/usecases/ for API communication
@@ -80,6 +80,15 @@
   - Use DataframeData type from ~/v1/domain/entities/import/ImportAnalysis.ts
   - _Requirements: 1.1, 5.1_
 
+- [x] 4.1.1 Add CSV parser component with column selection
+  - Add performant CSV parser library dependency (papaparse or similar)
+  - Implement CSV file parsing in ImportFileUpload.vue component
+  - Allow user to select reference column and files column for PDF matching
+  - Convert CSV entries to generic dataframe format (preserve all columns)
+  - Add validation for required columns and data types
+  - Handle CSV parsing errors gracefully with user feedback
+  - _Requirements: 1.2, 5.2_
+
 - [x] 4.2 Implement file-to-reference matching logic
   - Create file matching algorithm based on filepath or filename patterns
   - Implement exact match, partial match, and fuzzy matching strategies
@@ -87,17 +96,25 @@
   - Add validation for PDF file types and sizes
   - _Requirements: 1.3, 1.6_
 
+- [x] 4.2.1 Enhance PDF matching with maximum prefix path matching
+  - Implement maximum prefix path matching algorithm for better file association
+  - Improve matching to handle multiple PDFs per reference correctly
+  - Add progressive file addition with proper deduplication
+  - Clean up redundant matching information and improve matching accuracy
+  - Ensure correct handling when reference matches multiple PDF files
+  - _Requirements: 1.4, 1.8_
+
 - [x] 5. Create home page integration and modal workflow
 - [x] 5.1 Add Import Documents button to home page and modify workspace selection
   - Add "Import Documents" button above ImportFromHub and ImportFromPython components in pages/index.vue
   - Style button to match existing import section design
   - Connect button to open full-page import modal
   - Modify WorkspacesFilter and WorkspaceSelector components to support single workspace selection instead of multi-select
-  - Pass selected workspace ID to ImportModal component
+  - Pass selected workspace ID to ImportFlow component
   - Update DatasetList.vue to handle single workspace selection and pass workspace ID to import modal
   - _Requirements: 1.1, 4.3_
 
-- [x] 5.2 Create ImportModal.vue full-page modal component with workspace context
+- [x] 5.2 Create ImportFlow.vue full-page modal component with workspace context
   - Implement full-page modal using existing base-modal component
   - Create multi-step workflow with navigation between steps
   - Add step indicators and progress tracking
@@ -105,6 +122,14 @@
   - Accept workspace ID as prop from home page
   - Pass workspace ID to ImportAnalysisTable component
   - _Requirements: 2.1, 4.3_
+
+- [x] 5.2.1 Improve modal flow control and closing behavior
+  - Update ImportFlow.vue to disable confirm-close after successful completion
+  - Ensure confirm-close is only active during import process, not after completion
+  - Allow flexible upload order (bibliography first or PDFs first)
+  - Improve step navigation to preserve data when moving between steps
+  - Add event emission to refresh recent import list on home screen after modal closes
+  - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
 - [ ] 6. Implement upload step components
 - [x] 6.1 Create ImportBibUpload.vue component (Step 1)
@@ -125,7 +150,7 @@
   - Modify WorkspacesFilter.vue to support single workspace selection instead of multi-select
   - Update WorkspaceSelector.vue to use radio buttons instead of checkboxes for single selection
   - Update DatasetList.vue to handle single workspace selection and emit workspace ID
-  - Update useHomeViewModel.ts to track selected workspace ID and pass it to ImportModal
+  - Update useHomeViewModel.ts to track selected workspace ID and pass it to ImportFlow
   - Ensure workspace context is maintained and passed to import components
   - _Requirements: 1.1, 4.3_
 
@@ -141,15 +166,22 @@
   - Create toggle functionality for Add/Update/Skip selection
   - Send ImportAnalysisRequest to backend and display results using GetImportAnalysisUseCase
   - Import backend API types from ~/v1/domain/entities/import/ImportAnalysis.ts
-  - Use useImportAnalysisViewModel for reactive state management and API integration
+  - Use useImportAnalysisTableViewModel for reactive state management and API integration
   - Accept workspace ID as prop and pass it to the analysis use case
-  - Fix workspaceId reference in useImportAnalysisViewModel.ts to properly access workspace from parent component
+  - Fix workspaceId reference in useImportAnalysisTableViewModel.ts to properly access workspace from parent component
   - _Requirements: 2.1, 2.2, 2.7_
 
-- [x] 7.3 Fix ImportModal step navigation and data persistence
+- [x] 7.2.1 Add option to import references without PDFs at the ImportAnalysis step
+  - Add toggle option to import entire table including references without matched PDFs
+  - Add toggle option to import only references with at least one matched PDF file
+  - Update table filtering to show/hide references without PDFs based on user selection
+  - Modify import confirmation logic to respect user's choice about references without PDFs
+  - _Requirements: 2.6, 2.8, 2.9_
+
+- [x] 7.3 Fix ImportFlow step navigation and data persistence
   - Update ImportFileUpload.vue to accept initialBibData and initialPdfData props
   - Add initializeWithExistingData() method to restore component state when navigating back
-  - Update ImportModal.vue to pass existing data to ImportFileUpload component
+  - Update ImportFlow.vue to pass existing data to ImportFileUpload component
   - Ensure proper data persistence across step navigation without losing uploaded files
   - Fix component lifecycle management to show uploaded files when returning to step 0
   - _Requirements: 2.1, 2.2, 4.3_
@@ -205,7 +237,7 @@
   - _Requirements: 4.1, 4.2, 4.4, 4.6, 4.7_
 
 - [ ] 11. Add comprehensive error handling and validation
-- [ ] 11.1 Implement robust error handling
+- [x] 11.1 Implement robust error handling
   - Implement retry mechanisms for network and storage failures
   - Add workspace storage quota validation
   - _Requirements: 5.1, 5.2, 5.3, 5.5_
@@ -214,4 +246,11 @@
   - Add rate limiting for bulk upload requests
   - Add cleanup of temporary files and partial uploads
   - _Requirements: 6.1, 6.2, 6.5, 6.6_
+
+- [x] 11.3 Fix ImportFlow next button enablement logic
+  - Fix canGoNext computed property in ImportFlow.vue to check dataframeData instead of parsedEntries
+  - Update handleBibUpdate method to properly populate parsedEntries from dataframeData
+  - Ensure next button is enabled after successful bibliography upload regardless of PDF upload status
+  - Test that flexible upload order works correctly (bibliography first or PDFs first)
+  - _Requirements: 1.7, 7.3_
 

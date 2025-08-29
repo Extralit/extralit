@@ -1,26 +1,24 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from uuid import UUID
 from datetime import datetime
-from typing import List, Optional
+from uuid import UUID
 
-from pydantic import BaseModel, Field, HttpUrl, ConfigDict, field_validator, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_serializer, field_validator
 
-from extralit_server.webhooks.v1.enums import WebhookEvent
 from extralit_server.api.schemas.v1.commons import UpdateSchema
-
+from extralit_server.webhooks.v1.enums import WebhookEvent
 
 WEBHOOK_EVENTS_MIN_ITEMS = 1
 WEBHOOK_DESCRIPTION_MIN_LENGTH = 1
@@ -31,9 +29,9 @@ class Webhook(BaseModel):
     id: UUID
     url: str
     secret: str
-    events: List[WebhookEvent]
+    events: list[WebhookEvent]
     enabled: bool
-    description: Optional[str] = None
+    description: str | None = None
     inserted_at: datetime
     updated_at: datetime
 
@@ -41,13 +39,13 @@ class Webhook(BaseModel):
 
 
 class Webhooks(BaseModel):
-    items: List[Webhook]
+    items: list[Webhook]
 
 
 class WebhookCreate(BaseModel):
     url: HttpUrl
-    events: List[WebhookEvent] = Field(min_length=WEBHOOK_EVENTS_MIN_ITEMS)
-    description: Optional[str] = Field(
+    events: list[WebhookEvent] = Field(min_length=WEBHOOK_EVENTS_MIN_ITEMS)
+    description: str | None = Field(
         None,
         min_length=WEBHOOK_DESCRIPTION_MIN_LENGTH,
         max_length=WEBHOOK_DESCRIPTION_MAX_LENGTH,
@@ -55,7 +53,7 @@ class WebhookCreate(BaseModel):
 
     @field_validator("events")
     @classmethod
-    def events_must_be_unique(cls, events: List[WebhookEvent]):
+    def events_must_be_unique(cls, events: list[WebhookEvent]):
         if len(set(events)) != len(events):
             raise ValueError("Events must be unique")
 
@@ -67,10 +65,10 @@ class WebhookCreate(BaseModel):
 
 
 class WebhookUpdate(UpdateSchema):
-    url: Optional[HttpUrl] = None
-    events: Optional[List[WebhookEvent]] = Field(None, min_length=WEBHOOK_EVENTS_MIN_ITEMS)
-    enabled: Optional[bool] = None
-    description: Optional[str] = Field(
+    url: HttpUrl | None = None
+    events: list[WebhookEvent] | None = Field(None, min_length=WEBHOOK_EVENTS_MIN_ITEMS)
+    enabled: bool | None = None
+    description: str | None = Field(
         None,
         min_length=WEBHOOK_DESCRIPTION_MIN_LENGTH,
         max_length=WEBHOOK_DESCRIPTION_MAX_LENGTH,
@@ -80,7 +78,7 @@ class WebhookUpdate(UpdateSchema):
 
     @field_validator("events")
     @classmethod
-    def events_must_be_unique(cls, events: Optional[List[WebhookEvent]]):
+    def events_must_be_unique(cls, events: list[WebhookEvent] | None):
         if events is None:
             return
 
@@ -90,7 +88,7 @@ class WebhookUpdate(UpdateSchema):
         return events
 
     @field_serializer("url")
-    def serialize_url(self, url: Optional[HttpUrl]):
+    def serialize_url(self, url: HttpUrl | None):
         if url is None:
             return
 

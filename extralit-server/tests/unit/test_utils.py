@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Set
+from typing import Any
 
 import pytest
-from extralit_server.utils import parse_query_param
 from fastapi import HTTPException
-
 from pydantic import BaseModel, Field
+
+from extralit_server.utils import parse_query_param
 
 
 @pytest.mark.parametrize(
@@ -43,7 +43,7 @@ from pydantic import BaseModel, Field
         ({"group_keys_without_values": True}, ["key1,key2,key3"], {"keys": ["key1", "key2", "key3"]}),
     ],
 )
-def test_parse_query_param(config: Dict[str, Any], params: List[str], expected: Dict[str, Set[str]]) -> None:
+def test_parse_query_param(config: dict[str, Any], params: list[str], expected: dict[str, set[str]]) -> None:
     parse_function = parse_query_param(name="unit-test", **config)
     result = parse_function(param_values=params)
     assert result == expected
@@ -51,8 +51,8 @@ def test_parse_query_param(config: Dict[str, Any], params: List[str], expected: 
 
 def test_parse_query_param_with_base_model() -> None:
     class Params(BaseModel):
-        keys: List[str] = Field(..., alias="keys")
-        my_other_key_with_values: List[str] = Field(..., alias="key5")
+        keys: list[str] = Field(..., alias="keys")
+        my_other_key_with_values: list[str] = Field(..., alias="key5")
 
     parse_function = parse_query_param(name="unit-test", model=Params)
     result = parse_function(param_values=["key1", "key2", "key3,key4", "key5:value1,value2,value3"])
@@ -76,7 +76,7 @@ def test_parse_query_param_with_base_model() -> None:
         ),
     ],
 )
-def test_parse_query_param_raises_http_exception(config: Dict[str, Any], params: List[str], expected_msg: str) -> None:
+def test_parse_query_param_raises_http_exception(config: dict[str, Any], params: list[str], expected_msg: str) -> None:
     parse_function = parse_query_param(name="unit-test", **config)
 
     with pytest.raises(HTTPException, match="") as exc_info:

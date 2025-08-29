@@ -1,18 +1,18 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import secrets
-from typing import Iterable, List, Sequence, Union
+from collections.abc import Iterable, Sequence
 from uuid import UUID
 
 import bcrypt
@@ -48,7 +48,7 @@ async def delete_workspace_user(db: AsyncSession, workspace_user: WorkspaceUser)
     return await workspace_user.delete(db)
 
 
-async def list_workspaces(db: AsyncSession) -> List[Workspace]:
+async def list_workspaces(db: AsyncSession) -> list[Workspace]:
     result = await db.execute(select(Workspace).order_by(Workspace.inserted_at.asc()))
     return result.scalars().all()
 
@@ -89,12 +89,12 @@ async def user_exists(db: AsyncSession, user_id: UUID) -> bool:
     return await db.scalar(select(exists().where(User.id == user_id)))
 
 
-async def get_user_by_username(db: AsyncSession, username: str) -> Union[User, None]:
+async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
     result = await db.execute(select(User).filter_by(username=username).options(selectinload(User.workspaces)))
     return result.scalar_one_or_none()
 
 
-async def get_user_by_api_key(db: AsyncSession, api_key: str) -> Union[User, None]:
+async def get_user_by_api_key(db: AsyncSession, api_key: str) -> User | None:
     result = await db.execute(select(User).where(User.api_key == api_key).options(selectinload(User.workspaces)))
     return result.scalar_one_or_none()
 
@@ -114,7 +114,7 @@ async def list_users_by_ids(db: AsyncSession, ids: Iterable[UUID]) -> Sequence[U
 async def create_user(
     db: AsyncSession,
     user_attrs: dict,
-    workspaces: Union[List[str], None] = None,
+    workspaces: list[str] | None = None,
 ) -> User:
     if await get_user_by_username(db, user_attrs["username"]) is not None:
         raise NotUniqueError(f"User username `{user_attrs['username']}` is not unique")
@@ -154,7 +154,7 @@ async def create_user_with_random_password(
     username: str,
     first_name: str,
     role: UserRole = UserRole.annotator,
-    workspaces: Union[List[str], None] = None,
+    workspaces: list[str] | None = None,
 ) -> User:
     user_attrs = {
         "first_name": first_name,

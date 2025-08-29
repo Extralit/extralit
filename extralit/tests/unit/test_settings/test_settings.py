@@ -199,7 +199,7 @@ class TestSettings:
             _dataset=Dataset(name="dataset"),
         )
 
-        mocker.patch.object(settings, "_fetch_fields", return_value=[f for f in settings.fields])
+        mocker.patch.object(settings, "_fetch_fields", return_value=list(settings.fields))
         mocker.patch.object(settings, "_fetch_questions", return_value=[])
         mocker.patch.object(settings, "_fetch_vectors", return_value=[])
         mocker.patch.object(settings, "_fetch_metadata", return_value=[])

@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
-from extralit_server.jobs.document_jobs import upload_reference_documents_job
-from tests.factories import WorkspaceFactory, UserFactory
+import pytest
+
+from extralit_server.jobs.document_jobs import upload_and_preprocess_documents_job
+from tests.factories import UserFactory, WorkspaceFactory
 
 
 @pytest.mark.asyncio
@@ -70,7 +71,7 @@ class TestDocumentJobs:
             mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
 
             # Execute job
-            result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+            result = await upload_and_preprocess_documents_job(reference, document_data, file_data_list, user.id)
 
             # Debug: print the actual result
             print(f"DEBUG: result = {result}")
@@ -107,7 +108,7 @@ class TestDocumentJobs:
         # Use non-existent workspace ID - the job will handle the lookup internally
 
         # Execute job
-        result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+        result = await upload_and_preprocess_documents_job(reference, document_data, file_data_list, user.id)
 
         # Verify result
         assert result["success"] is False
@@ -165,7 +166,7 @@ class TestDocumentJobs:
             mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
 
             # Execute job
-            result = await upload_reference_documents_job(reference, document_data, file_data_list, user.id)
+            result = await upload_and_preprocess_documents_job(reference, document_data, file_data_list, user.id)
 
             # Debug: print the actual result
             print(f"DEBUG: result = {result}")

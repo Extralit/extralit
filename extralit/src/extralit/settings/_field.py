@@ -14,7 +14,7 @@
 
 import os
 from abc import ABC
-from typing import Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 import requests
 
@@ -22,16 +22,15 @@ from extralit import Extralit
 from extralit._api import FieldsAPI
 from extralit._exceptions import ExtralitError, SettingsError
 from extralit._models import (
-    FieldModel,
-    TextFieldSettings,
     ChatFieldSettings,
-    ImageFieldSettings,
     CustomFieldSettings,
-    TableFieldSettings,
+    FieldModel,
     FieldSettings,
+    ImageFieldSettings,
+    TableFieldSettings,
+    TextFieldSettings,
 )
 from extralit.settings._common import SettingsPropertyBase
-
 
 try:
     from typing import Self
@@ -41,7 +40,7 @@ except ImportError:
 if TYPE_CHECKING:
     from extralit.datasets import Dataset
 
-__all__ = ["Field", "FieldBase", "TextField", "ImageField", "ChatField", "CustomField", "TableField"]
+__all__ = ["ChatField", "CustomField", "Field", "FieldBase", "ImageField", "TableField", "TextField"]
 
 
 class FieldBase(ABC, SettingsPropertyBase):
@@ -69,7 +68,7 @@ class FieldBase(ABC, SettingsPropertyBase):
 
     @classmethod
     def from_model(cls, model: FieldModel) -> "Self":
-        instance = cls(name=model.name)  # noqa
+        instance = cls(name=model.name)
         instance._model = model
 
         return instance
@@ -279,7 +278,7 @@ class CustomField(FieldBase):
     @classmethod
     def _load_template(cls, template: str) -> str:
         if template.endswith(".html") and os.path.exists(template):
-            with open(template, "r") as f:
+            with open(template) as f:
                 return f.read()
         if template.startswith("http") or template.startswith("https"):
             return requests.get(template).text

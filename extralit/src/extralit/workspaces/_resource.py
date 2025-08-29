@@ -12,26 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import List, TYPE_CHECKING, Optional, overload, Union, Sequence, Any
+from typing import TYPE_CHECKING, Any, Optional, Union, overload
 from urllib.parse import unquote, urlparse
 
-from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
 from extralit._api._workspaces import WorkspacesAPI
-from extralit._helpers import GenericIterator
-from extralit._helpers import LoggingMixin
+from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
+from extralit._helpers import GenericIterator, LoggingMixin
 from extralit._models import WorkspaceModel
 from extralit._resource import Resource
 from extralit.client import Extralit
 
 if TYPE_CHECKING:
     from uuid import UUID
-    from extralit.users._resource import User
-    from extralit.datasets._resource import Dataset
-    from extralit.documents._resource import Document
-    from extralit._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
-    from extralit._models._documents import DocumentModel
+
+    from extralit._models._files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
     from extralit._models._schema import SchemaStructure
+    from extralit.client.resources import Documents
+    from extralit.datasets._resource import Dataset
+    from extralit.users._resource import User
 
 
 class Workspace(Resource):
@@ -93,24 +93,12 @@ class Workspace(Resource):
         return self.users.delete(user)
 
     # TODO: Make this method private
-    def list_datasets(self) -> List["Dataset"]:
+    def list_datasets(self) -> list["Dataset"]:
         from extralit.datasets import Dataset
 
         datasets = self._client.api.datasets.list(self.id)
         self._log_message(f"Got {len(datasets)} datasets for workspace {self.id}")
         return [Dataset.from_model(model=dataset, client=self._client) for dataset in datasets]
-
-    def list_documents(self) -> List["Document"]:
-        """List documents in the workspace as Document resource objects.
-
-        Returns:
-            List[Document]: A list of Document resource objects in the workspace.
-        """
-        from extralit.documents import Document
-
-        documents = self._client.api.documents.list(self.id)
-        self._log_message(f"Got {len(documents)} documents for workspace {self.id}")
-        return [Document.from_model(model=document, client=self._client) for document in documents]
 
     ####################
     # File methods #
@@ -175,7 +163,7 @@ class Workspace(Resource):
         url: Optional[str] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
-    ) -> "UUID":
+    ) -> "UUID | None":
         """Add a document to the workspace.
 
         Args:
@@ -188,39 +176,44 @@ class Workspace(Resource):
         Returns:
             The ID of the added document.
         """
-        from extralit._models._documents import DocumentModel
+        from extralit import Document
 
         # Create document from either local file or remote URL
         if file_path:
-            document = DocumentModel.from_file(
-                file_path_or_url=file_path, reference=reference, pmid=pmid, doi=doi, workspace_id=self.id
+            document = Document.from_file(
+                file_path_or_url=file_path,
+                reference=reference,
+                pmid=pmid,
+                doi=doi,
+                workspace_id=self.id,
+                client=self._client,
             )
         elif url:
             parsed_url = urlparse(url)
             path = parsed_url.path
             file_name = unquote(path).split("/")[-1]
-            document = DocumentModel(
-                url=url, file_name=file_name, reference=reference, pmid=pmid, doi=doi, workspace_id=self.id
+            document = Document(
+                url=url,
+                file_name=file_name,
+                reference=reference,
+                pmid=pmid,
+                doi=doi,
+                workspace_id=self.id,
+                file_path=None,
+                client=self._client,
             )
         else:
             raise ValueError("Either file_path or url must be provided")
 
-        return self._api.add_document(document)
-
-    def get_documents(self) -> List["DocumentModel"]:
-        """Get documents from the workspace.
-
-        Returns:
-            A list of documents.
-        """
-        return self._api.get_documents(self.id)
+        created_doc = document.create()
+        return created_doc.id
 
     ####################
     # Schema methods #
     ####################
 
     def list_schemas(
-        self, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]] = None
+        self, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[list[str]] = None
     ) -> "SchemaStructure":
         """Get schemas from the workspace.
 
@@ -277,7 +270,7 @@ class Workspace(Resource):
         self._model.name = value
 
     @property
-    def datasets(self) -> List["Dataset"]:
+    def datasets(self) -> list["Dataset"]:
         """List all datasets in the workspace
 
         Returns:
@@ -286,13 +279,20 @@ class Workspace(Resource):
         return self.list_datasets()
 
     @property
-    def documents(self) -> List["Document"]:
-        """List all documents in the workspace
+    def documents(self) -> "Documents":
+        """Access documents in the workspace
 
         Returns:
-            List[Document]: A list of all documents in the workspace
+            Documents: A Documents collection for this workspace that supports:
+                - workspace.documents - list all documents
+                - workspace.documents(id=...) - get document by ID
+                - workspace.documents(pmid=...) - get document by PMID
+                - workspace.documents(doi=...) - get document by DOI
+                - workspace.documents(reference=...) - get document by reference
         """
-        return self.list_documents()
+        from extralit.client.resources import Documents
+
+        return Documents(client=self._client, workspace=self)
 
     @property
     def users(self) -> "WorkspaceUsers":
@@ -350,7 +350,7 @@ class WorkspaceUsers(Sequence["User"], LoggingMixin):
     # Private methods
     ####################
 
-    def _list_users(self) -> List["User"]:
+    def _list_users(self) -> list["User"]:
         users = self._workspace._client.users.list(workspace=self._workspace)
         self._log_message(f"Got {len(users)} users for workspace {self._workspace.id}")
         return users

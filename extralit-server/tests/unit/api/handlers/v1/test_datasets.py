@@ -15,7 +15,7 @@
 import math
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Type
+from typing import TYPE_CHECKING, Any
 from unittest.mock import ANY
 from uuid import UUID, uuid4
 
@@ -32,7 +32,6 @@ from extralit_server.api.schemas.v1.vector_settings import (
 )
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import (
-    DatasetDistributionStrategy,
     DatasetStatus,
     OptionsOrder,
     RecordInclude,
@@ -115,10 +114,11 @@ class TestSuiteDatasets:
                     "allow_extra_metadata": True,
                     "status": "draft",
                     "distribution": {
-                        "strategy": DatasetDistributionStrategy.overlap,
+                        "strategy": "overlap",
                         "min_submitted": 1,
                     },
                     "metadata": None,
+                    "mapping": None,
                     "workspace_id": str(dataset_a.workspace_id),
                     "last_activity_at": dataset_a.last_activity_at.isoformat(),
                     "inserted_at": dataset_a.inserted_at.isoformat(),
@@ -131,10 +131,11 @@ class TestSuiteDatasets:
                     "allow_extra_metadata": True,
                     "status": "draft",
                     "distribution": {
-                        "strategy": DatasetDistributionStrategy.overlap,
+                        "strategy": "overlap",
                         "min_submitted": 1,
                     },
                     "metadata": None,
+                    "mapping": None,
                     "workspace_id": str(dataset_b.workspace_id),
                     "last_activity_at": dataset_b.last_activity_at.isoformat(),
                     "inserted_at": dataset_b.inserted_at.isoformat(),
@@ -147,10 +148,11 @@ class TestSuiteDatasets:
                     "allow_extra_metadata": True,
                     "status": "ready",
                     "distribution": {
-                        "strategy": DatasetDistributionStrategy.overlap,
+                        "strategy": "overlap",
                         "min_submitted": 1,
                     },
                     "metadata": None,
+                    "mapping": None,
                     "workspace_id": str(dataset_c.workspace_id),
                     "last_activity_at": dataset_c.last_activity_at.isoformat(),
                     "inserted_at": dataset_c.inserted_at.isoformat(),
@@ -398,7 +400,7 @@ class TestSuiteDatasets:
         self,
         async_client: "AsyncClient",
         owner_auth_header: dict,
-        QuestionFactory: Type[QuestionFactory],
+        QuestionFactory: type[QuestionFactory],
         settings: dict,
     ):
         dataset = await DatasetFactory.create()
@@ -682,10 +684,11 @@ class TestSuiteDatasets:
             "allow_extra_metadata": True,
             "status": "draft",
             "distribution": {
-                "strategy": DatasetDistributionStrategy.overlap,
+                "strategy": "overlap",
                 "min_submitted": 1,
             },
             "metadata": None,
+            "mapping": None,
             "workspace_id": str(dataset.workspace_id),
             "last_activity_at": dataset.last_activity_at.isoformat(),
             "inserted_at": dataset.inserted_at.isoformat(),
@@ -894,10 +897,11 @@ class TestSuiteDatasets:
             "allow_extra_metadata": False,
             "status": "draft",
             "distribution": {
-                "strategy": DatasetDistributionStrategy.overlap,
+                "strategy": "overlap",
                 "min_submitted": 1,
             },
             "metadata": None,
+            "mapping": None,
             "workspace_id": str(workspace.id),
             "last_activity_at": datetime.fromisoformat(response_body["last_activity_at"]).isoformat(),
             "inserted_at": datetime.fromisoformat(response_body["inserted_at"]).isoformat(),
@@ -1630,7 +1634,7 @@ class TestSuiteDatasets:
                     "errors": [
                         {
                             "loc": ["body", "items", 0, "responses"],
-                            "msg": f"Value error, 'responses' contains several responses for the same user_id='{str(owner.id)}'",
+                            "msg": f"Value error, 'responses' contains several responses for the same user_id='{owner.id!s}'",
                             "type": "value_error",
                         }
                     ],
@@ -1889,8 +1893,8 @@ class TestSuiteDatasets:
         async_client: "AsyncClient",
         db: "AsyncSession",
         owner_auth_header: dict,
-        MetadataPropertyFactoryType: Type[MetadataPropertyFactory],
-        settings: Dict[str, Any],
+        MetadataPropertyFactoryType: type[MetadataPropertyFactory],
+        settings: dict[str, Any],
         value: Any,
     ):
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
@@ -1929,8 +1933,8 @@ class TestSuiteDatasets:
         async_client: "AsyncClient",
         db: "AsyncSession",
         owner_auth_header: dict,
-        MetadataPropertyFactoryType: Type[MetadataPropertyFactory],
-        settings: Dict[str, Any],
+        MetadataPropertyFactoryType: type[MetadataPropertyFactory],
+        settings: dict[str, Any],
     ):
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="completion", dataset=dataset)
@@ -1965,8 +1969,8 @@ class TestSuiteDatasets:
         async_client: "AsyncClient",
         db: "AsyncSession",
         owner_auth_header: dict,
-        MetadataPropertyFactoryType: Type[MetadataPropertyFactory],
-        settings: Dict[str, Any],
+        MetadataPropertyFactoryType: type[MetadataPropertyFactory],
+        settings: dict[str, Any],
         record_value: Any,
     ):
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
@@ -2004,8 +2008,8 @@ class TestSuiteDatasets:
         self,
         async_client: "AsyncClient",
         owner_auth_header: dict,
-        MetadataPropertyFactoryType: Type[MetadataPropertyFactory],
-        settings: Dict[str, Any],
+        MetadataPropertyFactoryType: type[MetadataPropertyFactory],
+        settings: dict[str, Any],
         value: Any,
     ):
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
@@ -2810,14 +2814,14 @@ class TestSuiteDatasets:
         records = await RecordFactory.create_batch(10, dataset=dataset)
 
         # Record 0 suggestions (should be deleted)
-        suggestions_records_0 = [
+        [
             await SuggestionFactory.create(question=question_0, record=records[0], value="suggestion 0 1"),
             await SuggestionFactory.create(question=question_1, record=records[0], value="suggestion 0 2"),
             await SuggestionFactory.create(question=question_2, record=records[0], value="suggestion 0 3"),
         ]
 
         # Record 1 suggestions (should be deleted)
-        suggestions_records_1 = [
+        [
             await SuggestionFactory.create(question=question_0, record=records[1], value="suggestion 1 1"),
             await SuggestionFactory.create(question=question_1, record=records[1], value="suggestion 1 2"),
             await SuggestionFactory.create(question=question_2, record=records[1], value="suggestion 1 3"),
@@ -3560,8 +3564,8 @@ class TestSuiteDatasets:
         mock_search_engine: SearchEngine,
         owner: "User",
         owner_auth_header: dict,
-        sort: List[dict],
-        expected_sort: List[Order],
+        sort: list[dict],
+        expected_sort: list[Order],
     ):
         workspace = await WorkspaceFactory.create()
         dataset, _, records, *_ = await self.create_dataset_with_user_responses(owner, workspace)
@@ -3670,7 +3674,7 @@ class TestSuiteDatasets:
         ],
     )
     async def test_search_current_user_dataset_records_with_include(
-        self, async_client: "AsyncClient", mock_search_engine: SearchEngine, owner: "User", includes: List[str]
+        self, async_client: "AsyncClient", mock_search_engine: SearchEngine, owner: "User", includes: list[str]
     ):
         workspace = await WorkspaceFactory.create()
         (
@@ -4042,7 +4046,7 @@ class TestSuiteDatasets:
         workspace = await WorkspaceFactory.create()
         dataset, _, records, *_ = await self.create_dataset_with_user_responses(owner, workspace)
         vector_settings = await VectorSettingsFactory.create(dataset=dataset)
-        vector = await VectorFactory(record=records[0], vector_settings=vector_settings, value=[1, 2, 3])
+        await VectorFactory(record=records[0], vector_settings=vector_settings, value=[1, 2, 3])
 
         mock_search_engine.similarity_search.return_value = SearchResponses(
             items=[
@@ -4197,7 +4201,7 @@ class TestSuiteDatasets:
     ):
         workspace = await WorkspaceFactory.create()
         dataset, _, records, *_ = await self.create_dataset_with_user_responses(owner, workspace)
-        vector_settings = await VectorSettingsFactory.create(dataset=dataset)
+        await VectorSettingsFactory.create(dataset=dataset)
 
         query_json = {"query": {"vector": {"name": "wrong_vector", "record_id": str(records[0].id)}}}
 
@@ -4488,10 +4492,11 @@ class TestSuiteDatasets:
             "allow_extra_metadata": allow_extra_metadata,
             "status": "ready",
             "distribution": {
-                "strategy": DatasetDistributionStrategy.overlap,
+                "strategy": "overlap",
                 "min_submitted": 1,
             },
             "metadata": None,
+            "mapping": None,
             "workspace_id": str(dataset.workspace_id),
             "last_activity_at": dataset.last_activity_at.isoformat(),
             "inserted_at": dataset.inserted_at.isoformat(),
@@ -4606,10 +4611,10 @@ class TestSuiteDatasets:
         await TextQuestionFactory.create(dataset=dataset)
 
         other_dataset = await DatasetFactory.create()
-        other_field = await TextFieldFactory.create(dataset=other_dataset)
-        other_question = await TextQuestionFactory.create(dataset=other_dataset)
+        await TextFieldFactory.create(dataset=other_dataset)
+        await TextQuestionFactory.create(dataset=other_dataset)
         other_record = await RecordFactory.create(dataset=other_dataset)
-        other_response = await ResponseFactory.create(record=other_record, user=owner)
+        await ResponseFactory.create(record=other_record, user=owner)
 
         response = await async_client.delete(f"/api/v1/datasets/{dataset.id}", headers=owner_auth_header)
 
@@ -4637,10 +4642,10 @@ class TestSuiteDatasets:
         await ResponseFactory.create(record=record, user=owner)
 
         other_dataset = await DatasetFactory.create()
-        other_field = await TextFieldFactory.create(dataset=other_dataset)
-        other_question = await TextQuestionFactory.create(dataset=other_dataset)
+        await TextFieldFactory.create(dataset=other_dataset)
+        await TextQuestionFactory.create(dataset=other_dataset)
         other_record = await RecordFactory.create(dataset=other_dataset)
-        other_response = await ResponseFactory.create(record=other_record, user=owner)
+        await ResponseFactory.create(record=other_record, user=owner)
 
         response = await async_client.delete(f"/api/v1/datasets/{dataset.id}", headers=owner_auth_header)
 
@@ -4709,7 +4714,7 @@ class TestSuiteDatasets:
 
     async def create_dataset_with_user_responses(
         self, user: User, workspace: "Workspace"
-    ) -> Tuple[Dataset, List[Question], List[Record], List[Response], List[Suggestion]]:
+    ) -> tuple[Dataset, list[Question], list[Record], list[Response], list[Suggestion]]:
         dataset = await DatasetFactory.create(workspace=workspace)
         await TextFieldFactory.create(name="input", dataset=dataset)
         await TextFieldFactory.create(name="output", dataset=dataset)

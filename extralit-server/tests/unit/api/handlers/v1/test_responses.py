@@ -1,27 +1,27 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
 import pytest
+from sqlalchemy import func, select
+
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.models import DatasetStatus, Response, ResponseStatus, UserRole
 from extralit_server.search_engine import SearchEngine
-from sqlalchemy import func, select
-
 from tests.factories import (
     AdminFactory,
     AnnotatorFactory,
@@ -38,10 +38,10 @@ from tests.factories import (
 )
 
 if TYPE_CHECKING:
-    from extralit_server.models import User
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from extralit_server.models import User
     from tests.factories import QuestionFactory
 
 
@@ -152,7 +152,7 @@ class TestSuiteResponses:
     async def test_update_response_to_submitted_status(
         self,
         async_client: "AsyncClient",
-        QuestionFactory: Type["QuestionFactory"],
+        QuestionFactory: type["QuestionFactory"],
         response_value: ResponseStatus,
         owner: "User",
         owner_auth_header: dict,
@@ -210,7 +210,7 @@ class TestSuiteResponses:
     async def test_update_response_to_non_submitted_status(
         self,
         async_client: "AsyncClient",
-        QuestionFactory: Type["QuestionFactory"],
+        QuestionFactory: type["QuestionFactory"],
         response_value: Any,
         response_status: ResponseStatus,
         owner: "User",
@@ -284,7 +284,7 @@ class TestSuiteResponses:
     async def test_update_response_with_wrong_response_value(
         self,
         async_client: "AsyncClient",
-        QuestionFactory: Type["QuestionFactory"],
+        QuestionFactory: type["QuestionFactory"],
         response_value: Any,
         owner: "User",
         owner_auth_header: dict,

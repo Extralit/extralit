@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections import defaultdict
-from typing import Any, Dict, List, Tuple, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 if TYPE_CHECKING:
     from extralit import Record
@@ -25,8 +25,8 @@ class GenericIO:
 
     @staticmethod
     def to_list(
-        records: List[Union["Record", Tuple["Record", float]]], flatten: bool = False
-    ) -> List[Dict[str, Union[str, float, int, list]]]:
+        records: list[Union["Record", tuple["Record", float]]], flatten: bool = False
+    ) -> list[dict[str, Union[str, float, int, list]]]:
         """Export records to a list of dictionaries with either names or record index as keys.
         Args:
             flatten (bool): The structure of the exported dictionary.
@@ -39,7 +39,7 @@ class GenericIO:
         dataset_records: list = []
         for record in records:
             record_dict = GenericIO._record_to_dict(record=record, flatten=flatten)
-            records_schema.update([k for k in record_dict])
+            records_schema.update(list(record_dict))
             dataset_records.append(record_dict)
 
         # normalize records structure
@@ -50,8 +50,8 @@ class GenericIO:
 
     @classmethod
     def to_dict(
-        cls, records: List[Union["Record", Tuple["Record", float]]], flatten: bool = False, orient: str = "names"
-    ) -> Dict[str, Union[str, float, int, list]]:
+        cls, records: list[Union["Record", tuple["Record", float]]], flatten: bool = False, orient: str = "names"
+    ) -> dict[str, Union[str, float, int, list]]:
         """Export records to a dictionary with either names or record index as keys.
         Args:
             flatten (bool): The structure of the exported dictionary.
@@ -81,7 +81,7 @@ class GenericIO:
     ############################
 
     @staticmethod
-    def _record_to_dict(record: Union["Record", Tuple["Record", float]], flatten=False) -> Dict[str, Any]:
+    def _record_to_dict(record: Union["Record", tuple["Record", float]], flatten=False) -> dict[str, Any]:
         """Converts a Record object to a dictionary for export.
         Args:
             record (Record): The Record object or the record and the linked score to convert.

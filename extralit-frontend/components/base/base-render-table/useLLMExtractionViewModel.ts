@@ -8,9 +8,9 @@ import { Data, ReferenceValues, TableData } from "@/v1/domain/entities/table/Tab
 
 
 export const useLLMExtractionViewModel = (
-  props: { 
-    tableJSON: TableData, 
-    editable: boolean, 
+  props: {
+    tableJSON: TableData,
+    editable: boolean,
     hasValidValues: boolean,
     questions: Question[],
   }
@@ -21,7 +21,7 @@ export const useLLMExtractionViewModel = (
 
   const completeExtraction = async (
     selectedRowData: Data,
-    columns: Array<string>, 
+    columns: Array<string>,
     referenceValues: ReferenceValues,
     headersQuestionName: string = 'context-relevant',
     typesQuestionName: string = 'extraction-source',
@@ -34,14 +34,14 @@ export const useLLMExtractionViewModel = (
     const prompt = getTextQuestionAnswer(promptQuestionName);
 
     const predictedData = await getExtraction.getExtractionCompletion(
-      reference, 
-      schemaName, 
+      reference,
+      schemaName,
       dataset.workspaceName,
-      selectedRowData, 
+      selectedRowData,
       referenceValues,
-      columns, 
-      headers, 
-      types, 
+      columns,
+      headers,
+      types,
       prompt,
     );
 

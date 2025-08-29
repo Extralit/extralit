@@ -15,15 +15,15 @@
 import pytest
 
 from extralit import (
-    Dataset,
-    Settings,
-    TextField,
     ChatField,
-    LabelQuestion,
+    Dataset,
     Extralit,
-    VectorField,
     FloatMetadataProperty,
+    LabelQuestion,
+    Settings,
     TermsMetadataProperty,
+    TextField,
+    VectorField,
 )
 
 

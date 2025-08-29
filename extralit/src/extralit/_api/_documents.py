@@ -13,14 +13,14 @@
 # limitations under the License.
 
 import os
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from extralit._api._base import ResourceAPI
 from extralit._exceptions._api import api_error_handler
 
 if TYPE_CHECKING:
-    from extralit._models._documents import DocumentModel
+    from extralit._models._document import DocumentModel
 
 
 class DocumentsAPI(ResourceAPI):
@@ -57,65 +57,52 @@ class DocumentsAPI(ResourceAPI):
         return model
 
     @api_error_handler
-    def get(self, id: UUID) -> "DocumentModel":
-        """Get a document by ID.
+    def get(self, params: dict) -> list["DocumentModel"]:
+        """Get documents using multiple search criteria.
 
         Args:
-            id: The document ID.
+            params: Dictionary containing any combination of:
+                - workspace_id: Workspace ID (required)
+                - id: Document ID
+                - pmid: PubMed ID
+                - doi: DOI
+                - reference: Document reference
 
         Returns:
-            The document model.
+            A list of document models matching the criteria.
         """
-        from extralit._models._documents import DocumentModel
+        from extralit._models._document import DocumentModel
 
-        url = f"/api/v1/documents/by-id/{id}"
-        response = self.http_client.get(url=url)
+        url = "/api/v1/documents"
+        response = self.http_client.get(url=url, params=params)
         response.raise_for_status()
 
-        doc_data = response.json()
-        return DocumentModel(
-            id=doc_data.get("id"),
-            workspace_id=doc_data.get("workspace_id"),
-            file_name=doc_data.get("file_name"),
-            reference=doc_data.get("reference"),
-            url=doc_data.get("url"),
-            pmid=doc_data.get("pmid"),
-            doi=doc_data.get("doi"),
-            inserted_at=doc_data.get("inserted_at"),
-            updated_at=doc_data.get("updated_at"),
-        )
+        doc_data_list = response.json()
+
+        if not doc_data_list:
+            return []
+
+        documents = []
+        for doc_data in doc_data_list:
+            doc = DocumentModel(
+                id=doc_data.get("id"),
+                workspace_id=doc_data.get("workspace_id"),
+                file_name=doc_data.get("file_name"),
+                reference=doc_data.get("reference"),
+                url=doc_data.get("url"),
+                pmid=doc_data.get("pmid"),
+                doi=doc_data.get("doi"),
+                metadata=doc_data.get("metadata"),
+                inserted_at=doc_data.get("inserted_at"),
+                updated_at=doc_data.get("updated_at"),
+                file_path=None,
+            )
+            documents.append(doc)
+
+        return documents
 
     @api_error_handler
-    def get_by_pmid(self, pmid: str) -> "DocumentModel":
-        """Get a document by PMID.
-
-        Args:
-            pmid: The PubMed ID.
-
-        Returns:
-            The document model.
-        """
-        from extralit._models._documents import DocumentModel
-
-        url = f"/api/v1/documents/by-pmid/{pmid}"
-        response = self.http_client.get(url=url)
-        response.raise_for_status()
-
-        doc_data = response.json()
-        return DocumentModel(
-            id=doc_data.get("id"),
-            workspace_id=doc_data.get("workspace_id"),
-            file_name=doc_data.get("file_name"),
-            reference=doc_data.get("reference"),
-            url=doc_data.get("url"),
-            pmid=doc_data.get("pmid"),
-            doi=doc_data.get("doi"),
-            inserted_at=doc_data.get("inserted_at"),
-            updated_at=doc_data.get("updated_at"),
-        )
-
-    @api_error_handler
-    def list(self, workspace_id: UUID) -> List["DocumentModel"]:
+    def list(self, workspace_id: UUID) -> list["DocumentModel"]:
         """List documents in a workspace.
 
         Args:
@@ -124,7 +111,7 @@ class DocumentsAPI(ResourceAPI):
         Returns:
             A list of document models.
         """
-        from extralit._models._documents import DocumentModel
+        from extralit._models._document import DocumentModel
 
         url = f"/api/v1/documents/workspace/{workspace_id}"
         response = self.http_client.get(url=url)
@@ -142,6 +129,7 @@ class DocumentsAPI(ResourceAPI):
                 doi=doc_data.get("doi"),
                 inserted_at=doc_data.get("inserted_at"),
                 updated_at=doc_data.get("updated_at"),
+                file_path=None,
             )
             documents.append(doc)
 
@@ -170,7 +158,7 @@ class DocumentsAPI(ResourceAPI):
         Returns:
             The updated document model.
         """
-        from extralit._models._documents import DocumentModel
+        from extralit._models._document import DocumentModel
 
         if not model.id:
             raise ValueError("Document ID is required for updates")
@@ -197,6 +185,8 @@ class DocumentsAPI(ResourceAPI):
             url=doc_data.get("url"),
             pmid=doc_data.get("pmid"),
             doi=doc_data.get("doi"),
+            metadata=doc_data.get("metadata"),
             inserted_at=doc_data.get("inserted_at"),
             updated_at=doc_data.get("updated_at"),
+            file_path=None,
         )

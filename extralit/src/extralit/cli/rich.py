@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, List, Optional, Union
 import traceback
-
+from typing import TYPE_CHECKING, Optional, Union
 
 from rich.console import Console, RenderableType
 from rich.panel import Panel
@@ -22,9 +21,9 @@ from rich.table import Table
 from rich.text import Text
 
 if TYPE_CHECKING:
-    from extralit._resource import Resource
-    from extralit._models._documents import Document
     from extralit._models._files import ObjectMetadata
+    from extralit._resource import Resource
+    from extralit.client.resources import Documents
 
     try:
         import pandas as pd
@@ -113,8 +112,8 @@ def console_table_to_pandas_df(table: Table) -> "pd.DataFrame":
 
 
 def print_rich_table(
-    resources: List[Union["Resource", "pa.DataFrameSchema", "ObjectMetadata", "Document"]],
-    columns: Optional[List[str]] = None,
+    resources: list[Union["Resource", "pa.DataFrameSchema", "ObjectMetadata", "Documents"]],
+    columns: Optional[list[str]] = None,
     title: Optional[str] = None,
     return_table: bool = False,
 ) -> Optional[Table]:
@@ -223,7 +222,6 @@ def print_rich_table(
                 "PMID": lambda r: r.pmid,
                 "DOI": lambda r: r.doi,
                 "Created": lambda r: r.inserted_at.isoformat(sep=" ") if r.inserted_at else "",
-                "Updated": lambda r: r.updated_at.isoformat(sep=" ") if r.updated_at else "",
             },
             "styles": {
                 "ID": "cyan",
@@ -232,7 +230,6 @@ def print_rich_table(
                 "PMID": "yellow",
                 "DOI": "magenta",
                 "Created": "blue",
-                "Updated": "blue",
             },
         },
         "DataFrameSchema": {

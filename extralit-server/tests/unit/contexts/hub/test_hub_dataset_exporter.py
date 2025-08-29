@@ -12,31 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from functools import wraps
 import os
-import pytest
-
-from PIL import Image
+from collections.abc import Generator
+from functools import wraps
 from uuid import uuid4
-from typing import Generator
+
+import pytest
+from datasets import get_dataset_config_names, get_dataset_split_names, load_dataset
 from huggingface_hub import HfApi
 from huggingface_hub.errors import HfHubHTTPError
-from datasets import load_dataset, get_dataset_config_names, get_dataset_split_names
+from PIL import Image
 from requests.models import HTTPError
 
 from extralit_server.contexts import hub
 from extralit_server.contexts.hub import HubDatasetExporter
-from extralit_server.enums import DatasetStatus, FieldType, QuestionType, ResponseStatus, MetadataPropertyType
-
+from extralit_server.enums import DatasetStatus, FieldType, MetadataPropertyType, QuestionType, ResponseStatus
 from tests.database import SyncTestSession
 from tests.factories import (
+    AnnotatorSyncFactory,
     DatasetSyncFactory,
     FieldSyncFactory,
+    MetadataPropertySyncFactory,
     QuestionSyncFactory,
     RecordSyncFactory,
     ResponseSyncFactory,
-    AnnotatorSyncFactory,
-    MetadataPropertySyncFactory,
     SuggestionSyncFactory,
     VectorSettingsSyncFactory,
     VectorSyncFactory,
@@ -114,7 +113,7 @@ class TestHubDatasetExporter:
 
         exported_dataset = load_dataset(path=hf_dataset_name, name="default", split="train")
 
-        assert hf_api.dataset_info(hf_dataset_name).private == False
+        assert not hf_api.dataset_info(hf_dataset_name).private
         assert exported_dataset[0] == {
             "id": record.external_id,
             "status": record.status,
@@ -189,7 +188,7 @@ class TestHubDatasetExporter:
             token=HF_TOKEN,
         )
 
-        assert hf_api.dataset_info(hf_dataset_name).private == True
+        assert hf_api.dataset_info(hf_dataset_name).private
 
     @pytest.mark.skip(reason="Skipping all tests in this file")
     @skip_on(HTTPError, reason="Skipping due to HF 429 Client Error: Too Many Requests")
@@ -1406,4 +1405,4 @@ class TestHubDatasetExporter:
 
         assert exported_dataset[0]["vector.vector-a"] == [1.0, 2.0, 3.0]
         assert exported_dataset[0]["vector.vector-b"] == [3.14, 3.15]
-        assert exported_dataset[0]["vector.vector-c"] == None
+        assert exported_dataset[0]["vector.vector-c"] is None

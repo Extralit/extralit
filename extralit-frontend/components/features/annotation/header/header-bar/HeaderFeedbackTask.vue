@@ -19,12 +19,12 @@
         <slot name="topbar-buttons" />
       </div>
 
-      <user-avatar-tooltip />
+      <UserAvatarTooltip />
     </div>
   </BaseTopbarBrand>
 </template>
 
-<script>
+<script lang="ts">
 import { useRoutes } from "~/v1/infrastructure/services";
 
 export default {

@@ -12,17 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Optional, Union
-from uuid import UUID
 import uuid
+from typing import Annotated, Any
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 import extralit_server.search_engine as search_engine
+from extralit_server.api.handlers.v1.workspaces import list_workspace_users
 from extralit_server.api.policies.v1 import DatasetPolicy, RecordPolicy, authorize, is_authorized
 from extralit_server.api.schemas.v1.records import (
+    SEARCH_MAX_SIMILARITY_SEARCH_RESULT,
     Filters,
     FilterScope,
     MetadataFilterScope,
@@ -35,9 +37,7 @@ from extralit_server.api.schemas.v1.records import (
     SearchRecordsQuery,
     SearchRecordsResult,
     TermsFilter,
-    SEARCH_MAX_SIMILARITY_SEARCH_RESULT,
 )
-from extralit_server.api.schemas.v1.users import Users as UsersSchema
 from extralit_server.api.schemas.v1.records import Record as RecordSchema
 from extralit_server.api.schemas.v1.responses import ResponseFilterScope
 from extralit_server.api.schemas.v1.suggestions import (
@@ -46,8 +46,8 @@ from extralit_server.api.schemas.v1.suggestions import (
     SearchSuggestionsOptions,
     SuggestionFilterScope,
 )
-from extralit_server.api.handlers.v1.workspaces import list_workspace_users
-from extralit_server.contexts import datasets, search, records
+from extralit_server.api.schemas.v1.users import Users as UsersSchema
+from extralit_server.contexts import datasets, records, search
 from extralit_server.database import get_async_db
 from extralit_server.enums import RecordSortField, SuggestionType
 from extralit_server.errors.future import MissingVectorError, NotFoundError, UnprocessableEntityError
@@ -55,13 +55,13 @@ from extralit_server.errors.future.base_errors import MISSING_VECTOR_ERROR_CODE
 from extralit_server.models import (
     Dataset,
     Field,
+    Question,
     Record,
+    Response,
+    ResponseStatus,
+    Suggestion,
     User,
     VectorSettings,
-    Response,
-    Question,
-    Suggestion,
-    ResponseStatus,
 )
 from extralit_server.search_engine import (
     AndFilter,
@@ -85,7 +85,7 @@ parse_record_include_param = parse_query_param(
 router = APIRouter()
 
 
-def _to_search_engine_filter_scope(scope: FilterScope, user: Optional[User]) -> search_engine.FilterScope:
+def _to_search_engine_filter_scope(scope: FilterScope, user: User | None) -> search_engine.FilterScope:
     if isinstance(scope, RecordFilterScope):
         return search_engine.RecordFilterScope(property=scope.property)
     elif isinstance(scope, MetadataFilterScope):
@@ -98,7 +98,7 @@ def _to_search_engine_filter_scope(scope: FilterScope, user: Optional[User]) -> 
         raise Exception(f"Unknown scope type {type(scope)}")
 
 
-def _to_search_engine_filter(filters: Filters, user: Optional[User]) -> search_engine.Filter:
+def _to_search_engine_filter(filters: Filters, user: User | None) -> search_engine.Filter:
     engine_filters = []
 
     for filter in filters.and_:
@@ -116,7 +116,7 @@ def _to_search_engine_filter(filters: Filters, user: Optional[User]) -> search_e
     return AndFilter(filters=engine_filters)
 
 
-def _to_search_engine_sort(sort: List[Order], user: Optional[User]) -> List[search_engine.Order]:
+def _to_search_engine_sort(sort: list[Order], user: User | None) -> list[search_engine.Order]:
     engine_sort = []
 
     for order in sort:
@@ -132,8 +132,8 @@ async def _get_search_responses(
     dataset: Dataset,
     limit: int,
     offset: int,
-    search_records_query: Optional[SearchRecordsQuery] = None,
-    user: Optional[User] = None,
+    search_records_query: SearchRecordsQuery | None = None,
+    user: User | None = None,
 ) -> "SearchResponses":
     search_records_query = search_records_query or SearchRecordsQuery()
 
@@ -222,7 +222,7 @@ async def _validate_search_records_query(db: "AsyncSession", query: SearchRecord
 
 
 def add_suggestions_from_responses(
-    records: List[Record],
+    records: list[Record],
     current_user: User,
     workspace_users: UsersSchema,
     dataset: Dataset,
@@ -253,9 +253,9 @@ def add_suggestions_from_responses(
 def generate_suggestions_from_response(
     response: Response,
     current_user: User,
-    workspace_users_id2name: Dict[UUID, str],
-    questions_name_map: Dict[str, Question],
-) -> List[Suggestion]:
+    workspace_users_id2name: dict[UUID, str],
+    questions_name_map: dict[str, Question],
+) -> list[Suggestion]:
     suggestions = []
     if response.user_id == current_user.id or response.status == ResponseStatus.discarded:
         return suggestions
@@ -283,11 +283,11 @@ def generate_suggestions_from_response(
 @router.get("/datasets/{dataset_id}/records", response_model=Records, response_model_exclude_unset=True)
 async def list_dataset_records(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     dataset_id: UUID,
-    include: Optional[RecordIncludeParam] = Depends(parse_record_include_param),
+    include: Annotated[RecordIncludeParam | None, Depends(parse_record_include_param)],
     offset: int = 0,
-    limit: int = Query(default=LIST_DATASET_RECORDS_LIMIT_DEFAULT, ge=1, le=LIST_DATASET_RECORDS_LIMIT_LE),
+    limit: Annotated[int, Query(ge=1, le=LIST_DATASET_RECORDS_LIMIT_LE)] = LIST_DATASET_RECORDS_LIMIT_DEFAULT,
     current_user: User = Security(auth.get_current_user),
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
@@ -302,13 +302,13 @@ async def list_dataset_records(
         workspace_user_ids = None
 
     include_args = (
-        dict(
-            with_responses=include.with_responses,
-            with_suggestions=include.with_suggestions,
-            with_vectors=include.with_all_vectors or include.vectors,
-            with_response_suggestions=include.with_response_suggestions,
-            workspace_user_ids=workspace_user_ids,
-        )
+        {
+            "with_responses": include.with_responses,
+            "with_suggestions": include.with_suggestions,
+            "with_vectors": include.with_all_vectors or include.vectors,
+            "with_response_suggestions": include.with_response_suggestions,
+            "workspace_user_ids": workspace_user_ids,
+        }
         if include
         else {}
     )
@@ -327,11 +327,11 @@ async def list_dataset_records(
 @router.delete("/datasets/{dataset_id}/records", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_dataset_records(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     dataset_id: UUID,
-    current_user: User = Security(auth.get_current_user),
-    ids: str = Query(..., description="A comma separated list with the IDs of the records to be removed"),
+    current_user: Annotated[User, Security(auth.get_current_user)],
+    ids: Annotated[str, Query(description="A comma separated list with the IDs of the records to be removed")],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -357,14 +357,14 @@ async def delete_dataset_records(
 )
 async def search_current_user_dataset_records(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
-    telemetry_client: TelemetryClient = Depends(get_telemetry_client),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
+    telemetry_client: Annotated[TelemetryClient, Depends(get_telemetry_client)],
     dataset_id: UUID,
     body: SearchRecordsQuery,
-    include: Optional[RecordIncludeParam] = Depends(parse_record_include_param),
-    offset: int = Query(0, ge=0),
-    limit: int = Query(default=LIST_DATASET_RECORDS_LIMIT_DEFAULT, ge=1, le=LIST_DATASET_RECORDS_LIMIT_LE),
+    include: Annotated[RecordIncludeParam | None, Depends(parse_record_include_param)],
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=LIST_DATASET_RECORDS_LIMIT_LE)] = LIST_DATASET_RECORDS_LIMIT_DEFAULT,
     current_user: User = Security(auth.get_current_user),
 ):
     dataset = await Dataset.get_or_raise(
@@ -399,7 +399,7 @@ async def search_current_user_dataset_records(
         user=current_user,
     )
 
-    record_id_score_map: Dict[UUID, Dict[str, Union[float, SearchRecord, None]]] = {
+    record_id_score_map: dict[UUID, dict[str, float | SearchRecord | None]] = {
         response.record_id: {"query_score": response.score, "search_record": None}
         for response in search_responses.items
     }
@@ -439,13 +439,13 @@ async def search_current_user_dataset_records(
 )
 async def search_dataset_records(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     dataset_id: UUID,
     body: SearchRecordsQuery,
-    include: Optional[RecordIncludeParam] = Depends(parse_record_include_param),
-    offset: int = Query(0, ge=0),
-    limit: int = Query(default=LIST_DATASET_RECORDS_LIMIT_DEFAULT, ge=1, le=LIST_DATASET_RECORDS_LIMIT_LE),
+    include: Annotated[RecordIncludeParam | None, Depends(parse_record_include_param)],
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=LIST_DATASET_RECORDS_LIMIT_LE)] = LIST_DATASET_RECORDS_LIMIT_DEFAULT,
     current_user: User = Security(auth.get_current_user),
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id, options=[selectinload(Dataset.fields)])
@@ -494,9 +494,9 @@ async def search_dataset_records(
 )
 async def list_dataset_records_search_suggestions_options(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     dataset_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -515,7 +515,7 @@ async def list_dataset_records_search_suggestions_options(
     )
 
 
-async def _filter_record_metadata_for_user(record: Record, user: User) -> Optional[Dict[str, Any]]:
+async def _filter_record_metadata_for_user(record: Record, user: User) -> dict[str, Any] | None:
     if record.metadata_ is None:
         return None
 

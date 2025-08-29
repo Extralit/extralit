@@ -16,8 +16,8 @@ import uuid
 
 import pytest
 
-from extralit import UserResponse, Response, Dataset, Workspace, Record
-from extralit._models import UserResponseModel, ResponseStatus
+from extralit import Dataset, Record, Response, UserResponse, Workspace
+from extralit._models import ResponseStatus, UserResponseModel
 
 
 class TestResponses:

@@ -19,7 +19,7 @@ Thisodule providebackground jobs for data from different sources:
 - ImportHistory: Import data from previously uploaded files stored in ImportHistory
 - Future: Additional import sources can be added here
 
-The jobs use the same HubDatasetMapping schema for consistency with existing Hub imports.
+The jobs use the same DatasetMapping schema for consistency with existing Hub imports.
 """
 
 """
@@ -29,24 +29,24 @@ This module provides background jobs for importing data from ImportHistory recor
 reusing the same mapping and processing infrastructure as HuggingFace Hub imports.
 """
 
+from typing import Any
 from uuid import UUID
-from typing import Any, Dict, List
 
 from rq import Retry
 from rq.decorators import job
-from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from extralit_server.models import Dataset, ImportHistory
-from extralit_server.settings import settings
-from extralit_server.database import AsyncSessionLocal
-from extralit_server.search_engine.base import SearchEngine
-from extralit_server.api.schemas.v1.datasets import HubDatasetMapping
+from extralit_server.api.schemas.v1.datasets import DatasetMapping
 from extralit_server.api.schemas.v1.records import RecordUpsert as RecordUpsertSchema
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert as RecordsBulkUpsertSchema
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
-from extralit_server.bulk.records_bulk import UpsertRecordsBulk
-from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED
+from extralit_server.contexts.records_bulk import UpsertRecordsBulk
+from extralit_server.database import AsyncSessionLocal
+from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
+from extralit_server.models import Dataset, ImportHistory
+from extralit_server.search_engine.base import SearchEngine
+from extralit_server.settings import settings
 
 BATCH_SIZE = 100
 
@@ -54,7 +54,7 @@ BATCH_SIZE = 100
 class ImportHistoryDataset:
     """Adapter class to process ImportHistory data similar to HubDataset"""
 
-    def __init__(self, import_history: ImportHistory, mapping: HubDatasetMapping):
+    def __init__(self, import_history: ImportHistory, mapping: DatasetMapping):
         self.import_history = import_history
         self.mapping = mapping
         self.data = import_history.data.get("data", [])
@@ -76,7 +76,7 @@ class ImportHistoryDataset:
             await self._import_batch_to(db, search_engine, batch, dataset)
 
     async def _import_batch_to(
-        self, db: AsyncSession, search_engine: SearchEngine, batch: List[Dict[str, Any]], dataset: Dataset
+        self, db: AsyncSession, search_engine: SearchEngine, batch: list[dict[str, Any]], dataset: Dataset
     ) -> None:
         items = []
         for row in batch:
@@ -88,7 +88,7 @@ class ImportHistoryDataset:
             raise_on_error=True,
         )
 
-    def _row_to_record_schema(self, row: Dict[str, Any], dataset: Dataset) -> RecordUpsertSchema:
+    def _row_to_record_schema(self, row: dict[str, Any], dataset: Dataset) -> RecordUpsertSchema:
         return RecordUpsertSchema(
             id=None,
             external_id=self._row_external_id(row),
@@ -99,13 +99,24 @@ class ImportHistoryDataset:
             vectors=None,
         )
 
-    def _row_external_id(self, row: Dict[str, Any]) -> str:
-        if not self.mapping.external_id:
-            return f"import_history_{self.import_history.id}_{self._next_row_idx()}"
+    def _row_external_id(self, row: dict[str, Any]) -> str:
+        # Try to create a meaningful external_id from metadata fields, typically "reference"
+        if row.get("reference"):
+            return str(row["reference"])
 
-        return str(row.get(self.mapping.external_id, f"import_history_{self.import_history.id}_{self._next_row_idx()}"))
+        # Create composite key from multiple metadata fields if available
+        key_parts = []
+        for mapping_metadata in self.mapping.metadata or []:
+            if row.get(mapping_metadata.source):
+                key_parts.append(f"{mapping_metadata.source}_{row[mapping_metadata.source]}")
 
-    def _row_fields(self, row: Dict[str, Any], dataset: Dataset) -> Dict[str, Any]:
+        if key_parts:
+            return "_".join(key_parts)
+
+        # Fallback to sequential ID when no meaningful metadata available
+        return f"import_history_{self.import_history.id}_{self._next_row_idx()}"
+
+    def _row_fields(self, row: dict[str, Any], dataset: Dataset) -> dict[str, Any]:
         fields = {}
         for mapping_field in self.mapping.fields:
             value = row.get(mapping_field.source)
@@ -120,7 +131,7 @@ class ImportHistoryDataset:
 
         return fields
 
-    def _row_metadata(self, row: Dict[str, Any], dataset: Dataset) -> Dict[str, Any]:
+    def _row_metadata(self, row: dict[str, Any], dataset: Dataset) -> dict[str, Any]:
         metadata = {}
         for mapping_metadata in self.mapping.metadata or []:
             value = row.get(mapping_metadata.source)
@@ -132,7 +143,7 @@ class ImportHistoryDataset:
 
         return metadata
 
-    def _row_suggestions(self, row: Dict[str, Any], dataset: Dataset) -> List[SuggestionCreate]:
+    def _row_suggestions(self, row: dict[str, Any], dataset: Dataset) -> list[SuggestionCreate]:
         suggestions = []
         for mapping_suggestion in self.mapping.suggestions or []:
             value = row.get(mapping_suggestion.source)
@@ -165,7 +176,7 @@ class ImportHistoryDataset:
         return suggestions
 
 
-@job(DEFAULT_QUEUE, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
+@job(DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=JOB_TIMEOUT_DISABLED, retry=Retry(max=3))
 async def import_dataset_from_import_history_job(history_id: UUID, dataset_id: UUID, mapping: dict) -> None:
     """
     Import dataset records from ImportHistory data.
@@ -191,6 +202,16 @@ async def import_dataset_from_import_history_job(history_id: UUID, dataset_id: U
         )
 
         async with SearchEngine.get_by_name(settings.search_engine) as search_engine:
-            parsed_mapping = HubDatasetMapping.model_validate(mapping)
+            # Add source_id provenance to the mapping
+            mapping_with_provenance = {**mapping}
+            mapping_with_provenance["source_id"] = f"import:{history_id}"
+            mapping_with_provenance["target_id"] = None  # Set to None for incoming datasets
+
+            parsed_mapping = DatasetMapping.model_validate(mapping_with_provenance)
+
+            # Store the mapping with provenance in dataset metadata for persistence
+            dataset.metadata_ = dataset.metadata_ or {}
+            dataset.metadata_["mapping"] = parsed_mapping.model_dump()
+            await dataset.save(db)
 
             await ImportHistoryDataset(import_history, parsed_mapping).import_to(db, search_engine, dataset)

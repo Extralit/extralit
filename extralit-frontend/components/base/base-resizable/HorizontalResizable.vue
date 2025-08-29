@@ -4,10 +4,10 @@
       <slot name="up" />
     </div>
 
-    <div class="resizable-h__bar" ref="resizableBar">
+    <div ref="resizableBar" class="resizable-h__bar">
       <div class="resizable-h__bar__inner" />
     </div>
-    <div class="resizable-h__down" v-if="!collapsable">
+    <div v-if="!collapsable" class="resizable-h__down">
       <slot name="down" />
     </div>
     <BaseCollapsablePanel
@@ -97,8 +97,8 @@ export default {
 
   mounted() {
     this.resizer = this.$refs.resizableBar;
-    this.upSide = this.resizer.previousElementSibling;
-    this.downSide = this.resizer.nextElementSibling;
+    this.upSide = this.resizer?.previousElementSibling;
+    this.downSide = this.resizer?.nextElementSibling;
 
     this.limitElementHeight(this.upSide);
     if (!this.collapsable) {
@@ -125,7 +125,7 @@ export default {
     }
   },
   destroyed() {
-    this.resizer.removeEventListener(EVENT.MOUSE_DOWN, this.mouseDownHandler);
+    this.resizer?.removeEventListener(EVENT.MOUSE_DOWN, this.mouseDownHandler);
   },
   methods: {
     savePosition() {},

@@ -14,8 +14,6 @@
 
 import warnings
 
-from extralit.cli.typer_ext import ExtralitTyper
-
 # Import all CLI modules that will be registered with the app
 from extralit.cli import (
     datasets,
@@ -29,8 +27,10 @@ from extralit.cli import (
     training,
     users,
     whoami,
+    workflows,
     workspaces,
 )
+from extralit.cli.typer_ext import ExtralitTyper
 
 warnings.simplefilter("ignore", UserWarning)
 
@@ -40,8 +40,10 @@ app = ExtralitTyper(help="Extralit CLI", no_args_is_help=True)
 @app.error_handler(PermissionError)
 def handler_permission_error(e: PermissionError) -> None:
     import sys
-    from extralit.cli.rich import get_themed_panel
+
     from rich.console import Console
+
+    from extralit.cli.rich import get_themed_panel
 
     panel = get_themed_panel(
         "Logged in user doesn't have enough permissions to execute this command",
@@ -66,6 +68,7 @@ def register_subcommands():
     app.add_typer(training.app, name="training")
     app.add_typer(users.app, name="users")
     app.add_typer(whoami.app, name="whoami")
+    app.add_typer(workflows.app, name="workflows")
     app.add_typer(workspaces.app, name="workspaces")
 
 

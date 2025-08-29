@@ -1,22 +1,23 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Set, TypeVar, Union
+from typing import TYPE_CHECKING, Any, TypeVar
 from uuid import UUID
 
-from sqlalchemy import select, func, sql
+from pydantic import BaseModel
+from sqlalchemy import func, select, sql
 from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
@@ -27,7 +28,6 @@ from sqlalchemy.sql.base import ExecutableOption
 from typing_extensions import Self
 
 from extralit_server.errors.future import NotFoundError
-from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import InstrumentedAttribute
@@ -43,14 +43,14 @@ _INSERT_FUNC = {
 }
 
 
-def _schema_or_kwargs(schema: Union[Schema, None], values: Dict[str, Any]) -> Dict[str, Any]:
+def _schema_or_kwargs(schema: Schema | None, values: dict[str, Any]) -> dict[str, Any]:
     if schema:
         return schema.model_dump()
     return values
 
 
 class CRUDMixin:
-    __upsertable_columns__: Union[Set[str], None] = None
+    __upsertable_columns__: set[str] | None = None
 
     def fill(self, replace_dict: bool = False, **kwargs: Any) -> Self:
         for key, value in kwargs.items():
@@ -67,7 +67,7 @@ class CRUDMixin:
 
     @classmethod
     async def create(
-        cls, db: AsyncSession, schema: Union[Schema, None] = None, autocommit: bool = True, **kwargs: Any
+        cls, db: AsyncSession, schema: Schema | None = None, autocommit: bool = True, **kwargs: Any
     ) -> Self:
         _values = _schema_or_kwargs(schema, kwargs)
         instance = cls()
@@ -75,11 +75,15 @@ class CRUDMixin:
         return await instance.save(db, autocommit)
 
     @classmethod
-    async def get(cls, db: AsyncSession, id: UUID, options: List[ExecutableOption] = []) -> Union[Self, None]:
+    async def get(cls, db: AsyncSession, id: UUID, options: list[ExecutableOption] | None = None) -> Self | None:
+        if options is None:
+            options = []
         return (await db.execute(select(cls).filter_by(id=id).options(*options))).scalar_one_or_none()
 
     @classmethod
-    async def get_or_raise(cls, db: AsyncSession, id: UUID, options: List[ExecutableOption] = []) -> Self:
+    async def get_or_raise(cls, db: AsyncSession, id: UUID, options: list[ExecutableOption] | None = None) -> Self:
+        if options is None:
+            options = []
         instance = await cls.get(db, id, options)
         if instance is not None:
             return instance
@@ -87,7 +91,7 @@ class CRUDMixin:
         raise NotFoundError(f"{cls.__name__} with id `{id}` not found")
 
     @classmethod
-    async def get_by(cls, db: AsyncSession, **conditions) -> Union[Self, None]:
+    async def get_by(cls, db: AsyncSession, **conditions) -> Self | None:
         return (await db.execute(select(cls).filter_by(**conditions))).scalar_one_or_none()
 
     @classmethod
@@ -107,7 +111,7 @@ class CRUDMixin:
     async def update(
         self,
         db: AsyncSession,
-        schema: Union[Schema, None] = None,
+        schema: Schema | None = None,
         replace_dict: bool = False,
         autocommit: bool = True,
         **kwargs: Any,
@@ -120,7 +124,7 @@ class CRUDMixin:
     async def update_many(
         cls,
         db: AsyncSession,
-        objects: List[Dict[str, Any]],
+        objects: list[dict[str, Any]],
         autocommit: bool = True,
     ) -> None:
         if len(objects) == 0:
@@ -135,10 +139,10 @@ class CRUDMixin:
     async def upsert_many(
         cls,
         db: AsyncSession,
-        objects: List[Union[Schema, dict]],
-        constraints: List["InstrumentedAttribute[Any]"],
+        objects: list[Schema | dict],
+        constraints: list["InstrumentedAttribute[Any]"],
         autocommit: bool = True,
-    ) -> List[Self]:
+    ) -> list[Self]:
         if len(objects) == 0:
             raise ValueError("Cannot upsert empty list of objects")
 
@@ -169,8 +173,8 @@ class CRUDMixin:
     async def upsert(
         cls,
         db: AsyncSession,
-        schema: Union[Schema, dict],
-        constraints: List["InstrumentedAttribute[Any]"],
+        schema: Schema | dict,
+        constraints: list["InstrumentedAttribute[Any]"],
         autocommit: bool = True,
     ) -> Self:
         upserted = await cls.upsert_many(db, [schema], constraints, autocommit)
@@ -185,8 +189,8 @@ class CRUDMixin:
 
     @classmethod
     async def delete_many(
-        cls, db: AsyncSession, conditions: List["BinaryExpression"], autocommit: bool = True
-    ) -> List[Self]:
+        cls, db: AsyncSession, conditions: list["BinaryExpression"], autocommit: bool = True
+    ) -> list[Self]:
         delete_stmt = sql.delete(cls).where(*conditions).returning(cls)
         result = await db.execute(delete_stmt)
         if autocommit:

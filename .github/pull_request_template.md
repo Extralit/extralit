@@ -1,4 +1,4 @@
-<!-- 
+<!--
 PR Title format: [Type] Short description
 Examples:
 - [Fix] Resolve authentication bug
@@ -10,9 +10,9 @@ Examples:
 
 ## Description
 
-<!-- 
-Please do not leave this blank 
-This PR [adds/removes/fixes/replaces] the [feature/bug/etc]. 
+<!--
+Please do not leave this blank
+This PR [adds/removes/fixes/replaces] the [feature/bug/etc].
 -->
 
 ## Related Tickets & Documents
@@ -28,7 +28,7 @@ Closes #<!-- Add issue number here -->
 - [ ] Documentation Update
 
 ## Steps to QA
-<!-- 
+<!--
 Please provide some steps for the reviewer to test your change. If you have wrote tests, you can mention that here instead.
 
 1. Click a link
@@ -49,7 +49,7 @@ Please provide some steps for the reviewer to test your change. If you have wrot
 - [ ] No, and this is why: _please replace this line with details on why tests
       have not been included_
 - [ ] I need help with writing docs
-  
+
 ## Checklist
 - [ ] I have added relevant notes to the CHANGELOG.md file (See https://keepachangelog.com/)
 

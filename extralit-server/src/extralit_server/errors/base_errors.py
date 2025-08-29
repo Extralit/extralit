@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional, Type, Union
+from typing import Any
 
 import pydantic
 from fastapi.exceptions import RequestValidationError
@@ -60,7 +60,7 @@ class ValidationError(ServerError):
 
     HTTP_STATUS = status.HTTP_422_UNPROCESSABLE_ENTITY
 
-    def __init__(self, error: Union[pydantic.ValidationError, RequestValidationError]):
+    def __init__(self, error: pydantic.ValidationError | RequestValidationError):
         # Removing ctx and input from errors since they are new values.
         errors = [
             {
@@ -94,7 +94,7 @@ class ForbiddenOperationError(ServerError):
 
     HTTP_STATUS = status.HTTP_403_FORBIDDEN
 
-    def __init__(self, message: Optional[str] = None):
+    def __init__(self, message: str | None = None):
         self.detail = message or "Operation not allowed"
 
 
@@ -103,7 +103,7 @@ class UnauthorizedError(ServerError):
 
     HTTP_STATUS = status.HTTP_401_UNAUTHORIZED
 
-    def __init__(self, message: Optional[str] = None):
+    def __init__(self, message: str | None = None):
         self.detail = message or "Could not validate credentials"
 
 
@@ -154,7 +154,7 @@ class EntityAlreadyExistsError(ServerError):
 
     HTTP_STATUS = status.HTTP_409_CONFLICT
 
-    def __init__(self, name: str, type: Type, workspace: Optional[str] = None):
+    def __init__(self, name: str, type: type, workspace: str | None = None):
         self.name = name
         self.type = type.__name__
         self.workspace = workspace
@@ -165,13 +165,13 @@ class EntityNotFoundError(ServerError):
 
     HTTP_STATUS = status.HTTP_404_NOT_FOUND
 
-    def __init__(self, name: str, type: Union[Type, str]):
+    def __init__(self, name: str, type: type | str):
         self.name = name  # TODO: rename to id
         self.type = type if isinstance(type, str) else type.__name__
 
 
 class RecordNotFound(EntityNotFoundError):
-    def __init__(self, dataset: str, id: str, type: Union[Type, str]):
+    def __init__(self, dataset: str, id: str, type: type | str):
         self.dataset = dataset
         self.id = id
 

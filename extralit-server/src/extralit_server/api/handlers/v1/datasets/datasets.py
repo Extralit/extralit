@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Optional
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Security, status, Query
+from fastapi import APIRouter, Depends, Query, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from extralit_server.api.policies.v1 import DatasetPolicy, MetadataPropertyPolicy, authorize, is_authorized
 from extralit_server.api.schemas.v1.datasets import (
-    Dataset as DatasetSchema,
-)
-from extralit_server.api.schemas.v1.datasets import (
+    CompatibleDatasetsRequest,
     DatasetCreate,
     DatasetMetrics,
     DatasetProgress,
@@ -34,18 +32,21 @@ from extralit_server.api.schemas.v1.datasets import (
     ImportHistoryDataset,
     UsersProgress,
 )
+from extralit_server.api.schemas.v1.datasets import (
+    Dataset as DatasetSchema,
+)
 from extralit_server.api.schemas.v1.fields import Field, FieldCreate, Fields
+from extralit_server.api.schemas.v1.jobs import Job as JobSchema
 from extralit_server.api.schemas.v1.metadata_properties import (
     MetadataProperties,
     MetadataProperty,
     MetadataPropertyCreate,
 )
-from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.api.schemas.v1.vector_settings import VectorSettings, VectorSettingsCreate, VectorsSettings
-from extralit_server.api.schemas.v1.jobs import Job as JobSchema
 from extralit_server.contexts import datasets
 from extralit_server.database import get_async_db
 from extralit_server.enums import DatasetStatus
+from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.jobs import hub_jobs, import_jobs
 from extralit_server.models import Dataset, User
 from extralit_server.search_engine import (
@@ -58,8 +59,8 @@ router = APIRouter()
 
 
 async def _filter_metadata_properties_by_policy(
-    current_user: User, metadata_properties: List[MetadataProperty]
-) -> List[MetadataProperty]:
+    current_user: User, metadata_properties: list[MetadataProperty]
+) -> list[MetadataProperty]:
     filtered_metadata_properties = []
 
     for metadata_property in metadata_properties:
@@ -76,11 +77,11 @@ async def _filter_metadata_properties_by_policy(
 @router.get("/me/datasets", response_model=Datasets)
 async def list_current_user_datasets(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    current_user: User = Security(auth.get_current_user),
-    workspace_id: Optional[UUID] = Query(None, description="Filter by workspace_id"),
-    name: Optional[str] = Query(None, description="Filter by dataset name"),
-    status: Optional[DatasetStatus] = Query(None, description="Filter by dataset status"),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
+    workspace_id: Annotated[UUID | None, Query(description="Filter by workspace_id")] = None,
+    name: Annotated[str | None, Query(description="Filter by dataset name")] = None,
+    status: Annotated[DatasetStatus | None, Query(description="Filter by dataset status")] = None,
 ):
     await authorize(current_user, DatasetPolicy.list(workspace_id))
 
@@ -97,9 +98,35 @@ async def list_current_user_datasets(
     return Datasets(items=dataset_list)
 
 
+@router.post("/datasets/compatible", response_model=Datasets)
+async def list_compatible_datasets(
+    *,
+    request: CompatibleDatasetsRequest,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
+):
+    await authorize(current_user, DatasetPolicy.list(request.workspace_id))
+
+    filters = {
+        "workspace_id": request.workspace_id,
+        "status": DatasetStatus.ready,
+    }
+
+    dataset_list = await datasets.list_datasets(
+        db, user=current_user, **{k: v for k, v in filters.items() if v is not None}
+    )
+
+    all_datasets = Datasets(items=dataset_list)
+
+    return all_datasets.get_compatible_datasets(request.column_names)
+
+
 @router.get("/datasets/{dataset_id}/fields", response_model=Fields)
 async def list_dataset_fields(
-    *, db: AsyncSession = Depends(get_async_db), dataset_id: UUID, current_user: User = Security(auth.get_current_user)
+    *,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    dataset_id: UUID,
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id, options=[selectinload(Dataset.fields)])
 
@@ -110,7 +137,10 @@ async def list_dataset_fields(
 
 @router.get("/datasets/{dataset_id}/vectors-settings", response_model=VectorsSettings)
 async def list_dataset_vector_settings(
-    *, db: AsyncSession = Depends(get_async_db), dataset_id: UUID, current_user: User = Security(auth.get_current_user)
+    *,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    dataset_id: UUID,
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id, options=[selectinload(Dataset.vectors_settings)])
 
@@ -121,7 +151,10 @@ async def list_dataset_vector_settings(
 
 @router.get("/me/datasets/{dataset_id}/metadata-properties", response_model=MetadataProperties)
 async def list_current_user_dataset_metadata_properties(
-    *, db: AsyncSession = Depends(get_async_db), dataset_id: UUID, current_user: User = Security(auth.get_current_user)
+    *,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    dataset_id: UUID,
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id, options=[selectinload(Dataset.metadata_properties)])
 
@@ -136,7 +169,10 @@ async def list_current_user_dataset_metadata_properties(
 
 @router.get("/datasets/{dataset_id}", response_model=DatasetSchema)
 async def get_dataset(
-    *, db: AsyncSession = Depends(get_async_db), dataset_id: UUID, current_user: User = Security(auth.get_current_user)
+    *,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    dataset_id: UUID,
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -149,9 +185,9 @@ async def get_dataset(
 async def get_current_user_dataset_metrics(
     *,
     dataset_id: UUID,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
-    current_user: User = Security(auth.get_current_user),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -166,9 +202,9 @@ async def get_current_user_dataset_metrics(
 async def get_dataset_progress(
     *,
     dataset_id: UUID,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
-    current_user: User = Security(auth.get_current_user),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -183,8 +219,8 @@ async def get_dataset_progress(
 async def get_dataset_users_progress(
     *,
     dataset_id: UUID,
-    db: AsyncSession = Depends(get_async_db),
-    current_user: User = Security(auth.get_current_user),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -198,9 +234,9 @@ async def get_dataset_users_progress(
 @router.post("/datasets", status_code=status.HTTP_201_CREATED, response_model=DatasetSchema)
 async def create_dataset(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     dataset_create: DatasetCreate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     await authorize(current_user, DatasetPolicy.create(dataset_create.workspace_id))
 
@@ -210,10 +246,10 @@ async def create_dataset(
 @router.post("/datasets/{dataset_id}/fields", status_code=status.HTTP_201_CREATED, response_model=Field)
 async def create_dataset_field(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     dataset_id: UUID,
     field_create: FieldCreate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -227,11 +263,11 @@ async def create_dataset_field(
 )
 async def create_dataset_metadata_property(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     dataset_id: UUID,
     metadata_property_create: MetadataPropertyCreate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -245,11 +281,11 @@ async def create_dataset_metadata_property(
 )
 async def create_dataset_vector_settings(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     dataset_id: UUID,
     vector_settings_create: VectorSettingsCreate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -261,10 +297,10 @@ async def create_dataset_vector_settings(
 @router.put("/datasets/{dataset_id}/publish", response_model=DatasetSchema)
 async def publish_dataset(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     dataset_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ) -> Dataset:
     dataset = await Dataset.get_or_raise(
         db,
@@ -287,10 +323,10 @@ async def publish_dataset(
 @router.delete("/datasets/{dataset_id}", response_model=DatasetSchema)
 async def delete_dataset(
     *,
-    db: AsyncSession = Depends(get_async_db),
-    search_engine: SearchEngine = Depends(get_search_engine),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     dataset_id: UUID,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -302,10 +338,10 @@ async def delete_dataset(
 @router.patch("/datasets/{dataset_id}", response_model=DatasetSchema)
 async def update_dataset(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     dataset_id: UUID,
     dataset_update: DatasetUpdate,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -314,13 +350,13 @@ async def update_dataset(
     return await datasets.update_dataset(db, dataset, dataset_update.model_dump(exclude_unset=True))
 
 
-@router.post("/datasets/{dataset_id}/import", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
+@router.post("/datasets/{dataset_id}/import-hub", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
 async def import_dataset_from_hub(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     dataset_id: UUID,
     hub_dataset: HubDataset,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -337,13 +373,13 @@ async def import_dataset_from_hub(
     return JobSchema(id=job.id, status=job.get_status())
 
 
-@router.post("/datasets/{dataset_id}/import-history", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
+@router.post("/datasets/{dataset_id}/import", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
 async def import_dataset_from_import_history(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     dataset_id: UUID,
     import_history_dataset: ImportHistoryDataset,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 
@@ -361,10 +397,10 @@ async def import_dataset_from_import_history(
 @router.post("/datasets/{dataset_id}/export", status_code=status.HTTP_202_ACCEPTED, response_model=JobSchema)
 async def export_dataset_to_hub(
     *,
-    db: AsyncSession = Depends(get_async_db),
+    db: Annotated[AsyncSession, Depends(get_async_db)],
     dataset_id: UUID,
     hub_dataset: HubDatasetExport,
-    current_user: User = Security(auth.get_current_user),
+    current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
 

@@ -17,12 +17,10 @@ import os
 import warnings
 from collections import defaultdict
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, Any, Dict, Optional, Type, Union, Literal
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 from uuid import UUID
 
-from datasets import DatasetDict
-from datasets.data_files import EmptyDatasetError
-from PIL import Image
+import lazy_loader as lazy
 
 from extralit._exceptions import ImportDatasetError
 from extralit._exceptions._api import UnprocessableEntityError
@@ -34,10 +32,13 @@ from extralit.records._io._datasets import HFDatasetsIO
 from extralit.records._mapping import IngestedRecordMapper
 from extralit.responses import Response
 
+datasets = lazy.load("datasets")
+PIL = lazy.load("PIL")
+
 if TYPE_CHECKING:
     from datasets import Dataset as HFDataset
 
-    from extralit import Extralit, Dataset, Settings, Workspace
+    from extralit import Dataset, Extralit, Settings, Workspace
 
 
 class HubImportExportMixin(DiskImportExportMixin):
@@ -112,7 +113,7 @@ class HubImportExportMixin(DiskImportExportMixin):
 
     @classmethod
     def from_hub(
-        cls: Type["Dataset"],
+        cls: type["Dataset"],
         repo_id: str,
         *,
         name: Optional[str] = None,
@@ -142,9 +143,10 @@ class HubImportExportMixin(DiskImportExportMixin):
         Returns:
             A `Dataset` loaded from the Hugging Face Hub.
         """
-        from extralit.settings import Settings
-        from datasets import load_dataset
+        # load_dataset is accessed via lazy loaded datasets module
         from huggingface_hub import snapshot_download
+
+        from extralit.settings import Settings
 
         settings = settings or "ui"
 
@@ -194,16 +196,17 @@ class HubImportExportMixin(DiskImportExportMixin):
 
         if with_records:
             try:
-                hf_dataset = load_dataset(
+                hf_dataset = datasets.load_dataset(  # type: ignore
                     path=repo_id,
                     split=split,
                     name=subset,
                     **kwargs,
-                )  # type: ignore
+                )
                 hf_dataset = cls._get_dataset_split(hf_dataset=hf_dataset, split=split, **kwargs)
                 cls._log_dataset_records(hf_dataset=hf_dataset, dataset=dataset)
-            except EmptyDatasetError:
+            except datasets.data_files.EmptyDatasetError:  # type: ignore
                 warnings.warn(
+                    stacklevel=2,
                     message="Trying to load a dataset `with_records=True` but dataset does not contain any records.",
                     category=UserWarning,
                 )
@@ -236,8 +239,9 @@ class HubImportExportMixin(DiskImportExportMixin):
         my_user = dataset._client.me
         if len(unknown_user_ids) > 1:
             warnings.warn(
+                stacklevel=2,
                 message=f"""Found unknown user ids in dataset repo: {unknown_user_ids}.
-                    Assigning first response for each record to current user ({my_user.username}) and discarding the rest."""
+                    Assigning first response for each record to current user ({my_user.username}) and discarding the rest.""",
             )
         for unknown_user_id in unknown_user_ids:
             user_ids[unknown_user_id] = my_user.id
@@ -288,7 +292,7 @@ class HubImportExportMixin(DiskImportExportMixin):
             ) from e
 
     @staticmethod
-    def _get_dataset_split(hf_dataset: "HFDataset", split: Optional[str] = None, **kwargs: Dict) -> "HFDataset":
+    def _get_dataset_split(hf_dataset: "HFDataset", split: Optional[str] = None, **kwargs: dict) -> "HFDataset":
         """Get a single dataset from a Hugging Face dataset.
 
         Parameters:
@@ -298,18 +302,19 @@ class HubImportExportMixin(DiskImportExportMixin):
             HFDataset: The single dataset.
         """
 
-        if isinstance(hf_dataset, DatasetDict) and split is None:
+        if isinstance(hf_dataset, datasets.DatasetDict) and split is None:  # type: ignore
             split = next(iter(hf_dataset.keys()))
             if len(hf_dataset.keys()) > 1:
                 warnings.warn(
+                    stacklevel=2,
                     message=f"Multiple splits found in Hugging Face dataset. Using the first split: {split}. "
-                    f"Available splits are: {', '.join(hf_dataset.keys())}."
+                    f"Available splits are: {', '.join(hf_dataset.keys())}.",
                 )
             hf_dataset = hf_dataset[split]
         return hf_dataset
 
     @staticmethod
-    def _get_sample_hf_record(hf_dataset: "HFDataset") -> Dict:
+    def _get_sample_hf_record(hf_dataset: "HFDataset") -> dict:
         """Get a sample record from a Hugging Face dataset.
 
         Parameters:
@@ -326,7 +331,7 @@ class HubImportExportMixin(DiskImportExportMixin):
                     json.dumps(value)
                     sample_huggingface_record[key] = value
                 except TypeError:
-                    if isinstance(value, Image.Image):
+                    if isinstance(value, PIL.Image.Image):  # type: ignore
                         sample_huggingface_record[key] = pil_to_data_uri(value)
                     else:
                         sample_huggingface_record[key] = "Record value is not serializable"
@@ -334,10 +339,10 @@ class HubImportExportMixin(DiskImportExportMixin):
 
     @classmethod
     def _run_settings_ui(cls, repo_id: str, subset: str, split: str, client: Optional["Extralit"] = None) -> str:
-        from urllib.parse import quote_plus, urlencode
-        from extralit.client import Extralit
-
         import webbrowser
+        from urllib.parse import quote_plus, urlencode
+
+        from extralit.client import Extralit
 
         client = client or Extralit._get_default()
 
@@ -351,7 +356,6 @@ class HubImportExportMixin(DiskImportExportMixin):
         try:
             webbrowser.open(url, new=2, autoraise=True)
         except Exception as e:
-            warnings.warn(f"Error opening the URL in the browser: {e}")
-        finally:
-            warnings.warn(f"Open the following URL in your browser to configure the dataset: {url}")
-            return url
+            warnings.warn(f"Error opening the URL in the browser: {e}", stacklevel=2)
+        warnings.warn(f"Open the following URL in your browser to configure the dataset: {url}", stacklevel=2)
+        return url

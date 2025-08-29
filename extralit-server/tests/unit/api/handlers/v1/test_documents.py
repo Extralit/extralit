@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from unittest.mock import MagicMock, patch
+from uuid import uuid4
+
 import pytest
 from httpx import AsyncClient
-from unittest.mock import patch, MagicMock
-from uuid import uuid4
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from tests.factories import DocumentFactory, WorkspaceFactory, UserFactory, WorkspaceUserFactory
 
-from extralit_server.contexts.files import get_pdf_s3_object_path, get_s3_object_url
+from extralit_server.contexts.files import get_pdf_s3_object_path, get_proxy_document_url
 from extralit_server.models.database import Document
-from pydantic import BaseModel
+from tests.factories import DocumentFactory, UserFactory, WorkspaceFactory, WorkspaceUserFactory
 
 
 # Mock DocumentDeleteRequest since it's used in tests but might be missing from the current codebase
@@ -35,14 +36,14 @@ class DocumentDeleteRequest(BaseModel):
 async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
     workspace = await WorkspaceFactory.create_with_s3(name="test-workspace")
 
-    document_json = dict(
-        id=str(uuid4()),
-        reference="Test Document",
-        pmid="123456",
-        doi="10.1234/test.doi",
-        file_name="test.pdf",
-        workspace_id=str(workspace.id),
-    )
+    document_json = {
+        "id": str(uuid4()),
+        "reference": "Test Document",
+        "pmid": "123456",
+        "doi": "10.1234/test.doi",
+        "file_name": "test.pdf",
+        "workspace_id": str(workspace.id),
+    }
 
     # Mock the put_object function
     with patch("extralit_server.contexts.files.put_object") as mock_put_object:
@@ -62,7 +63,7 @@ async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owne
         result = await db.execute(select(Document))
         documents = result.scalars().all()
         object_path = get_pdf_s3_object_path(document_json["id"])
-        s3_url = get_s3_object_url(workspace.name, object_path)
+        s3_url = get_proxy_document_url(workspace.name, object_path)
         assert [document.url for document in documents] == [s3_url]
 
         # Verify that put_object was called
@@ -74,14 +75,14 @@ async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owne
 async def test_upload_duplicate_document(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
     workspace = await WorkspaceFactory.create_with_s3(name="test-workspace")
 
-    existing_document = dict(
-        id=str(uuid4()),
-        reference="Test Document",
-        pmid="123456",
-        doi="10.1234/test.doi",
-        file_name="test.pdf",
-        workspace_id=str(workspace.id),
-    )
+    existing_document = {
+        "id": str(uuid4()),
+        "reference": "Test Document",
+        "pmid": "123456",
+        "doi": "10.1234/test.doi",
+        "file_name": "test.pdf",
+        "workspace_id": str(workspace.id),
+    }
 
     # Mock the put_object function
     with (
@@ -101,14 +102,14 @@ async def test_upload_duplicate_document(async_client: AsyncClient, db: AsyncSes
         )
 
         # Attempt to upload a new document with the same pmid, url, doi, or id
-        update_document = dict(
-            id=upload_response.json(),
-            reference="Test Document",
-            pmid="123456",
-            doi="10.1234/test.doi",
-            file_name="test.pdf",
-            workspace_id=str(workspace.id),
-        )
+        update_document = {
+            "id": upload_response.json(),
+            "reference": "Test Document",
+            "pmid": "123456",
+            "doi": "10.1234/test.doi",
+            "file_name": "test.pdf",
+            "workspace_id": str(workspace.id),
+        }
 
         await async_client.post(
             "/api/v1/documents",
@@ -129,22 +130,90 @@ async def test_get_document_by_pmid(async_client: "AsyncClient", db: "AsyncSessi
     workspace = await WorkspaceFactory.create()
     document = await DocumentFactory.create(pmid="123456", workspace=workspace, workspace_id=workspace.id)
 
-    response = await async_client.get(f"/api/v1/documents/by-pmid/{document.pmid}", headers=owner_auth_header)
+    response = await async_client.get(
+        "/api/v1/documents",
+        params={"pmid": document.pmid, "workspace_id": str(workspace.id)},
+        headers=owner_auth_header,
+    )
 
     assert response.status_code == 200
-    assert response.json()["pmid"] == document.pmid
+    response_data = response.json()
+    assert isinstance(response_data, list)
+    assert len(response_data) == 1
+    assert response_data[0]["pmid"] == document.pmid
 
 
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="'coroutine' object has no attribute 'id'")
 async def test_get_document_by_id(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
-    document = await DocumentFactory.create()
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(workspace=workspace, workspace_id=workspace.id)
 
-    response = await async_client.get(f"/api/v1/documents/by-id/{document.id}", headers=owner_auth_header)
+    response = await async_client.get(
+        "/api/v1/documents",
+        params={"id": str(document.id), "workspace_id": str(workspace.id)},
+        headers=owner_auth_header,
+    )
 
     assert response.status_code == 200
-    response_json = response.json()
-    assert response_json["id"] == str(document.id)
+    response_data = response.json()
+    assert isinstance(response_data, list)
+    assert len(response_data) == 1
+    assert response_data[0]["id"] == str(document.id)
+
+
+@pytest.mark.asyncio
+async def test_get_document_by_doi(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(doi="10.1234/test.doi", workspace=workspace, workspace_id=workspace.id)
+
+    response = await async_client.get(
+        "/api/v1/documents", params={"doi": document.doi, "workspace_id": str(workspace.id)}, headers=owner_auth_header
+    )
+
+    assert response.status_code == 200
+    response_data = response.json()
+    assert isinstance(response_data, list)
+    assert len(response_data) == 1
+    assert response_data[0]["doi"] == document.doi
+
+
+@pytest.mark.asyncio
+async def test_get_document_by_reference(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(reference="test_ref_123", workspace=workspace, workspace_id=workspace.id)
+
+    response = await async_client.get(
+        "/api/v1/documents",
+        params={"reference": document.reference, "workspace_id": str(workspace.id)},
+        headers=owner_auth_header,
+    )
+
+    assert response.status_code == 200
+    response_data = response.json()
+    assert isinstance(response_data, list)
+    assert len(response_data) == 1
+    assert response_data[0]["reference"] == document.reference
+
+
+@pytest.mark.asyncio
+async def test_get_document_workspace_id_only(async_client: "AsyncClient", owner_auth_header: dict):
+    """Test that requesting documents with only workspace_id returns a 400 error."""
+    response = await async_client.get(
+        "/api/v1/documents", params={"workspace_id": "123e4567-e89b-12d3-a456-426614174000"}, headers=owner_auth_header
+    )
+
+    assert response.status_code == 400
+    assert "At least one of id, pmid, doi, or reference must be provided" in response.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_get_document_no_parameters(async_client: "AsyncClient", owner_auth_header: dict):
+    """Test that requesting documents without any parameters returns a 422 validation error."""
+    response = await async_client.get("/api/v1/documents", headers=owner_auth_header)
+
+    assert response.status_code == 422
+    # FastAPI validation error for missing required parameter workspace_id
 
 
 @pytest.mark.skip(reason="Document delete API is failing with 500 error")
@@ -181,7 +250,7 @@ async def test_delete_documents_by_id(async_client: AsyncClient, db: AsyncSessio
 async def test_list_documents(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
     workspace = await WorkspaceFactory.create()
     document_a = await DocumentFactory.create(workspace=workspace)
-    document_b = await DocumentFactory.create(workspace=workspace)
+    await DocumentFactory.create(workspace=workspace)
 
     response = await async_client.get(f"/api/v1/documents/workspace/{workspace.id}", headers=owner_auth_header)
 

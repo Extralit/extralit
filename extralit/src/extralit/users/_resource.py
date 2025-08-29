@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID
 
 from extralit._api import UsersAPI
-from extralit._models import UserModel, Role
+from extralit._models import Role, UserModel
 from extralit._resource import Resource
 
 if TYPE_CHECKING:

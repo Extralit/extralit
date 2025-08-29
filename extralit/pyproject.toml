@@ -23,6 +23,7 @@ dependencies = [
     "pillow>=9.5.0",
     "standardwebhooks>=1.0.0",
     "typer>=0.9.0",
+    "lazy-loader>=0.4",
 
     # for environment variables
     "python-dotenv~=1.1.0",
@@ -34,8 +35,8 @@ dependencies = [
     "pypandoc ~= 1.13",
     "beautifulsoup4 ~= 4.12.2",
     "pandas ~= 2.2.2",
-    "pandera[io] ~= 0.19.3",
-    "numpy >= 1.26.4,<2.0.0",
+    "pandera[io] >= 0.21.0, < 0.27.0",
+    "numpy >= 1.26.4",
     "spacy ~= 3.7.2; python_version < '3.13'",
     "spacy >= 3.8.0; python_version >= '3.13' and python_version < '3.13.3'",
     # Install spaCy with wheels only for Python 3.13.3+
@@ -49,6 +50,7 @@ dependencies = [
     "fastparquet >= 2023.10.0; python_version < '3.13'",
     "fastparquet >= 2024.4.0; python_version >= '3.13'",
     "tiktoken ~= 0.9.0",
+    "bibtexparser>=1.4.3",
 
     # for llama-index
     "llama-index ~= 0.10.68",
@@ -61,7 +63,6 @@ dependencies = [
     # for weaviate vector db
     "weaviate-client >= 4",
     "llama-index-vector-stores-weaviate ~= 1.0.0",
-    "bibtexparser>=1.4.3",
 ]
 nlp = [
     "textdescriptives",
@@ -90,6 +91,41 @@ build-backend = "pdm.backend"
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "F",    # Pyflakes (undefined names, logical issues)
+    "E7",   # Syntax/indentation errors
+    "E9",   # Runtime-like errors
+    "E4",   # Import-related errors (E401, E402, etc.)
+    "B012", # return in finally (can suppress real exceptions)
+    "B",    # flake8-bugbear (broader than just B012)
+    "C4",   # flake8-comprehensions
+    "I",    # isort (import sorting)
+    "UP",   # pyupgrade (modern Python syntax)
+    "ASYNC", # flake8-async - async/await specific rules
+    "PLE",   # pylint errors (includes await-outside-async)
+    "FAST",  # FastAPI-specific rules (valuable for your backend)
+    "RUF",   # ruff-specific rules
+]
+ignore = [
+    "E402",
+    "B904",
+    "UP007",
+    "UP045",
+    "B027",
+    "B024",
+    "B017",
+    "RUF012",
+    "B008",
+    "FAST002",
+    "B023"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "F403", "I001"]
+"tests/**/*.py" = ["ASYNC", "F821"]
+"src/extralit/cli/**/*.py" = ["UP007", "UP045"]
 
 [tool.black]
 line-length = 120

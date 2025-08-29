@@ -13,10 +13,10 @@
 # limitations under the License.
 
 from datetime import datetime
-from typing import Annotated, List, Optional
+from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, Field, constr, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, constr
 
 from extralit_server.api.schemas.v1.commons import UpdateSchema
 from extralit_server.enums import UserRole
@@ -46,7 +46,7 @@ UserPassword = Annotated[
 class User(BaseModel):
     id: UUID
     first_name: str
-    last_name: Optional[str] = None
+    last_name: str | None = None
     username: str
     role: UserRole
     # TODO: We need to move `api_key` outside of this schema and think about a more
@@ -59,23 +59,23 @@ class User(BaseModel):
 
 
 class UserCreate(BaseModel):
-    id: Optional[UUID] = None
+    id: UUID | None = None
     first_name: UserFirstName
-    last_name: Optional[UserLastName] = None
+    last_name: UserLastName | None = None
     username: UserUsername
-    role: Optional[UserRole] = None
+    role: UserRole | None = None
     password: UserPassword
 
 
 class UserUpdate(UpdateSchema):
     __non_nullable_fields__ = {"first_name", "username", "role", "password"}
 
-    first_name: Optional[UserFirstName] = None
-    last_name: Optional[UserLastName] = None
-    username: Optional[UserUsername] = None
-    role: Optional[UserRole] = None
-    password: Optional[UserPassword] = None
+    first_name: UserFirstName | None = None
+    last_name: UserLastName | None = None
+    username: UserUsername | None = None
+    role: UserRole | None = None
+    password: UserPassword | None = None
 
 
 class Users(BaseModel):
-    items: List[User]
+    items: list[User]

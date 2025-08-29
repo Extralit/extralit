@@ -1,24 +1,69 @@
 import { useResolve } from "ts-injecty";
-import { ref, useFetch, computed } from "@nuxtjs/composition-api";
+import { ref, useFetch, computed, watch, useRoute, useRouter } from "@nuxtjs/composition-api";
 import { useRoutes, useFocusTab } from "~/v1/infrastructure/services";
 import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
 import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
+import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 import { useRole } from "~/v1/infrastructure/services/useRole";
 import { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
+import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
+import { BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
 
 export const useHomeViewModel = () => {
-  const workspaces = ref<any[]>([]);
   const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
   const { isAdminOrOwnerRole } = useRole();
   const isLoadingDatasets = ref(false);
   const { goToImportDatasetFromHub, goToImportConfiguration } = useRoutes();
   const { state: datasets } = useDatasets();
+  const { get: getWorkspaces, saveWorkspaces, saveSelectedWorkspace } = useWorkspaces();
   const getDatasetsUseCase = useResolve(GetDatasetsUseCase);
   const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
   const error = ref("");
-  const showImportModal = ref(false);
+  const showImportFlow = ref(false);
+
+  // URL parameter handling
+  const route = useRoute();
+  const router = useRouter();
+
+  // Computed properties for workspace state
+  const workspaces = computed(() => getWorkspaces().workspaces);
+  const selectedWorkspace = computed(() => getWorkspaces().selectedWorkspace);
+
+  // Restore workspace selection from URL parameters
+  const restoreWorkspaceFromUrl = () => {
+    const workspaceParam = route.value.query.workspace as string;
+    if (workspaceParam && workspaces.value.length > 0) {
+      // Find workspace by name (as used in breadcrumb links)
+      const workspace = workspaces.value.find((w) => w.name === workspaceParam);
+      if (workspace && workspace.id !== selectedWorkspace.value?.id) {
+        saveSelectedWorkspace(workspace);
+      }
+    }
+  };
+
+  // Update URL parameters when workspace selection changes
+  const updateUrlForWorkspace = (workspace: Workspace | null) => {
+    const currentQuery = { ...route.value.query };
+
+    if (workspace) {
+      currentQuery.workspace = workspace.name;
+    } else {
+      delete currentQuery.workspace;
+    }
+
+    // Only update URL if the query actually changed
+    const currentWorkspaceParam = route.value.query.workspace as string;
+    const newWorkspaceParam = workspace?.name;
+
+    if (currentWorkspaceParam !== newWorkspaceParam) {
+      router.replace({
+        path: route.value.path,
+        query: currentQuery,
+      });
+    }
+  };
 
   useFocusTab(async () => {
     await onLoadDatasets();
@@ -26,7 +71,11 @@ export const useHomeViewModel = () => {
 
   useFetch(async () => {
     loadDatasets();
-    workspaces.value = await getWorkspacesUseCase.execute();
+    const workspaces = await getWorkspacesUseCase.execute();
+    saveWorkspaces(workspaces);
+
+    // Restore workspace selection from URL after workspaces are loaded
+    restoreWorkspaceFromUrl();
   });
 
   const getNewHfDatasetByRepoId = async (repositoryId: string) => {
@@ -77,19 +126,62 @@ export const useHomeViewModel = () => {
     isLoadingDatasets.value = false;
   };
 
-  const openImportModal = () => {
-    showImportModal.value = !showImportModal.value;
-  };
+  // Watch for workspace changes to update URL
+  watch(
+    () => selectedWorkspace.value,
+    (newWorkspace) => {
+      updateUrlForWorkspace(newWorkspace);
+    }
+  );
 
-  const isImportModalVisible = computed(() => {
-    return showImportModal.value;
+  // Watch for URL changes (browser back/forward navigation)
+  watch(
+    () => route.value.query.workspace,
+    () => {
+      restoreWorkspaceFromUrl();
+    }
+  );
+
+  // Dynamic breadcrumb generation based on workspace state
+  const breadcrumbs = computed((): BreadcrumbItem[] => {
+    const baseBreadcrumbs: BreadcrumbItem[] = [
+      { action: "clearFilters", name: "Home" }, // Will be translated in template
+    ];
+
+    if (selectedWorkspace.value) {
+      baseBreadcrumbs.push({
+        name: selectedWorkspace.value.name,
+        link: { path: "/", query: { workspace: selectedWorkspace.value.name } },
+        isWorkspace: true,
+        workspaceId: selectedWorkspace.value.id,
+      });
+    }
+
+    return baseBreadcrumbs;
   });
 
-  // Workspace selection for import
-  const selectedWorkspaceId = ref<string | null>(null);
+  const openImportFlow = () => {
+    showImportFlow.value = !showImportFlow.value;
+  };
+
+  const isImportFlowVisible = computed(() => {
+    return showImportFlow.value;
+  });
+
+  // Workspace selection methods using global store
+  const setSelectedWorkspace = (workspace: Workspace | null) => {
+    saveSelectedWorkspace(workspace);
+    // URL will be updated automatically via the watcher
+  };
 
   const setSelectedWorkspaceId = (workspaceId: string | null) => {
-    selectedWorkspaceId.value = workspaceId;
+    if (workspaceId === null) {
+      saveSelectedWorkspace(null);
+    } else {
+      const workspace = workspaces.value.find((w) => w.id === workspaceId);
+      saveSelectedWorkspace(workspace || null);
+    }
+    // URL will be updated automatically via the watcher
   };
 
   // Import history modal state
@@ -117,19 +209,34 @@ export const useHomeViewModel = () => {
     goToImportConfiguration(importRecord.id);
   };
 
+  const handleImportCompleted = async (recentImportsRef?: any) => {
+    // Refresh datasets and workspaces after import completion
+    await onLoadDatasets();
+
+    // Refresh recent imports list if ref is provided
+    if (recentImportsRef?.refresh) {
+      await recentImportsRef.refresh();
+    }
+
+    // Close the import modal
+    showImportFlow.value = false;
+  };
+
   return {
     datasets,
     workspaces,
+    selectedWorkspace,
+    breadcrumbs,
     isLoadingDatasets,
     getNewHfDatasetByRepoId,
     goToImportConfiguration,
     isAdminOrOwnerRole,
     exampleDatasets,
     error,
-    showImportModal,
-    isImportModalVisible,
-    openImportModal,
-    selectedWorkspace: selectedWorkspaceId,
+    showImportFlow,
+    isImportFlowVisible,
+    openImportFlow,
+    setSelectedWorkspace,
     setSelectedWorkspaceId,
     showImportHistoryModal,
     isImportHistoryModalVisible,
@@ -137,5 +244,6 @@ export const useHomeViewModel = () => {
     closeImportHistoryModal,
     handleImportSelected,
     handleViewImportDetails,
+    handleImportCompleted,
   };
 };

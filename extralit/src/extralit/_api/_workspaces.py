@@ -12,24 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+import builtins
 import logging
+import os
 from pathlib import Path
-from typing import Dict, List, Optional, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
 import httpx
 
-from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
 from extralit._api._base import ResourceAPI
-from extralit._exceptions._api import api_error_handler, ExtralitAPIError
+from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
+from extralit._exceptions._api import ExtralitAPIError, api_error_handler
+from extralit._models._files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
 from extralit._models._workspace import WorkspaceModel
-from extralit._models._files import ListObjectsResponse, ObjectMetadata, FileObjectResponse
-
 
 if TYPE_CHECKING:
     from extralit._models._schema import SchemaStructure
-    from extralit._models._documents import Document
 
 
 logger = logging.getLogger(__name__)
@@ -77,7 +76,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
     ####################
 
     @api_error_handler
-    def list(self) -> List[WorkspaceModel]:
+    def list(self) -> list[WorkspaceModel]:
         response = self.http_client.get(url="/api/v1/me/workspaces")
         response.raise_for_status()
         response_json = response.json()
@@ -86,7 +85,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         return workspaces
 
     @api_error_handler
-    def list_by_user_id(self, user_id: "UUID") -> List[WorkspaceModel]:
+    def list_by_user_id(self, user_id: "UUID") -> builtins.list[WorkspaceModel]:
         response = self.http_client.get(f"/api/v1/users/{user_id}/workspaces")
         response.raise_for_status()
         response_json = response.json()
@@ -95,7 +94,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         return workspaces
 
     @api_error_handler
-    def list_current_user_workspaces(self) -> List[WorkspaceModel]:
+    def list_current_user_workspaces(self) -> builtins.list[WorkspaceModel]:
         response = self.http_client.get(url="/api/v1/me/workspaces")
         response.raise_for_status()
         response_json = response.json()
@@ -176,10 +175,10 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             if e.response.status_code == 404:
                 logger.info(f"No files found at path '{path}' in workspace '{workspace_name}'")
                 return ListObjectsResponse(objects=[])
-            logger.error(f"Failed to list files in workspace '{workspace_name}': {str(e)}")
-            raise ExtralitAPIError(f"Failed to list files: {str(e)}") from e
+            logger.error(f"Failed to list files in workspace '{workspace_name}': {e!s}")
+            raise ExtralitAPIError(f"Failed to list files: {e!s}") from e
         except Exception as e:
-            logger.error(f"Unexpected error listing files in workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error listing files in workspace '{workspace_name}': {e!s}")
             raise
 
     @api_error_handler
@@ -248,11 +247,11 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             if e.response.status_code == 404:
                 logger.error(f"File '{path}' not found in workspace '{workspace_name}'")
                 raise FileNotFoundError(f"File '{path}' not found in workspace '{workspace_name}'") from e
-            logger.error(f"Failed to get file '{path}' from workspace '{workspace_name}': {str(e)}")
-            raise ExtralitAPIError(f"Failed to get file: {str(e)}") from e
+            logger.error(f"Failed to get file '{path}' from workspace '{workspace_name}': {e!s}")
+            raise ExtralitAPIError(f"Failed to get file: {e!s}") from e
 
         except Exception as e:
-            logger.error(f"Unexpected error getting file '{path}' from workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error getting file '{path}' from workspace '{workspace_name}': {e!s}")
             raise
 
     @api_error_handler
@@ -307,10 +306,10 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             logger.info(f"Successfully uploaded file '{file_path}' to workspace '{workspace_name}' as '{path}'")
             return metadata
         except httpx.HTTPStatusError as e:
-            logger.error(f"Failed to upload file '{file_path}' to workspace '{workspace_name}': {str(e)}")
-            raise ExtralitAPIError(f"Failed to upload file: {str(e)}") from e
+            logger.error(f"Failed to upload file '{file_path}' to workspace '{workspace_name}': {e!s}")
+            raise ExtralitAPIError(f"Failed to upload file: {e!s}") from e
         except Exception as e:
-            logger.error(f"Unexpected error uploading file '{file_path}' to workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error uploading file '{file_path}' to workspace '{workspace_name}': {e!s}")
             raise
 
     @api_error_handler
@@ -347,10 +346,10 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             if e.response.status_code == 404:
                 logger.error(f"File '{path}' not found in workspace '{workspace_name}'")
                 raise FileNotFoundError(f"File '{path}' not found in workspace '{workspace_name}'") from e
-            logger.error(f"Failed to delete file '{path}' from workspace '{workspace_name}': {str(e)}")
-            raise ExtralitAPIError(f"Failed to delete file: {str(e)}") from e
+            logger.error(f"Failed to delete file '{path}' from workspace '{workspace_name}': {e!s}")
+            raise ExtralitAPIError(f"Failed to delete file: {e!s}") from e
         except Exception as e:
-            logger.error(f"Unexpected error deleting file '{path}' from workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error deleting file '{path}' from workspace '{workspace_name}': {e!s}")
             raise
 
     @api_error_handler
@@ -378,52 +377,12 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             return False
 
     ####################
-    # Document methods #
-    ####################
-
-    @api_error_handler
-    def add_document(self, document: "Document") -> "UUID":
-        """Add a document to a workspace.
-
-        Args:
-            document: The document to add.
-
-        Returns:
-            The ID of the added document.
-        """
-        from extralit._api._documents import DocumentsAPI
-
-        # Create a DocumentsAPI instance to handle the operation
-        documents_api = DocumentsAPI(http_client=self.http_client)
-        created_document = documents_api.create(document)
-        return created_document.id
-
-    @api_error_handler
-    def get_documents(self, workspace_id: "UUID") -> List["Document"]:
-        """Get documents from a workspace.
-
-        Args:
-            workspace_id: The ID of the workspace.
-
-        Returns:
-            A list of documents.
-        """
-        from extralit._api._documents import DocumentsAPI
-
-        # Create a DocumentsAPI instance to handle the operation
-        documents_api = DocumentsAPI(http_client=self.http_client)
-        document_models = documents_api.list(workspace_id)
-
-        # Return the DocumentModels directly (since Document is an alias for DocumentModel)
-        return document_models
-
-    ####################
     # Schema methods #
     ####################
 
     @api_error_handler
     def list_schemas(
-        self, workspace_name: str, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[List[str]] = None
+        self, workspace_name: str, prefix: str = _DEFAULT_SCHEMA_S3_PATH, exclude: Optional[builtins.list[str]] = None
     ) -> "SchemaStructure":
         """Get schemas from a workspace.
 
@@ -442,6 +401,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         """
         try:
             import pandera as pa
+
             from extralit._models._schema import SchemaStructure
         except ImportError:
             logger.error("Required packages missing for schema operations")
@@ -462,7 +422,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
             if not schema_files.objects:
                 logger.info(f"No valid schemas found in workspace '{workspace_name}' with prefix '{prefix}'")
-                return SchemaStructure(schemas=[])
+                return SchemaStructure(schemas=[], singleton_schema=None)
 
             # Filter by exclude list
             if exclude:
@@ -475,7 +435,9 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             # Group by schema name to get the latest version
             schema_versions = {}
             for obj in schema_files.objects:
-                schema_name = obj.object_name
+                # Extract the actual schema name from the object path
+                # object_name is like "schemas/test_schema_name", we want just "test_schema_name"
+                schema_name = os.path.basename(obj.object_name)
                 if schema_name not in schema_versions or (
                     obj.last_modified
                     and schema_versions[schema_name].last_modified
@@ -487,6 +449,8 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             schemas = {}
             for obj in schema_versions.values():
                 try:
+                    # The object_name includes the full path (e.g., "schemas/test_schema_name")
+                    # We need to use the full path for get_file since that's how it was stored
                     file_response = self.get_file(workspace_name, obj.object_name)
 
                     # Skip empty content
@@ -498,25 +462,37 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
                     schema_json = file_response.content.decode("utf-8")
                     schema = pa.DataFrameSchema.from_json(schema_json)
 
-                    # Add to dictionary
-                    schemas[schema.name] = schema
-                    logger.debug(f"Successfully loaded schema '{schema.name}' from '{obj.object_name}'")
+                    # Add to dictionary using the actual schema name (without prefix)
+                    schema_name = os.path.basename(obj.object_name)
+                    schemas[schema_name] = schema
+                    logger.debug(f"Successfully loaded schema '{schema_name}' from '{obj.object_name}'")
 
                 except FileNotFoundError:
                     logger.debug(f"Schema file '{obj.object_name}' not found in workspace '{workspace_name}'")
                     continue
                 except Exception as e:
-                    logger.warning(f"Error loading schema {obj.object_name}: {str(e)}")
+                    logger.warning(f"Error loading schema {obj.object_name}: {e!s}")
                     continue
 
             logger.info(f"Successfully loaded {len(schemas)} schemas from workspace '{workspace_name}'")
-            return SchemaStructure(schemas=list(schemas.values()))
+
+            # Ensure all schemas are proper DataFrameSchema instances
+            schema_list = []
+            for schema in schemas.values():
+                if isinstance(schema, pa.DataFrameSchema):
+                    schema_list.append(schema)
+                else:
+                    logger.warning(
+                        f"Schema {getattr(schema, 'name', 'unknown')} is not a DataFrameSchema instance, skipping"
+                    )
+
+            return SchemaStructure(schemas=schema_list, singleton_schema=None)
 
         except Exception as e:
-            logger.error(f"Unexpected error loading schemas from workspace '{workspace_name}': {str(e)}")
+            logger.error(f"Unexpected error loading schemas from workspace '{workspace_name}': {e!s}")
             if isinstance(e, (ImportError, ExtralitAPIError, ValueError)):
                 raise
-            raise ExtralitAPIError(f"Failed to load schemas: {str(e)}") from e
+            raise ExtralitAPIError(f"Failed to load schemas: {e!s}") from e
 
     @api_error_handler
     def add_schema(self, workspace_name: str, schema: Any, prefix: str = _DEFAULT_SCHEMA_S3_PATH) -> None:
@@ -601,7 +577,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
     # Private methods #
     ####################
 
-    def _model_from_json(self, json_workspace: Dict) -> WorkspaceModel:
+    def _model_from_json(self, json_workspace: dict) -> WorkspaceModel:
         return WorkspaceModel(
             id=UUID(json_workspace["id"]),
             name=json_workspace["name"],
@@ -609,5 +585,5 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             updated_at=json_workspace["updated_at"],
         )
 
-    def _model_from_jsons(self, json_workspaces: List[Dict]) -> List[WorkspaceModel]:
+    def _model_from_jsons(self, json_workspaces: builtins.list[dict]) -> builtins.list[WorkspaceModel]:
         return list(map(self._model_from_json, json_workspaces))

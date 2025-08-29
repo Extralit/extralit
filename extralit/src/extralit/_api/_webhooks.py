@@ -14,7 +14,7 @@
 
 __all__ = ["WebhooksAPI"]
 
-from typing import List
+import builtins
 
 import httpx
 
@@ -28,7 +28,7 @@ class WebhooksAPI(ResourceAPI[WebhookModel]):
     url_stub = "/api/v1/webhooks"
 
     @api_error_handler
-    def list(self) -> List[WebhookModel]:
+    def list(self) -> list[WebhookModel]:
         """
         Get a list of all webhooks
 
@@ -118,5 +118,5 @@ class WebhooksAPI(ResourceAPI[WebhookModel]):
     def _model_from_json(json_data: dict) -> WebhookModel:
         return WebhookModel.model_validate(json_data)
 
-    def _model_from_jsons(self, json_data: List[dict]) -> List[WebhookModel]:
+    def _model_from_jsons(self, json_data: builtins.list[dict]) -> builtins.list[WebhookModel]:
         return list(map(self._model_from_json, json_data))

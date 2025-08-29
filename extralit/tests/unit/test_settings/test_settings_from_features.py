@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import pytest
-import extralit as ex
 
+import extralit as ex
 from extralit._exceptions._settings import SettingsError
 from extralit.settings._io._hub import _define_settings_from_features
 

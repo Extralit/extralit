@@ -1,31 +1,31 @@
-#  Copyright 2021-present, the Recognai S.L. team.
+# Copyright 2024-present, Extralit Labs, Inc.
 #
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+from collections.abc import Awaitable, Callable
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Type
+from typing import TYPE_CHECKING, Any
 from unittest.mock import call
 from uuid import UUID, uuid4
 
 import pytest
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import RecordStatus, ResponseStatus
 from extralit_server.models import Dataset, Record, Response, Suggestion, User, UserRole
 from extralit_server.search_engine import SearchEngine
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
-
 from tests.factories import (
     DatasetFactory,
     FloatMetadataPropertyFactory,
@@ -40,18 +40,19 @@ from tests.factories import (
     ResponseFactory,
     SuggestionFactory,
     TermsMetadataPropertyFactory,
+    TextFieldFactory,
     TextQuestionFactory,
     UserFactory,
     VectorFactory,
     VectorSettingsFactory,
     WorkspaceFactory,
-    TextFieldFactory,
 )
 
 if TYPE_CHECKING:
-    from extralit_server.models import Dataset
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
+
+    from extralit_server.models import Dataset
 
 
 async def create_text_questions(dataset: "Dataset") -> None:
@@ -557,7 +558,7 @@ class TestSuiteRecords:
         self,
         async_client: "AsyncClient",
         owner_auth_header: dict,
-        MetadataPropertyFactoryClass: Type[MetadataPropertyFactory],
+        MetadataPropertyFactoryClass: type[MetadataPropertyFactory],
         create_value: Any,
         update_value: Any,
         expected_error: str,
@@ -863,7 +864,7 @@ class TestSuiteRecords:
         self,
         async_client: "AsyncClient",
         db: "AsyncSession",
-        QuestionFactory: Type[QuestionFactory],
+        QuestionFactory: type[QuestionFactory],
         response_value: Any,
         owner: User,
         owner_auth_header: dict,
@@ -923,7 +924,7 @@ class TestSuiteRecords:
         async_client: "AsyncClient",
         db: "AsyncSession",
         response_status: ResponseStatus,
-        QuestionFactory: Type[QuestionFactory],
+        QuestionFactory: type[QuestionFactory],
         response_value: Any,
         owner: User,
         owner_auth_header: dict,

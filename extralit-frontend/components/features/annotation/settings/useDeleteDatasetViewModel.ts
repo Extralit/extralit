@@ -25,8 +25,10 @@ export const useDeleteDatasetViewModel = () => {
       });
 
       routes.goToHome();
-    } catch {
+    } catch(e) {
       toggleDeleteModal(false);
+
+      console.error(`Error deleting dataset ${dataset.name} {e}`);
 
       notification.notify({
         message: `It is not possible to delete ${dataset.name}`,

@@ -73,7 +73,7 @@ export class DatasetRepository implements IDatasetRepository {
     try {
       // Check if this is an ImportHistory-based dataset
       if (creation.importHistoryId) {
-        const { data } = await this.axios.post<BackendJob>(`/v1/datasets/${datasetId}/import-history`, {
+        const { data } = await this.axios.post<BackendJob>(`/v1/datasets/${datasetId}/import`, {
           history_id: creation.importHistoryId,
           mapping: creation.mappings,
         });
@@ -81,7 +81,7 @@ export class DatasetRepository implements IDatasetRepository {
         return data.id;
       } else {
         // Original HuggingFace Hub import
-        const { data } = await this.axios.post<BackendJob>(`/v1/datasets/${datasetId}/import`, {
+        const { data } = await this.axios.post<BackendJob>(`/v1/datasets/${datasetId}/import-hub`, {
           name: creation.repoId,
           subset: creation.selectedSubset.name,
           split: creation.selectedSubset.selectedSplit.name,

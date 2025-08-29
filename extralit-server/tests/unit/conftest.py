@@ -12,25 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import TYPE_CHECKING, Dict, Generator, Optional
+from collections.abc import Generator
+from typing import TYPE_CHECKING
 
 import pytest
 import pytest_asyncio
-
-from typing import TYPE_CHECKING, Dict, Generator, Optional
 from httpx import AsyncClient
 from opensearchpy import OpenSearch
 from sqlalchemy.engine.interfaces import IsolationLevel
 
-from extralit_server.contexts import distribution, datasets
 from extralit_server.api.routes import api_v1
 from extralit_server.constants import API_KEY_HEADER_NAME, DEFAULT_API_KEY
+from extralit_server.contexts import datasets, distribution
 from extralit_server.database import get_async_db
 from extralit_server.models import User, UserRole, Workspace
 from extralit_server.search_engine import SearchEngine, get_search_engine
 from extralit_server.settings import settings
 from extralit_server.telemetry import TelemetryClient
-
 from tests.database import TestSession
 from tests.factories import AnnotatorFactory, OwnerFactory, UserFactory
 
@@ -68,12 +66,12 @@ async def annotator() -> User:
 
 
 @pytest.fixture(scope="function")
-def owner_auth_header(owner: User) -> Dict[str, str]:
+def owner_auth_header(owner: User) -> dict[str, str]:
     return {API_KEY_HEADER_NAME: owner.api_key}
 
 
 @pytest.fixture(scope="function")
-def annotator_auth_header(annotator: User) -> Dict[str, str]:
+def annotator_auth_header(annotator: User) -> dict[str, str]:
     return {API_KEY_HEADER_NAME: annotator.api_key}
 
 
@@ -83,7 +81,7 @@ async def async_client(
 ) -> Generator["AsyncClient", None, None]:
     from extralit_server import app
 
-    async def override_get_async_db(isolation_level: Optional[IsolationLevel] = None):
+    async def override_get_async_db(isolation_level: IsolationLevel | None = None):
         session = TestSession()
 
         # NOTE: We are ignoring the isolation_level because is causing errors with the tests.

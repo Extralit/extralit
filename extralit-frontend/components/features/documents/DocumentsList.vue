@@ -14,21 +14,27 @@
       </div>
     </div>
     <div class="documents-list__content">
-      <BaseLoading v-if="isLoading" />
-      <div v-else-if="groupedDocuments.length === 0" class="documents-list__empty">
+      <div v-if="groupedDocuments.length === 0" class="documents-list__empty">
         <p>No documents found in this workspace.</p>
       </div>
       <div v-else class="documents-list__groups">
         <div v-for="group in groupedDocuments" :key="group.reference || 'no-reference'" class="document-group">
           <div class="document-group__header">
             <h3 class="document-group__reference">
-              {{ group.reference || 'No Reference' }}
+              {{ group.reference || "No Reference" }}
             </h3>
             <div class="document-group__metadata" v-if="group.metadata">
-              <BaseTag v-if="group.metadata.source" :text="group.metadata.source"
-                class="metadata-tag metadata-tag--source" />
-              <BaseTag v-for="collection in (group.metadata.collections || [])" :key="collection"
-                :text="collection" class="metadata-tag metadata-tag--collection" />
+              <BaseTag
+                v-if="group.metadata.source"
+                :text="group.metadata.source"
+                class="metadata-tag metadata-tag--source"
+              />
+              <BaseTag
+                v-for="collection in group.metadata.collections || []"
+                :key="collection"
+                :text="collection"
+                class="metadata-tag metadata-tag--collection"
+              />
             </div>
           </div>
 
@@ -40,9 +46,7 @@
                   <span>{{ document.file_name }}</span>
                 </div>
                 <div class="document-item__details">
-                  <span v-if="document.pmid" class="document-detail">
-                    PMID: {{ document.pmid }}
-                  </span>
+                  <span v-if="document.pmid" class="document-detail"> PMID: {{ document.pmid }} </span>
 
                   <span class="document-detail">
                     Added:
@@ -52,8 +56,20 @@
               </div>
 
               <div class="document-item__actions">
-                <BaseButton v-if="document.url" class="document-action" @click="openDocument(document)"
-                  title="View Document">
+                <BaseButton
+                  v-if="document.metadata"
+                  class="document-action"
+                  @on-click="showDocumentMetadata(document)"
+                  title="View Metadata"
+                >
+                  <svgicon name="info" width="14" height="14" />
+                </BaseButton>
+                <BaseButton
+                  v-if="document.url"
+                  class="document-action"
+                  @on-click="openDocument(document)"
+                  title="View Document"
+                >
                   <svgicon name="external-link" width="14" height="14" />
                 </BaseButton>
               </div>
@@ -62,18 +78,38 @@
         </div>
       </div>
     </div>
+
+    <!-- Metadata Modal -->
+    <BaseModal
+      v-if="showMetadataModal"
+      :modal-visible="showMetadataModal"
+      :modal-title="selectedDocumentName"
+      modal-class="modal-auto"
+      @close-modal="closeMetadataModal"
+    >
+      <div class="metadata-content">
+        <pre class="metadata-json">
+          <template v-if="!selectedDocumentMetadata?.text_extraction_metadata?.markdown">{{ JSON.stringify(selectedDocumentMetadata, null, 2) }}
+          </template>
+          <MarkdownRenderer
+            v-if-else="selectedDocumentMetadata?.text_extraction_metadata?.markdown"
+            :markdown="selectedDocumentMetadata?.text_extraction_metadata?.markdown || ''"
+          />
+        </pre>
+      </div>
+    </BaseModal>
   </div>
 </template>
 
 <script lang="ts">
 import "assets/icons/document";
 import "assets/icons/external-link";
+import "assets/icons/info";
 
-import { Document } from '~/v1/domain/entities/document/Document';
-import { useDocumentsListViewModel, type DocumentGroup } from './useDocumentsListViewModel';
+import { useDocumentsListViewModel } from "./useDocumentsListViewModel";
 
 export default {
-  name: 'DocumentsList',
+  name: "DocumentsList",
   props: {
     workspaceId: {
       type: String,
@@ -81,38 +117,7 @@ export default {
     },
   },
   setup(props) {
-    return useDocumentsListViewModel();
-  },
-  data() {
-    return {
-      documents: [] as Document[],
-      isLoading: false,
-    };
-  },
-  computed: {
-    groupedDocuments(): DocumentGroup[] {
-      return this.groupDocumentsByReference(this.documents);
-    },
-
-    totalFiles(): number {
-      return this.documents.length;
-    },
-  },
-  async mounted() {
-    await this.fetchDocuments();
-  },
-  methods: {
-    async fetchDocuments() {
-      this.isLoading = true;
-      try {
-        this.documents = await this.loadDocuments(this.workspaceId);
-      } catch (error) {
-        console.error('Error loading documents:', error);
-        this.$notification.error('Failed to load documents');
-      } finally {
-        this.isLoading = false;
-      }
-    },
+    return useDocumentsListViewModel(props);
   },
 };
 </script>
@@ -242,7 +247,6 @@ export default {
     white-space: normal; // allow wrapping
     word-break: break-word; // break long words if needed
     flex: 0 1 auto; // allow shrinking and wrapping
-
   }
 
   &__details {
@@ -266,6 +270,25 @@ export default {
     &:hover {
       color: var(--fg-secondary);
     }
+  }
+}
+
+.metadata-content {
+  max-height: 80vh;
+  max-width: 90vw;
+  overflow-y: auto;
+
+  .metadata-json {
+    background: var(--bg-accent-grey-2);
+    border: 1px solid var(--bg-opacity-6);
+    border-radius: $border-radius-s;
+    padding: $base-space * 2;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--fg-primary);
+    white-space: pre-wrap;
+    word-break: break-all;
   }
 }
 </style>

@@ -65,12 +65,11 @@ services:
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
-    # networks:
-    #   - extralit
+    networks:
+      - extralit
     ports:
-      - "9000:9000"
+      - "9001:9000"
       - "9090:9090"
-    network_mode: "host"
     deploy:
       resources:
         limits:

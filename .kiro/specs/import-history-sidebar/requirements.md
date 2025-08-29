@@ -85,7 +85,7 @@ The feature replaces the current example datasets section in the home page sideb
 1. WHEN I view the Recent Imports sidebar THEN the system SHALL display a "View All Imports" button below the recent imports list
 2. WHEN I click "View All Imports" THEN the system SHALL open the ImportHistoryList modal showing the complete import history for the workspace
 3. WHEN I view the Recent Imports sidebar THEN the system SHALL display an "Import Documents" button
-4. WHEN I click "Import Documents" THEN the system SHALL open the ImportModal for uploading new documents
+4. WHEN I click "Import Documents" THEN the system SHALL open the ImportFlow for uploading new documents
 5. WHEN the ImportHistoryList modal is open THEN the system SHALL support all existing functionality (filtering, pagination, viewing details)
 6. WHEN I close the ImportHistoryList modal THEN the system SHALL return to the home page with the Recent Imports sidebar still visible
 

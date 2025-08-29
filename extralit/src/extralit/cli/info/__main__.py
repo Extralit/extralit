@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import typer
+from rich.console import Console
+from rich.markdown import Markdown
 
 from extralit.cli.callback import init_callback
 from extralit.cli.rich import get_themed_panel
-from rich.console import Console
-from rich.markdown import Markdown
 
 app = typer.Typer(invoke_without_command=True)
 
@@ -33,7 +33,7 @@ def info() -> None:
     client = init_callback()
 
     panel = get_themed_panel(
-        Markdown(f"Connected to {client.api_url}\n" f"- **Client version:** {version}\n"),
+        Markdown(f"Connected to {client.api_url}\n- **Client version:** {version}\n"),
         title="Extralit Info",
         title_align="left",
     )

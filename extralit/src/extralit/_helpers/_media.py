@@ -16,9 +16,14 @@ import base64
 import io
 import warnings
 from pathlib import Path
-from typing import Union, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
-from PIL import Image
+import lazy_loader as lazy
+
+PIL = lazy.load("PIL")
+
+if TYPE_CHECKING:
+    from PIL.Image import Image
 
 
 def pil_to_data_uri(image_object: Optional["Image"]) -> Optional[str]:
@@ -30,13 +35,13 @@ def pil_to_data_uri(image_object: Optional["Image"]) -> Optional[str]:
     """
     if image_object is None:
         return None
-    if not isinstance(image_object, Image.Image):
+    if not isinstance(image_object, PIL.Image.Image):  # type: ignore
         raise ValueError("The image_object must be a PIL Image object.")
 
     image_format = image_object.format
     if image_format is None:
         image_format = "PNG"
-        warnings.warn("The image format is not set. Defaulting to PNG.", UserWarning)
+        warnings.warn("The image format is not set. Defaulting to PNG.", UserWarning, stacklevel=2)
 
     try:
         buffered = io.BytesIO()
@@ -82,28 +87,28 @@ def cast_image(image: Union["Image", str, Path]) -> str:
             return filepath_to_data_uri(image)
     elif isinstance(image, Path):
         return filepath_to_data_uri(image)
-    elif isinstance(image, Image.Image):
+    elif isinstance(image, PIL.Image.Image):  # type: ignore
         return pil_to_data_uri(image)
     else:
         raise ValueError("The image must be a data URI string, a file path, or a PIL Image object.")
 
 
-def uncast_image(image: str) -> "Image":
+def uncast_image(image: Union[str, "Image"]) -> "Image":
     """Convert a base64 data URI string to a PIL image."""
-    if isinstance(image, Image.Image):
+    if isinstance(image, PIL.Image.Image):  # type: ignore
         return image
     elif not isinstance(image, str):
         raise ValueError("The image must be a data URI string.")
     elif image.startswith("data:image"):
         try:
             image_data = base64.b64decode(image.split(",")[1])
-            image = Image.open(io.BytesIO(image_data))
+            image = PIL.Image.open(io.BytesIO(image_data))  # type: ignore
         except Exception as e:
             raise ValueError("An error occurred while converting the data URI to a PIL image.") from e
         return image
     elif image.startswith("http"):
         return image
     elif Path(image).exists():
-        return Image.open(image)
+        return PIL.Image.open(image)  # type: ignore
     else:
         raise ValueError("The image must be a data URI string.")

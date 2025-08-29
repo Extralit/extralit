@@ -16,8 +16,8 @@ import os
 import warnings
 from threading import Lock
 from typing import Optional
-from huggingface_hub.utils._runtime import is_google_colab
 
+from huggingface_hub.utils._runtime import is_google_colab
 
 _IS_GOOGLE_COLAB_CHECKED = False
 _GOOGLE_COLAB_SECRET_LOCK = Lock()
@@ -76,18 +76,20 @@ def _get_secret_from_google_colab(name: str) -> Optional[str]:
                 warnings.warn(
                     f"\nAccess to the secret {name} has not been granted on this notebook."
                     "\nYou will not be requested again."
-                    "\nPlease restart the session if you want to be prompted again."
+                    "\nPlease restart the session if you want to be prompted again.",
+                    stacklevel=2,
                 )
         except userdata.SecretNotFoundError:
             # Means the user did not define a name  secret => warn
-            warnings.warn(f"\nThe secrets {name} and does not exist in your Colab secrets.")
+            warnings.warn(f"\nThe secrets {name} and does not exist in your Colab secrets.", stacklevel=2)
         except ColabError as e:
             # Something happen but we don't know what => recommend to open a GitHub issue
             warnings.warn(
-                f"\nError while fetching {name} secret value from your vault: '{str(e)}'."
+                f"\nError while fetching {name} secret value from your vault: '{e!s}'."
                 "\nYou are not authenticated with the Extralit in this notebook."
                 "\nIf the error persists, please let us know by opening an issue on GitHub "
-                "(https://github.com/extralit/extralit/issues/new)."
+                "(https://github.com/extralit/extralit/issues/new).",
+                stacklevel=2,
             )
 
         _IS_GOOGLE_COLAB_CHECKED = True

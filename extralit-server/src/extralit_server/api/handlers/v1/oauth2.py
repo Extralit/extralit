@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, Depends, Request, Path
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Path, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -35,7 +37,7 @@ def get_provider_by_name_or_raise(provider: str = Path()) -> OAuth2ClientProvide
         raise NotFoundError(message=f"OAuth Provider '{provider}' not found")
 
 
-@router.get("/providers", response_model=Providers)
+@router.get("/providers")
 def list_providers() -> Providers:
     providers = [Provider(name=provider_name) for provider_name in settings.oauth.providers]
     return Providers(items=providers)
@@ -44,16 +46,16 @@ def list_providers() -> Providers:
 @router.get("/providers/{provider}/authentication")
 async def get_authentication(
     request: Request,
-    provider: OAuth2ClientProvider = Depends(get_provider_by_name_or_raise),
+    provider: Annotated[OAuth2ClientProvider, Depends(get_provider_by_name_or_raise)],
 ) -> RedirectResponse:
     return provider.authorization_redirect(request)
 
 
-@router.get("/providers/{provider}/access-token", response_model=Token)
+@router.get("/providers/{provider}/access-token")
 async def get_access_token(
     request: Request,
-    provider: OAuth2ClientProvider = Depends(get_provider_by_name_or_raise),
-    db: AsyncSession = Depends(get_async_db),
+    provider: Annotated[OAuth2ClientProvider, Depends(get_provider_by_name_or_raise)],
+    db: Annotated[AsyncSession, Depends(get_async_db)],
 ) -> Token:
     user_data = await provider.get_user_data(request)
     userinfo = UserInfo(user_data)

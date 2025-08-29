@@ -52,4 +52,4 @@ Literature review and meta-analysis projects often require team effort. Extralit
 
 
 ## Relationship to Extralit
-Extralit builds upon [Extralit's](https://argilla.io) foundation, adding specialized features for scientific data extraction.
+Extralit builds upon [Argilla's](https://argilla.io) foundation, adding specialized features for scientific data extraction.

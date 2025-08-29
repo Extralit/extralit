@@ -95,7 +95,7 @@ def test_dataset_with_incorrect_workspace_name(client: ex.Extralit, dataset_name
                     ex.TextQuestion(name="response"),
                 ],
             ),
-            workspace=f"non_existing_workspace",
+            workspace="non_existing_workspace",
             client=client,
         ).create()
 

@@ -16,11 +16,13 @@ import os
 from unittest import mock
 
 import pytest
+from httpx import AsyncClient
+
 from extralit_server.contexts import settings as settings_context
 from extralit_server.contexts.settings import HUGGINGFACE_SETTINGS
 from extralit_server.integrations.huggingface.spaces import HuggingfaceSettings
-from extralit_server.settings import settings as extralit_server_settings, settings
-from httpx import AsyncClient
+from extralit_server.settings import settings
+from extralit_server.settings import settings as extralit_server_settings
 
 
 @pytest.mark.asyncio

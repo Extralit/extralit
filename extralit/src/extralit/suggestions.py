@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
 from extralit._exceptions._suggestions import RecordSuggestionsError
 from extralit._models import SuggestionModel
@@ -42,7 +42,7 @@ class Suggestion(Resource):
         self,
         question_name: str,
         value: Any,
-        score: Union[float, List[float], None] = None,
+        score: Union[float, list[float], None] = None,
         agent: Optional[str] = None,
         type: Optional[Literal["model", "human", "selection"]] = None,
         _record: Optional["Record"] = None,
@@ -87,7 +87,7 @@ class Suggestion(Resource):
         return self._model.type
 
     @property
-    def score(self) -> Optional[Union[float, List[float]]]:
+    def score(self) -> Optional[Union[float, list[float]]]:
         """The score of the suggestion."""
         return self._model.score
 
@@ -157,9 +157,9 @@ class Suggestion(Resource):
         return value
 
     @classmethod
-    def __ranking_from_model_value(cls, value: List[Dict[str, Any]]) -> List[str]:
+    def __ranking_from_model_value(cls, value: list[dict[str, Any]]) -> list[str]:
         return [v["value"] for v in value]
 
     @classmethod
-    def __ranking_to_model_value(cls, value: List[str]) -> List[Dict[str, str]]:
+    def __ranking_to_model_value(cls, value: list[str]) -> list[dict[str, str]]:
         return [{"value": str(v)} for v in value]

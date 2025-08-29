@@ -168,10 +168,21 @@ nav:
   - User Guide:
       - user_guide/index.md
       - Core concepts: user_guide/core_concepts.md
-      - Overview: user_guide/overview.md
+      - Data Annotation Guide:
+          - Overview: user_guide/overview.md
+          - Distribute the annotation task: user_guide/distribution.md
+          - Manage users and credentials: user_guide/user.md
+          - Manage workspaces: user_guide/workspace.md
+          - Create, update and delete datasets: user_guide/dataset.md
+          - Add, update, and delete records: user_guide/record.md
+          - Annotate datasets: user_guide/annotate.md
+          - Query and filter records: user_guide/query.md
+          - Import and export datasets: user_guide/import_export.md
+
       - Data Pipeline:
           - Schema definition: user_guide/schema_definition.md
-          # - Importing documents: user_guide/document_import.md
+          - Importing documents: user_guide/document_import.md
+          - Document Processing Workflow: user_guide/document_workflow.md
           # - Text and table OCR: user_guide/text_table_ocr.md
           # - LLM-assisted extraction: user_guide/llm_extraction.md
           # - Consensus review: user_guide/consensus_review.md
@@ -189,22 +200,13 @@ nav:
           # - Optimizing LLM performance: user_guide/optimizing_llm_performance.md
           # - Using the API: user_guide/using_the_api.md
 
-  - Administrator Guide:
+  - Admin Guide:
       - admin_guide/index.md
       - Setup & Deployment:
           - HF Spaces & Docker deployment: admin_guide/docker_deployment.md
           - K8s deployment: admin_guide/k8s_deployment.md
           - Upgrading: admin_guide/upgrading.md
           # - File storage configuration: admin_guide/file_storage.md
-      - Server Management:
-          - Manage users and credentials: admin_guide/user.md
-          - Manage workspaces: admin_guide/workspace.md
-          - Create, update and delete datasets: admin_guide/dataset.md
-          - Add, update, and delete records: admin_guide/record.md
-          - Distribute the annotation task: admin_guide/distribution.md
-          - Annotate datasets: admin_guide/annotate.md
-          - Query and filter records: admin_guide/query.md
-          - Import and export datasets: admin_guide/import_export.md
       - Advanced:
           - Custom fields with layout templates: admin_guide/custom_fields.md
           - Use webhooks to respond to server events:
