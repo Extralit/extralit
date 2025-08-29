@@ -43,7 +43,7 @@ from extralit_server.api.schemas.v1.datasets import (
     DatasetDistribution as DatasetDistributionSchema,
 )
 from extralit_server.api.schemas.v1.datasets import (
-    HubDatasetMapping,
+    DatasetMapping,
 )
 from extralit_server.api.schemas.v1.fields import Field as FieldSchema
 from extralit_server.api.schemas.v1.metadata_properties import MetadataProperty as MetadataPropertySchema
@@ -71,7 +71,7 @@ HUB_DATASET_CARD_TEMPLATE_PATH = os.path.join(Path(__file__).parent, "hub_templa
 
 
 class HubDataset:
-    def __init__(self, name: str, subset: str, split: str, mapping: HubDatasetMapping):
+    def __init__(self, name: str, subset: str, split: str, mapping: DatasetMapping):
         self.dataset: HFDataset = datasets.load_dataset(path=name, name=subset, split=split, streaming=True)  # type: ignore
         self.split = split
         self.mapping = mapping

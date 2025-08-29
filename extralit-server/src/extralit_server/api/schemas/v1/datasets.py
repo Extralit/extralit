@@ -117,7 +117,7 @@ class DatasetGetterDict(GetterDict):
             metadata = getattr(self._obj, "metadata_", None)
             if metadata and "mapping" in metadata:
                 try:
-                    return HubDatasetMapping.model_validate(metadata["mapping"])
+                    return DatasetMapping.model_validate(metadata["mapping"])
                 except Exception:
                     return None
             return None
@@ -133,7 +133,7 @@ class Dataset(BaseModel):
     status: DatasetStatus
     distribution: DatasetDistribution
     metadata: dict[str, Any] | None = None
-    mapping: "HubDatasetMapping | None" = None
+    mapping: "DatasetMapping | None" = None
     workspace_id: UUID
     last_activity_at: datetime
     inserted_at: datetime
@@ -204,15 +204,15 @@ class DatasetUpdate(UpdateSchema):
     __non_nullable_fields__ = {"name", "allow_extra_metadata", "distribution"}
 
 
-class HubDatasetMappingItem(BaseModel):
+class DatasetMappingItem(BaseModel):
     source: str = Field(..., description="The name of the column in the Hub Dataset")
     target: str = Field(..., description="The name of the target resource in the Extralit Dataset")
 
 
-class HubDatasetMapping(BaseModel):
-    fields: list[HubDatasetMappingItem] = Field(..., min_length=1)
-    metadata: list[HubDatasetMappingItem] | None = []
-    suggestions: list[HubDatasetMappingItem] | None = []
+class DatasetMapping(BaseModel):
+    fields: list[DatasetMappingItem] = Field(..., min_length=1)
+    metadata: list[DatasetMappingItem] | None = []
+    suggestions: list[DatasetMappingItem] | None = []
     source_id: str | None = Field(
         None,
         description="Dataset-level source identifier (format: import:{import_id}, dataset:{dataset_id}, hub:{repo_id})",
@@ -232,7 +232,7 @@ class HubDataset(BaseModel):
     name: str
     subset: str
     split: str
-    mapping: HubDatasetMapping
+    mapping: DatasetMapping
 
 
 class HubDatasetExport(BaseModel):
@@ -245,7 +245,7 @@ class HubDatasetExport(BaseModel):
 
 class ImportHistoryDataset(BaseModel):
     history_id: UUID = Field(..., description="The ID of the import history to import from")
-    mapping: HubDatasetMapping = Field(..., description="The mapping configuration for the import")
+    mapping: DatasetMapping = Field(..., description="The mapping configuration for the import")
 
 
 class CompatibleDatasetsRequest(BaseModel):

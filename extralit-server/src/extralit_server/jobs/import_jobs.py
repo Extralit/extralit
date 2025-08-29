@@ -19,7 +19,7 @@ Thisodule providebackground jobs for data from different sources:
 - ImportHistory: Import data from previously uploaded files stored in ImportHistory
 - Future: Additional import sources can be added here
 
-The jobs use the same HubDatasetMapping schema for consistency with existing Hub imports.
+The jobs use the same DatasetMapping schema for consistency with existing Hub imports.
 """
 
 """
@@ -37,7 +37,7 @@ from rq.decorators import job
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from extralit_server.api.schemas.v1.datasets import HubDatasetMapping
+from extralit_server.api.schemas.v1.datasets import DatasetMapping
 from extralit_server.api.schemas.v1.records import RecordUpsert as RecordUpsertSchema
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert as RecordsBulkUpsertSchema
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
@@ -54,7 +54,7 @@ BATCH_SIZE = 100
 class ImportHistoryDataset:
     """Adapter class to process ImportHistory data similar to HubDataset"""
 
-    def __init__(self, import_history: ImportHistory, mapping: HubDatasetMapping):
+    def __init__(self, import_history: ImportHistory, mapping: DatasetMapping):
         self.import_history = import_history
         self.mapping = mapping
         self.data = import_history.data.get("data", [])
@@ -207,7 +207,7 @@ async def import_dataset_from_import_history_job(history_id: UUID, dataset_id: U
             mapping_with_provenance["source_id"] = f"import:{history_id}"
             mapping_with_provenance["target_id"] = None  # Set to None for incoming datasets
 
-            parsed_mapping = HubDatasetMapping.model_validate(mapping_with_provenance)
+            parsed_mapping = DatasetMapping.model_validate(mapping_with_provenance)
 
             # Store the mapping with provenance in dataset metadata for persistence
             dataset.metadata_ = dataset.metadata_ or {}
