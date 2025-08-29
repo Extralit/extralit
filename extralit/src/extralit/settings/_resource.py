@@ -55,7 +55,7 @@ class Settings(DefaultSettingsMixin, Resource):
         guidelines: Optional[str] = None,
         allow_extra_metadata: bool = False,
         distribution: Optional[TaskDistribution] = None,
-        mapping: Optional[DatasetMapping] = None,
+        mapping: Optional[Union[DatasetMapping, dict]] = None,
         _dataset: Optional["Dataset"] = None,
     ) -> None:
         """
@@ -70,13 +70,18 @@ class Settings(DefaultSettingsMixin, Resource):
                 Dataset. Defaults to False.
             distribution (TaskDistribution): The annotation task distribution configuration.
                 Default to DEFAULT_TASK_DISTRIBUTION
-            mapping (DatasetMapping): The dataset mapping configuration that maps incoming data names to Extralit dataset attributes in DatasetRecords.
+            mapping (Union[DatasetMapping, dict]): The dataset mapping configuration that maps incoming data names to Extralit dataset attributes in DatasetRecords. Can be a DatasetMapping object or a dictionary that will be converted to one.
         """
         super().__init__(client=_dataset._client if _dataset else None)
 
         self._dataset = _dataset
         self._distribution = distribution or TaskDistribution.default()
-        self._mapping = mapping
+
+        if isinstance(mapping, dict):
+            self._mapping = DatasetMapping.from_dict(mapping)
+        else:
+            self._mapping = mapping
+
         self.__guidelines = self.__process_guidelines(guidelines)
         self.__allow_extra_metadata = allow_extra_metadata
 
@@ -150,8 +155,11 @@ class Settings(DefaultSettingsMixin, Resource):
         return self._mapping
 
     @mapping.setter
-    def mapping(self, value: DatasetMapping):
-        self._mapping = value
+    def mapping(self, value: Union[DatasetMapping, dict]):
+        if isinstance(value, dict):
+            self._mapping = DatasetMapping.from_dict(value)
+        else:
+            self._mapping = value
 
     @property
     def dataset(self) -> "Dataset":
@@ -423,17 +431,13 @@ class Settings(DefaultSettingsMixin, Resource):
         # }
         # But this is not implemented yet, so we need to update the dataset model directly
 
-        mapping_model = None
-        if self.mapping:
-            mapping_model = self.mapping._api_model()
-
         dataset_model = DatasetModel(
             id=self._dataset.id,
             name=self._dataset.name,
             guidelines=self.guidelines,
             allow_extra_metadata=self.allow_extra_metadata,
             distribution=self.distribution._api_model(),
-            mapping=mapping_model,
+            mapping=self.mapping._api_model() if self.mapping else None,
         )
         self._client.api.datasets.update(dataset_model)
 

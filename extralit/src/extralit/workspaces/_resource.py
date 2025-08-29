@@ -163,7 +163,7 @@ class Workspace(Resource):
         url: Optional[str] = None,
         pmid: Optional[str] = None,
         doi: Optional[str] = None,
-    ) -> "UUID":
+    ) -> "UUID | None":
         """Add a document to the workspace.
 
         Args:
@@ -176,24 +176,37 @@ class Workspace(Resource):
         Returns:
             The ID of the added document.
         """
-        from extralit._models._document import DocumentModel
+        from extralit import Document
 
         # Create document from either local file or remote URL
         if file_path:
-            document = DocumentModel.from_file(
-                file_path_or_url=file_path, reference=reference, pmid=pmid, doi=doi, workspace_id=self.id
+            document = Document.from_file(
+                file_path_or_url=file_path,
+                reference=reference,
+                pmid=pmid,
+                doi=doi,
+                workspace_id=self.id,
+                client=self._client,
             )
         elif url:
             parsed_url = urlparse(url)
             path = parsed_url.path
             file_name = unquote(path).split("/")[-1]
-            document = DocumentModel(
-                url=url, file_name=file_name, reference=reference, pmid=pmid, doi=doi, workspace_id=self.id
+            document = Document(
+                url=url,
+                file_name=file_name,
+                reference=reference,
+                pmid=pmid,
+                doi=doi,
+                workspace_id=self.id,
+                file_path=None,
+                client=self._client,
             )
         else:
             raise ValueError("Either file_path or url must be provided")
 
-        return self._api.add_document(document)
+        created_doc = document.create()
+        return created_doc.id
 
     ####################
     # Schema methods #

@@ -156,6 +156,31 @@ class Dataset(BaseModel):
 class Datasets(BaseModel):
     items: list[Dataset]
 
+    def get_compatible_datasets(self, column_names: list[str]) -> "Datasets":
+        """
+        Filter datasets that have compatible mappings based on overlapping column names
+        """
+        compatible_datasets = []
+        column_names_set = set(column_names)
+
+        for dataset in self.items:
+            # The Dataset schema automatically parses mapping from metadata_
+            if not dataset.mapping:
+                continue
+
+            # Get all source column names from the mapping
+            mapping_sources = set(dataset.mapping.sources)
+
+            # Calculate overlap - require at least 50% overlap
+            if mapping_sources and column_names_set:
+                overlap = len(column_names_set.intersection(mapping_sources))
+                compatibility_score = overlap / len(column_names_set)
+
+                if compatibility_score >= 0.5:  # At least 50% compatibility
+                    compatible_datasets.append(dataset)
+
+        return Datasets(items=compatible_datasets)
+
 
 class DatasetCreate(BaseModel):
     name: DatasetName
@@ -188,16 +213,19 @@ class HubDatasetMapping(BaseModel):
     fields: list[HubDatasetMappingItem] = Field(..., min_length=1)
     metadata: list[HubDatasetMappingItem] | None = []
     suggestions: list[HubDatasetMappingItem] | None = []
-    external_id: str | None = None
+    source_id: str | None = Field(
+        None,
+        description="Dataset-level source identifier (format: import:{import_id}, dataset:{dataset_id}, hub:{repo_id})",
+    )
+    target_id: str | None = Field(None, description="Dataset-level target identifier for workflow tracking")
 
     @property
     def sources(self) -> list[str]:
         fields_sources = [field.source for field in self.fields]
         metadata_sources = [metadata.source for metadata in self.metadata]
         suggestions_sources = [suggestion.source for suggestion in self.suggestions]
-        external_id_source = [self.external_id] if self.external_id else []
 
-        return list(set(fields_sources + metadata_sources + suggestions_sources + external_id_source))
+        return list(set(fields_sources + metadata_sources + suggestions_sources))
 
 
 class HubDataset(BaseModel):
@@ -218,3 +246,8 @@ class HubDatasetExport(BaseModel):
 class ImportHistoryDataset(BaseModel):
     history_id: UUID = Field(..., description="The ID of the import history to import from")
     mapping: HubDatasetMapping = Field(..., description="The mapping configuration for the import")
+
+
+class CompatibleDatasetsRequest(BaseModel):
+    column_names: list[str] = Field(..., description="List of column names to match against existing datasets")
+    workspace_id: UUID | None = Field(None, description="Filter by workspace_id")

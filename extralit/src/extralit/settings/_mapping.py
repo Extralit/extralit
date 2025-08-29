@@ -14,7 +14,7 @@
 
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 from extralit._models._settings._mapping import DatasetMappingModel
 
@@ -56,12 +56,7 @@ class DatasetMapping(DatasetMappingBase):
     @classmethod
     def from_dict(cls, dict: dict[str, Any]) -> "DatasetMapping":
         # Check if this is a HubDatasetMapping format (has 'fields' key with list of dicts)
-        if (
-            "fields" in dict
-            and isinstance(dict["fields"], list)
-            and dict["fields"]
-            and isinstance(dict["fields"][0], dict)
-        ):
+        if "fields" in dict and isinstance(dict["fields"], list) and dict["fields"]:
             return cls.from_model(DatasetMappingModel.from_hub_mapping_dict(dict))
         else:
             # This is the simple key-value mapping format
@@ -86,5 +81,15 @@ class DatasetMapping(DatasetMappingBase):
         return self._model.suggestions or []
 
     @property
-    def external_id(self) -> str:
-        return self._model.external_id
+    def source_id(self) -> Optional[str]:
+        return self._model.source_id
+
+    @property
+    def target_id(self) -> Optional[str]:
+        return self._model.target_id
+
+    def __eq__(self, other):
+        """Compare DatasetMapping objects for equality."""
+        if not isinstance(other, DatasetMapping):
+            return False
+        return self._model == other._model

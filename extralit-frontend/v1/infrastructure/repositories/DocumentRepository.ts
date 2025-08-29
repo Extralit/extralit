@@ -3,11 +3,12 @@ import { Document, Segment, Segments } from "@/v1/domain/entities/document/Docum
 
 const DOCUMENT_API_ERRORS = {
   ERROR_FETCHING_DOCUMENT: "ERROR_FETCHING_DOCUMENT",
+  ERROR_LISTING_DOCUMENTS: "ERROR_LISTING_DOCUMENTS",
   ERROR_FETCHING_SEGMENTS: "ERROR_FETCHING_SEGMENTS",
 };
 
 export class DocumentRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: NuxtAxiosInstance) { }
 
   async getDocuments(params: {
     workspace_id: string;
@@ -54,7 +55,7 @@ export class DocumentRepository {
       return data;
     } catch (error) {
       throw {
-        response: DOCUMENT_API_ERRORS.ERROR_FETCHING_DOCUMENT,
+        response: DOCUMENT_API_ERRORS.ERROR_LISTING_DOCUMENTS,
       };
     }
   }

@@ -33,7 +33,11 @@ class DatasetMappingModel(BaseModel):
     fields: list[DatasetMappingItemModel] = Field(..., min_length=1, description="Field mappings")
     metadata: Optional[list[DatasetMappingItemModel]] = Field(default=None, description="Metadata mappings")
     suggestions: Optional[list[DatasetMappingItemModel]] = Field(default=None, description="Suggestion mappings")
-    external_id: Optional[str] = Field(default=None, description="External ID field name")
+    source_id: Optional[str] = Field(
+        None,
+        description="Dataset-level source identifier (format: import:{import_id}, dataset:{dataset_id}, hub:{repo_id})",
+    )
+    target_id: Optional[str] = Field(None, description="Dataset-level target identifier for workflow tracking")
 
     def to_dict(self) -> dict[str, Union[str, Sequence[str]]]:
         """Convert mapping to the format expected by Settings class."""
@@ -90,6 +94,7 @@ class DatasetMappingModel(BaseModel):
             if mapping_dict.get("suggestions")
             else None
         )
-        external_id = mapping_dict.get("external_id")
+        source_id = mapping_dict.get("source_id")
+        target_id = mapping_dict.get("target_id")
 
-        return cls(fields=fields, metadata=metadata, suggestions=suggestions, external_id=external_id)
+        return cls(fields=fields, metadata=metadata, suggestions=suggestions, source_id=source_id, target_id=target_id)

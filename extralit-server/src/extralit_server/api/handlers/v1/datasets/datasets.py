@@ -21,9 +21,7 @@ from sqlalchemy.orm import selectinload
 
 from extralit_server.api.policies.v1 import DatasetPolicy, MetadataPropertyPolicy, authorize, is_authorized
 from extralit_server.api.schemas.v1.datasets import (
-    Dataset as DatasetSchema,
-)
-from extralit_server.api.schemas.v1.datasets import (
+    CompatibleDatasetsRequest,
     DatasetCreate,
     DatasetMetrics,
     DatasetProgress,
@@ -33,6 +31,9 @@ from extralit_server.api.schemas.v1.datasets import (
     HubDatasetExport,
     ImportHistoryDataset,
     UsersProgress,
+)
+from extralit_server.api.schemas.v1.datasets import (
+    Dataset as DatasetSchema,
 )
 from extralit_server.api.schemas.v1.fields import Field, FieldCreate, Fields
 from extralit_server.api.schemas.v1.jobs import Job as JobSchema
@@ -95,6 +96,29 @@ async def list_current_user_datasets(
     )
 
     return Datasets(items=dataset_list)
+
+
+@router.post("/datasets/compatible", response_model=Datasets)
+async def list_compatible_datasets(
+    *,
+    request: CompatibleDatasetsRequest,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
+):
+    await authorize(current_user, DatasetPolicy.list(request.workspace_id))
+
+    filters = {
+        "workspace_id": request.workspace_id,
+        "status": DatasetStatus.ready,
+    }
+
+    dataset_list = await datasets.list_datasets(
+        db, user=current_user, **{k: v for k, v in filters.items() if v is not None}
+    )
+
+    all_datasets = Datasets(items=dataset_list)
+
+    return all_datasets.get_compatible_datasets(request.column_names)
 
 
 @router.get("/datasets/{dataset_id}/fields", response_model=Fields)

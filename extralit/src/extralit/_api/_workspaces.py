@@ -28,7 +28,6 @@ from extralit._models._files import FileObjectResponse, ListObjectsResponse, Obj
 from extralit._models._workspace import WorkspaceModel
 
 if TYPE_CHECKING:
-    from extralit._models._document import Document
     from extralit._models._schema import SchemaStructure
 
 
@@ -376,46 +375,6 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             return file_response.content == local_content
         except Exception:
             return False
-
-    ####################
-    # Document methods #
-    ####################
-
-    @api_error_handler
-    def add_document(self, document: "Document") -> "UUID":
-        """Add a document to a workspace.
-
-        Args:
-            document: The document to add.
-
-        Returns:
-            The ID of the added document.
-        """
-        from extralit._api._documents import DocumentsAPI
-
-        # Create a DocumentsAPI instance to handle the operation
-        documents_api = DocumentsAPI(http_client=self.http_client)
-        created_document = documents_api.create(document)
-        return created_document.id
-
-    @api_error_handler
-    def get_documents(self, workspace_id: "UUID") -> builtins.list["Document"]:
-        """Get documents from a workspace.
-
-        Args:
-            workspace_id: The ID of the workspace.
-
-        Returns:
-            A list of documents.
-        """
-        from extralit._api._documents import DocumentsAPI
-
-        # Create a DocumentsAPI instance to handle the operation
-        documents_api = DocumentsAPI(http_client=self.http_client)
-        document_models = documents_api.list(workspace_id)
-
-        # Return the DocumentModels directly (since Document is an alias for DocumentModel)
-        return document_models
 
     ####################
     # Schema methods #

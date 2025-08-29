@@ -66,7 +66,6 @@ class TestHubDataset:
                 metadata=[
                     HubDatasetMappingItem(source="version_id", target="version_id"),
                 ],
-                external_id="id",
             ),
         )
 
@@ -76,7 +75,7 @@ class TestHubDataset:
             pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
-        assert record.external_id == "7bd227d9-afc9-11e6-aba1-c4b301cdf627"
+        assert record.external_id == "train_0"
         assert record.fields["package_name"] == "com.mantz_it.rfanalyzer"
         assert (
             record.fields["review"]
@@ -383,7 +382,6 @@ class TestHubDataset:
                 fields=[
                     HubDatasetMappingItem(source="image", target="image-to-review"),
                 ],
-                external_id="id",
             ),
         )
 
@@ -393,7 +391,7 @@ class TestHubDataset:
             pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
-        assert record.external_id == "vlfeedback_1"
+        assert record.external_id == "train_0"
         assert (
             record.fields["image-to-review"][:100]
             == "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aH"
@@ -421,7 +419,6 @@ class TestHubDataset:
                     HubDatasetMappingItem(source="letter", target="letter"),
                     HubDatasetMappingItem(source="count", target="count"),
                 ],
-                external_id="id",
             ),
         )
 
@@ -457,7 +454,6 @@ class TestHubDataset:
                 fields=[
                     HubDatasetMappingItem(source="package_name", target="package_name"),
                 ],
-                external_id="id",
             ),
         )
 
@@ -472,11 +468,11 @@ class TestHubDataset:
 
         records = (await db.execute(select(Record).order_by(Record.inserted_at.asc()))).scalars().all()
         assert [record.external_id for record in records] == [
-            "7bd227d9-afc9-11e6-aba1-c4b301cdf627",
-            "7bd22905-afc9-11e6-a5dc-c4b301cdf627",
-            "7bd2299c-afc9-11e6-85d6-c4b301cdf627",
-            "7bd22a26-afc9-11e6-9309-c4b301cdf627",
-            "7bd22aba-afc9-11e6-8293-c4b301cdf627",
+            "train_0",
+            "train_1",
+            "train_2",
+            "train_3",
+            "train_4",
         ]
 
     async def test_hub_dataset_import_to_idempotency_without_external_id(
