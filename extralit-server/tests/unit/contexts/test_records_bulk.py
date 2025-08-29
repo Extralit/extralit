@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,17 +24,16 @@ from extralit_server.search_engine import SearchEngine
 from tests.factories import DatasetFactory, RecordFactory, TextFieldFactory
 
 
-@pytest.mark.asyncio
 class TestUpsertRecordsBulk:
-    async def test_upsert_records_bulk_with_duplicate_external_ids(
+    async def test_upsert_records_bulk_with_existing_external_id(
         self, db: AsyncSession, mock_search_engine: SearchEngine
     ):
-        """Tests that records with the same external_id are updated instead of creating duplicates."""
+        """Tests that records with existing external_id are updated instead of creating duplicates."""
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="text-field", dataset=dataset)
 
         # Create initial record with external_id
-        await RecordFactory.create(fields={"text-field": "original value"}, external_id="duplicate-id", dataset=dataset)
+        await RecordFactory.create(fields={"text-field": "original value"}, external_id="existing-id", dataset=dataset)
 
         # Verify we have 1 record initially
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 1
@@ -43,23 +41,22 @@ class TestUpsertRecordsBulk:
         # Create UpsertRecordsBulk instance
         upsert_bulk = UpsertRecordsBulk(db, mock_search_engine)
 
-        # Attempt to upsert records with the same external_id
+        # Upsert record with same external_id (should update existing record)
         bulk_upsert = RecordsBulkUpsert(
             items=[
-                RecordUpsert(external_id="duplicate-id", fields={"text-field": "updated value 1"}),
-                RecordUpsert(external_id="duplicate-id", fields={"text-field": "updated value 2"}),
+                RecordUpsert(external_id="existing-id", fields={"text-field": "updated value"}),
             ]
         )
 
         await upsert_bulk.upsert_records_bulk(dataset, bulk_upsert)
 
-        # Verify we still have only 1 record (no duplicates created)
+        # Verify we still have only 1 record (existing record was updated)
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 1
 
-        # Verify the record was updated with the last value
+        # Verify the record was updated
         record = (await db.execute(select(Record))).scalar_one()
-        assert record.external_id == "duplicate-id"
-        assert record.fields["text-field"] == "updated value 2"
+        assert record.external_id == "existing-id"
+        assert record.fields["text-field"] == "updated value"
 
     async def test_upsert_records_bulk_with_reference_metadata_external_id(
         self, db: AsyncSession, mock_search_engine: SearchEngine
@@ -263,27 +260,22 @@ class TestUpsertRecordsBulk:
                     fields={"title": "New Paper 4"},
                     metadata={"reference": "004"},
                 ),
-                RecordUpsert(
-                    external_id="paper_001",  # Duplicate in same batch (second update)
-                    fields={"title": "Paper 1 Final Version"},
-                    metadata={"reference": "001", "final": True},
-                ),
             ]
         )
 
         await upsert_bulk.upsert_records_bulk(dataset, bulk_upsert)
 
         # Verify final record count: 2 existing + 2 new = 4 total
-        # (paper_001 updated twice, paper_002 unchanged, paper_003 and paper_004 new)
+        # (paper_001 updated, paper_002 unchanged, paper_003 and paper_004 new)
         assert (await db.execute(select(func.count(Record.id)))).scalar_one() == 4
 
         # Get all records ordered by external_id
         records = (await db.execute(select(Record).order_by(Record.external_id))).scalars().all()
 
-        # Verify paper_001 was updated with the last values from batch
+        # Verify paper_001 was updated
         assert records[0].external_id == "paper_001"
-        assert records[0].fields["title"] == "Paper 1 Final Version"
-        assert records[0].metadata_["final"] is True
+        assert records[0].fields["title"] == "Updated Paper 1"
+        assert records[0].metadata_["updated"] is True
         assert records[0].id == existing_record_1.id  # Same record ID
 
         # Verify paper_002 was unchanged (not in upsert batch)

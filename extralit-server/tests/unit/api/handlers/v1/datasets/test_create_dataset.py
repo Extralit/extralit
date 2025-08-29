@@ -20,7 +20,7 @@ from httpx import AsyncClient
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from extralit_server.enums import DatasetDistributionStrategy, DatasetStatus
+from extralit_server.enums import DatasetDistributionStrategy
 from extralit_server.jobs.queues import HIGH_QUEUE
 from extralit_server.models import Dataset
 from extralit_server.webhooks.v1.datasets import build_dataset_event
@@ -55,12 +55,13 @@ class TestCreateDataset:
             "name": "Dataset Name",
             "guidelines": None,
             "allow_extra_metadata": True,
-            "status": DatasetStatus.draft,
+            "status": "draft",
             "distribution": {
-                "strategy": DatasetDistributionStrategy.overlap,
+                "strategy": "overlap",
                 "min_submitted": 1,
             },
             "metadata": None,
+            "mapping": None,
             "workspace_id": str(workspace.id),
             "last_activity_at": dataset.last_activity_at.isoformat(),
             "inserted_at": dataset.inserted_at.isoformat(),
@@ -93,12 +94,13 @@ class TestCreateDataset:
             "name": "Dataset Name",
             "guidelines": None,
             "allow_extra_metadata": True,
-            "status": DatasetStatus.draft,
+            "status": "draft",
             "distribution": {
-                "strategy": DatasetDistributionStrategy.overlap,
+                "strategy": "overlap",
                 "min_submitted": 4,
             },
             "metadata": None,
+            "mapping": None,
             "workspace_id": str(workspace.id),
             "last_activity_at": dataset.last_activity_at.isoformat(),
             "inserted_at": dataset.inserted_at.isoformat(),
