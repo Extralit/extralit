@@ -82,13 +82,7 @@ jobs:
           uv cache prune --ci
       - name: Wait for extralit-server to start
         run: |
-          docker logs -f extralit-server &
-          LOGS_PID=$!
-          # Wait for the service to be ready
           while ! curl -s -o /dev/null -XGET http://localhost:6900/api/_status; do sleep 10; done
-          echo "✅ Services are ready!"
-          # Stop log streaming
-          kill $LOGS_PID || true
 
           # Create a directory for local storage that the container can access
           mkdir -p /tmp/extralit-files

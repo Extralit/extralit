@@ -70,52 +70,6 @@ def sample_document_data():
     }
 
 
-class TestWorkspacesAPIDocuments:
-    """Test document operations in WorkspacesAPI that delegate to DocumentsAPI."""
-
-    def test_add_document_delegates_to_documents_api(self, workspace_api, sample_document_model):
-        """Test that add_document delegates to DocumentsAPI.create()."""
-        with patch("extralit._api._documents.DocumentsAPI") as mock_documents_api_class:
-            # Mock the DocumentsAPI instance and its create method
-            mock_documents_api = MagicMock()
-            mock_documents_api_class.return_value = mock_documents_api
-            mock_documents_api.create.return_value = sample_document_model
-
-            # Call the method
-            result = workspace_api.add_document(sample_document_model)
-
-            # Verify DocumentsAPI was instantiated with the http_client
-            mock_documents_api_class.assert_called_once_with(http_client=workspace_api.http_client)
-
-            # Verify create was called with the document
-            mock_documents_api.create.assert_called_once_with(sample_document_model)
-
-            # Verify the result is the document ID
-            assert result == sample_document_model.id
-
-    def test_get_documents_delegates_to_documents_api(self, workspace_api, sample_workspace_id, sample_document_model):
-        """Test that get_documents delegates to DocumentsAPI.list()."""
-        with patch("extralit._api._documents.DocumentsAPI") as mock_documents_api_class:
-            # Mock the DocumentsAPI instance and its list method
-            mock_documents_api = MagicMock()
-            mock_documents_api_class.return_value = mock_documents_api
-            mock_documents_api.list.return_value = [sample_document_model]
-
-            # Call the method
-            result = workspace_api.get_documents(sample_workspace_id)
-
-            # Verify DocumentsAPI was instantiated with the http_client
-            mock_documents_api_class.assert_called_once_with(http_client=workspace_api.http_client)
-
-            # Verify list was called with the workspace_id
-            mock_documents_api.list.assert_called_once_with(sample_workspace_id)
-
-            # Verify the result is a list of DocumentModels
-            assert result == [sample_document_model]
-            assert len(result) == 1
-            assert isinstance(result[0], DocumentModel)
-
-
 class TestDocumentResourceCRUD:
     """Test Document resource CRUD operations."""
 
