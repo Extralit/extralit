@@ -159,3 +159,6 @@ extralit/site
 
 # Development files
 **/*.db
+
+# PDF files
+*.pdf

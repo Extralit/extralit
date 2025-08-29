@@ -20,9 +20,11 @@ It imports existing metadata classes and uses margin information from document m
 """
 
 import logging
+import os
 from typing import Any
 from uuid import UUID
 
+import requests
 from rq import get_current_job
 
 # Import existing metadata classes from extralit-server
@@ -118,8 +120,19 @@ def pymupdf_to_markdown_job(
         margins = get_document_margins(document_id)
 
         # Step 2: Call extralit-hf-space service with margin information
-        # TODO: Integrate with actual extralit-hf-space service endpoint
-        # The service supports margins via /extract_with_margins endpoint
+        service_url = os.getenv("EXTRALIT_HF_SPACE_URL", "http://localhost:8000")
+
+        # Download PDF from S3
+        pdf_response = requests.get(s3_url)
+        pdf_response.raise_for_status()
+
+        # Call extraction service with margins
+        files = {"pdf": (filename, pdf_response.content, "application/pdf")}
+        margin_data = {"left": margins[0], "top": margins[1], "right": margins[2], "bottom": margins[3]}
+
+        extract_response = requests.post(f"{service_url}/extract_with_margins", files=files, json=margin_data)
+        extract_response.raise_for_status()
+        extraction_result = extract_response.json()
 
         result = {
             "status": "success",
@@ -129,6 +142,8 @@ def pymupdf_to_markdown_job(
             "extraction_method": "pymupdf4llm",
             "job_id": job.id if job else None,
             "workspace_name": workspace_name,
+            "markdown": extraction_result.get("markdown"),
+            "metadata": extraction_result.get("metadata"),
         }
 
         LOGGER.info(f"PyMuPDF extraction completed for document {document_id} with margins {margins}")
