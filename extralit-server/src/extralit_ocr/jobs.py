@@ -118,8 +118,8 @@ def pymupdf_to_markdown_job(
         margins = get_document_margins(document_id)
 
         # Step 2: Call extralit-hf-space service with margin information
-        # This would integrate with the extralit-hf-space service
-        # For now, return the margin information to show it's working
+        # TODO: Integrate with actual extralit-hf-space service endpoint
+        # The service supports margins via /extract_with_margins endpoint
 
         result = {
             "status": "success",

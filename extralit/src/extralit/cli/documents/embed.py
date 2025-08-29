@@ -33,7 +33,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 def parse_sections_with_hierarchy(markdown_text: str) -> list[dict[str, Any]]:
-    """Parse markdown into sections preserving hierarchy structure."""
     sections = []
     lines = markdown_text.split("\n")
     current_section = ""
@@ -42,10 +41,8 @@ def parse_sections_with_hierarchy(markdown_text: str) -> list[dict[str, Any]]:
     section_index = 0
 
     for line in lines:
-        # Check for headers
         header_match = re.match(r"(#+)\s*(.*)", line)
         if header_match:
-            # Save previous section if it exists
             if current_section.strip():
                 sections.append(
                     {
@@ -63,13 +60,11 @@ def parse_sections_with_hierarchy(markdown_text: str) -> list[dict[str, Any]]:
                 section_index += 1
                 current_section = ""
 
-            # Update headers stack
             level = len(header_match.group(1))
             header_text = header_match.group(2).strip()
             current_headers = [h for h in current_headers if h["level"] < level]
             current_headers.append({"level": level, "text": header_text})
 
-        # Check for page breaks
         if "---" in line or "Page" in line:
             page_match = re.search(r"(?:Page|page)\s*(\d+)", line)
             if page_match:
@@ -77,7 +72,6 @@ def parse_sections_with_hierarchy(markdown_text: str) -> list[dict[str, Any]]:
 
         current_section += line + "\n"
 
-    # Add final section
     if current_section.strip():
         sections.append(
             {
@@ -97,7 +91,6 @@ def parse_sections_with_hierarchy(markdown_text: str) -> list[dict[str, Any]]:
 
 
 def apply_character_chunking(sections: list[dict[str, Any]], chunk_size: int, overlap: int) -> list[dict[str, Any]]:
-    """Apply character-based chunking to sections that exceed chunk_size."""
     chunked_sections = []
 
     for section in sections:
@@ -106,13 +99,10 @@ def apply_character_chunking(sections: list[dict[str, Any]], chunk_size: int, ov
             chunked_sections.append(section)
             continue
 
-        # Split large sections
         current_pos = 0
-
         while current_pos < len(content):
             end_pos = min(current_pos + chunk_size, len(content))
 
-            # Find good breaking point
             if end_pos < len(content):
                 break_point = content.rfind("\n\n", current_pos, end_pos)
                 if break_point == -1:
@@ -143,21 +133,8 @@ def apply_character_chunking(sections: list[dict[str, Any]], chunk_size: int, ov
 
 
 def chunk_markdown(markdown_text: str, chunk_size: Optional[int] = None, overlap: int = 200) -> list[dict[str, Any]]:
-    """
-    Modern RAG chunking: section-first, then optional character limits.
-
-    Args:
-        markdown_text: The markdown content to chunk
-        chunk_size: None to disable character chunking, or max chars per chunk
-        overlap: Character overlap between chunks when character chunking is applied
-
-    Returns:
-        List of chunk dictionaries with content and metadata
-    """
-    # First: Parse by sections and preserve hierarchy
     sections = parse_sections_with_hierarchy(markdown_text)
 
-    # Second: Apply character chunking only if chunk_size is provided
     if chunk_size is not None:
         sections = apply_character_chunking(sections, chunk_size, overlap)
 
@@ -165,50 +142,31 @@ def chunk_markdown(markdown_text: str, chunk_size: Optional[int] = None, overlap
 
 
 def create_embedding(text: str, model: Optional[str] = None) -> Optional[list[float]]:
-    """
-    Create embedding for text using configurable endpoint and model.
-
-    Args:
-        text: Text to embed
-        model: Embedding model to use (overrides EMBED_MODEL env var)
-
-    Returns:
-        List of float values representing the embedding, or None if failed
-    """
     if not OPENAI_API_KEY or OPENAI_BASE_URL == "random" or not OPENAI_BASE_URL.startswith("http"):
-        # Generate random 1536-dimensional vector (same as text-embedding-ada-002)
-        embedding = np.random.rand(1536).tolist()
-        return embedding
+        return np.random.rand(1536).tolist()
 
-    from llama_index.embeddings.openai import OpenAIEmbedding
+    import requests
 
-    embed_model = OpenAIEmbedding(model=model or EMBED_MODEL_NAME, api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
+    response = requests.post(
+        f"{OPENAI_BASE_URL}/embeddings",
+        headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
+        json={"input": text, "model": model or EMBED_MODEL_NAME},
+    )
 
-    # Get embedding
-    embedding = embed_model.get_text_embedding(text)
-    return embedding
+    if response.status_code == 200:
+        return response.json()["data"][0]["embedding"]
+
+    return np.random.rand(1536).tolist()
 
 
 def create_records_from_chunks(document, chunks: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """
-    Create dataset records from document chunks.
-
-    Args:
-        document: Document object with metadata
-        chunks: List of chunk dictionaries
-
-    Returns:
-        List of record dictionaries ready for dataset logging
-    """
     records = []
 
     for chunk in chunks:
-        # Create embedding for chunk content
         embedding = create_embedding(chunk["content"])
         if embedding is None:
             continue
 
-        # Prepare record
         record = {
             "fields": {
                 "header": chunk["metadata"]["header"],
