@@ -19,7 +19,7 @@ Thisodule providebackground jobs for data from different sources:
 - ImportHistory: Import data from previously uploaded files stored in ImportHistory
 - Future: Additional import sources can be added here
 
-The jobs use the same HubDatasetMapping schema for consistency with existing Hub imports.
+The jobs use the same DatasetMapping schema for consistency with existing Hub imports.
 """
 
 """
@@ -37,7 +37,7 @@ from rq.decorators import job
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from extralit_server.api.schemas.v1.datasets import HubDatasetMapping
+from extralit_server.api.schemas.v1.datasets import DatasetMapping
 from extralit_server.api.schemas.v1.records import RecordUpsert as RecordUpsertSchema
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert as RecordsBulkUpsertSchema
 from extralit_server.api.schemas.v1.suggestions import SuggestionCreate
@@ -54,7 +54,7 @@ BATCH_SIZE = 100
 class ImportHistoryDataset:
     """Adapter class to process ImportHistory data similar to HubDataset"""
 
-    def __init__(self, import_history: ImportHistory, mapping: HubDatasetMapping):
+    def __init__(self, import_history: ImportHistory, mapping: DatasetMapping):
         self.import_history = import_history
         self.mapping = mapping
         self.data = import_history.data.get("data", [])
@@ -100,10 +100,21 @@ class ImportHistoryDataset:
         )
 
     def _row_external_id(self, row: dict[str, Any]) -> str:
-        if not self.mapping.external_id:
-            return f"import_history_{self.import_history.id}_{self._next_row_idx()}"
+        # Try to create a meaningful external_id from metadata fields, typically "reference"
+        if row.get("reference"):
+            return str(row["reference"])
 
-        return str(row.get(self.mapping.external_id, f"import_history_{self.import_history.id}_{self._next_row_idx()}"))
+        # Create composite key from multiple metadata fields if available
+        key_parts = []
+        for mapping_metadata in self.mapping.metadata or []:
+            if row.get(mapping_metadata.source):
+                key_parts.append(f"{mapping_metadata.source}_{row[mapping_metadata.source]}")
+
+        if key_parts:
+            return "_".join(key_parts)
+
+        # Fallback to sequential ID when no meaningful metadata available
+        return f"import_history_{self.import_history.id}_{self._next_row_idx()}"
 
     def _row_fields(self, row: dict[str, Any], dataset: Dataset) -> dict[str, Any]:
         fields = {}
@@ -191,6 +202,16 @@ async def import_dataset_from_import_history_job(history_id: UUID, dataset_id: U
         )
 
         async with SearchEngine.get_by_name(settings.search_engine) as search_engine:
-            parsed_mapping = HubDatasetMapping.model_validate(mapping)
+            # Add source_id provenance to the mapping
+            mapping_with_provenance = {**mapping}
+            mapping_with_provenance["source_id"] = f"import:{history_id}"
+            mapping_with_provenance["target_id"] = None  # Set to None for incoming datasets
+
+            parsed_mapping = DatasetMapping.model_validate(mapping_with_provenance)
+
+            # Store the mapping with provenance in dataset metadata for persistence
+            dataset.metadata_ = dataset.metadata_ or {}
+            dataset.metadata_["mapping"] = parsed_mapping.model_dump()
+            await dataset.save(db)
 
             await ImportHistoryDataset(import_history, parsed_mapping).import_to(db, search_engine, dataset)

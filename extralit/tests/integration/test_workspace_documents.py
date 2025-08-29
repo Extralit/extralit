@@ -260,7 +260,6 @@ class TestWorkspaceDocuments:
 
     def test_documents_multiple_with_same_reference(self, workspace: Workspace):
         """Test that multiple documents with the same reference are all returned."""
-        # Add multiple documents with the same reference
         shared_reference = f"shared-ref-{uuid.uuid4().hex[:8]}"
         test_url1 = f"https://example.com/test1_{uuid.uuid4()}"
         test_url2 = f"https://example.com/test2_{uuid.uuid4()}"
@@ -271,20 +270,14 @@ class TestWorkspaceDocuments:
         assert document_id1 is not None
         assert document_id2 is not None
 
-        documents_collection = workspace.documents
+        documents = workspace.documents(reference=shared_reference)
 
-        # Get documents by the shared reference
-        documents = documents_collection(reference=shared_reference)
-
-        # Should return multiple documents
         assert isinstance(documents, list)
-        assert len(documents) >= 2  # At least the two we added
+        assert len(documents) >= 2
 
-        # Both URLs should be present
         urls = [doc.url for doc in documents]
         assert test_url1 in urls
         assert test_url2 in urls
 
-        # All should have the same reference
         for doc in documents:
             assert doc.reference == shared_reference

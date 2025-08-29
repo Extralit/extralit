@@ -66,6 +66,7 @@ import { UpdateMetadataSettingUseCase } from "@/v1/domain/usecases/dataset-setti
 import { OAuthLoginUseCase } from "@/v1/domain/usecases/oauth-login-use-case";
 import { GetEnvironmentUseCase } from "@/v1/domain/usecases/get-environment-use-case";
 import { GetWorkspacesUseCase } from "@/v1/domain/usecases/get-workspaces-use-case";
+import { GetImportCompatibleDatasetsUseCase } from "@/v1/domain/usecases/get-import-compatible-datasets-use-case";
 import { GetDatasetQuestionsGroupedUseCase } from "@/v1/domain/usecases/get-dataset-questions-grouped-use-case";
 import { GetDatasetFieldsGroupedUseCase } from "@/v1/domain/usecases/get-dataset-fields-grouped-use-case";
 import { GetImportAnalysisUseCase } from "@/v1/domain/usecases/get-import-analysis-use-case";
@@ -76,6 +77,7 @@ import { GetImportHistoryDetailsUseCase } from "@/v1/domain/usecases/get-import-
 import { GetJobStatusUseCase } from "@/v1/domain/usecases/get-job-status-use-case";
 import { LoadUserUseCase } from "@/v1/domain/usecases/load-user-use-case";
 import { CreateDatasetUseCase } from "@/v1/domain/usecases/create-dataset-use-case";
+import { UpdateDatasetUseCase } from "@/v1/domain/usecases/update-dataset-use-case";
 import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
 import { ExportDatasetToHubUseCase } from "@/v1/domain/usecases/export-dataset-to-hub-use-case";
 import { AuthLoginUseCase } from "@/v1/domain/usecases/auth-login-use-case";
@@ -112,6 +114,8 @@ export const loadDependencyContainer = (context: Context) => {
     register(DeleteDatasetUseCase).withDependency(DatasetRepository).build(),
 
     register(GetWorkspacesUseCase).withDependencies(WorkspaceRepository, useWorkspaces).build(),
+
+    register(GetImportCompatibleDatasetsUseCase).withDependency(useAxios).build(),
 
     register(GetDatasetsUseCase).withDependencies(DatasetRepository, useDatasets).build(),
 
@@ -206,6 +210,8 @@ export const loadDependencyContainer = (context: Context) => {
     register(CreateDatasetUseCase)
       .withDependencies(DatasetRepository, WorkspaceRepository, QuestionRepository, FieldRepository, MetadataRepository)
       .build(),
+
+    register(UpdateDatasetUseCase).withDependency(DatasetRepository).build(),
 
     register(GetFirstRecordFromHub).withDependency(HubRepository).build(),
 

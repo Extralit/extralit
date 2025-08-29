@@ -75,7 +75,7 @@ repos:
     hooks:
       - id: frontend-lint
         name: "Lint and fix extralit-frontend files"
-        entry: bash -c 'cd extralit-frontend && npx eslint --fix "${@#extralit-frontend/}" || true'
+        entry: bash -c 'cd extralit-frontend && npx eslint --fix --cache "$@" || true'
         language: system
         files: '^extralit-frontend/.*\.(js|ts|vue)$'
         pass_filenames: true

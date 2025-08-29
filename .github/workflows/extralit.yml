@@ -82,7 +82,8 @@ jobs:
           uv cache prune --ci
       - name: Wait for extralit-server to start
         run: |
-          while ! curl -XGET http://localhost:6900/api/_status; do sleep 5; done
+          while ! curl -s -o /dev/null -XGET http://localhost:6900/api/_status; do sleep 10; done
+
           # Create a directory for local storage that the container can access
           mkdir -p /tmp/extralit-files
           chmod -R 777 /tmp/extralit-files

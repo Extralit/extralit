@@ -17,7 +17,7 @@ from typing import Any, Optional
 from urllib.parse import unquote, urlparse
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import Field, field_serializer
 
 from extralit._models._base import ResourceModel
 
@@ -37,7 +37,6 @@ class DocumentModel(ResourceModel):
         metadata: Additional metadata for the document. Optional.
     """
 
-    id: Optional[UUID] = None
     workspace_id: UUID = Field(..., description="The workspace ID to which the document belongs to")
     reference: str = Field(..., description="A reference to the document, e.g., an identifier.")
     url: Optional[str] = None
@@ -81,6 +80,10 @@ class DocumentModel(ResourceModel):
             url=url if isinstance(url, str) else None,
             **kwargs,
         )
+
+    @field_serializer("workspace_id", when_used="unless-none")
+    def serialize_workspace_id(self, value: UUID) -> str:
+        return str(value)
 
     def to_server_payload(self) -> dict[str, Any]:
         json = {

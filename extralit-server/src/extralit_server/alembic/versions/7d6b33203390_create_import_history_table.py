@@ -45,15 +45,15 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["workspace_id"], ["workspaces.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f("ix_import_history_user_id"), "imports", ["user_id"], unique=False)
-    op.create_index(op.f("ix_import_history_workspace_id"), "imports", ["workspace_id"], unique=False)
+    op.create_index(op.f("ix_imports_user_id"), "imports", ["user_id"], unique=False)
+    op.create_index(op.f("ix_imports_workspace_id"), "imports", ["workspace_id"], unique=False)
     op.create_index(op.f("ix_documents_doi"), "documents", ["doi"], unique=False)
     op.add_column("documents", sa.Column("metadata", sa.JSON(), nullable=True))
 
 
 def downgrade() -> None:
     op.drop_index(op.f("ix_documents_doi"), table_name="documents")
-    op.drop_index(op.f("ix_import_history_workspace_id"), table_name="imports")
-    op.drop_index(op.f("ix_import_history_user_id"), table_name="imports")
+    op.drop_index(op.f("ix_imports_workspace_id"), table_name="imports")
+    op.drop_index(op.f("ix_imports_user_id"), table_name="imports")
     op.drop_table("imports")
     op.drop_column("documents", "metadata")

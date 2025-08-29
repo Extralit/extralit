@@ -14,6 +14,8 @@
 
 """List documents in a workspace."""
 
+from typing import Optional
+
 import typer
 from rich.console import Console
 
@@ -23,6 +25,7 @@ from extralit.client import Extralit
 
 def list_documents(
     workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
+    reference: Optional[str] = typer.Option(None, "--reference", "-r", help="Reference filter"),
 ) -> None:
     """List documents in a workspace."""
     console = Console()
@@ -42,7 +45,7 @@ def list_documents(
             raise typer.Exit(code=1)
 
         # Get all documents in the workspace (using efficient call without metadata)
-        documents = workspace_obj.documents()
+        documents = workspace_obj.documents(reference=reference)
 
         if not documents:
             panel = get_themed_panel(
