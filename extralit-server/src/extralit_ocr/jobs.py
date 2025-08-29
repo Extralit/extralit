@@ -116,21 +116,17 @@ def pymupdf_to_markdown_job(
     LOGGER.info(f"Starting PyMuPDF extraction for document {document_id}")
 
     try:
-        # Step 1: Get document-specific margins from database metadata
-        margins = get_document_margins(document_id)
-
-        # Step 2: Call extralit-hf-space service with margin information
+        # Call extralit-hf-space service with document ID (service fetches margins from DB)
         service_url = os.getenv("EXTRALIT_HF_SPACE_URL", "http://localhost:8000")
 
         # Download PDF from S3
         pdf_response = requests.get(s3_url)
         pdf_response.raise_for_status()
 
-        # Call extraction service with margins
+        # Call extraction service with document ID (service will fetch margins from DB)
         files = {"pdf": (filename, pdf_response.content, "application/pdf")}
-        margin_data = {"left": margins[0], "top": margins[1], "right": margins[2], "bottom": margins[3]}
 
-        extract_response = requests.post(f"{service_url}/extract_with_margins", files=files, json=margin_data)
+        extract_response = requests.post(f"{service_url}/extract_with_document/{document_id}", files=files)
         extract_response.raise_for_status()
         extraction_result = extract_response.json()
 
@@ -138,7 +134,7 @@ def pymupdf_to_markdown_job(
             "status": "success",
             "document_id": str(document_id),
             "filename": filename,
-            "margins_used": margins,
+            "margins_used": extraction_result.get("margins_used"),
             "extraction_method": "pymupdf4llm",
             "job_id": job.id if job else None,
             "workspace_name": workspace_name,
@@ -146,7 +142,7 @@ def pymupdf_to_markdown_job(
             "metadata": extraction_result.get("metadata"),
         }
 
-        LOGGER.info(f"PyMuPDF extraction completed for document {document_id} with margins {margins}")
+        LOGGER.info(f"PyMuPDF extraction completed for document {document_id}")
         return result
 
     except Exception as e:
