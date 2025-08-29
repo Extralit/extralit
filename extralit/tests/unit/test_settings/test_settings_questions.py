@@ -70,3 +70,31 @@ class TestQuestions:
         question = ex.RankingQuestion(name="ranking_question", values=["rank-a", "rank-b"])
         assert question.name == "ranking_question"
         assert question.values == ["rank-a", "rank-b"]
+
+    def test_label_question_strict_default_true(self):
+        question = ex.LabelQuestion(name="label_question", labels=["label1", "label2"])
+        assert question.strict is True
+
+    def test_label_question_strict_false(self):
+        question = ex.LabelQuestion(name="label_question", labels=["label1", "label2"], strict=False)
+        assert question.strict is False
+
+    def test_label_question_strict_setter(self):
+        question = ex.LabelQuestion(name="label_question", labels=["label1", "label2"])
+        assert question.strict is True
+        question.strict = False
+        assert question.strict is False
+
+    def test_multi_label_question_strict_default_true(self):
+        question = ex.MultiLabelQuestion(name="multi_label_question", labels=["label1", "label2"])
+        assert question.strict is True
+
+    def test_multi_label_question_strict_false(self):
+        question = ex.MultiLabelQuestion(name="multi_label_question", labels=["label1", "label2"], strict=False)
+        assert question.strict is False
+
+    def test_multi_label_question_strict_setter(self):
+        question = ex.MultiLabelQuestion(name="multi_label_question", labels=["label1", "label2"])
+        assert question.strict is True
+        question.strict = False
+        assert question.strict is False
