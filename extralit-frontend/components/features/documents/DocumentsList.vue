@@ -40,6 +40,20 @@
 
           <div class="document-group__files">
             <div v-for="document in group.documents" :key="document.id" class="document-item">
+              <div class="document-item__thumbnail">
+                <img
+                  v-if="document.thumbnail_url"
+                  :src="document.thumbnail_url"
+                  :alt="`Thumbnail for ${document.file_name}`"
+                  class="thumbnail-image"
+                  loading="lazy"
+                  @error="onThumbnailError"
+                />
+                <div v-else class="thumbnail-placeholder">
+                  <svgicon name="document" width="24" height="24" />
+                </div>
+              </div>
+              
               <div class="document-item__info">
                 <div class="document-item__name">
                   <svgicon name="document" width="16" height="16" />
@@ -223,18 +237,48 @@ export default {
 
 .document-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: $base-space * 1.5;
   border-radius: $border-radius-s;
   transition: background-color 0.2s ease;
+  gap: $base-space * 1.5;
 
   &:hover {
     background: var(--bg-accent-grey-1);
   }
 
+  &__thumbnail {
+    flex-shrink: 0;
+    width: 60px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-accent-grey-2);
+    border: 1px solid var(--bg-opacity-6);
+    border-radius: $border-radius-s;
+    overflow: hidden;
+
+    .thumbnail-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+    }
+
+    .thumbnail-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--fg-tertiary);
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   &__info {
     flex: 1;
+    min-width: 0; // Allow shrinking and text truncation
   }
 
   &__name {
@@ -259,6 +303,7 @@ export default {
   &__actions {
     display: flex;
     gap: $base-space;
+    flex-shrink: 0;
   }
 }
 

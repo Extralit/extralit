@@ -30,6 +30,7 @@ from extralit_server.contexts.document import preprocessing
 from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
 from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
+from extralit_server.contexts.document.thumbnail import generate_thumbnail
 from extralit_server.database import AsyncSessionLocal, SyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
 from extralit_server.models.database import Document
@@ -290,6 +291,28 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
             metadata={"processing_applied": "ocrmypdf_rotation", "original_filename": filename},
         )
 
+        # Step 3: Generate and store thumbnail image
+        try:
+            thumbnail_data = generate_thumbnail(pdf_data)
+            thumbnail_object_path = files.get_thumbnail_s3_object_path(document_id)
+            
+            files.put_object(
+                client,
+                workspace_name,
+                thumbnail_object_path,
+                thumbnail_data,
+                len(thumbnail_data),
+                content_type="image/png",
+                metadata={"source": "first_page_thumbnail", "original_filename": filename},
+            )
+            
+            _LOGGER.info(f"Generated and stored thumbnail for document {document_id}")
+            thumbnail_generated = True
+            
+        except Exception as e:
+            _LOGGER.warning(f"Failed to generate thumbnail for document {document_id}: {e}")
+            thumbnail_generated = False
+
         # Combine results
         combined_result = {
             "document_id": str(document_id),
@@ -299,6 +322,7 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
                 "ocr_applied": getattr(processing_response.metadata, "ocr_applied", False),
                 "preprocessing_metadata": processing_response.metadata.model_dump(),
             },
+            "thumbnail_generated": thumbnail_generated,
             "needs_ocr": analysis_result["needs_ocr"],
         }
 

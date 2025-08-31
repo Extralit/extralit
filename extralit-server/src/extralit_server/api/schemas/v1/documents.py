@@ -60,6 +60,7 @@ class DocumentListItem(BaseModel):
     pmid: str | None
     doi: str | None
     metadata: dict | None = Field(None, alias="metadata_", serialization_alias="metadata")
+    thumbnail_url: str | None = Field(None, description="URL to the document thumbnail image")
     inserted_at: datetime
     updated_at: datetime
 

@@ -85,8 +85,20 @@ async def delete_documents(
 
 
 async def list_documents(db: "AsyncSession", workspace_id: UUID) -> list[DocumentListItem]:
-    result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
-    documents = [DocumentListItem.model_validate(doc) for doc in result.scalars().all()]
+    # Join with workspace to get workspace name for thumbnail URL generation
+    result = await db.execute(
+        select(Document, Workspace.name)
+        .join(Workspace)
+        .filter(Document.workspace_id == workspace_id)
+    )
+    documents = []
+    
+    for doc, workspace_name in result.all():
+        doc_item = DocumentListItem.model_validate(doc)
+        # Generate thumbnail URL based on document ID
+        thumbnail_object_path = file_context.get_thumbnail_s3_object_path(doc.id)
+        doc_item.thumbnail_url = file_context.get_proxy_document_url(workspace_name, thumbnail_object_path)
+        documents.append(doc_item)
 
     return documents
 
@@ -137,7 +149,11 @@ async def find_existing_documents(
         return []
 
     # Find documents matching any of the conditions within the workspace
-    query = select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions)))
+    query = (
+        select(Document, Workspace.name)
+        .join(Workspace)
+        .where(and_(Document.workspace_id == workspace_id, or_(*conditions)))
+    )
 
     if conditions:
         # Create a CASE statement for ordering based on ordinal position
@@ -148,9 +164,16 @@ async def find_existing_documents(
         query = query.limit(limit)
 
     result = await db.execute(query)
-    existing_documents = result.scalars().all()
+    documents = []
+    
+    for doc, workspace_name in result.all():
+        doc_item = DocumentListItem.model_validate(doc)
+        # Generate thumbnail URL based on document ID
+        thumbnail_object_path = file_context.get_thumbnail_s3_object_path(doc.id)
+        doc_item.thumbnail_url = file_context.get_proxy_document_url(workspace_name, thumbnail_object_path)
+        documents.append(doc_item)
 
-    return [DocumentListItem.model_validate(doc) for doc in existing_documents]
+    return documents
 
 
 async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalysisRequest) -> ImportAnalysisResponse:
