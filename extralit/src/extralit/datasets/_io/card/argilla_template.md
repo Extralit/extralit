@@ -22,7 +22,7 @@
 - **Point of Contact:** {{ point_of_contact }}
 {% endif %}
 
-This dataset has been created with [Extralit](https://github.com/argilla-io/argilla). As shown in the sections below, this dataset can be loaded into your Extralit server as explained in [Load with Extralit](#load-with-argilla), or used directly with the `datasets` library in [Load with `datasets`](#load-with-datasets).
+This dataset has been created with [Extralit](https://github.com/Extralit/extralit). As shown in the sections below, this dataset can be loaded into your Extralit server as explained in [Load with Extralit](#load-with-argilla), or used directly with the `datasets` library in [Load with `datasets`](#load-with-datasets).
 
 
 ## Using this dataset with Extralit
@@ -55,7 +55,7 @@ This dataset repo contains:
 
 * Dataset records in a format compatible with HuggingFace `datasets`. These records will be loaded automatically when using `ex.Dataset.from_hub` and can be loaded independently using the `datasets` library via `load_dataset`.
 * The [annotation guidelines](#annotation-guidelines) that have been used for building and curating the dataset, if they've been defined in Extralit.
-* A dataset configuration folder conforming to the Extralit dataset format in `.argilla`.
+* A dataset configuration folder conforming to the Extralit dataset format in `.extralit`.
 
 The dataset is created in Extralit with: **fields**, **questions**, **suggestions**, **metadata**, **vectors**, and **guidelines**.
 
@@ -65,7 +65,7 @@ The **fields** are the features or text of a dataset's records. For example, the
 
 | Field Name                        | Title            | Type              | Required         | Markdown             |
 | --------------------------------- | ---------------- | ----------------- | ---------------- | -------------------- |
-| {% for field in argilla_fields %} | {{ field.name }} | {{ field.title }} | {{ field.type }} | {{ field.required }} | {{ field.use_markdown }} |
+| {% for field in extralit_fields %} | {{ field.name }} | {{ field.title }} | {{ field.type }} | {{ field.required }} | {{ field.use_markdown }} |
 {% endfor %}
 
 ### Questions
@@ -74,27 +74,27 @@ The **questions** are the questions that will be asked to the annotators. They c
 
 | Question Name                           | Title               | Type                 | Required            | Description             | Values/Labels           |
 | --------------------------------------- | ------------------- | -------------------- | ------------------- | ----------------------- | ----------------------- |
-| {% for question in argilla_questions %} | {{ question.name }} | {{ question.title }} | {{ question.type }} | {{ question.required }} | {{ question.description | default("N/A", true) }} | {% if question.type in ["rating", "label_selection", "multi_label_selection", "ranking"] %}{% if question.type in ["rating", "ranking"] %}{{ question.values | list }}{% else %}{{ question.labels | list }}{% endif %}{% else %}N/A{% endif %} |
+| {% for question in extralit_questions %} | {{ question.name }} | {{ question.title }} | {{ question.type }} | {{ question.required }} | {{ question.description | default("N/A", true) }} | {% if question.type in ["rating", "label_selection", "multi_label_selection", "ranking"] %}{% if question.type in ["rating", "ranking"] %}{{ question.values | list }}{% else %}{{ question.labels | list }}{% endif %}{% else %}N/A{% endif %} |
 {% endfor %}
 
 <!-- check length of metadata properties -->
-{% if argilla_metadata_properties %}
+{% if extralit_metadata_properties %}
 ### Metadata
 
 The **metadata** is a dictionary that can be used to provide additional information about the dataset record.
 | Metadata Name                                     | Title               | Type                 | Values              | Visible for Annotators                                                                                    |
 | ------------------------------------------------- | ------------------- | -------------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
-| {% for metadata in argilla_metadata_properties %} | {{ metadata.name }} | {{ metadata.title }} | {{ metadata.type }} | {% if metadata.values %}{{ metadata.values }}{% else %}{{ metadata.min }} - {{ metadata.max }}{% endif %} | {{ metadata.visible_for_annotators }} |
+| {% for metadata in extralit_metadata_properties %} | {{ metadata.name }} | {{ metadata.title }} | {{ metadata.type }} | {% if metadata.values %}{{ metadata.values }}{% else %}{{ metadata.min }} - {{ metadata.max }}{% endif %} | {{ metadata.visible_for_annotators }} |
 {% endfor %}
 {% endif %}
 
-{% if argilla_vectors_settings %}
+{% if extralit_vectors_settings %}
 ### Vectors
 The **vectors** contain a vector representation of the record that can be used in  search.
 
 | Vector Name                                  | Title             | Dimensions         |
 | -------------------------------------------- | ----------------- | ------------------ |
-| {% for vector in argilla_vectors_settings %} | {{ vector.name }} | {{ vector.title }} | [1, {{ vector.dimensions }}] |
+| {% for vector in extralit_vectors_settings %} | {{ vector.name }} | {{ vector.title }} | [1, {{ vector.dimensions }}] |
 {% endfor %}
 {% endif %}
 
@@ -104,7 +104,7 @@ The **vectors** contain a vector representation of the record that can be used i
 An example of a dataset instance in Extralit looks as follows:
 
 ```json
-{{ argilla_record | tojson(indent=4) }}
+{{ extralit_record | tojson(indent=4) }}
 ```
 
 While the same record in HuggingFace `datasets` looks as follows:
@@ -138,7 +138,7 @@ The dataset contains a single split, which is `train`.
 
 #### Annotation guidelines
 
-{{ argilla_guidelines | default("[More Information Needed]", true)}}
+{{ extralit_guidelines | default("[More Information Needed]", true)}}
 
 #### Annotation process
 

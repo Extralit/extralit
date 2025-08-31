@@ -86,7 +86,7 @@ class HubImportExportMixin(DiskImportExportMixin):
             self.to_disk(path=config_dir, with_records=False)
 
             if generate_card:
-                sample_argilla_record = next(iter(self.records(with_suggestions=True, with_responses=True)))
+                sample_extralit_record = next(iter(self.records(with_suggestions=True, with_responses=True)))
                 sample_huggingface_record = self._get_sample_hf_record(hfds) if with_records else None
                 dataset_size = len(hfds) if with_records else 0
                 card = ExtralitDatasetCard.from_template(
@@ -95,12 +95,12 @@ class HubImportExportMixin(DiskImportExportMixin):
                         tags=["rlfh", "extralit", "human-feedback"],
                     ),
                     repo_id=repo_id,
-                    argilla_fields=self.settings.fields,
-                    argilla_questions=self.settings.questions,
-                    argilla_guidelines=self.settings.guidelines or None,
-                    argilla_vectors_settings=self.settings.vectors or None,
-                    argilla_metadata_properties=self.settings.metadata,
-                    argilla_record=sample_argilla_record.to_dict(),
+                    extralit_fields=self.settings.fields,
+                    extralit_questions=self.settings.questions,
+                    extralit_guidelines=self.settings.guidelines or None,
+                    extralit_vectors_settings=self.settings.vectors or None,
+                    extralit_metadata_properties=self.settings.metadata,
+                    extralit_record=sample_extralit_record.to_dict(),
                     huggingface_record=sample_huggingface_record,
                 )
                 card.save(filepath=os.path.join(tmpdirname, "README.md"))
@@ -134,7 +134,7 @@ class HubImportExportMixin(DiskImportExportMixin):
             client: the client to use to load the `Dataset`. If not provided, the default client will be used.
             with_records: whether to load the records from the Hugging Face dataset. Defaults to `True`.
             settings: the settings to use to load the `Dataset`. If settings are "ui", a URL to configure the settings
-                through argilla will be returned. If settings are "auto",
+                through  will be returned. If settings are "auto",
                 the settings will be inferred from the `Features` of the dataset on the hub. Defaults to "ui".
             split: the split to load from the Hugging Face dataset. If not provided, the first split will be loaded.
             subset: the subset to load from the Hugging Face dataset. If not provided, the first subset will be loaded.
@@ -260,7 +260,7 @@ class HubImportExportMixin(DiskImportExportMixin):
 
         # Extract responses and create Record objects
         records = []
-        hf_dataset = HFDatasetsIO.to_argilla(hf_dataset=hf_dataset, mapper=mapper)
+        hf_dataset = HFDatasetsIO.to_extralit(hf_dataset=hf_dataset, mapper=mapper)
         for idx, row in enumerate(hf_dataset):
             record = mapper(row)
             for question_name, values in response_questions.items():

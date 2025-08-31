@@ -469,12 +469,12 @@ class HubDatasetExporter:
             ),
             template_path=HUB_DATASET_CARD_TEMPLATE_PATH,
             repo_id=repo_id,
-            argilla_fields=self.dataset.fields,
-            argilla_questions=self.dataset.questions,
-            argilla_guidelines=self.dataset.guidelines or None,
-            argilla_vectors_settings=self.dataset.vectors_settings or None,
-            argilla_metadata_properties=self.dataset.metadata_properties,
-            # argilla_record=sample_argilla_record.to_dict(),
+            extralit_fields=self.dataset.fields,
+            extralit_questions=self.dataset.questions,
+            extralit_guidelines=self.dataset.guidelines or None,
+            extralit_vectors_settings=self.dataset.vectors_settings or None,
+            extralit_metadata_properties=self.dataset.metadata_properties,
+            # extralit_record=sample_extralit_record.to_dict(),
             # huggingface_record=sample_huggingface_record,
         )
 
