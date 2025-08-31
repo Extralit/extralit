@@ -100,8 +100,9 @@ class Record(Resource):
 
     def __repr__(self) -> str:
         return (
-            f"Record(id={self.id},status={self.status},fields={self.fields},metadata={self.metadata},"
-            f"suggestions={self.suggestions},responses={self.responses})"
+            f"Record(id={self.id}, status={self.status}, "
+            f"fields={list(self.fields.keys())}, metadata={self.metadata}, "
+            f"suggestions={self.suggestions}, responses={self.responses})"
         )
 
     ############################

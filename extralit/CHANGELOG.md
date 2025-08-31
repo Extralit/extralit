@@ -14,17 +14,24 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.6.1...v0.6.2)
 
-## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
+## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
+### Added
+- Introduced structured dataset mapping via `DatasetMappingModel` and `DatasetMapping` abstractions for validated, first-class mapping support
+- Added `mapping` field to `DatasetModel` with full serialization/deserialization across the client stack
+
 ### Changed
 - Updated backend document fetching logic to use the new unified endpoint, including improved input validation and error messages
 - Refactored document handling to use `GetDocumentByRecordMetadataUseCase` for improved document fetching
+- Updated dataset import client flows to use explicit endpoints: `/import-hub` (Hugging Face) and `/import` (import history)
 
 ### Fixed
 - Fixed document panel behavior and handling of missing documents
 - Improved error handling and validation for document operations
 - Fixed import analysis table display issues
 - Enhanced component state persistence across import modal steps
+- Ensured proper string serialization for `workspace_id` in `DocumentModel`
 
 
 ## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.0)

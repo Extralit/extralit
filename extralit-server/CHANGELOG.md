@@ -14,16 +14,20 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
-## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
+## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.6.1...v0.6.2)
+
+## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 
 ### Added
 - Introduced presigned URL generation for document access in `get_document` function, ensuring valid file URLs.
 - Enabled minio/s3 bucket creation on new user creation in CLI command `extralit_server database users create`.
+ - Added explicit dataset import endpoints: `/import-hub` for Hugging Face Hub imports and `/import` for import-history imports
 
 ### Changed
 - Replaced separate /documents/by-id/{id} and /documents/by-pmid/{pmid} endpoints with a single /documents endpoint that accepts workspace_id and one or more identifiers (id, pmid, doi, reference), returning a list of matching documents
 - Updated GET "/documents" endpoint to support multiple identifiers (id, reference, url, pmid, doi, file_name) in a single request, to return multiple documents ordered respectively, handled by "find_existing_documents"
 - Replaced the existing MinIO client dependency with singleton version across various document and file handling endpoints
+ - Standardized import history database index naming for consistency across Alembic migration and SQLAlchemy model
 
 ## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.0)
 

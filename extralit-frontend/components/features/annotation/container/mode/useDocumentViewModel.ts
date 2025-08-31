@@ -35,12 +35,6 @@ export const useDocumentViewModel = (props: { record: any }) => {
 
       await getDocument.setDocument(params);
     } catch (e) {
-      const identifier = metadata?.pmid || metadata?.doi || metadata?.doc_id || metadata?.reference || "unknown";
-      console.error(`Error fetching document with identifier "${identifier}":`, e);
-      notification.notify({
-        message: `Error fetching document with identifier "${identifier}"`,
-        type: "danger",
-      });
       clearDocument();
     }
   };

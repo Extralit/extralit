@@ -54,7 +54,8 @@ export class DatasetCreation {
       fields: { source: string; target: string }[];
       metadata: { source: string; target: string }[];
       suggestions: { source: string; target: string }[];
-      external_id?: string;
+      source_id?: string;
+      target_id?: string;
     } = {
       fields: this.mappedFields.map((field) => ({
         source: field.name,
@@ -70,8 +71,10 @@ export class DatasetCreation {
       })),
     };
 
-    if (this.fields.some((f) => f.name === "id")) {
-      mappings.external_id = "id";
+    if (this.importHistoryId) {
+      mappings.source_id = `import:${this.importHistoryId}`;
+    } else if (this.repoId && this.repoId !== "") {
+      mappings.source_id = `hub:${this.repoId}`;
     }
 
     return mappings;

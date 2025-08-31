@@ -14,10 +14,16 @@ These are the section headers that we use:
 * "Security" in case of vulnerabilities.
 -->
 
+## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.6.1...v0.6.2)
 
-## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
+## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
+### Added
+- Incremental Dataset Import: new `DatasetUpdateDialog` and update workflow in `DatasetConfigurationForm` to update existing datasets with imported data
+
 ### Changed
 - Refactored the frontend to use a single fetchDocument method that queries documents by any identifier and workspace, replacing the previous fetchDocumentByID and fetchDocumentByPubmedID methods. The view model and use case now expect and handle the new API response format
+ - Renamed `DatasetConfigurationDialog` to `DatasetCreateDialog` and improved TypeScript typings and prop validations across configuration components
+ - Improved button area layout, dialog interactions, and hid questions section during update flow to avoid unintended edits
 
 ## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.4.1...v0.6.0)
 

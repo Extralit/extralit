@@ -43,7 +43,7 @@ from extralit_server.api.schemas.v1.datasets import (
     DatasetDistribution as DatasetDistributionSchema,
 )
 from extralit_server.api.schemas.v1.datasets import (
-    HubDatasetMapping,
+    DatasetMapping,
 )
 from extralit_server.api.schemas.v1.fields import Field as FieldSchema
 from extralit_server.api.schemas.v1.metadata_properties import MetadataProperty as MetadataPropertySchema
@@ -71,7 +71,7 @@ HUB_DATASET_CARD_TEMPLATE_PATH = os.path.join(Path(__file__).parent, "hub_templa
 
 
 class HubDataset:
-    def __init__(self, name: str, subset: str, split: str, mapping: HubDatasetMapping):
+    def __init__(self, name: str, subset: str, split: str, mapping: DatasetMapping):
         self.dataset: HFDataset = datasets.load_dataset(path=name, name=subset, split=split, streaming=True)  # type: ignore
         self.split = split
         self.mapping = mapping
@@ -155,10 +155,7 @@ class HubDataset:
         )
 
     def _row_external_id(self, row: dict) -> str:
-        if not self.mapping.external_id:
-            return f"{self.split}_{self._next_row_idx()}"
-
-        return row[self.mapping.external_id]
+        return f"{self.split}_{self._next_row_idx()}"
 
     def _row_fields(self, row: dict, dataset: Dataset) -> dict:
         fields = {}
@@ -472,12 +469,12 @@ class HubDatasetExporter:
             ),
             template_path=HUB_DATASET_CARD_TEMPLATE_PATH,
             repo_id=repo_id,
-            argilla_fields=self.dataset.fields,
-            argilla_questions=self.dataset.questions,
-            argilla_guidelines=self.dataset.guidelines or None,
-            argilla_vectors_settings=self.dataset.vectors_settings or None,
-            argilla_metadata_properties=self.dataset.metadata_properties,
-            # argilla_record=sample_argilla_record.to_dict(),
+            extralit_fields=self.dataset.fields,
+            extralit_questions=self.dataset.questions,
+            extralit_guidelines=self.dataset.guidelines or None,
+            extralit_vectors_settings=self.dataset.vectors_settings or None,
+            extralit_metadata_properties=self.dataset.metadata_properties,
+            # extralit_record=sample_extralit_record.to_dict(),
             # huggingface_record=sample_huggingface_record,
         )
 
