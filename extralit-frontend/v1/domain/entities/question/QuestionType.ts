@@ -1,8 +1,6 @@
 const availableQuestionTypes = [
   "label_selection",
   "multi_label_selection",
-  "dynamic_multi_label_selection",
-  "dynamic_label_selection",
   "ranking",
   "text",
   "span",
@@ -13,8 +11,6 @@ const availableQuestionTypes = [
 export type QuestionTypes =
   | "label_selection"
   | "multi_label_selection"
-  | "dynamic_multi_label_selection"
-  | "dynamic_label_selection"
   | "ranking"
   | "text"
   | "span"
@@ -43,11 +39,11 @@ export class QuestionType extends String {
   }
 
   public get isMultiLabelType(): boolean {
-    return this.value === "multi_label_selection" || this.value === "dynamic_multi_label_selection";
+    return this.value === "multi_label_selection";
   }
 
   public get isSingleLabelType(): boolean {
-    return this.value === "label_selection" || this.value === "dynamic_label_selection";
+    return this.value === "label_selection";
   }
 
   public get isTextType(): boolean {

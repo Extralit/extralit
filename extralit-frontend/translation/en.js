@@ -1,9 +1,7 @@
 export default {
   multi_label_selection: "Multi-label",
-  dynamic_multi_label_selection: "Multi-label (dynamic)",
   ranking: "Ranking",
   label_selection: "Label",
-  dynamic_label_selection: "Label (dynamic)",
   table_form_placeholder: "Copy and paste a table you'd like to edit here",
   span: "Span",
   table: "Table",
