@@ -111,14 +111,15 @@
   </SynchronizeScroll>
 </template>
 
-<script>
+<script lang="js">
 import { useSettingsQuestionsViewModel } from "./useSettingsQuestionsViewModel";
+import QuestionSetting from "@/v1/domain/entities/question/QuestionSetting";
 
 export default {
   name: "SettingsQuestions",
   props: {
     settings: {
-      type: Object,
+      type: QuestionSetting,
       required: true,
     },
   },
