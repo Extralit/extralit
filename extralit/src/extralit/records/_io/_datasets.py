@@ -209,7 +209,7 @@ class HFDatasetsIO:
         """
         record_dicts = GenericIO.to_dict(records, flatten=True)
         hf_dataset = datasets.Dataset.from_dict(record_dicts)  # type: ignore
-        hf_dataset = HFDatasetsIO._uncast_argilla_attributes_to_datasets(hf_dataset, dataset.schema)
+        hf_dataset = HFDatasetsIO._uncast_extralit_attributes_to_datasets(hf_dataset, dataset.schema)
         return hf_dataset
 
     @staticmethod
@@ -225,7 +225,7 @@ class HFDatasetsIO:
             Generator[Dict[str, Union[str, float, int, list]], None, None]: A generator of dictionaries to be passed to DatasetRecords.add or DatasetRecords.update.
         """
 
-        hf_dataset = HFDatasetsIO.to_argilla(hf_dataset=hf_dataset, mapper=mapper)
+        hf_dataset = HFDatasetsIO.to_extralit(hf_dataset=hf_dataset, mapper=mapper)
 
         try:
             hf_dataset = hf_dataset.to_iterable_dataset()
@@ -236,7 +236,7 @@ class HFDatasetsIO:
         return record_dicts
 
     @staticmethod
-    def _uncast_argilla_attributes_to_datasets(hf_dataset: "HFDataset", schema: dict) -> "HFDataset":
+    def _uncast_extralit_attributes_to_datasets(hf_dataset: "HFDataset", schema: dict) -> "HFDataset":
         """Get the names of the Extralit fields that contain image data.
 
         Parameters:
@@ -256,7 +256,7 @@ class HFDatasetsIO:
         return hf_dataset
 
     @staticmethod
-    def to_argilla(hf_dataset: "HFDataset", mapper: "IngestedRecordMapper") -> "HFDataset":
+    def to_extralit(hf_dataset: "HFDataset", mapper: "IngestedRecordMapper") -> "HFDataset":
         """Check if the Hugging Face dataset contains image features.
 
         Parameters:
