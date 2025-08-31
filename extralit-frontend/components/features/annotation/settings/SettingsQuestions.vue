@@ -29,20 +29,6 @@
               v-if="question.isMultiLabelType || question.isSingleLabelType || question.isSpanType"
             >
               <label :for="`options-${question.id}`" v-text="$t('question.labels')" />
-              <BaseSwitch
-                v-if="question.isMultiLabelType || question.isSingleLabelType"
-                class="settings__edition-form__switch --subcategory"
-                :id="`strict-${question.id}`"
-                v-model="question.settings.strict"
-                >{{ $t("question.strictSelection") }}</BaseSwitch
-              >
-              <BaseSwitch
-                v-if="question.isMultiLabelType"
-                class="settings__edition-form__switch --subcategory"
-                :id="`options-order-${question.id}`"
-                v-model="question.settings.suggestionFirst"
-                >{{ $t("question.suggestionFirst") }}</BaseSwitch
-              >
 
               <BaseRangeSlider
                 v-if="question.settings.shouldShowVisibleOptions"
@@ -69,6 +55,21 @@
                   </label>
                 </div>
               </draggable>
+
+              <BaseSwitch
+                v-if="question.isMultiLabelType || question.isSingleLabelType"
+                class="settings__edition-form__switch --subcategory"
+                :id="`strict-${question.id}`"
+                v-model="question.settings.strict"
+                >{{ $t("question.strictSelection") }}</BaseSwitch
+              >
+              <BaseSwitch
+                v-if="question.isMultiLabelType"
+                class="settings__edition-form__switch --subcategory"
+                :id="`options-order-${question.id}`"
+                v-model="question.settings.suggestionFirst"
+                >{{ $t("question.suggestionFirst") }}</BaseSwitch
+              >
             </div>
 
             <BaseSwitch

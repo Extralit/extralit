@@ -45,7 +45,7 @@ export default {
     useMarkdown: "Use Markdown",
     useTable: "Use Table",
     suggestionFirst: "Show suggestions first",
-    strictSelection: "Strict selection",
+    strictSelection: "Allow additional suggested labels",
     visibleLabels: "Visible labels",
     required: "Required",
     optional: "Optional",
