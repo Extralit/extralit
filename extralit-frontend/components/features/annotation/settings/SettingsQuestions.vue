@@ -10,17 +10,17 @@
                 <h4 class="--body1 --medium" v-text="question.name" />
                 <BaseBadge class="--capitalized" :text="`${$t(question.type)}`" />
               </div>
-              <p v-if="question.isRequired" v-text="$t('required')" />
-              <p v-else v-text="$t('optional')" />
+              <p v-if="question.isRequired" v-text="$t('question.required')" />
+              <p v-else v-text="$t('question.optional')" />
             </div>
 
             <Validation :validations="question.validate().title" class="settings__edition-form__group">
-              <label :for="`title-${question.id}`" v-text="$t('title')" />
+              <label :for="`title-${question.id}`" v-text="$t('question.title')" />
               <input type="type" :id="`title-${question.id}`" v-model="question.title" />
             </Validation>
 
             <Validation :validations="question.validate().description" class="settings__edition-form__group">
-              <label :for="`description-${question.id}`" v-text="$t('description')" />
+              <label :for="`description-${question.id}`" v-text="$t('question.description')" />
               <textarea :id="`description-${question.id}`" v-model="question.description" />
             </Validation>
 
@@ -28,20 +28,20 @@
               class="settings__edition-form__group --subcategories"
               v-if="question.isMultiLabelType || question.isSingleLabelType || question.isSpanType"
             >
-              <label :for="`options-${question.id}`" v-text="$t('labels')" />
+              <label :for="`options-${question.id}`" v-text="$t('question.labels')" />
               <BaseSwitch
                 v-if="question.isMultiLabelType || question.isSingleLabelType"
                 class="settings__edition-form__switch --subcategory"
                 :id="`strict-${question.id}`"
                 v-model="question.settings.strict"
-                >{{ $t("strictSelection") }}</BaseSwitch
+                >{{ $t("question.strictSelection") }}</BaseSwitch
               >
               <BaseSwitch
                 v-if="question.isMultiLabelType"
                 class="settings__edition-form__switch --subcategory"
                 :id="`options-order-${question.id}`"
                 v-model="question.settings.suggestionFirst"
-                >{{ $t("suggestionFirst") }}</BaseSwitch
+                >{{ $t("question.suggestionFirst") }}</BaseSwitch
               >
 
               <BaseRangeSlider
@@ -51,10 +51,10 @@
                 :min="3"
                 :max="question.settings.options.length"
                 v-model="question.settings.visible_options"
-                >{{ $t("visibleLabels") }}</BaseRangeSlider
+                >{{ $t("question.visibleLabels") }}</BaseRangeSlider
               >
 
-              <label v-text="$t('order')" class="settings__edition-form__label --subcategory" />
+              <label v-text="$t('question.order')" class="settings__edition-form__label --subcategory" />
               <draggable
                 class="label__container"
                 ghost-class="label__item__ghost"
@@ -76,7 +76,7 @@
               class="settings__edition-form__switch"
               :id="`use-markdown-${question.id}`"
               v-model="question.settings.use_markdown"
-              >{{ $t("useMarkdown") }}</BaseSwitch
+              >{{ $t("question.useMarkdown") }}</BaseSwitch
             >
 
             <BaseSwitch
@@ -84,7 +84,7 @@
               class="settings__edition-form__switch"
               :id="`use-table-${question.id}`"
               v-model="question.settings.use_table"
-              >{{ $t("useTable") }}</BaseSwitch
+              >{{ $t("question.useTable") }}</BaseSwitch
             >
 
             <div class="settings__edition-form__footer">
