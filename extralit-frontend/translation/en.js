@@ -32,6 +32,7 @@ export default {
   useMarkdown: "Use Markdown",
   useTable: "Use Table",
   suggestionFirst: "Show suggestions first",
+  strictSelection: "Strict selection",
   visibleForAnnotators: "Visible for annotators",
   recordInfo: "Record info",
   viewMetadata: "View metadata",
@@ -41,7 +42,6 @@ export default {
   visibleLabels: "Visible labels",
   annotationGuidelines: "Annotation guidelines",
   guidelines: "Guidelines",
-  document: "Document",
   taskDistribution: "Task distribution",
   minimumSubmittedResponses: "Minimum submitted responses",
   taskDistributionTooltip: "A task is complete when all records have the \nminimum number of submitted responses",
@@ -291,7 +291,6 @@ export default {
     updatedAt: "Updated",
     createdAt: "Created",
     datasets: "Datasets",
-    documents: "Documents",
   },
   document: {
     notFound: "Document not found",

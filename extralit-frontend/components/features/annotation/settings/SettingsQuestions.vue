@@ -30,6 +30,13 @@
             >
               <label :for="`options-${question.id}`" v-text="$t('labels')" />
               <BaseSwitch
+                v-if="question.isMultiLabelType || question.isSingleLabelType"
+                class="settings__edition-form__switch --subcategory"
+                :id="`strict-${question.id}`"
+                v-model="question.settings.strict"
+                >{{ $t("strictSelection") }}</BaseSwitch
+              >
+              <BaseSwitch
                 v-if="question.isMultiLabelType"
                 class="settings__edition-form__switch --subcategory"
                 :id="`options-order-${question.id}`"
