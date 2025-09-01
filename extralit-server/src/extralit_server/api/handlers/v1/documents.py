@@ -142,7 +142,7 @@ async def get_document(
     if not documents:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No documents found with given criteria in workspace {workspace_id}",
+            detail=f"No documents found with reference {reference}",
         )
 
     # TODO disable due to CORS restrictions from frontend

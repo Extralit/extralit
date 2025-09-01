@@ -21,7 +21,7 @@ from requests.exceptions import ConnectTimeout, HTTPError, ReadTimeout, RequestE
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from extralit_server.api.schemas.v1.datasets import HubDatasetMapping, HubDatasetMappingItem
+from extralit_server.api.schemas.v1.datasets import DatasetMapping, DatasetMappingItem
 from extralit_server.contexts.hub import HubDataset
 from extralit_server.enums import DatasetStatus, QuestionType
 from extralit_server.models import Record
@@ -56,17 +56,16 @@ class TestHubDataset:
             name="lhoestq/demo1",
             subset="default",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="package_name", target="package_name"),
-                    HubDatasetMappingItem(source="review", target="review"),
-                    HubDatasetMappingItem(source="date", target="date"),
-                    HubDatasetMappingItem(source="star", target="star"),
+                    DatasetMappingItem(source="package_name", target="package_name"),
+                    DatasetMappingItem(source="review", target="review"),
+                    DatasetMappingItem(source="date", target="date"),
+                    DatasetMappingItem(source="star", target="star"),
                 ],
                 metadata=[
-                    HubDatasetMappingItem(source="version_id", target="version_id"),
+                    DatasetMappingItem(source="version_id", target="version_id"),
                 ],
-                external_id="id",
             ),
         )
 
@@ -76,7 +75,7 @@ class TestHubDataset:
             pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
-        assert record.external_id == "7bd227d9-afc9-11e6-aba1-c4b301cdf627"
+        assert record.external_id == "train_0"
         assert record.fields["package_name"] == "com.mantz_it.rfanalyzer"
         assert (
             record.fields["review"]
@@ -116,13 +115,13 @@ class TestHubDataset:
             name="lhoestq/demo1",
             subset="default",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="package_name", target="package_name"),
-                    HubDatasetMappingItem(source="review", target="review"),
+                    DatasetMappingItem(source="package_name", target="package_name"),
+                    DatasetMappingItem(source="review", target="review"),
                 ],
                 suggestions=[
-                    HubDatasetMappingItem(source="star", target="star"),
+                    DatasetMappingItem(source="star", target="star"),
                 ],
             ),
         )
@@ -163,12 +162,12 @@ class TestHubDataset:
             name="stanfordnlp/imdb",
             subset="plain_text",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="text", target="text"),
+                    DatasetMappingItem(source="text", target="text"),
                 ],
                 suggestions=[
-                    HubDatasetMappingItem(source="label", target="label"),
+                    DatasetMappingItem(source="label", target="label"),
                 ],
             ),
         )
@@ -211,12 +210,12 @@ class TestHubDataset:
             name="google-research-datasets/go_emotions",
             subset="simplified",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="text", target="text"),
+                    DatasetMappingItem(source="text", target="text"),
                 ],
                 suggestions=[
-                    HubDatasetMappingItem(source="labels", target="labels"),
+                    DatasetMappingItem(source="labels", target="labels"),
                 ],
             ),
         )
@@ -245,10 +244,10 @@ class TestHubDataset:
             name="stanfordnlp/imdb",
             subset="plain_text",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="text", target="text"),
-                    HubDatasetMappingItem(source="label", target="label"),
+                    DatasetMappingItem(source="text", target="text"),
+                    DatasetMappingItem(source="label", target="label"),
                 ],
             ),
         )
@@ -288,12 +287,12 @@ class TestHubDataset:
             name="stanfordnlp/imdb",
             subset="plain_text",
             split="unsupervised",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="text", target="text"),
+                    DatasetMappingItem(source="text", target="text"),
                 ],
                 suggestions=[
-                    HubDatasetMappingItem(source="label", target="label"),
+                    DatasetMappingItem(source="label", target="label"),
                 ],
             ),
         )
@@ -322,10 +321,10 @@ class TestHubDataset:
             name="stanfordnlp/imdb",
             subset="plain_text",
             split="unsupervised",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="text", target="text"),
-                    HubDatasetMappingItem(source="label", target="label"),
+                    DatasetMappingItem(source="text", target="text"),
+                    DatasetMappingItem(source="label", target="label"),
                 ],
             ),
         )
@@ -351,9 +350,9 @@ class TestHubDataset:
             name="mlabonne/ultrachat_200k_sft",
             subset="default",
             split="train_sft",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="messages", target="messages"),
+                    DatasetMappingItem(source="messages", target="messages"),
                 ],
             ),
         )
@@ -379,11 +378,10 @@ class TestHubDataset:
             name="lmms-lab/llava-critic-113k",
             subset="pairwise",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="image", target="image-to-review"),
+                    DatasetMappingItem(source="image", target="image-to-review"),
                 ],
-                external_id="id",
             ),
         )
 
@@ -393,7 +391,7 @@ class TestHubDataset:
             pytest.skip(f"Skipping test due to Hugging Face Hub connection error: {e}")
 
         record = (await db.execute(select(Record))).scalar_one()
-        assert record.external_id == "vlfeedback_1"
+        assert record.external_id == "train_0"
         assert (
             record.fields["image-to-review"][:100]
             == "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aH"
@@ -416,12 +414,11 @@ class TestHubDataset:
             name="extralit-dev/argilla-invalid-rows",
             subset="default",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="letter", target="letter"),
-                    HubDatasetMappingItem(source="count", target="count"),
+                    DatasetMappingItem(source="letter", target="letter"),
+                    DatasetMappingItem(source="count", target="count"),
                 ],
-                external_id="id",
             ),
         )
 
@@ -453,11 +450,10 @@ class TestHubDataset:
             name="lhoestq/demo1",
             subset="default",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="package_name", target="package_name"),
+                    DatasetMappingItem(source="package_name", target="package_name"),
                 ],
-                external_id="id",
             ),
         )
 
@@ -472,11 +468,11 @@ class TestHubDataset:
 
         records = (await db.execute(select(Record).order_by(Record.inserted_at.asc()))).scalars().all()
         assert [record.external_id for record in records] == [
-            "7bd227d9-afc9-11e6-aba1-c4b301cdf627",
-            "7bd22905-afc9-11e6-a5dc-c4b301cdf627",
-            "7bd2299c-afc9-11e6-85d6-c4b301cdf627",
-            "7bd22a26-afc9-11e6-9309-c4b301cdf627",
-            "7bd22aba-afc9-11e6-8293-c4b301cdf627",
+            "train_0",
+            "train_1",
+            "train_2",
+            "train_3",
+            "train_4",
         ]
 
     async def test_hub_dataset_import_to_idempotency_without_external_id(
@@ -494,9 +490,9 @@ class TestHubDataset:
             name="lhoestq/demo1",
             subset="default",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="package_name", target="package_name"),
+                    DatasetMappingItem(source="package_name", target="package_name"),
                 ],
             ),
         )
@@ -528,9 +524,9 @@ class TestHubDataset:
             name="lhoestq/demo1",
             subset="default",
             split="train",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="package_name", target="package_name"),
+                    DatasetMappingItem(source="package_name", target="package_name"),
                 ],
             ),
         )
@@ -539,9 +535,9 @@ class TestHubDataset:
             name="lhoestq/demo1",
             subset="default",
             split="test",
-            mapping=HubDatasetMapping(
+            mapping=DatasetMapping(
                 fields=[
-                    HubDatasetMappingItem(source="package_name", target="package_name"),
+                    DatasetMappingItem(source="package_name", target="package_name"),
                 ],
             ),
         )

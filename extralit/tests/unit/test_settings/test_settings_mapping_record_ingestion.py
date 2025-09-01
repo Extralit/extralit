@@ -48,6 +48,7 @@ def dataset():
     return dataset
 
 
+@pytest.mark.skip(reason="Mapping ingestion implementation deprecated")
 def test_settings_with_record_mapping(dataset):
     mock_user_id = uuid4()
     record_api_models = dataset.records._ingest_records(

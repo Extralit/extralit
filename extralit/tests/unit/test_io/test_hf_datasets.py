@@ -107,13 +107,13 @@ class TestHFDatasetsIO:
             "spans.suggestion.score": Value(dtype="null", id=None),
         }
 
-    def test_to_argilla_with_sequence_of_class_labels(self):
+    def test_to_extralit_with_sequence_of_class_labels(self):
         dataset = ex.Dataset(name="test", settings=ex.Settings(fields=[ex.TextField(name="text")]))
         mapper = IngestedRecordMapper(dataset, uuid4())
 
         hf_ds = load_dataset("google-research-datasets/go_emotions", name="simplified", split="train[:5]")
 
-        hf_ds = HFDatasetsIO.to_argilla(hf_ds, mapper)
+        hf_ds = HFDatasetsIO.to_extralit(hf_ds, mapper)
 
         assert hf_ds.to_list() == [
             {

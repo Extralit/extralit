@@ -18,7 +18,7 @@ from rq import Retry
 from rq.decorators import job
 from sqlalchemy.orm import selectinload
 
-from extralit_server.api.schemas.v1.datasets import HubDatasetMapping
+from extralit_server.api.schemas.v1.datasets import DatasetMapping
 from extralit_server.contexts.hub import HubDataset, HubDatasetExporter
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
@@ -43,7 +43,7 @@ async def import_dataset_from_hub_job(name: str, subset: str, split: str, datase
         )
 
         async with SearchEngine.get_by_name(settings.search_engine) as search_engine:
-            parsed_mapping = HubDatasetMapping.model_validate(mapping)
+            parsed_mapping = DatasetMapping.model_validate(mapping)
 
             await (
                 HubDataset(name, subset, split, parsed_mapping)

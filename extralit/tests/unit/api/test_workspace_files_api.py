@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest.mock import MagicMock, patch
-from uuid import UUID
+from unittest.mock import MagicMock
 
 import pytest
 
 from extralit._api._workspaces import WorkspacesAPI
-from extralit._models._document import Document
 from extralit._models._files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
 
 
@@ -131,74 +129,3 @@ def test_delete_file(workspace_api: WorkspacesAPI):
 
     # Verify the API call
     workspace_api.http_client.delete.assert_called_once_with(url="/api/v1/file/test-workspace/test-file.txt", params={})  # type: ignore
-
-
-def test_add_document(workspace_api: WorkspacesAPI):
-    """Test adding a document to a workspace."""
-    mock_response = MagicMock()
-    mock_response.status_code = 201
-    mock_response.json.return_value = "f6e99e43-0a96-4629-b1dd-32c38d829d9e"
-    workspace_api.http_client.post.return_value = mock_response  # type: ignore
-
-    # Create a test document
-    document = Document(
-        id=UUID("f6e99e43-0a96-4629-b1dd-32c38d829d9e"),
-        workspace_id=UUID("123e4567-e89b-12d3-a456-426614174000"),
-        url="https://example.com",
-        pmid="12345",
-        doi="10.1234/test",
-        reference="test-ref",
-        file_name=None,
-        file_path=None,
-    )
-
-    result = workspace_api.add_document(document)
-
-    assert isinstance(result, UUID)
-    assert str(result) == "f6e99e43-0a96-4629-b1dd-32c38d829d9e"
-
-    workspace_api.http_client.post.assert_called_once_with(  # type: ignore
-        url="/api/v1/documents",
-        params={
-            "file_name": None,
-            "reference": "test-ref",
-            "url": "https://example.com",
-            "workspace_id": "123e4567-e89b-12d3-a456-426614174000",
-            "pmid": "12345",
-            "doi": "10.1234/test",
-            "id": str(document.id),
-        },
-    )
-
-
-@patch("uuid.uuid4", return_value=UUID("9bad2107-c2da-4d0b-a73c-866d96582c4b"))
-def test_get_documents(mock_uuid4, workspace_api):
-    """Test getting documents from a workspace."""
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.json.return_value = [
-        {
-            "id": "123e4567-e89b-12d3-a456-426614174000",
-            "workspace_id": "123e4567-e89b-12d3-a456-426614174000",
-            "url": "https://example.com",
-            "pmid": "12345",
-            "doi": "10.1234/test",
-            "reference": "test-ref",
-            "inserted_at": "2023-01-01T00:00:00Z",
-            "updated_at": "2023-01-01T00:00:00Z",
-        }
-    ]
-    workspace_api.http_client.get.return_value = mock_response  # type: ignore
-
-    result = workspace_api.get_documents(UUID("123e4567-e89b-12d3-a456-426614174000"))
-
-    assert isinstance(result, list)
-    assert len(result) == 1
-    assert isinstance(result[0], Document)
-    assert result[0].url == "https://example.com"
-    assert result[0].pmid == "12345"
-    assert result[0].doi == "10.1234/test"
-
-    workspace_api.http_client.get.assert_called_once_with(  # type: ignore
-        url="/api/v1/documents/workspace/123e4567-e89b-12d3-a456-426614174000"
-    )

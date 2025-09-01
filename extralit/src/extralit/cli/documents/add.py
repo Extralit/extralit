@@ -102,7 +102,7 @@ def add_document(
                     doi=doi,
                     client=client,
                 )
-            elif url:
+            else:
                 document = Document(
                     url=url,
                     reference=reference,
@@ -111,22 +111,6 @@ def add_document(
                     doi=doi,
                     client=client,
                 )
-            elif pmid:
-                document = Document.from_pmid(
-                    pmid=pmid,
-                    reference=reference,
-                    workspace_id=workspace_obj.id,
-                    client=client,
-                )
-            elif doi:
-                document = Document.from_doi(
-                    doi=doi,
-                    reference=reference,
-                    workspace_id=workspace_obj.id,
-                    client=client,
-                )
-            else:
-                raise ValueError("At least one of file_path, url, pmid, or doi must be provided")
 
             # Create the document on the server
             document.create()

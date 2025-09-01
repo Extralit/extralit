@@ -561,7 +561,7 @@ class ImportHistory(DatabaseModel):
 
     # Index on reference field within the JSONB data column for efficient querying
     __table_args__ = (
-        Index('ix_import_history_data_reference', text("(data->'data'->0->>'reference')")),
+        Index('ix_imports_data_reference', text("(data->'data'->0->>'reference')")),
     )
 ```
 
