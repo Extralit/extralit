@@ -20,7 +20,6 @@ on:
     types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "extralit/**"
-      - "extralit-server/**"
       - ".github/workflows/extralit.yml"
 
 permissions:
