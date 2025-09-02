@@ -49,6 +49,9 @@ export default {
     visibleLabels: "Visible labels",
     required: "Required",
     optional: "Optional",
+    deleteLabel: "Delete label",
+    addNewLabel: "Add new label...",
+    addLabel: "Add",
   },
   template: "Template",
   orgOrUsername: "Organization or username",
@@ -293,6 +296,7 @@ export default {
     updatedAt: "Updated",
     createdAt: "Created",
     datasets: "Datasets",
+    documents: "Documents",
   },
   document: {
     notFound: "Document not found",

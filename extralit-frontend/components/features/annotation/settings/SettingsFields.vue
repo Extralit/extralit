@@ -9,8 +9,8 @@
               <h4 class="--body1 --medium" v-text="field.name" />
               <BaseBadge class="--capitalized" :text="`${$t(field.type)}`" />
             </div>
-            <p v-if="field.isRequired" v-text="$t('required')" />
-            <p v-else v-text="$t('optional')" />
+            <p v-if="field.isRequired" v-text="$t('question.required')" />
+            <p v-else v-text="$t('question.optional')" />
           </div>
 
           <Validation :validations="field.validate().title" class="settings__edition-form__group">
