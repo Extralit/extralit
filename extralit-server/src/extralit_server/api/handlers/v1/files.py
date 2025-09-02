@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import tempfile
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Header, HTTPException, Request, Security, UploadFile
@@ -20,7 +21,7 @@ from fastapi.responses import Response, StreamingResponse
 from minio import Minio, S3Error
 
 from extralit_server.api.policies.v1 import FilePolicy, authorize
-from extralit_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata
+from extralit_server.api.schemas.v1.files import FileExtractionResponse, ListObjectsResponse, ObjectMetadata
 from extralit_server.contexts import files
 from extralit_server.contexts.files import LocalFileStorage
 from extralit_server.models import User
@@ -192,6 +193,65 @@ async def list_objects(
             ) from se
     except Exception as e:
         raise e
+
+
+@router.post("/extract", response_model=FileExtractionResponse)
+async def extract_file_content(
+    *,
+    file: Annotated[UploadFile, File()],
+    current_user: User | None = Security(auth.get_optional_current_user),
+):
+    """Extract text and metadata from uploaded file using Extractous"""
+    try:
+        # Import Extractous here to handle import errors gracefully
+        from extractous import Extractor
+    except ImportError as e:
+        _LOGGER.error(f"Extractous library not available: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail="Extractous library not available. Please install it to use extraction features."
+        ) from e
+
+    # Validate file size (limit to 50MB for MVP)
+    max_file_size = 50 * 1024 * 1024  # 50MB
+    if file.size and file.size > max_file_size:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Maximum size is {max_file_size // (1024 * 1024)}MB"
+        )
+
+    # Create temporary file to save uploaded content
+    try:
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            # Read file content and write to temporary file
+            content = await file.read()
+            temp_file.write(content)
+            temp_file.flush()
+            
+            # Extract text and metadata using Extractous
+            extractor = Extractor()
+            extractor = extractor.set_extract_string_max_length(100000)  # Limit to 100k chars
+            
+            extracted_text, metadata = extractor.extract_file_to_string(temp_file.name)
+            
+            # Clean up temporary file
+            import os
+            os.unlink(temp_file.name)
+            
+            return FileExtractionResponse(
+                extracted_text=extracted_text,
+                metadata=metadata,
+                original_filename=file.filename or "unknown",
+                content_type=file.content_type,
+                file_size=file.size
+            )
+            
+    except Exception as e:
+        _LOGGER.error(f"Error extracting content from file '{file.filename}': {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to extract content: {str(e)}"
+        ) from e
 
 
 @router.delete("/file/{bucket}/{object:path}")

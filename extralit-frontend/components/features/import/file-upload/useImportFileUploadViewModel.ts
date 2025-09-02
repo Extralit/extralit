@@ -24,6 +24,9 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
     totalFiles: 0,
   });
 
+  // Track uploaded files for extraction
+  const uploadedFiles = ref<File[]>([]);
+
   // Computed properties
   const isValid = computed(() => {
     return (
@@ -49,10 +52,39 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       totalFiles: data.totalFiles || 0,
     };
 
+    // Update uploaded files list for extraction
+    const allFiles: File[] = [];
+    if (data.matchedFiles) {
+      data.matchedFiles.forEach((matched: any) => {
+        if (matched.file && matched.file instanceof File) {
+          allFiles.push(matched.file);
+        }
+      });
+    }
+    if (data.unmatchedFiles) {
+      data.unmatchedFiles.forEach((unmatched: any) => {
+        if (unmatched instanceof File) {
+          allFiles.push(unmatched);
+        } else if (unmatched.file && unmatched.file instanceof File) {
+          allFiles.push(unmatched.file);
+        }
+      });
+    }
+    uploadedFiles.value = allFiles;
+
     // Update dataframe data with matched file paths
     updateDataframeWithFilePaths(data.matchedFiles || []);
 
     emitPdfUpdate();
+  };
+
+  // Extraction event handlers
+  const handleExtractionSuccess = (data: any) => {
+    emit("extraction-success", data);
+  };
+
+  const handleExtractionError = (data: any) => {
+    emit("extraction-error", data);
   };
 
   // Event emitters
@@ -172,6 +204,9 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       totalFiles: 0,
     };
 
+    // Reset uploaded files
+    uploadedFiles.value = [];
+
     // Clear the initialization flag and emit updates after reset
     nextTick(() => {
       isInitializing.value = false;
@@ -223,6 +258,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
     isInitializing,
     bibData,
     pdfData,
+    uploadedFiles,
 
     // Computed
     isValid,
@@ -230,6 +266,8 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
     // Methods
     handleBibUpdate,
     handlePdfUpdate,
+    handleExtractionSuccess,
+    handleExtractionError,
     emitBibUpdate,
     emitPdfUpdate,
     updateDataframeWithFilePaths,

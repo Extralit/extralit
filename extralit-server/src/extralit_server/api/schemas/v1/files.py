@@ -113,6 +113,15 @@ class ListObjectsResponse(BaseModel):
         return objects
 
 
+class FileExtractionResponse(BaseModel):
+    """Response for file content extraction using Extractous"""
+    extracted_text: str
+    metadata: dict[str, Any]
+    original_filename: str
+    content_type: str | None = None
+    file_size: int | None = None
+
+
 class FileObjectResponse(BaseModel):
     response: HTTPResponse
     metadata: ObjectMetadata
