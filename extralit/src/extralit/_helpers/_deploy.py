@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from extralit.client import Extralit
 
 _SLEEP_TIME = 10
-_EXTRALIT_SPACE_TEMPLATE_REPO = "argilla/argilla-template-space"
+_EXTRALIT_SPACE_TEMPLATE_REPO = "extralit/public-demo"
 
 
 class SpacesDeploymentMixin(LoggingMixin):

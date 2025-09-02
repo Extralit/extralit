@@ -20,6 +20,8 @@ Create Date: 2025-08-17 23:12:00.379621
 
 """
 
+import json
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -50,6 +52,42 @@ def upgrade() -> None:
     op.create_index(op.f("ix_workflows_document_id"), "workflows", ["document_id"], unique=False)
     op.create_index(op.f("ix_workflows_reference"), "workflows", ["reference"], unique=False)
     op.create_index(op.f("ix_workflows_group_id"), "workflows", ["group_id"], unique=False)
+
+    connection = op.get_bind()
+
+    # Find all questions with dynamic question types
+    questions_table = sa.table("questions", sa.column("id", sa.Uuid), sa.column("settings", sa.JSON))
+
+    # Query for questions with dynamic types
+    dynamic_questions = connection.execute(
+        questions_table.select().where(
+            sa.or_(
+                sa.func.json_extract(questions_table.c.settings, "$.type") == "dynamic_label_selection",
+                sa.func.json_extract(questions_table.c.settings, "$.type") == "dynamic_multi_label_selection",
+            )
+        )
+    ).fetchall()
+
+    # Update each dynamic question to use strict=False
+    for question in dynamic_questions:
+        settings = question.settings
+        if isinstance(settings, str):
+            settings = json.loads(settings)
+
+        # Add strict=False to settings
+        settings["strict"] = False
+
+        # Update the question type to non-dynamic equivalent
+        if settings.get("type") == "dynamic_label_selection":
+            settings["type"] = "label_selection"
+        elif settings.get("type") == "dynamic_multi_label_selection":
+            settings["type"] = "multi_label_selection"
+
+        # Update the question in database
+        connection.execute(
+            questions_table.update().where(questions_table.c.id == question.id).values(settings=settings)
+        )
+
     # ### end Alembic commands ###
 
 

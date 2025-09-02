@@ -257,9 +257,7 @@ def es_mapping_for_question(question: Question) -> dict:
         return {"type": "integer"}
     elif question_type in [
         QuestionType.label_selection,
-        QuestionType.dynamic_label_selection,
         QuestionType.multi_label_selection,
-        QuestionType.dynamic_multi_label_selection,
     ]:
         return {"type": "keyword"}
     else:

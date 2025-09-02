@@ -147,19 +147,21 @@ class RatingQuestionSettingsUpdate(UpdateSchema):
 
 # Label selection question
 class LabelSelectionQuestionSettings(BaseModel):
-    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
+    type: Literal[QuestionType.label_selection]
     options: list[OptionSettings]
     visible_options: int | None = None
+    strict: bool = True
 
 
 class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
-    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
+    type: Literal[QuestionType.label_selection]
     options: conlist(
         item_type=OptionSettingsCreate,
         min_length=LABEL_SELECTION_OPTIONS_MIN_ITEMS,
         max_length=settings.label_selection_options_max_items,
     )
     visible_options: int | None = Field(None, ge=LABEL_SELECTION_MIN_VISIBLE_OPTIONS)
+    strict: bool = True
 
     @model_validator(mode="after")
     @classmethod
@@ -169,7 +171,7 @@ class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
         visible_options = instance.visible_options
         if visible_options is not None:
             num_options = len(instance.options)
-            if visible_options > num_options and "dynamic" not in instance.type:
+            if visible_options > num_options and instance.strict:
                 raise ValueError(
                     "the value for 'visible_options' must be less or equal to the number of items in 'options'"
                     f" ({num_options})"
@@ -179,8 +181,9 @@ class LabelSelectionQuestionSettingsCreate(UniqueValuesCheckerMixin):
 
 
 class LabelSelectionSettingsUpdate(UpdateSchema):
-    type: Literal[QuestionType.label_selection, QuestionType.dynamic_label_selection]
+    type: Literal[QuestionType.label_selection]
     visible_options: int | None = Field(None)
+    strict: bool | None = None
     options: (
         conlist(
             item_type=OptionSettings,
@@ -190,23 +193,25 @@ class LabelSelectionSettingsUpdate(UpdateSchema):
         | None
     ) = None
 
+    __non_nullable_fields__ = {"strict"}
+
 
 # Multi-label selection question
 class MultiLabelSelectionQuestionSettings(LabelSelectionQuestionSettings):
-    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection]
     options_order: OptionsOrder = OptionsOrder.natural
 
 
 class MultiLabelSelectionQuestionSettingsCreate(LabelSelectionQuestionSettingsCreate):
-    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection]
     options_order: OptionsOrder = OptionsOrder.natural
 
 
 class MultiLabelSelectionQuestionSettingsUpdate(LabelSelectionSettingsUpdate):
-    type: Literal[QuestionType.multi_label_selection, QuestionType.dynamic_multi_label_selection]
+    type: Literal[QuestionType.multi_label_selection]
     options_order: OptionsOrder | None = None
 
-    __non_nullable_fields__ = {"options_order"}
+    __non_nullable_fields__ = {"options_order", "strict"}
 
 
 # Ranking question

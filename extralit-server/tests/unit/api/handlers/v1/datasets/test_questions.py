@@ -81,6 +81,7 @@ class TestDatasetQuestions:
                         {"value": "neutral", "text": "Neutral", "description": "Text with a neutral sentiment"},
                     ],
                     "visible_options": None,
+                    "strict": True,
                 },
             ),
             (
@@ -101,6 +102,7 @@ class TestDatasetQuestions:
                         {"value": "neutral", "text": "Neutral", "description": None},
                     ],
                     "visible_options": 3,
+                    "strict": True,
                 },
             ),
             (
@@ -560,7 +562,11 @@ class TestDatasetQuestions:
             {
                 "type": "ranking",
                 "options": [
-                    {"value": value, "text": value, "description": value}
+                    {
+                        "value": value,
+                        "text": value,
+                        "description": value,
+                    }
                     for value in range(0, RANKING_OPTIONS_MAX_ITEMS + 1)
                 ],
             },

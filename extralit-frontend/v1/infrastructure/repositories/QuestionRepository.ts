@@ -72,6 +72,7 @@ export class QuestionRepository implements IQuestionRepository {
       settings: {
         ...(settings as any),
         visible_options: settings.shouldShowVisibleOptions ? settings.visible_options : undefined,
+        strict: settings.strict,
       },
     };
   }

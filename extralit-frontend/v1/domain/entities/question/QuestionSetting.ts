@@ -10,6 +10,7 @@ export interface QuestionPrototype {
   allow_overlapping?: boolean;
   allow_character_annotation?: boolean;
   field?: string;
+  strict?: boolean;
 }
 
 export class QuestionSetting {
@@ -22,6 +23,7 @@ export class QuestionSetting {
   field: string;
   options: any;
   options_order: "natural" | "suggestion";
+  strict: boolean;
 
   constructor(settings: QuestionPrototype) {
     this.type = QuestionType.from(settings.type);
@@ -34,6 +36,7 @@ export class QuestionSetting {
     this.allow_overlapping = settings.allow_overlapping;
     this.allow_character_annotation = settings.allow_character_annotation;
     this.field = settings.field;
+    this.strict = settings.strict ?? true; // Default to true for backward compatibility
   }
 
   get suggestionFirst() {
@@ -56,6 +59,7 @@ export class QuestionSetting {
       this.use_table === setting.use_table &&
       this.visible_options === setting.visible_options &&
       this.options_order === setting.options_order &&
+      this.strict === setting.strict &&
       JSON.stringify(this.options) === JSON.stringify(setting.options)
     );
   }
@@ -71,6 +75,7 @@ export class QuestionSetting {
       allow_overlapping: this.allow_overlapping,
       allow_character_annotation: this.allow_character_annotation,
       field: this.field,
+      strict: this.strict,
     };
   }
 }

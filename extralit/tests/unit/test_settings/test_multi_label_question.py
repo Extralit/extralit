@@ -33,3 +33,17 @@ class TestMultiLabelQuestions:
         assert question.visible_labels == 4
         question.visible_labels = 3
         assert question.visible_labels == 3
+
+    def test_strict_default_true(self):
+        question = ex.MultiLabelQuestion(name="test_question", labels=["label1", "label2"])
+        assert question.strict is True
+
+    def test_strict_false(self):
+        question = ex.MultiLabelQuestion(name="test_question", labels=["label1", "label2"], strict=False)
+        assert question.strict is False
+
+    def test_strict_setter(self):
+        question = ex.MultiLabelQuestion(name="test_question", labels=["label1", "label2"])
+        assert question.strict is True
+        question.strict = False
+        assert question.strict is False

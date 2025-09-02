@@ -30,7 +30,7 @@ class TestsCreateToken:
             self.url(),
             data={
                 "username": user.username,
-                "password": "12345678",
+                "password": "1234",
             },
         )
 
@@ -45,7 +45,7 @@ class TestsCreateToken:
             self.url(),
             data={
                 "username": "invalid-username",
-                "password": "12345678",
+                "password": "1234",
             },
         )
 
