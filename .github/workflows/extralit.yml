@@ -14,7 +14,7 @@ on:
       - releases/**
     paths:
       - "extralit/**"
-      - ".github/workflows/extralit.*"
+      - ".github/workflows/extralit.yml"
 
   pull_request:
     types: [opened, edited, synchronize, reopened, ready_for_review]

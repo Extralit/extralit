@@ -15,7 +15,6 @@ on:
     types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "extralit/**"
-      - "extralit-server/**"
 
 # Declare default permissions as read only.
 permissions: read-all
