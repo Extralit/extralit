@@ -16,29 +16,29 @@ from extralit_server.security.authentication.oauth2._backends import KeycloakOpe
 
 
 class TestKeyCloackOpenIdBackend:
-    def test_get_user_details_with_argilla_role(self):
+    def test_get_user_details_with_extralit_role(self):
         backend = KeycloakOpenId(strategy=Strategy())
 
         user_details = backend.get_user_details(
             {
-                "realm_access": {"roles": ["role1", "role2", "argilla_role:annotator"]},
+                "realm_access": {"roles": ["role1", "role2", "extralit_role:annotator"]},
             }
         )
 
         assert user_details["role"] == "annotator"
 
-    def test_get_user_details_with_wrong_argilla_role_definition(self):
+    def test_get_user_details_with_wrong_extralit_role_definition(self):
         backend = KeycloakOpenId(strategy=Strategy())
 
         user_details = backend.get_user_details(
             {
-                "realm_access": {"roles": ["role1", "role2", "argilla_role=annotator"]},
+                "realm_access": {"roles": ["role1", "role2", "extralit_role=annotator"]},
             }
         )
 
         assert "role" not in user_details
 
-    def test_get_user_details_without_argilla_role(self):
+    def test_get_user_details_without_extralit_role(self):
         backend = KeycloakOpenId(strategy=Strategy())
 
         user_details = backend.get_user_details(

@@ -32,6 +32,7 @@ from extralit_server.constants import (
     DATABASE_SQLITE,
     DEFAULT_DATABASE_POSTGRESQL_MAX_OVERFLOW,
     DEFAULT_DATABASE_POSTGRESQL_POOL_SIZE,
+    DEFAULT_DATABASE_POSTGRESQL_SCHEME,
     DEFAULT_DATABASE_SQLITE_TIMEOUT,
     DEFAULT_LABEL_SELECTION_OPTIONS_MAX_ITEMS,
     DEFAULT_SPAN_OPTIONS_MAX_ITEMS,
@@ -215,14 +216,14 @@ class Settings(BaseSettings):
 
         if "postgres" in database_url:
             parsed_url = urlparse(database_url)
-            if parsed_url.scheme.__contains__("postgres"):
-                # warnings.warn(
-                #     "From version 1.14.0, Extralit will use `asyncpg` as default PostgreSQL driver. The protocol in the"
-                #     " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
-                #     " Please, update your database URL to use `postgresql+asyncpg` protocol."
-                # )
-                new_scheme = "postgresql+asyncpg"
-                database_url = urlunparse(parsed_url._replace(scheme=new_scheme))
+            if parsed_url.scheme.__contains__("postgres") and not parsed_url.scheme.__contains__("asyncpg"):
+                warnings.warn(
+                    "From version 1.14.0, Extralit will use `asyncpg` as default PostgreSQL driver. The protocol in the"
+                    " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
+                    " Please, update your database URL to use `postgresql+asyncpg` protocol.",
+                    stacklevel=2,
+                )
+                database_url = urlunparse(parsed_url._replace(scheme=DEFAULT_DATABASE_POSTGRESQL_SCHEME))
 
             if not database_url.startswith("postgresql+asyncpg://"):
                 raise ValueError(
