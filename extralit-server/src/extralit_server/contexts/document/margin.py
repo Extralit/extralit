@@ -141,7 +141,7 @@ class PDFAnalyzer:
             filename: Filename for logging
 
         Returns:
-            Dictionary containing layout analysis metadata
+            Dictionary containing layout analysis metadata and first page image
         """
 
         try:
@@ -157,6 +157,7 @@ class PDFAnalyzer:
             return {
                 "page_count": len(images),
                 "page_dimensions": {"width": images[0].size[0], "height": images[0].size[1]} if images else {},
+                "first_page_image": images[0] if images else None,  # Include first page image for thumbnail generation
                 **layout_data,
             }
 
