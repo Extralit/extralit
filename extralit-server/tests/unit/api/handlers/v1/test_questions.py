@@ -23,7 +23,6 @@ from extralit_server.api.schemas.v1.questions import (
     QUESTION_CREATE_TITLE_MAX_LENGTH,
 )
 from extralit_server.constants import API_KEY_HEADER_NAME
-from extralit_server.enums import OptionsOrder
 from extralit_server.models import DatasetStatus, Question, UserRole
 from tests.factories import (
     AnnotatorFactory,
@@ -97,6 +96,7 @@ if TYPE_CHECKING:
                     {"value": "option3", "text": "Option 3", "description": None},
                 ],
                 "visible_options": 3,
+                "strict": True,
             },
         ),
         (
@@ -115,7 +115,8 @@ if TYPE_CHECKING:
                     {"value": "option3", "text": "Option 3", "description": None},
                 ],
                 "visible_options": 3,
-                "options_order": OptionsOrder.natural,
+                "options_order": "natural",
+                "strict": True,
             },
         ),
         (
@@ -139,7 +140,8 @@ if TYPE_CHECKING:
                     {"value": "option2", "text": "Option 2", "description": None},
                 ],
                 "visible_options": None,
-                "options_order": OptionsOrder.natural,
+                "options_order": "natural",
+                "strict": True,
             },
         ),
         (
@@ -153,6 +155,7 @@ if TYPE_CHECKING:
                     {"value": "option3", "text": "Option 3", "description": None},
                 ],
                 "visible_options": None,
+                "strict": True,
             },
         ),
         (
@@ -176,6 +179,7 @@ if TYPE_CHECKING:
                     {"value": "option2", "text": "Option 2", "description": None},
                     {"value": "option1", "text": "Option 1", "description": None},
                 ],
+                "strict": True,
             },
         ),
         (
@@ -428,6 +432,16 @@ async def test_update_question_with_invalid_settings(
     # Skip validation for visible_options for now
     if payload and isinstance(payload.get("settings"), dict) and "visible_options" in payload.get("settings", {}):
         pytest.skip("Validation for visible_options is not enforced properly")
+    elif QuestionFactory in [LabelSelectionQuestionFactory, MultiLabelSelectionQuestionFactory] and payload.get(
+        "settings", {}
+    ).get("options"):
+        # Now allowed: updating options for label/multilabel questions
+        response_json = response.json()
+        assert response.status_code == 200, payload
+        assert "options" in response_json["settings"]
+        assert [opt["value"] for opt in response_json["settings"]["options"]] == [
+            opt["value"] for opt in payload["settings"]["options"]
+        ]
     else:
         assert response.status_code == 422, payload
 
