@@ -17,7 +17,6 @@ on:
       - ".github/workflows/extralit-server.yml"
 
   pull_request:
-    types: [opened, edited, synchronize, reopened, ready_for_review]
     paths:
       - "extralit-server/**"
       - ".github/workflows/extralit-server.yml"
