@@ -26,6 +26,8 @@ class StartWorkflowRequest(BaseModel):
     workspace_name: str = Field(..., description="Workspace name")
     reference: Optional[str] = Field(None, description="Document reference for tracking")
     force: bool = Field(False, description="Force restart if workflow already exists")
+    wait: bool = Field(True, description="Wait for job to finish before returning")
+    timeout: Optional[int] = Field(60, description="Max seconds to wait if wait=True")
 
 
 class StartWorkflowResponse(BaseModel):
