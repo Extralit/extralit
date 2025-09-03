@@ -28,7 +28,7 @@ class TestDocumentJobs:
     @patch("extralit_server.jobs.document_jobs.PDFPreprocessor")
     @patch("extralit_server.jobs.document_jobs.PDFAnalyzer")
     @patch("extralit_server.jobs.document_jobs.PDFOCRLayerDetector")
-    @patch("extralit_server.jobs.document_jobs.SyncSessionLocal")
+    @patch("extralit_server.jobs.document_jobs.AsyncSessionLocal")
     @patch("extralit_server.jobs.document_jobs.get_current_job")
     def test_analysis_and_preprocess_job_success(
         self,
@@ -210,7 +210,7 @@ class TestDocumentJobs:
             mock_preprocessor_class.return_value = mock_preprocessor
 
             # Mock database
-            with patch("extralit_server.jobs.document_jobs.SyncSessionLocal") as mock_session:
+            with patch("extralit_server.jobs.document_jobs.AsyncSessionLocal") as mock_session:
                 mock_db = MagicMock()
                 mock_document = MagicMock()
                 mock_document.metadata_ = None
