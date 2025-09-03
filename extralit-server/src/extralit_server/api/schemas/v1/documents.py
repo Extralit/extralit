@@ -13,9 +13,12 @@
 # limitations under the License.
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+from extralit_server.contexts import files
 
 
 class DocumentCreate(BaseModel):
@@ -68,3 +71,21 @@ class DocumentListItem(BaseModel):
         from_attributes=True,
         populate_by_name=True,
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def generate_thumbnail_url(cls, data: Any):
+        """Generate thumbnail URL if workspace relationship is available."""
+        if hasattr(data, "__dict__"):
+            try:
+                if hasattr(data, "workspace") and data.workspace is not None:
+                    workspace_name = data.workspace.name
+                    thumbnail_object_path = files.get_thumbnail_s3_object_path(data.id)
+                    thumbnail_url = files.get_proxy_document_url(workspace_name, thumbnail_object_path)
+
+                    if not hasattr(data, "thumbnail_url") or data.thumbnail_url is None:
+                        data.thumbnail_url = thumbnail_url
+            except Exception:
+                pass
+
+        return data

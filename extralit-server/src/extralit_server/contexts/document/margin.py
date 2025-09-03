@@ -31,7 +31,6 @@ except Exception as e:
 pdf2image = lazy.load("pdf2image")
 PIL = lazy.load("PIL")
 
-# Import thumbnail generation function
 from extralit_server.contexts.document.thumbnail import generate_thumbnail_from_image
 
 if TYPE_CHECKING:

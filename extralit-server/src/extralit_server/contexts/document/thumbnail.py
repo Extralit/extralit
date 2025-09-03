@@ -19,11 +19,10 @@ from typing import TYPE_CHECKING
 import lazy_loader as lazy
 
 pdf2image = lazy.load("pdf2image")
+PIL = lazy.load("PIL")
 
 if TYPE_CHECKING:
     from PIL.Image import Image
-else:
-    Image = None
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ def generate_thumbnail_from_image(image: "Image", max_width: int = 200, max_heig
         new_height = int(original_height * scale_factor)
 
         # Create thumbnail
-        thumbnail = image.resize((new_width, new_height), resample=pdf2image.PIL.Image.LANCZOS)  # type: ignore
+        thumbnail = image.resize((new_width, new_height), resample=PIL.Image.Resampling.LANCZOS)  # type: ignore
 
         # Convert to bytes in PNG format
         thumbnail_buffer = io.BytesIO()

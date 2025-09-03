@@ -112,6 +112,7 @@ test = [
     "pytest-randomly>=3.16.0",
     # For mocking httpx requests and responses
     "respx>=0.21.1",
+    "ruff>=0.12.11"
 ]
 
 [tool.pytest.ini_options]
@@ -215,8 +216,3 @@ test-cov = { cmd = "pytest tests --cov=extralit_server --cov-report=term --cov-r
 lint = "ruff check"
 
 docker-build-extralit-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }
-
-[dependency-groups]
-dev = [
-    "ruff>=0.12.11",
-]

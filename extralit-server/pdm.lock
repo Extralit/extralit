@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "dev", "postgresql", "test"]
+groups = ["default", "postgresql", "test"]
 strategy = []
 lock_version = "4.5.0"
 content_hash = "sha256:ae956c69dd966ae2f39ce5e36cb58f5ce7e2db7d389514d428b5fdafb07bc2ae"
