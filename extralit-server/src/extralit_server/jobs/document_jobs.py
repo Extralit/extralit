@@ -30,7 +30,6 @@ from extralit_server.contexts.document import preprocessing
 from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
 from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
-from extralit_server.contexts.document.thumbnail import generate_thumbnail_from_image
 from extralit_server.database import AsyncSessionLocal, SyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, JOB_TIMEOUT_DISABLED, REDIS_CONNECTION
 from extralit_server.models.database import Document
@@ -257,16 +256,13 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
         ocr_quality = ocr_detector.analyze_character_quality(pdf_data)
 
         pdf_analyzer = PDFAnalyzer()
-        layout_analysis = pdf_analyzer.analyze_pdf_layout(pdf_data, filename)
-        
-        # Extract first page image for thumbnail generation (do this before creating analysis result)
-        first_page_image = layout_analysis.pop("first_page_image", None)
+        layout_analysis, thumbnail_data = pdf_analyzer.analyze_pdf_layout(pdf_data, filename)
 
         analysis_result = {
             "document_id": str(document_id),
             "has_ocr_text_layer": has_ocr_text_layer,
             "ocr_quality_score": ocr_quality.get("ocr_quality_score", 0.0),
-            "layout_analysis": layout_analysis,  # Now clean of PIL Image objects
+            "layout_analysis": layout_analysis,
             "needs_ocr": not has_ocr_text_layer or ocr_quality.get("ocr_quality_score", 0.0) < 0.7,
             "analysis_metadata": {
                 "total_chars": ocr_quality.get("total_chars", 0),
@@ -294,28 +290,23 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
             metadata={"processing_applied": "ocrmypdf_rotation", "original_filename": filename},
         )
 
-        # Step 3: Generate and store thumbnail image using first page from analysis
+        # Step 3: Generate and store thumbnail image
         try:
-            if first_page_image is not None:
-                thumbnail_data = generate_thumbnail_from_image(first_page_image)
-                thumbnail_object_path = files.get_thumbnail_s3_object_path(document_id)
-                
-                files.put_object(
-                    client,
-                    workspace_name,
-                    thumbnail_object_path,
-                    thumbnail_data,
-                    len(thumbnail_data),
-                    content_type="image/png",
-                    metadata={"source": "first_page_thumbnail", "original_filename": filename},
-                )
-                
-                _LOGGER.info(f"Generated and stored thumbnail for document {document_id} from layout analysis")
-                thumbnail_generated = True
-            else:
-                _LOGGER.warning(f"No first page image available from layout analysis for document {document_id}")
-                thumbnail_generated = False
-            
+            thumbnail_object_path = files.get_thumbnail_s3_object_path(document_id)
+
+            files.put_object(
+                client,
+                workspace_name,
+                thumbnail_object_path,
+                thumbnail_data,
+                len(thumbnail_data),
+                content_type="image/png",
+                metadata={"source": "first_page_thumbnail", "original_filename": filename},
+            )
+
+            _LOGGER.info(f"Generated and stored thumbnail for document {document_id}")
+            thumbnail_generated = True
+
         except Exception as e:
             _LOGGER.warning(f"Failed to generate thumbnail for document {document_id}: {e}")
             thumbnail_generated = False
