@@ -66,8 +66,10 @@ class TestUpdateQuestion:
             },
         )
 
-        assert response.status_code == 422
-        assert response.json() == {"detail": "the number of options cannot be modified. expected 3 but got 4"}
+        assert response.status_code == 200
+        response_json = response.json()
+        assert len(response_json["settings"]["options"]) == 4
+        assert response_json["settings"]["options"][3]["value"] == "label-d"
 
     async def test_update_question_with_different_options(self, async_client: AsyncClient, owner_auth_header: dict):
         question = await LabelSelectionQuestionFactory.create()
@@ -87,10 +89,9 @@ class TestUpdateQuestion:
             },
         )
 
-        assert response.status_code == 422
-        assert response.json() == {
-            "detail": "the option values cannot be modified. found unexpected option values: ['label-a', 'label-b', 'label-c']"
-        }
+        assert response.status_code == 200
+        response_json = response.json()
+        assert [opt["value"] for opt in response_json["settings"]["options"]] == ["label-a", "label-b", "label-c"]
 
     async def test_update_multi_label_selection_question_with_options_order(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
@@ -191,7 +192,7 @@ class TestUpdateQuestion:
 
         assert response.status_code == 422
         assert response.json() == {
-            "detail": "the value for 'visible_options' must be less or equal to the number of items in 'options' (3)"
+            "detail": "the value for 'visible_options' must be less or equal to the number of items in 'options' (3) for strict questions"
         }
 
     async def test_update_span_question_enabling_allow_overlapping(
@@ -199,7 +200,7 @@ class TestUpdateQuestion:
     ):
         question = await SpanQuestionFactory.create(
             settings={
-                "type": QuestionType.span.value,
+                "type": QuestionType.span,
                 "field": "field-a",
                 "options": [
                     {"value": "label-a", "text": "Label A", "description": "Label A description"},
@@ -229,7 +230,7 @@ class TestUpdateQuestion:
             "dataset_id": str(question.dataset_id),
             "required": False,
             "settings": {
-                "type": QuestionType.span.value,
+                "type": QuestionType.span,
                 "field": "field-a",
                 "options": [
                     {"value": "label-a", "text": "Label A", "description": "Label A description"},
@@ -249,7 +250,7 @@ class TestUpdateQuestion:
     ):
         question = await SpanQuestionFactory.create(
             settings={
-                "type": QuestionType.span.value,
+                "type": QuestionType.span,
                 "field": "field-a",
                 "options": [
                     {"value": "label-a", "text": "Label A", "description": "Label A description"},

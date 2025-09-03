@@ -144,7 +144,7 @@ class LabelQuestion(QuestionBase):
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
-        dynamic: bool = False,
+        strict: bool = True,
         visible_labels: Optional[int] = None,
         client: Optional[Extralit] = None,
     ) -> None:
@@ -159,6 +159,7 @@ class LabelQuestion(QuestionBase):
             title (Optional[str]): The title of the question to be shown in the UI.
             description (Optional[str]): The description of the question to be shown in the UI.
             required (bool): If the question is required for a record to be valid. At least one question must be required.
+            strict (bool): Whether selections must be limited to predefined labels. If False, allows dynamic selections.
             visible_labels (Optional[int]): The number of visible labels for the question to be shown in the UI. \
                 Setting it to None show all options.
         """
@@ -171,6 +172,7 @@ class LabelQuestion(QuestionBase):
             settings=LabelQuestionSettings(
                 options=self._render_values_as_options(labels),
                 visible_options=visible_labels,
+                strict=strict,
             ),
             _client=client,
         )
@@ -195,6 +197,14 @@ class LabelQuestion(QuestionBase):
     def visible_labels(self, visible_labels: Optional[int]) -> None:
         self._model.settings.visible_options = visible_labels
 
+    @property
+    def strict(self) -> bool:
+        return self._model.settings.strict
+
+    @strict.setter
+    def strict(self, strict: bool) -> None:
+        self._model.settings.strict = strict
+
     @classmethod
     def from_model(cls, model: QuestionModel) -> "Self":
         instance = cls(name=model.name, labels=cls._render_options_as_labels(model.settings.options))
@@ -213,6 +223,7 @@ class MultiLabelQuestion(LabelQuestion):
         title: Optional[str] = None,
         description: Optional[str] = None,
         required: bool = True,
+        strict: bool = True,
         client: Optional[Extralit] = None,
     ) -> None:
         """Create a new multi-label question for `Settings` of a `Dataset`. A \
@@ -231,6 +242,7 @@ class MultiLabelQuestion(LabelQuestion):
             title (Optional[str]: The title of the question to be shown in the UI.
             description (Optional[str]): The description of the question to be shown in the UI.
             required (bool): If the question is required for a record to be valid. At least one question must be required.
+            strict (bool): Whether selections must be limited to predefined labels. If False, allows dynamic selections.
         """
         QuestionBase.__init__(
             self,
@@ -242,6 +254,7 @@ class MultiLabelQuestion(LabelQuestion):
                 options=self._render_values_as_options(labels),
                 visible_options=visible_labels,
                 options_order=labels_order,
+                strict=strict,
             ),
             _client=client,
         )
@@ -524,9 +537,9 @@ QuestionType = Union[
 def question_from_model(model: QuestionModel) -> QuestionType:
     question_type = model.type
 
-    if question_type in ["label_selection", "dynamic_label_selection"]:
+    if question_type == "label_selection":
         return LabelQuestion.from_model(model)
-    elif question_type in ["multi_label_selection", "dynamic_multi_label_selection"]:
+    elif question_type == "multi_label_selection":
         return MultiLabelQuestion.from_model(model)
     elif question_type == "ranking":
         return RankingQuestion.from_model(model)

@@ -23,7 +23,6 @@ from extralit_server.api.schemas.v1.questions import (
     QUESTION_CREATE_TITLE_MAX_LENGTH,
 )
 from extralit_server.constants import API_KEY_HEADER_NAME
-from extralit_server.enums import OptionsOrder
 from extralit_server.models import DatasetStatus, Question, UserRole
 from tests.factories import (
     AnnotatorFactory,
@@ -97,6 +96,7 @@ if TYPE_CHECKING:
                     {"value": "option3", "text": "Option 3", "description": None},
                 ],
                 "visible_options": 3,
+                "strict": True,
             },
         ),
         (
@@ -115,7 +115,8 @@ if TYPE_CHECKING:
                     {"value": "option3", "text": "Option 3", "description": None},
                 ],
                 "visible_options": 3,
-                "options_order": OptionsOrder.natural,
+                "options_order": "natural",
+                "strict": True,
             },
         ),
         (
@@ -139,7 +140,8 @@ if TYPE_CHECKING:
                     {"value": "option2", "text": "Option 2", "description": None},
                 ],
                 "visible_options": None,
-                "options_order": OptionsOrder.natural,
+                "options_order": "natural",
+                "strict": True,
             },
         ),
         (
@@ -153,6 +155,7 @@ if TYPE_CHECKING:
                     {"value": "option3", "text": "Option 3", "description": None},
                 ],
                 "visible_options": None,
+                "strict": True,
             },
         ),
         (
@@ -176,6 +179,7 @@ if TYPE_CHECKING:
                     {"value": "option2", "text": "Option 2", "description": None},
                     {"value": "option1", "text": "Option 1", "description": None},
                 ],
+                "strict": True,
             },
         ),
         (
@@ -342,78 +346,7 @@ async def test_update_question_with_invalid_description(
         (TextQuestionFactory, {"settings": {"type": "text", "use_markdown": None}}),
         (TextQuestionFactory, {"title": "New Title", "settings": {"type": "label_selection"}}),
         (LabelSelectionQuestionFactory, {"settings": {"type": "label_selection", "visible_options": -5}}),
-        (
-            LabelSelectionQuestionFactory,
-            {
-                "settings": {
-                    "type": "label_selection",
-                    "options": [{"value": "undefined-option", "text": "Undefined option"}],
-                }
-            },
-        ),
-        (
-            LabelSelectionQuestionFactory,
-            {
-                "settings": {
-                    "type": "label_selection",
-                    "options": [
-                        {"value": "undefined-option-01", "text": "Undefined option"},
-                        {"value": "undefined-option-02", "text": "Undefined option"},
-                        {"value": "undefined-option-03", "text": "Undefined option"},
-                    ],
-                }
-            },
-        ),
         (MultiLabelSelectionQuestionFactory, {"settings": {"type": "multi_label_selection", "visible_options": -5}}),
-        (
-            MultiLabelSelectionQuestionFactory,
-            {
-                "settings": {
-                    "type": "multi_label_selection",
-                    "options": [{"value": "undefined-option", "text": "Undefined option"}],
-                }
-            },
-        ),
-        (
-            MultiLabelSelectionQuestionFactory,
-            {
-                "settings": {
-                    "type": "multi_label_selection",
-                    "options": [
-                        {"value": "undefined-option-01", "text": "Undefined option"},
-                        {"value": "undefined-option-02", "text": "Undefined option"},
-                        {"value": "undefined-option-03", "text": "Undefined option"},
-                    ],
-                }
-            },
-        ),
-        (
-            SpanQuestionFactory,
-            {
-                "settings": {
-                    "type": "span",
-                    "field": "field-a",
-                    "options": [
-                        {"value": "label-b", "text": "Label B", "description": "Label B description"},
-                        {"value": "label-c", "text": "Label C", "description": "Label C description"},
-                    ],
-                }
-            },
-        ),
-        (
-            SpanQuestionFactory,
-            {
-                "settings": {
-                    "type": "span",
-                    "field": "field-a",
-                    "options": [
-                        {"value": "label-a", "text": "Label A", "description": "Label A description"},
-                        {"value": "label-b", "text": "Label B", "description": "Label B description"},
-                        {"value": "label-d", "text": "Label D", "description": "Label D description"},
-                    ],
-                }
-            },
-        ),
     ],
 )
 @pytest.mark.asyncio

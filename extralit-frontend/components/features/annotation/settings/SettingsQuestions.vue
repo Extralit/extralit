@@ -10,17 +10,17 @@
                 <h4 class="--body1 --medium" v-text="question.name" />
                 <BaseBadge class="--capitalized" :text="`${$t(question.type)}`" />
               </div>
-              <p v-if="question.isRequired" v-text="$t('required')" />
-              <p v-else v-text="$t('optional')" />
+              <p v-if="question.isRequired" v-text="$t('question.required')" />
+              <p v-else v-text="$t('question.optional')" />
             </div>
 
             <Validation :validations="question.validate().title" class="settings__edition-form__group">
-              <label :for="`title-${question.id}`" v-text="$t('title')" />
+              <label :for="`title-${question.id}`" v-text="$t('question.title')" />
               <input type="type" :id="`title-${question.id}`" v-model="question.title" />
             </Validation>
 
             <Validation :validations="question.validate().description" class="settings__edition-form__group">
-              <label :for="`description-${question.id}`" v-text="$t('description')" />
+              <label :for="`description-${question.id}`" v-text="$t('question.description')" />
               <textarea :id="`description-${question.id}`" v-model="question.description" />
             </Validation>
 
@@ -28,14 +28,7 @@
               class="settings__edition-form__group --subcategories"
               v-if="question.isMultiLabelType || question.isSingleLabelType || question.isSpanType"
             >
-              <label :for="`options-${question.id}`" v-text="$t('labels')" />
-              <BaseSwitch
-                v-if="question.isMultiLabelType"
-                class="settings__edition-form__switch --subcategory"
-                :id="`options-order-${question.id}`"
-                v-model="question.settings.suggestionFirst"
-                >{{ $t("suggestionFirst") }}</BaseSwitch
-              >
+              <label :for="`options-${question.id}`" v-text="$t('question.labels')" />
 
               <BaseRangeSlider
                 v-if="question.settings.shouldShowVisibleOptions"
@@ -44,10 +37,10 @@
                 :min="3"
                 :max="question.settings.options.length"
                 v-model="question.settings.visible_options"
-                >{{ $t("visibleLabels") }}</BaseRangeSlider
+                >{{ $t("question.visibleLabels") }}</BaseRangeSlider
               >
 
-              <label v-text="$t('order')" class="settings__edition-form__label --subcategory" />
+              <label v-text="$t('question.order')" class="settings__edition-form__label --subcategory" />
               <draggable
                 class="label__container"
                 ghost-class="label__item__ghost"
@@ -56,12 +49,53 @@
                 @end="question.reloadAnswerFromOptions()"
               >
                 <div v-for="option in question.settings.options" :key="option.value">
-                  <label class="label__item">
+                  <div class="label__item">
                     <svgicon width="6" name="draggable" :id="`${option.value}-icon`" />
                     <span>{{ option.text }}</span>
-                  </label>
+                    <button
+                      type="button"
+                      class="label__item__delete"
+                      @click.stop="deleteOption(question, option)"
+                      :title="$t('question.deleteLabel')"
+                    >
+                      <svgicon width="12" name="close" />
+                    </button>
+                  </div>
                 </div>
               </draggable>
+
+              <div class="settings__edition-form__add-label --subcategory">
+                <input
+                  type="text"
+                  :placeholder="$t('question.addNewLabel')"
+                  v-model="newLabelText[question.id]"
+                  @keyup.enter="addOption(question)"
+                  class="settings__edition-form__add-label-input"
+                />
+                <BaseButton
+                  type="button"
+                  class="primary small"
+                  @on-click="addOption(question)"
+                  :disabled="!newLabelText[question.id]?.trim()"
+                >
+                  <span v-text="$t('question.addLabel')" />
+                </BaseButton>
+              </div>
+
+              <BaseSwitch
+                v-if="question.isMultiLabelType || question.isSingleLabelType"
+                class="settings__edition-form__switch --subcategory"
+                :id="`strict-${question.id}`"
+                v-model="question.settings.strict"
+                >{{ $t("question.strictSelection") }}</BaseSwitch
+              >
+              <BaseSwitch
+                v-if="question.isMultiLabelType"
+                class="settings__edition-form__switch --subcategory"
+                :id="`options-order-${question.id}`"
+                v-model="question.settings.suggestionFirst"
+                >{{ $t("question.suggestionFirst") }}</BaseSwitch
+              >
             </div>
 
             <BaseSwitch
@@ -69,7 +103,7 @@
               class="settings__edition-form__switch"
               :id="`use-markdown-${question.id}`"
               v-model="question.settings.use_markdown"
-              >{{ $t("useMarkdown") }}</BaseSwitch
+              >{{ $t("question.useMarkdown") }}</BaseSwitch
             >
 
             <BaseSwitch
@@ -77,7 +111,7 @@
               class="settings__edition-form__switch"
               :id="`use-table-${question.id}`"
               v-model="question.settings.use_table"
-              >{{ $t("useTable") }}</BaseSwitch
+              >{{ $t("question.useTable") }}</BaseSwitch
             >
 
             <div class="settings__edition-form__footer">
@@ -111,14 +145,15 @@
   </SynchronizeScroll>
 </template>
 
-<script>
+<script lang="js">
 import { useSettingsQuestionsViewModel } from "./useSettingsQuestionsViewModel";
+import QuestionSetting from "@/v1/domain/entities/question/QuestionSetting";
 
 export default {
   name: "SettingsQuestions",
   props: {
     settings: {
-      type: Object,
+      type: QuestionSetting,
       required: true,
     },
   },
@@ -128,7 +163,7 @@ export default {
     },
   },
   setup() {
-    return useSettingsQuestionsViewModel();
+    return useSettingsQuestionsViewModel()
   },
 };
 </script>
@@ -247,6 +282,7 @@ export default {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
+        margin-bottom: $base-space;
         @include media(">desktop") {
           flex-wrap: nowrap;
           height: 32px;
@@ -293,6 +329,32 @@ export default {
       }
     }
 
+    &__add-label {
+      display: flex;
+      gap: $base-space;
+      align-items: center;
+      margin-top: $base-space;
+
+      &-input {
+        flex: 1;
+        height: 32px;
+        padding: 8px 12px;
+        background: var(--bg-accent-grey-2);
+        color: var(--fg-primary);
+        border: 1px solid var(--bg-opacity-20);
+        border-radius: $border-radius;
+        outline: 0;
+        @include font-size(13px);
+
+        &:focus {
+          border: 1px solid var(--bg-action);
+        }
+
+        &::placeholder {
+          color: var(--fg-secondary);
+        }
+      }
+    }
     &__footer {
       width: 100%;
       flex-direction: row;
@@ -303,9 +365,6 @@ export default {
       display: inline-flex;
       gap: $base-space;
     }
-  }
-
-  &__preview {
     flex-basis: 37em;
     flex-direction: column;
     height: 100%;
@@ -347,11 +406,14 @@ $label-dark-color: var(--fg-secondary);
   user-select: none;
   transition: background 0.2s ease;
   @include font-size(12px);
+  position: relative;
+
   span {
     border-radius: calc($border-radius-s - 2px);
     background: var(--bg-opacity-6);
     padding: 2px 4px;
     line-height: 1.2;
+    flex: 1;
   }
   svg {
     fill: var(--bg-opacity-20);
@@ -359,6 +421,26 @@ $label-dark-color: var(--fg-secondary);
   &:hover {
     background: $label-color;
     transition: background 0.2s ease;
+  }
+
+  &__delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: calc($border-radius-s / 2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+
+    svg {
+      fill: var(--fg-secondary);
+    }
+
+    &:hover {
+      background: var(--bg-error);
+    }
   }
 
   &__ghost {

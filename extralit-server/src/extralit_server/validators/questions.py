@@ -101,12 +101,6 @@ class QuestionUpdateValidator:
         if question_settings_update.options is None:
             return
 
-        if len(question_settings.options) != len(question_settings_update.options):
-            raise UnprocessableEntityError(
-                "the number of options cannot be modified. "
-                f"expected {len(question_settings.options)} but got {len(question_settings_update.options)}"
-            )
-
         sorted_options = sorted(question_settings.options, key=lambda option: option.value)
         sorted_update_options = sorted(question_settings_update.options, key=lambda option: option.value)
 
@@ -114,11 +108,6 @@ class QuestionUpdateValidator:
         for option, update_option in zip(sorted_options, sorted_update_options, strict=False):
             if option.value != update_option.value:
                 unexpected_options.append(update_option.value)
-
-        if unexpected_options:
-            raise UnprocessableEntityError(
-                f"the option values cannot be modified. found unexpected option values: {unexpected_options!r}"
-            )
 
     @classmethod
     def _validate_question_settings_visible_options(
@@ -131,10 +120,12 @@ class QuestionUpdateValidator:
             return
 
         number_of_options = len(question_settings.options)
-        if question_settings_update.visible_options > number_of_options:
+        if (
+            hasattr(question_settings, "strict") and question_settings.strict
+        ) and question_settings_update.visible_options > number_of_options:
             raise UnprocessableEntityError(
                 "the value for 'visible_options' must be less or equal to "
-                f"the number of items in 'options' ({number_of_options})"
+                f"the number of items in 'options' ({number_of_options}) for strict questions"
             )
 
     @staticmethod
