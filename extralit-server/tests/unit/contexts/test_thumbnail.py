@@ -60,7 +60,7 @@ class TestThumbnailFromImage:
         mock_image.resize.return_value = mock_thumbnail
         mock_thumbnail.save = MagicMock()
 
-        mock_pdf2image.PIL.Image.LANCZOS = "LANCZOS"  # Mock the constant
+        mock_pdf2image.PIL.Image.LANCZOS = 1  # Mock the constant
 
         # Mock the save operation to return PNG bytes
         with patch("io.BytesIO") as mock_bytesio:
@@ -74,7 +74,7 @@ class TestThumbnailFromImage:
             assert result == b"fake_png_data"
 
             # Verify calls
-            mock_image.resize.assert_called_once_with((200, 250), resample="LANCZOS")
+            mock_image.resize.assert_called_once_with((200, 250), resample=mock_pdf2image.PIL.Image.LANCZOS)
             mock_thumbnail.save.assert_called_once()
 
     @patch("extralit_server.contexts.document.thumbnail.pdf2image")
