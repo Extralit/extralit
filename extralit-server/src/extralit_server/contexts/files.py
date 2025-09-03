@@ -21,8 +21,7 @@ import shutil
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any, BinaryIO, Optional
-from urllib.parse import urlparse
+from typing import Any, BinaryIO, Optional, Union
 from uuid import UUID
 
 import aioboto3
@@ -36,11 +35,14 @@ EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 
 _LOGGER = logging.getLogger(__name__)
 
+# Type alias for client parameter - can be either LocalFileStorage or aioboto3.Session
+ClientType = Union["LocalFileStorage", aioboto3.Session]
+
 
 # Custom exception for LocalFileStorage to match S3 behavior
 class LocalS3Error(Exception):
     """Local file storage exception that mimics S3 ClientError."""
-    
+
     def __init__(self, error_code: str, message: str, key: str = ""):
         self.response = {
             "Error": {
@@ -55,23 +57,23 @@ class LocalS3Error(Exception):
 # Mock response class for LocalFileStorage
 class LocalFileResponse:
     """Mock response class for LocalFileStorage get_object operations."""
-    
+
     def __init__(self, content: bytes):
         self._content = content
         self._position = 0
-    
+
     def read(self, size: int = -1) -> bytes:
         if size == -1:
-            data = self._content[self._position:]
+            data = self._content[self._position :]
             self._position = len(self._content)
         else:
-            data = self._content[self._position:self._position + size]
+            data = self._content[self._position : self._position + size]
             self._position += len(data)
         return data
-    
+
     def __aiter__(self):
         return self
-        
+
     async def __anext__(self):
         chunk = self.read(8192)  # Read in 8KB chunks
         if not chunk:
@@ -82,12 +84,13 @@ class LocalFileResponse:
 # Mock write result for LocalFileStorage
 class LocalObjectWriteResult:
     """Mock write result for LocalFileStorage put_object operations."""
-    
+
     def __init__(self, bucket_name: str, object_name: str, version_id: str, etag: str):
         self.bucket_name = bucket_name
         self.object_name = object_name
         self.version_id = version_id
         self.etag = etag
+
 
 # Singleton instances
 _s3_session: Optional[aioboto3.Session] = None
@@ -121,8 +124,8 @@ def get_s3_session() -> Optional[aioboto3.Session]:
     return _s3_session
 
 
-async def get_async_s3_client():
-    """Get an async S3 client instance."""
+async def get_async_s3_client() -> ClientType:
+    """Get an async S3 client instance (LocalFileStorage or aioboto3.Session)."""
     session = get_s3_session()
     if session is None:
         # Use local file system storage if S3 settings are not provided
@@ -132,17 +135,24 @@ async def get_async_s3_client():
             _LOGGER.info(f"Using local file storage at: {local_storage_path}")
             _local_storage_client = LocalFileStorage(local_storage_path)
         return _local_storage_client
-    
+
+    # Return the session itself, not the client
+    # Functions will create clients using async with session.client(...) as s3_client:
+    return session
+
+
+def _get_s3_client_kwargs() -> dict[str, Any]:
+    """Get S3 client configuration arguments."""
+    from urllib.parse import urlparse
+
     parsed_url = urlparse(settings.s3_endpoint)
-    endpoint_url = settings.s3_endpoint
     use_ssl = parsed_url.scheme == "https"
-    
-    return session.client(
-        "s3",
-        endpoint_url=endpoint_url,
-        use_ssl=use_ssl,
-        verify=use_ssl,  # Only verify SSL certificates if using HTTPS
-    )
+
+    return {
+        "endpoint_url": settings.s3_endpoint,
+        "use_ssl": use_ssl,
+        "verify": use_ssl,  # Only verify SSL certificates if using HTTPS
+    }
 
 
 def reset_s3_client():
@@ -163,7 +173,7 @@ def get_minio_client():
             _LOGGER.info(f"Using local file storage at: {local_storage_path}")
             _local_storage_client = LocalFileStorage(local_storage_path)
         return _local_storage_client
-    
+
     # For S3, we need to return something that can be detected as non-LocalFileStorage
     # This is a placeholder for sync compatibility - actual async operations should use get_async_s3_client
     return "S3_SESSION_MARKER"
@@ -196,7 +206,7 @@ class LocalFileStorage:
         # Create versions directory
         (bucket_path / ".versions").mkdir(exist_ok=True)
 
-    def set_bucket_versioning(self, bucket_name: str, config: Any) -> None:
+    def set_bucket_versioning(self, bucket_name: str, _config: Any) -> None:
         # Just create the versions directory
         bucket_path = self._get_bucket_path(bucket_name)
         (bucket_path / ".versions").mkdir(exist_ok=True)
@@ -210,9 +220,9 @@ class LocalFileStorage:
         bucket_name: str,
         object_name: str,
         data: BinaryIO | bytes,
-        length: int | None = None,
+        _length: int | None = None,
         content_type: str | None = None,
-        part_size: int | None = None,
+        _part_size: int | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> LocalObjectWriteResult:
         # Ensure bucket exists
@@ -407,10 +417,10 @@ def get_pdf_s3_object_path(id: UUID | str) -> str:
 def get_thumbnail_s3_object_path(id: UUID | str) -> str:
     """
     Generate S3 object path for document thumbnail images.
-    
+
     Args:
         id: Document UUID or string identifier
-        
+
     Returns:
         S3 object path for thumbnail (e.g., "thumbnails/{document_id}")
     """
@@ -429,9 +439,7 @@ def get_proxy_document_url(bucket_name: str, object_path: str) -> str:
     return f"/api/v1/file/{bucket_name}/{object_path}"
 
 
-async def get_presigned_url_from_document_url(
-    client, document_url: str, expires: int = 3600
-) -> str:
+async def get_presigned_url_from_document_url(client: ClientType, document_url: str, expires: int = 3600) -> str:
     """
     Generate a presigned URL from a document URL by parsing the bucket_name and object_path.
 
@@ -460,11 +468,12 @@ async def get_presigned_url_from_document_url(
 
         bucket_name, object_path = path_parts
 
-        presigned_url = await client.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": bucket_name, "Key": object_path},
-            ExpiresIn=expires
-        )
+        # Use proper aioboto3 session context manager pattern
+        s3_client_kwargs = _get_s3_client_kwargs()
+        async with client.client("s3", **s3_client_kwargs) as s3_client:
+            presigned_url = await s3_client.generate_presigned_url(
+                "get_object", Params={"Bucket": bucket_name, "Key": object_path}, ExpiresIn=expires
+            )
         return presigned_url
 
     except Exception as e:
@@ -473,16 +482,16 @@ async def get_presigned_url_from_document_url(
 
 
 async def list_objects(
-    client,
+    client: ClientType,
     bucket: str,
     prefix: str | None = None,
-    include_version=True,
-    recursive=True,
+    include_version: bool = True,
+    recursive: bool = True,
     start_after: str | None = None,
 ) -> ListObjectsResponse:
     """
     List objects in S3 bucket or LocalFileStorage.
-    
+
     Args:
         client: S3 client or LocalFileStorage instance
         bucket: Bucket name
@@ -490,7 +499,7 @@ async def list_objects(
         include_version: Include version information
         recursive: Recursive listing
         start_after: Start listing after this key
-        
+
     Returns:
         ListObjectsResponse containing list of ObjectMetadata
     """
@@ -499,7 +508,7 @@ async def list_objects(
             bucket, prefix=prefix, recursive=recursive, include_version=include_version, start_after=start_after
         )
         return ListObjectsResponse(objects=objects)
-    
+
     # For S3 client
     try:
         kwargs = {
@@ -509,38 +518,41 @@ async def list_objects(
             kwargs["Prefix"] = prefix
         if start_after:
             kwargs["StartAfter"] = start_after
-        
+
         objects = []
-        
-        if include_version:
-            response = await client.list_object_versions(**kwargs)
-            for version in response.get("Versions", []):
-                obj_metadata = ObjectMetadata(
-                    bucket_name=bucket,
-                    object_name=version["Key"],
-                    version_id=version.get("VersionId"),
-                    etag=version.get("ETag", "").strip('"'),
-                    size=version.get("Size", 0),
-                    last_modified=version.get("LastModified"),
-                    content_type="application/octet-stream",  # S3 doesn't provide content type in list operations
-                    is_latest=version.get("IsLatest", False),
-                )
-                objects.append(obj_metadata)
-        else:
-            response = await client.list_objects_v2(**kwargs)
-            for obj in response.get("Contents", []):
-                obj_metadata = ObjectMetadata(
-                    bucket_name=bucket,
-                    object_name=obj["Key"],
-                    etag=obj.get("ETag", "").strip('"'),
-                    size=obj.get("Size", 0),
-                    last_modified=obj.get("LastModified"),
-                    content_type="application/octet-stream",  # S3 doesn't provide content type in list operations
-                )
-                objects.append(obj_metadata)
-        
+
+        # Use proper aioboto3 session context manager pattern
+        s3_client_kwargs = _get_s3_client_kwargs()
+        async with client.client("s3", **s3_client_kwargs) as s3_client:
+            if include_version:
+                response = await s3_client.list_object_versions(**kwargs)
+                for version in response.get("Versions", []):
+                    obj_metadata = ObjectMetadata(
+                        bucket_name=bucket,
+                        object_name=version["Key"],
+                        version_id=version.get("VersionId"),
+                        etag=version.get("ETag", "").strip('"'),
+                        size=version.get("Size", 0),
+                        last_modified=version.get("LastModified"),
+                        content_type="application/octet-stream",  # S3 doesn't provide content type in list operations
+                        is_latest=version.get("IsLatest", False),
+                    )
+                    objects.append(obj_metadata)
+            else:
+                response = await s3_client.list_objects_v2(**kwargs)
+                for obj in response.get("Contents", []):
+                    obj_metadata = ObjectMetadata(
+                        bucket_name=bucket,
+                        object_name=obj["Key"],
+                        etag=obj.get("ETag", "").strip('"'),
+                        size=obj.get("Size", 0),
+                        last_modified=obj.get("LastModified"),
+                        content_type="application/octet-stream",  # S3 doesn't provide content type in list operations
+                    )
+                    objects.append(obj_metadata)
+
         return ListObjectsResponse(objects=objects)
-        
+
     except ClientError as e:
         _LOGGER.error(f"Error listing objects in bucket {bucket}: {e}")
         raise HTTPException(status_code=404, detail=f"Error listing objects: {e}")
@@ -550,22 +562,22 @@ async def list_objects(
 
 
 async def get_object(
-    client,
+    client: ClientType,
     bucket: str,
     object: str,
     version_id: str | None = None,
-    include_versions=False,
+    include_versions: bool = False,
 ) -> FileObjectResponse:
     """
     Get object from S3 bucket or LocalFileStorage.
-    
+
     Args:
         client: S3 client or LocalFileStorage instance
         bucket: Bucket name
         object: Object key
         version_id: Specific version ID
         include_versions: Include version information
-        
+
     Returns:
         FileObjectResponse containing object data and metadata
     """
@@ -603,67 +615,57 @@ async def get_object(
         except Exception as e:
             _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {e}")
             raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
-    
-    # For S3 client
+
+    # For S3 client - use proper aioboto3 session context manager pattern
     try:
-        # Get object metadata first
-        kwargs = {"Bucket": bucket, "Key": object}
-        if version_id:
-            kwargs["VersionId"] = version_id
-            
-        head_response = await client.head_object(**kwargs)
-        
-        # Create ObjectMetadata from head response
-        stat = ObjectMetadata(
-            bucket_name=bucket,
-            object_name=object,
-            version_id=head_response.get("VersionId"),
-            etag=head_response.get("ETag", "").strip('"'),
-            size=head_response.get("ContentLength", 0),
-            last_modified=head_response.get("LastModified"),
-            content_type=head_response.get("ContentType", "application/octet-stream"),
-            metadata=head_response.get("Metadata", {}),
-        )
-        
-    except ClientError as ce:
-        if version_id:
-            _LOGGER.warning(f"Error getting object {object} from bucket {bucket} with version {version_id}: {ce}")
+        s3_client_kwargs = _get_s3_client_kwargs()
+        async with client.client("s3", **s3_client_kwargs) as s3_client:
+            # Get object metadata first
+            kwargs = {"Bucket": bucket, "Key": object}
+            if version_id:
+                kwargs["VersionId"] = version_id
+
             try:
-                _LOGGER.info(f"Retrying without version_id for object {object} in bucket {bucket}")
-                head_response = await client.head_object(Bucket=bucket, Key=object)
-                stat = ObjectMetadata(
-                    bucket_name=bucket,
-                    object_name=object,
-                    version_id=head_response.get("VersionId"),
-                    etag=head_response.get("ETag", "").strip('"'),
-                    size=head_response.get("ContentLength", 0),
-                    last_modified=head_response.get("LastModified"),
-                    content_type=head_response.get("ContentType", "application/octet-stream"),
-                    metadata=head_response.get("Metadata", {}),
-                )
-            except ClientError as ce_retry:
-                raise ce_retry
-        else:
-            raise ce
+                head_response = await s3_client.head_object(**kwargs)
+            except ClientError as ce:
+                if version_id:
+                    _LOGGER.warning(
+                        f"Error getting object {object} from bucket {bucket} with version {version_id}: {ce}"
+                    )
+                    _LOGGER.info(f"Retrying without version_id for object {object} in bucket {bucket}")
+                    head_response = await s3_client.head_object(Bucket=bucket, Key=object)
+                else:
+                    raise ce
 
-    try:
-        # Get the actual object data
-        get_kwargs = {"Bucket": bucket, "Key": object}
-        if stat.version_id:
-            get_kwargs["VersionId"] = stat.version_id
-            
-        obj_response = await client.get_object(**get_kwargs)
+            # Create ObjectMetadata from head response
+            stat = ObjectMetadata(
+                bucket_name=bucket,
+                object_name=object,
+                version_id=head_response.get("VersionId"),
+                etag=head_response.get("ETag", "").strip('"'),
+                size=head_response.get("ContentLength", 0),
+                last_modified=head_response.get("LastModified"),
+                content_type=head_response.get("ContentType", "application/octet-stream"),
+                metadata=head_response.get("Metadata", {}),
+            )
 
-        if include_versions:
-            versions = await list_objects(client, bucket, prefix=object, include_version=include_versions)
-        else:
-            versions = None
+            # Get the actual object data
+            get_kwargs = {"Bucket": bucket, "Key": object}
+            if stat.version_id:
+                get_kwargs["VersionId"] = stat.version_id
 
-        return FileObjectResponse(
-            response=obj_response["Body"],
-            metadata=stat,
-            versions=versions,
-        )
+            obj_response = await s3_client.get_object(**get_kwargs)
+
+            if include_versions:
+                versions = await list_objects(client, bucket, prefix=object, include_version=include_versions)
+            else:
+                versions = None
+
+            return FileObjectResponse(
+                response=obj_response["Body"],
+                metadata=stat,
+                versions=versions,
+            )
 
     except ClientError as ce:
         _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {ce}")
@@ -674,18 +676,18 @@ async def get_object(
 
 
 async def put_object(
-    client,
+    client: ClientType,
     bucket: str,
     object: str,
     data: BinaryIO | bytes | str,
     size: int,
     content_type: str = "application/octet-stream",
     metadata: dict[str, Any] | None = None,
-    part_size: int = 100 * 1024 * 1024,
+    _part_size: int = 100 * 1024 * 1024,
 ) -> ObjectMetadata:
     """
     Put object into S3 bucket or LocalFileStorage.
-    
+
     Args:
         client: S3 client or LocalFileStorage instance
         bucket: Bucket name
@@ -695,7 +697,7 @@ async def put_object(
         content_type: MIME content type
         metadata: Object metadata
         part_size: Part size for multipart uploads (ignored for LocalFileStorage)
-        
+
     Returns:
         ObjectMetadata for the created object
     """
@@ -716,7 +718,7 @@ async def put_object(
                 object,
                 data_bytes_io,
                 content_type=content_type,
-                length=size,
+                _length=size,
                 metadata=metadata or {},
             )
 
@@ -736,7 +738,7 @@ async def put_object(
         except Exception as e:
             _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {e}")
             raise e
-    
+
     # For S3 client
     try:
         kwargs = {
@@ -745,12 +747,14 @@ async def put_object(
             "Body": data_bytes_io,
             "ContentType": content_type,
         }
-        
+
         if metadata:
             kwargs["Metadata"] = metadata
-            
-        response = await client.put_object(**kwargs)
-        
+
+        s3_client_kwargs = _get_s3_client_kwargs()
+        async with client.client("s3", **s3_client_kwargs) as s3_client:
+            response = await s3_client.put_object(**kwargs)
+
         return ObjectMetadata(
             bucket_name=bucket,
             object_name=object,
@@ -769,10 +773,10 @@ async def put_object(
         raise e
 
 
-async def delete_object(client, bucket: str, object: str, version_id: str | None = None):
+async def delete_object(client: ClientType, bucket: str, object: str, version_id: str | None = None):
     """
     Delete object from S3 bucket or LocalFileStorage.
-    
+
     Args:
         client: S3 client or LocalFileStorage instance
         bucket: Bucket name
@@ -789,14 +793,16 @@ async def delete_object(client, bucket: str, object: str, version_id: str | None
             _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
             raise e
         return
-    
+
     # For S3 client
     try:
         kwargs = {"Bucket": bucket, "Key": object}
         if version_id:
             kwargs["VersionId"] = version_id
-            
-        await client.delete_object(**kwargs)
+
+        s3_client_kwargs = _get_s3_client_kwargs()
+        async with client.client("s3", **s3_client_kwargs) as s3_client:
+            await s3_client.delete_object(**kwargs)
 
     except ClientError as ce:
         _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {ce}")
@@ -807,13 +813,13 @@ async def delete_object(client, bucket: str, object: str, version_id: str | None
 
 
 async def create_bucket(
-    client,
+    client: ClientType,
     workspace_name: str,
-    excluded_prefixes: list[str] = EXCLUDED_VERSIONING_PREFIXES,
+    _excluded_prefixes: list[str] = EXCLUDED_VERSIONING_PREFIXES,
 ):
     """
     Create bucket in S3 or LocalFileStorage.
-    
+
     Args:
         client: S3 client or LocalFileStorage instance
         workspace_name: Name of the bucket/workspace
@@ -836,18 +842,19 @@ async def create_bucket(
             _LOGGER.error(f"Error creating bucket {workspace_name}: {e}")
             raise e
         return
-    
+
     # For S3 client
     try:
-        await client.create_bucket(Bucket=workspace_name)
-        try:
-            # Enable versioning for the bucket
-            await client.put_bucket_versioning(
-                Bucket=workspace_name,
-                VersioningConfiguration={"Status": "Enabled"}
-            )
-        except Exception as e:
-            _LOGGER.error(f"Error enabling versioning for bucket {workspace_name}: {e}")
+        s3_client_kwargs = _get_s3_client_kwargs()
+        async with client.client("s3", **s3_client_kwargs) as s3_client:
+            await s3_client.create_bucket(Bucket=workspace_name)
+            try:
+                # Enable versioning for the bucket
+                await s3_client.put_bucket_versioning(
+                    Bucket=workspace_name, VersioningConfiguration={"Status": "Enabled"}
+                )
+            except Exception as e:
+                _LOGGER.error(f"Error enabling versioning for bucket {workspace_name}: {e}")
 
     except ClientError as ce:
         error_code = ce.response["Error"]["Code"]
@@ -862,11 +869,11 @@ async def create_bucket(
 
 
 async def put_document_file(
-    client,
+    client: ClientType,
     workspace_name: str,
     document_id: UUID,
     file_data: bytes,
-    filename: str,
+    _filename: str,
     metadata: dict[str, Any] | None = None,
 ) -> str | None:
     """
@@ -886,7 +893,9 @@ async def put_document_file(
     object_path = get_pdf_s3_object_path(document_id)
 
     # Check if file already exists with same hash
-    existing_files = await list_objects(client, workspace_name, prefix=object_path, include_version=False, recursive=False)
+    existing_files = await list_objects(
+        client, workspace_name, prefix=object_path, include_version=False, recursive=False
+    )
 
     put_object_flag = False
 
@@ -917,7 +926,7 @@ async def put_document_file(
     return None
 
 
-async def download_file_content(client, document_url: str) -> bytes:
+async def download_file_content(client: ClientType, document_url: str) -> bytes:
     """
     Download file content from a document URL.
 
@@ -939,7 +948,7 @@ async def download_file_content(client, document_url: str) -> bytes:
     bucket_name, object_path = url_parts
 
     file_response = await get_object(client, bucket_name, object_path)
-    
+
     # Handle different response types
     if isinstance(client, LocalFileStorage):
         return file_response.response.read()
@@ -948,10 +957,10 @@ async def download_file_content(client, document_url: str) -> bytes:
         return await file_response.response.read()
 
 
-async def delete_bucket(client, workspace_name: str):
+async def delete_bucket(client: ClientType, workspace_name: str):
     """
     Delete bucket from S3 or LocalFileStorage.
-    
+
     Args:
         client: S3 client or LocalFileStorage instance
         workspace_name: Name of the bucket/workspace to delete
@@ -966,12 +975,12 @@ async def delete_bucket(client, workspace_name: str):
             _LOGGER.error(f"Error deleting local bucket directory {workspace_name}: {e}")
             raise e
         return
-    
+
     # For S3 client
     try:
         # List and delete all objects in the bucket
         objects_response = await list_objects(client, workspace_name, prefix="", include_version=True, recursive=True)
-        
+
         for obj in objects_response.objects:
             try:
                 if obj.object_name is not None:
@@ -982,8 +991,10 @@ async def delete_bucket(client, workspace_name: str):
                 )
 
         # Delete the bucket itself
-        await client.delete_bucket(Bucket=workspace_name)
-        
+        s3_client_kwargs = _get_s3_client_kwargs()
+        async with client.client("s3", **s3_client_kwargs) as s3_client:
+            await s3_client.delete_bucket(Bucket=workspace_name)
+
     except ClientError as ce:
         error_code = ce.response["Error"]["Code"]
         if error_code in {"NoSuchBucket", "NotImplemented"}:
