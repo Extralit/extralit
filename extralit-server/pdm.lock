@@ -5,7 +5,7 @@
 groups = ["default", "postgresql", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:68a6f146382902b48c6f2cf81f3723f439d66d3d43d94613f3d3da2203637787"
+content_hash = "sha256:92131775c0a37c4f7c017f1be5772e9cd142bcbca96066fdee3c870252f9398c"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -2353,14 +2353,14 @@ files = [
 
 [[package]]
 name = "redis"
-version = "5.2.0"
+version = "6.4.0"
 summary = ""
 dependencies = [
     "async-timeout; python_full_version < \"3.11.3\"",
 ]
 files = [
-    {file = "redis-5.2.0-py3-none-any.whl", hash = "sha256:ae174f2bb3b1bf2b09d54bf3e51fbc1469cf6c10aa03e21141f51969801a7897"},
-    {file = "redis-5.2.0.tar.gz", hash = "sha256:0b1087665a771b1ff2e003aa5bdd354f15a70c9e25d5a7dbf9c722c16528a7b0"},
+    {file = "redis-6.4.0-py3-none-any.whl", hash = "sha256:f0544fa9604264e9464cdf4814e7d4830f74b165d52f2a330a760a88dd248b7f"},
+    {file = "redis-6.4.0.tar.gz", hash = "sha256:b01bc7282b8444e28ec36b261df5375183bb47a07eb9c603f284e89cbc5ef010"},
 ]
 
 [[package]]

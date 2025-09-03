@@ -19,9 +19,9 @@ import logging
 import os
 import shutil
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, BinaryIO, Optional, Union
+from typing import Any, BinaryIO, Optional
 from urllib.parse import urlparse
 from uuid import UUID
 
@@ -546,7 +546,7 @@ async def list_objects(
         raise HTTPException(status_code=404, detail=f"Error listing objects: {e}")
     except Exception as e:
         _LOGGER.error(f"Error listing objects in bucket {bucket}: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
 async def get_object(
@@ -602,7 +602,7 @@ async def get_object(
             raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
         except Exception as e:
             _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {e}")
-            raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
     
     # For S3 client
     try:
@@ -670,7 +670,7 @@ async def get_object(
         raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
     except Exception as e:
         _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
 async def put_object(

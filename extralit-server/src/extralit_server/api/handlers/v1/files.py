@@ -16,7 +16,7 @@ import logging
 from typing import Annotated
 
 from botocore.exceptions import ClientError
-from fastapi import APIRouter, Depends, File, Header, HTTPException, Request, Security, UploadFile
+from fastapi import APIRouter, File, Header, HTTPException, Request, Security, UploadFile
 from fastapi.responses import Response, StreamingResponse
 
 from extralit_server.api.policies.v1 import FilePolicy, authorize
@@ -158,7 +158,7 @@ async def put_file(
         )
         return response
     except (ClientError, LocalS3Error) as se:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(se)}") from se
+        raise HTTPException(status_code=500, detail=f"Internal server error: {se!s}") from se
 
 
 @router.get("/files/{bucket}/{prefix:path}", response_model=ListObjectsResponse)
