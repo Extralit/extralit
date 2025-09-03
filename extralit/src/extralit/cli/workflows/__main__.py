@@ -68,6 +68,8 @@ def start(
     workspace_name: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
     reference: Optional[str] = typer.Option(None, "--reference", "-r", help="Document reference for tracking"),
     force: bool = typer.Option(False, "--force", "-f", help="Force restart if workflow already exists"),
+    wait: bool = typer.Option(True, "--wait/--no-wait", help="Wait for job to finish before returning"),
+    timeout: int = typer.Option(60, "--timeout", help="Max seconds to wait if --wait is set"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output"),
 ) -> None:
     """Start PDF processing workflow for a document."""
@@ -112,6 +114,8 @@ def start(
                     "workspace_name": workspace_name,
                     "reference": reference or f"doc_{document_id[:8]}",
                     "force": force,
+                    "wait": wait,
+                    "timeout": timeout,
                 },
             )
 

@@ -213,7 +213,7 @@ def print_rich_table(
             },
         },
         "Document": {
-            "columns": ["Reference", "URL", "File Name", "PMID", "DOI", "Created", "Updated"],
+            "columns": ["ID", "Reference", "URL", "File Name", "PMID", "DOI"],
             "getters": {
                 "ID": lambda r: str(r.id),
                 "Reference": lambda r: r.reference,

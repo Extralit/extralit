@@ -15,6 +15,8 @@ These are the section headers that we use:
 -->
 
 ## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.6.1...v0.6.2)
+### Added
+- Added `wait` parameter to the `extralit workflows start` CLI to waiting for the workflow to complete and return the final status.
 
 ## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 ### Added

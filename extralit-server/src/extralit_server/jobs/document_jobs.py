@@ -14,6 +14,7 @@
 
 """Document upload job functions."""
 
+import asyncio
 import logging
 from datetime import datetime, timezone
 from typing import Any
@@ -27,7 +28,7 @@ from extralit_server.contexts import files
 from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
 from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
-from extralit_server.database import SyncSessionLocal
+from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
 from extralit_server.models.database import Document
 
@@ -35,7 +36,9 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=600, retry=Retry(max=3, interval=[10, 30, 60]))
-def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, workspace_name: str) -> dict[str, Any]:
+async def analysis_and_preprocess_job(
+    document_id: UUID, s3_url: str, reference: str, workspace_name: str
+) -> dict[str, Any]:
     """
     Analyze PDF structure and content, then preprocess using existing modules.
 
@@ -63,7 +66,6 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
             "reference": reference,
             "workspace_name": str(workspace_name),
             "workflow_step": "analysis_and_preprocess",
-            "started_at": datetime.now(timezone.utc).isoformat(),
         }
     )
     current_job.save_meta()
@@ -104,26 +106,32 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
         preprocessor = PDFPreprocessor(settings)
         processing_response = preprocessor.preprocess(pdf_data, filename)
 
+        # Step 2.5: Prepare concurrent file uploads
         # OCRmyPDF overwrites the same S3 object path, so we upload back to same location
         object_path = s3_url.replace(f"/api/v1/file/{workspace_name}/", "")
 
-        files.put_object(
-            client,
-            workspace_name,
-            object_path,
-            processing_response.processed_data,
-            len(processing_response.processed_data),
-            content_type="application/pdf",
-            metadata={"processing_applied": "ocrmypdf_rotation", "original_filename": filename},
-        )
+        # Create upload tasks for concurrent execution
+        upload_tasks = [
+            # Upload processed PDF
+            asyncio.to_thread(
+                files.put_object,
+                client,
+                workspace_name,
+                object_path,
+                processing_response.processed_data,
+                len(processing_response.processed_data),
+                content_type="application/pdf",
+                metadata={"processing_applied": "ocrmypdf_rotation", "original_filename": filename},
+            )
+        ]
 
-        # Step 3: Store thumbnail image if generated
+        # Step 3: Add thumbnail upload task if thumbnail data exists
         analysis_result["thumbnail_generated"] = False
         if thumbnail_data is not None:
-            try:
-                thumbnail_object_path = files.get_thumbnail_s3_object_path(document_id)
-
-                files.put_object(
+            thumbnail_object_path = files.get_thumbnail_s3_object_path(document_id)
+            upload_tasks.append(
+                asyncio.to_thread(
+                    files.put_object,
                     client,
                     workspace_name,
                     thumbnail_object_path,
@@ -132,14 +140,23 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
                     content_type="image/png",
                     metadata={"original_filename": filename},
                 )
+            )
 
+        # Execute uploads concurrently
+        try:
+            await asyncio.gather(*upload_tasks)
+            _LOGGER.info(f"Successfully uploaded processed PDF for document {document_id}")
+            if thumbnail_data is not None:
                 _LOGGER.info(f"Generated and stored thumbnail for document {document_id}")
                 analysis_result["thumbnail_generated"] = True
-
-            except Exception as e:
-                _LOGGER.warning(f"Failed to store thumbnail for document {document_id}: {e}")
+        except Exception as e:
+            _LOGGER.warning(f"Failed to upload files for document {document_id}: {e}")
+            if thumbnail_data is not None:
                 analysis_result["thumbnail_generated"] = False
-        else:
+            # Re-raise the exception as this is a critical failure
+            raise
+
+        if thumbnail_data is None:
             _LOGGER.warning(f"No thumbnail data available for document {document_id}")
 
         # Combine results
@@ -153,9 +170,9 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
             },
         }
 
-        # Store combined results in document.metadata_ using sync database operations
-        with SyncSessionLocal() as db:
-            document = db.get(Document, document_id)
+        # Store combined results in document.metadata_ using async database operations
+        async with AsyncSessionLocal() as db:
+            document = await db.get(Document, document_id)
             if document:
                 # Initialize or update document metadata
                 if document.metadata_ is None:
@@ -167,13 +184,12 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
                 metadata.update_analysis_results(analysis_result)
                 metadata.update_preprocessing_results(combined_result["preprocessing_result"])
                 document.metadata_ = metadata.model_dump()
-                db.commit()
+                await db.commit()
 
         # Store results for dependent jobs
         current_job.meta["needs_ocr"] = analysis_result["needs_ocr"]
         current_job.meta["analysis_complete"] = True
         current_job.meta["preprocessing_complete"] = True
-        current_job.meta["completed_at"] = datetime.now(timezone.utc).isoformat()
         current_job.save_meta()
 
         return combined_result
@@ -181,6 +197,5 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
     except Exception as e:
         _LOGGER.error(f"Error in analysis_and_preprocess_job for document {document_id}: {e}")
         current_job.meta["error"] = str(e)
-        current_job.meta["completed_at"] = datetime.now(timezone.utc).isoformat()
         current_job.save_meta()
         raise
