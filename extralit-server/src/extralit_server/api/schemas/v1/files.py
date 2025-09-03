@@ -15,10 +15,8 @@
 from collections import defaultdict
 from collections.abc import Iterable
 from datetime import datetime
-from typing import Any
+from typing import Any, Union
 
-from minio.datatypes import Object
-from minio.helpers import ObjectWriteResult
 from pydantic import BaseModel, Field, field_validator
 from urllib3 import HTTPResponse
 from urllib3._collections import HTTPHeaderDict
@@ -45,31 +43,36 @@ class ObjectMetadata(BaseModel):
         return v
 
     @classmethod
-    def from_minio_object(cls, minio_object: Object) -> "ObjectMetadata":
+    def from_minio_object(cls, minio_object) -> "ObjectMetadata":
+        """Create ObjectMetadata from any object with similar attributes."""
         return cls(
-            bucket_name=minio_object.bucket_name,
-            object_name=minio_object.object_name or "",
-            last_modified=minio_object.last_modified,
-            is_latest=None if minio_object.is_latest is None else minio_object.is_latest.lower() == "true",
-            etag=minio_object.etag,
-            size=minio_object.size,
-            content_type=minio_object.content_type,
-            version_id=minio_object.version_id,
-            metadata=minio_object.metadata,
+            bucket_name=getattr(minio_object, "bucket_name", ""),
+            object_name=getattr(minio_object, "object_name", "") or "",
+            last_modified=getattr(minio_object, "last_modified", None),
+            is_latest=None
+            if getattr(minio_object, "is_latest", None) is None
+            else str(getattr(minio_object, "is_latest", "")).lower() == "true",
+            etag=getattr(minio_object, "etag", None),
+            size=getattr(minio_object, "size", None),
+            content_type=getattr(minio_object, "content_type", None),
+            version_id=getattr(minio_object, "version_id", None),
+            metadata=getattr(minio_object, "metadata", None),
         )
 
     @classmethod
-    def from_minio_write_response(cls, write_result: ObjectWriteResult) -> "ObjectMetadata":
+    def from_minio_write_response(cls, write_result) -> "ObjectMetadata":
+        """Create ObjectMetadata from any write result object with similar attributes."""
+        http_headers = getattr(write_result, "http_headers", {}) or {}
         return cls(
-            bucket_name=write_result.bucket_name,
-            object_name=write_result.object_name,
-            last_modified=write_result.last_modified,
+            bucket_name=getattr(write_result, "bucket_name", ""),
+            object_name=getattr(write_result, "object_name", ""),
+            last_modified=getattr(write_result, "last_modified", None),
             is_latest=True,
-            etag=write_result.etag,
+            etag=getattr(write_result, "etag", None),
             size=None,
-            content_type=write_result.http_headers.get("Content-Type"),
-            version_id=write_result.version_id,
-            metadata=write_result.http_headers,
+            content_type=http_headers.get("Content-Type"),
+            version_id=getattr(write_result, "version_id", None),
+            metadata=http_headers,
         )
 
 
@@ -88,7 +91,15 @@ class ListObjectsResponse(BaseModel):
     @field_validator("objects", mode="before")
     def convert_objects(cls, v):
         if isinstance(v, list):
-            return [ObjectMetadata.from_minio_object(item) if isinstance(item, Object) else item for item in v]
+            converted = []
+            for item in v:
+                if isinstance(item, ObjectMetadata):
+                    converted.append(item)
+                elif hasattr(item, "bucket_name"):  # Duck typing for minio-like objects
+                    converted.append(ObjectMetadata.from_minio_object(item))
+                else:
+                    converted.append(item)
+            return converted
         return v
 
     @field_validator("objects")
@@ -114,7 +125,7 @@ class ListObjectsResponse(BaseModel):
 
 
 class FileObjectResponse(BaseModel):
-    response: HTTPResponse
+    response: Union[HTTPResponse, Any]  # Allow both HTTPResponse and LocalFileResponse
     metadata: ObjectMetadata
     versions: ListObjectsResponse | None
 
@@ -167,6 +178,7 @@ class FileObjectResponse(BaseModel):
 
     @field_validator("metadata", "versions", mode="before")
     def convert_minio_object(cls, v):
-        if isinstance(v, Object):
+        # Check if it looks like a minio object using duck typing
+        if hasattr(v, "bucket_name") and hasattr(v, "object_name"):
             return ObjectMetadata.from_minio_object(v)
         return v
