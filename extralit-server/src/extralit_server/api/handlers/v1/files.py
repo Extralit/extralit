@@ -15,14 +15,14 @@
 import logging
 from typing import Annotated
 
+from botocore.exceptions import ClientError
 from fastapi import APIRouter, Depends, File, Header, HTTPException, Request, Security, UploadFile
 from fastapi.responses import Response, StreamingResponse
-from minio import Minio, S3Error
 
 from extralit_server.api.policies.v1 import FilePolicy, authorize
 from extralit_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata
 from extralit_server.contexts import files
-from extralit_server.contexts.files import LocalFileStorage
+from extralit_server.contexts.files import LocalFileStorage, LocalS3Error
 from extralit_server.models import User
 from extralit_server.security import auth
 
@@ -40,15 +40,16 @@ async def get_file(
     version_id: str | None = None,
     range_header: str | None = Header(None, alias="range"),
     if_none_match: str | None = Header(None, alias="if-none-match"),
-    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User | None = Security(auth.get_optional_current_user),
 ):
+    client = await files.get_async_s3_client()
+    
     # TODO LocalFileStorage currently needs to disable authorization checks since clients cannot access the bucket directly.
-    if current_user is not None and isinstance(client, Minio):
+    if current_user is not None and not isinstance(client, LocalFileStorage):
         await authorize(current_user, FilePolicy.get(bucket))
 
     try:
-        file_response = files.get_object(client, bucket, object, version_id=version_id, include_versions=True)
+        file_response = await files.get_object(client, bucket, object, version_id=version_id, include_versions=True)
 
         # Handle ETag for caching
         etag = file_response.metadata.etag
@@ -57,7 +58,6 @@ async def get_file(
 
         # Prepare headers for caching and CORS
         headers = {
-            **file_response.http_headers,
             "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
             "ETag": f'"{etag}"' if etag else None,
             "Access-Control-Allow-Origin": "*",  # Allow CORS for file access
@@ -111,7 +111,7 @@ async def get_file(
         return StreamingResponse(
             file_response.response, media_type=file_response.metadata.content_type, headers=headers
         )
-    except S3Error as se:
+    except (ClientError, LocalS3Error) as se:
         _LOGGER.error(f"Error getting object '{bucket}/{object}': {se}")
         raise HTTPException(status_code=404, detail=f"No object at path '{object}' was found") from se
 
@@ -140,14 +140,15 @@ async def put_file(
     bucket: str,
     object: str,
     file: Annotated[UploadFile, File()],
-    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name
     await authorize(current_user, FilePolicy.put_object(bucket))
 
+    client = await files.get_async_s3_client()
+
     try:
-        response = files.put_object(
+        response = await files.put_object(
             client,
             bucket,
             object,
@@ -156,8 +157,8 @@ async def put_file(
             content_type=file.content_type,  # type: ignore
         )
         return response
-    except S3Error as se:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {se.message}") from se
+    except (ClientError, LocalS3Error) as se:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(se)}") from se
 
 
 @router.get("/files/{bucket}/{prefix:path}", response_model=ListObjectsResponse)
@@ -168,20 +169,27 @@ async def list_objects(
     include_version=True,
     recursive=True,
     start_after: str | None = None,
-    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_optional_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name
     await authorize(current_user, FilePolicy.list(bucket))
 
+    client = await files.get_async_s3_client()
+
     try:
-        objects = files.list_objects(
+        objects = await files.list_objects(
             client, bucket, prefix=prefix, include_version=include_version, recursive=recursive, start_after=start_after
         )
         return objects
-    except S3Error as se:
+    except (ClientError, LocalS3Error) as se:
         _LOGGER.error(f"Error listing objects in '{bucket}/{prefix}': {se}")
-        if se.code == "NoSuchBucket":
+        error_code = "NoSuchBucket"
+        if isinstance(se, ClientError):
+            error_code = se.response["Error"]["Code"]
+        elif "NoSuchBucket" in str(se):
+            error_code = "NoSuchBucket"
+            
+        if error_code == "NoSuchBucket":
             raise HTTPException(
                 status_code=404,
                 detail=f"Bucket '{bucket}' not found, please run `ex.Workspace.create('{bucket}')` to create the S3 bucket.",
@@ -200,16 +208,17 @@ async def delete_files(
     bucket: str,
     object: str,
     version_id: str | None = None,
-    client: Minio | files.LocalFileStorage = Depends(files.get_minio_client),
     current_user: User = Security(auth.get_current_user),
 ):
     # Check if the current user is in the workspace to have access to the s3 bucket of the same name
     await authorize(current_user, FilePolicy.delete(bucket))
 
+    client = await files.get_async_s3_client()
+
     try:
-        files.delete_object(client, bucket, object, version_id=version_id)
+        await files.delete_object(client, bucket, object, version_id=version_id)
         return {"message": "File deleted"}
-    except S3Error as se:
+    except (ClientError, LocalS3Error) as se:
         raise HTTPException(status_code=500, detail="Internal server error") from se
     except Exception as e:
         raise e

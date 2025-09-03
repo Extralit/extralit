@@ -25,13 +25,9 @@ from typing import Any, BinaryIO, Optional, Union
 from urllib.parse import urlparse
 from uuid import UUID
 
+import aioboto3
+from botocore.exceptions import ClientError
 from fastapi import HTTPException
-from minio import Minio, S3Error
-from minio.commonconfig import ENABLED
-from minio.datatypes import Object
-from minio.helpers import ObjectWriteResult
-from minio.versioningconfig import VersioningConfig
-from urllib3 import HTTPResponse
 
 from extralit_server.api.schemas.v1.files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
 from extralit_server.settings import settings
@@ -40,60 +36,137 @@ EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 
 _LOGGER = logging.getLogger(__name__)
 
+
+# Custom exception for LocalFileStorage to match S3 behavior
+class LocalS3Error(Exception):
+    """Local file storage exception that mimics S3 ClientError."""
+    
+    def __init__(self, error_code: str, message: str, key: str = ""):
+        self.response = {
+            "Error": {
+                "Code": error_code,
+                "Message": message,
+                "Key": key,
+            }
+        }
+        super().__init__(f"{error_code}: {message}")
+
+
+# Mock response class for LocalFileStorage
+class LocalFileResponse:
+    """Mock response class for LocalFileStorage get_object operations."""
+    
+    def __init__(self, content: bytes):
+        self._content = content
+        self._position = 0
+    
+    def read(self, size: int = -1) -> bytes:
+        if size == -1:
+            data = self._content[self._position:]
+            self._position = len(self._content)
+        else:
+            data = self._content[self._position:self._position + size]
+            self._position += len(data)
+        return data
+    
+    def __aiter__(self):
+        return self
+        
+    async def __anext__(self):
+        chunk = self.read(8192)  # Read in 8KB chunks
+        if not chunk:
+            raise StopAsyncIteration
+        return chunk
+
+
+# Mock write result for LocalFileStorage
+class LocalObjectWriteResult:
+    """Mock write result for LocalFileStorage put_object operations."""
+    
+    def __init__(self, bucket_name: str, object_name: str, version_id: str, etag: str):
+        self.bucket_name = bucket_name
+        self.object_name = object_name
+        self.version_id = version_id
+        self.etag = etag
+
 # Singleton instances
-_minio_client: Union[Minio, "LocalFileStorage"] | None = None
+_s3_session: Optional[aioboto3.Session] = None
 _local_storage_client: Optional["LocalFileStorage"] = None
 
 
-def _create_minio_client() -> Union[Minio, "LocalFileStorage"]:
-    """Create a new Minio client instance."""
+def _create_s3_session() -> Optional[aioboto3.Session]:
+    """Create a new aioboto3 session instance."""
     if None in [settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]:
-        # Use local file system storage if S3 settings are not provided
-        local_storage_path = os.path.join(settings.home_path, "storage")  # type: ignore
-        _LOGGER.info(f"Using local file storage at: {local_storage_path}")
-        return LocalFileStorage(local_storage_path)
+        # Will use local file system storage if S3 settings are not provided
+        return None
 
     try:
-        parsed_url = urlparse(settings.s3_endpoint)
-        hostname: str = str(parsed_url.hostname)
-        port = parsed_url.port
-
-        if hostname is None:
-            raise ValueError("S3 endpoint hostname is required")
-
-        return Minio(
-            endpoint=f"{hostname}:{port}" if port else hostname,
-            access_key=settings.s3_access_key,
-            secret_key=settings.s3_secret_key,
-            region=settings.s3_region,
-            secure=parsed_url.scheme == "https",
+        return aioboto3.Session(
+            aws_access_key_id=settings.s3_access_key,
+            aws_secret_access_key=settings.s3_secret_key,
+            region_name=settings.s3_region,
         )
     except Exception as e:
-        _LOGGER.error(f"Error creating Minio client: {e}", stack_info=True)
+        _LOGGER.error(f"Error creating S3 session: {e}", stack_info=True)
         raise e
 
 
-def get_minio_client() -> Union[Minio, "LocalFileStorage"]:
-    """Get a singleton Minio client instance."""
-    global _minio_client
+def get_s3_session() -> Optional[aioboto3.Session]:
+    """Get a singleton S3 session instance."""
+    global _s3_session
 
-    if _minio_client is None:
-        _minio_client = _create_minio_client()
+    if _s3_session is None:
+        _s3_session = _create_s3_session()
 
-    return _minio_client
-
-
-async def get_async_minio_client() -> Union[Minio, "LocalFileStorage"]:
-    """Get a singleton Minio client instance for async operations."""
-    # For now, return the sync client since Minio client operations are blocking
-    # In the future, you could implement an async wrapper or use aioboto3 for S3
-    return get_minio_client()
+    return _s3_session
 
 
-def reset_minio_client():
-    """Reset the singleton Minio client (useful for testing or reconnection)."""
-    global _minio_client
-    _minio_client = None
+async def get_async_s3_client():
+    """Get an async S3 client instance."""
+    session = get_s3_session()
+    if session is None:
+        # Use local file system storage if S3 settings are not provided
+        global _local_storage_client
+        if _local_storage_client is None:
+            local_storage_path = os.path.join(settings.home_path, "storage")  # type: ignore
+            _LOGGER.info(f"Using local file storage at: {local_storage_path}")
+            _local_storage_client = LocalFileStorage(local_storage_path)
+        return _local_storage_client
+    
+    parsed_url = urlparse(settings.s3_endpoint)
+    endpoint_url = settings.s3_endpoint
+    use_ssl = parsed_url.scheme == "https"
+    
+    return session.client(
+        "s3",
+        endpoint_url=endpoint_url,
+        use_ssl=use_ssl,
+        verify=use_ssl,  # Only verify SSL certificates if using HTTPS
+    )
+
+
+def reset_s3_client():
+    """Reset the singleton S3 session (useful for testing or reconnection)."""
+    global _s3_session, _local_storage_client
+    _s3_session = None
+    _local_storage_client = None
+
+
+# Backward compatibility function
+def get_minio_client():
+    """Backward compatibility function - returns LocalFileStorage if no S3 config."""
+    session = get_s3_session()
+    if session is None:
+        global _local_storage_client
+        if _local_storage_client is None:
+            local_storage_path = os.path.join(settings.home_path, "storage")  # type: ignore
+            _LOGGER.info(f"Using local file storage at: {local_storage_path}")
+            _local_storage_client = LocalFileStorage(local_storage_path)
+        return _local_storage_client
+    
+    # For S3, we need to return something that can be detected as non-LocalFileStorage
+    # This is a placeholder for sync compatibility - actual async operations should use get_async_s3_client
+    return "S3_SESSION_MARKER"
 
 
 class LocalFileStorage:
@@ -141,7 +214,7 @@ class LocalFileStorage:
         content_type: str | None = None,
         part_size: int | None = None,
         metadata: dict[str, Any] | None = None,
-    ) -> ObjectWriteResult:
+    ) -> LocalObjectWriteResult:
         # Ensure bucket exists
         bucket_path = self._get_bucket_path(bucket_name)
         bucket_path.mkdir(parents=True, exist_ok=True)
@@ -177,56 +250,53 @@ class LocalFileStorage:
         with open(meta_path, "w") as f:
             json.dump(metadata, f)
 
-        return ObjectWriteResult(
+        return LocalObjectWriteResult(
             bucket_name=bucket_name,
             object_name=object_name,
             version_id=version_id,
             etag=content_hash,
-            http_headers={},  # type: ignore
-            last_modified=None,
-            location=None,
         )
 
-    def get_object(self, bucket_name: str, object_name: str, version_id: str | None = None) -> HTTPResponse:
+    def get_object(self, bucket_name: str, object_name: str, version_id: str | None = None) -> LocalFileResponse:
         if version_id:
             version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
             if not version_path.exists():
-                raise S3Error("NoSuchKey", "The specified version does not exist", object_name, "", "", None)
+                raise LocalS3Error("NoSuchKey", "The specified version does not exist", object_name)
             with open(version_path, "rb") as f:
                 content = f.read()
         else:
             object_path = self._get_object_path(bucket_name, object_name)
             if not object_path.exists():
-                raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
+                raise LocalS3Error("NoSuchKey", "The specified key does not exist", object_name)
             with open(object_path, "rb") as f:
                 content = f.read()
 
-        # The metadata is not needed for the HTTPResponse, but kept for consistency
+        # The metadata is not needed for the LocalFileResponse, but kept for consistency
         # with the original implementation's metadata fetching.
         meta_path = self._get_object_path(bucket_name, object_name).with_suffix(".metadata.json")
         if not meta_path.exists():
-            raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
+            raise LocalS3Error("NoSuchKey", "The specified key does not exist", object_name)
         with open(meta_path) as f:
             json.load(f)
 
-        return HTTPResponse(body=io.BytesIO(content), preload_content=False)  # type: ignore
+        return LocalFileResponse(content)
 
     def stat_object(self, bucket_name: str, object_name: str, version_id: str | None = None) -> ObjectMetadata:
         if version_id:
             version_path = self._get_version_path(bucket_name, object_name).with_suffix(f".{version_id}")
             if not version_path.exists():
-                raise S3Error("NoSuchKey", "The specified version does not exist", object_name, "", "", None)
+                raise LocalS3Error("NoSuchKey", "The specified version does not exist", object_name)
             path = version_path
         else:
             object_path = self._get_object_path(bucket_name, object_name)
             if not object_path.exists():
-                raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
+                raise LocalS3Error("NoSuchKey", "The specified key does not exist", object_name)
             path = object_path
 
         # Get metadata from file
         meta_path = self._get_object_path(bucket_name, object_name).with_suffix(".metadata.json")
         if not meta_path.exists():
-            raise S3Error("NoSuchKey", "The specified key does not exist", object_name, "", "", None)
+            raise LocalS3Error("NoSuchKey", "The specified key does not exist", object_name)
 
         with open(meta_path) as f:
             metadata = json.load(f)
@@ -359,20 +429,21 @@ def get_proxy_document_url(bucket_name: str, object_path: str) -> str:
     return f"/api/v1/file/{bucket_name}/{object_path}"
 
 
-def get_presigned_url_from_document_url(
-    client: Minio | LocalFileStorage, document_url: str, expires: int = 3600
+async def get_presigned_url_from_document_url(
+    client, document_url: str, expires: int = 3600
 ) -> str:
     """
     Generate a presigned URL from a document URL by parsing the bucket_name and object_path.
 
     Args:
+        client: S3 client or LocalFileStorage instance
         document_url: URL in format "/api/v1/file/{bucket_name}/{object_path}"
         expires: Expiration time in seconds (default: 1 hour)
 
     Returns:
-        Presigned URL if successful, None if parsing fails or client is not Minio
+        Presigned URL if successful, None if parsing fails or client is LocalFileStorage
     """
-    if not isinstance(client, Minio):
+    if isinstance(client, LocalFileStorage):
         return document_url
 
     try:
@@ -389,7 +460,11 @@ def get_presigned_url_from_document_url(
 
         bucket_name, object_path = path_parts
 
-        presigned_url = client.presigned_get_object(bucket_name, object_path, expires=timedelta(seconds=expires))
+        presigned_url = await client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": object_path},
+            ExpiresIn=expires
+        )
         return presigned_url
 
     except Exception as e:
@@ -397,67 +472,209 @@ def get_presigned_url_from_document_url(
         return document_url
 
 
-def list_objects(
-    client: Minio | LocalFileStorage,
+async def list_objects(
+    client,
     bucket: str,
     prefix: str | None = None,
     include_version=True,
     recursive=True,
     start_after: str | None = None,
 ) -> ListObjectsResponse:
-    objects: list[ObjectMetadata | Object] = client.list_objects(  # type: ignore
-        bucket, prefix=prefix, recursive=recursive, include_version=include_version, start_after=start_after
-    )
-    objects: list[ObjectMetadata] = [
-        obj if isinstance(obj, ObjectMetadata) else ObjectMetadata.from_minio_object(obj) for obj in objects
-    ]
-    return ListObjectsResponse(objects=objects)
+    """
+    List objects in S3 bucket or LocalFileStorage.
+    
+    Args:
+        client: S3 client or LocalFileStorage instance
+        bucket: Bucket name
+        prefix: Object prefix filter
+        include_version: Include version information
+        recursive: Recursive listing
+        start_after: Start listing after this key
+        
+    Returns:
+        ListObjectsResponse containing list of ObjectMetadata
+    """
+    if isinstance(client, LocalFileStorage):
+        objects = client.list_objects(
+            bucket, prefix=prefix, recursive=recursive, include_version=include_version, start_after=start_after
+        )
+        return ListObjectsResponse(objects=objects)
+    
+    # For S3 client
+    try:
+        kwargs = {
+            "Bucket": bucket,
+        }
+        if prefix:
+            kwargs["Prefix"] = prefix
+        if start_after:
+            kwargs["StartAfter"] = start_after
+        
+        objects = []
+        
+        if include_version:
+            response = await client.list_object_versions(**kwargs)
+            for version in response.get("Versions", []):
+                obj_metadata = ObjectMetadata(
+                    bucket_name=bucket,
+                    object_name=version["Key"],
+                    version_id=version.get("VersionId"),
+                    etag=version.get("ETag", "").strip('"'),
+                    size=version.get("Size", 0),
+                    last_modified=version.get("LastModified"),
+                    content_type="application/octet-stream",  # S3 doesn't provide content type in list operations
+                    is_latest=version.get("IsLatest", False),
+                )
+                objects.append(obj_metadata)
+        else:
+            response = await client.list_objects_v2(**kwargs)
+            for obj in response.get("Contents", []):
+                obj_metadata = ObjectMetadata(
+                    bucket_name=bucket,
+                    object_name=obj["Key"],
+                    etag=obj.get("ETag", "").strip('"'),
+                    size=obj.get("Size", 0),
+                    last_modified=obj.get("LastModified"),
+                    content_type="application/octet-stream",  # S3 doesn't provide content type in list operations
+                )
+                objects.append(obj_metadata)
+        
+        return ListObjectsResponse(objects=objects)
+        
+    except ClientError as e:
+        _LOGGER.error(f"Error listing objects in bucket {bucket}: {e}")
+        raise HTTPException(status_code=404, detail=f"Error listing objects: {e}")
+    except Exception as e:
+        _LOGGER.error(f"Error listing objects in bucket {bucket}: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-def get_object(
-    client: Minio | LocalFileStorage,
+async def get_object(
+    client,
     bucket: str,
     object: str,
     version_id: str | None = None,
     include_versions=False,
 ) -> FileObjectResponse:
+    """
+    Get object from S3 bucket or LocalFileStorage.
+    
+    Args:
+        client: S3 client or LocalFileStorage instance
+        bucket: Bucket name
+        object: Object key
+        version_id: Specific version ID
+        include_versions: Include version information
+        
+    Returns:
+        FileObjectResponse containing object data and metadata
+    """
+    if isinstance(client, LocalFileStorage):
+        try:
+            stat = client.stat_object(bucket, object, version_id=version_id)
+        except LocalS3Error as se:
+            if version_id:
+                _LOGGER.warning(f"Error getting object {object} from bucket {bucket} with version {version_id}: {se}")
+                try:
+                    _LOGGER.info(f"Retrying without version_id for object {object} in bucket {bucket}")
+                    stat = client.stat_object(bucket, object)
+                except LocalS3Error as se_retry:
+                    raise se_retry
+            else:
+                raise se
+
+        try:
+            obj = client.get_object(bucket, object, version_id=stat.version_id)
+
+            if include_versions:
+                versions = await list_objects(client, bucket, prefix=object, include_version=include_versions)
+            else:
+                versions = None
+
+            return FileObjectResponse(
+                response=obj,
+                metadata=stat,
+                versions=versions,
+            )
+
+        except LocalS3Error as se:
+            _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {se}")
+            raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
+        except Exception as e:
+            _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {e}")
+            raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    
+    # For S3 client
     try:
-        stat = client.stat_object(bucket, object, version_id=version_id)
-    except S3Error as se:
+        # Get object metadata first
+        kwargs = {"Bucket": bucket, "Key": object}
         if version_id:
-            _LOGGER.warning(f"Error getting object {object} from bucket {bucket} with version {version_id}: {se}")
+            kwargs["VersionId"] = version_id
+            
+        head_response = await client.head_object(**kwargs)
+        
+        # Create ObjectMetadata from head response
+        stat = ObjectMetadata(
+            bucket_name=bucket,
+            object_name=object,
+            version_id=head_response.get("VersionId"),
+            etag=head_response.get("ETag", "").strip('"'),
+            size=head_response.get("ContentLength", 0),
+            last_modified=head_response.get("LastModified"),
+            content_type=head_response.get("ContentType", "application/octet-stream"),
+            metadata=head_response.get("Metadata", {}),
+        )
+        
+    except ClientError as ce:
+        if version_id:
+            _LOGGER.warning(f"Error getting object {object} from bucket {bucket} with version {version_id}: {ce}")
             try:
                 _LOGGER.info(f"Retrying without version_id for object {object} in bucket {bucket}")
-                stat = client.stat_object(bucket, object)
-            except S3Error as se_retry:
-                raise se_retry
+                head_response = await client.head_object(Bucket=bucket, Key=object)
+                stat = ObjectMetadata(
+                    bucket_name=bucket,
+                    object_name=object,
+                    version_id=head_response.get("VersionId"),
+                    etag=head_response.get("ETag", "").strip('"'),
+                    size=head_response.get("ContentLength", 0),
+                    last_modified=head_response.get("LastModified"),
+                    content_type=head_response.get("ContentType", "application/octet-stream"),
+                    metadata=head_response.get("Metadata", {}),
+                )
+            except ClientError as ce_retry:
+                raise ce_retry
         else:
-            raise se
+            raise ce
 
     try:
-        obj = client.get_object(bucket, object, version_id=stat.version_id)
+        # Get the actual object data
+        get_kwargs = {"Bucket": bucket, "Key": object}
+        if stat.version_id:
+            get_kwargs["VersionId"] = stat.version_id
+            
+        obj_response = await client.get_object(**get_kwargs)
 
         if include_versions:
-            versions = list_objects(client, bucket, prefix=object, include_version=include_versions)
+            versions = await list_objects(client, bucket, prefix=object, include_version=include_versions)
         else:
             versions = None
 
         return FileObjectResponse(
-            response=obj,
-            metadata=stat if isinstance(stat, ObjectMetadata) else ObjectMetadata.from_minio_object(stat),
+            response=obj_response["Body"],
+            metadata=stat,
             versions=versions,
         )
 
-    except S3Error as se:
-        _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {se}")
+    except ClientError as ce:
+        _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {ce}")
         raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
     except Exception as e:
         _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {getattr(e, 'message', str(e))}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-def put_object(
-    client: Minio | LocalFileStorage,
+async def put_object(
+    client,
     bucket: str,
     object: str,
     data: BinaryIO | bytes | str,
@@ -466,6 +683,22 @@ def put_object(
     metadata: dict[str, Any] | None = None,
     part_size: int = 100 * 1024 * 1024,
 ) -> ObjectMetadata:
+    """
+    Put object into S3 bucket or LocalFileStorage.
+    
+    Args:
+        client: S3 client or LocalFileStorage instance
+        bucket: Bucket name
+        object: Object key
+        data: Object data
+        size: Data size
+        content_type: MIME content type
+        metadata: Object metadata
+        part_size: Part size for multipart uploads (ignored for LocalFileStorage)
+        
+    Returns:
+        ObjectMetadata for the created object
+    """
     if isinstance(data, bytes):
         data_bytes_io = io.BytesIO(data)
         size = len(data)
@@ -476,64 +709,160 @@ def put_object(
     else:
         data_bytes_io = data
 
+    if isinstance(client, LocalFileStorage):
+        try:
+            response = client.put_object(
+                bucket,
+                object,
+                data_bytes_io,
+                content_type=content_type,
+                length=size,
+                metadata=metadata or {},
+            )
+
+            return ObjectMetadata(
+                bucket_name=response.bucket_name,
+                object_name=response.object_name,
+                version_id=response.version_id,
+                etag=response.etag,
+                size=size,
+                content_type=content_type,
+                metadata=metadata or {},
+            )
+
+        except LocalS3Error as se:
+            _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {se}")
+            raise se
+        except Exception as e:
+            _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {e}")
+            raise e
+    
+    # For S3 client
     try:
-        response = client.put_object(
-            bucket,
-            object,
-            data_bytes_io,
+        kwargs = {
+            "Bucket": bucket,
+            "Key": object,
+            "Body": data_bytes_io,
+            "ContentType": content_type,
+        }
+        
+        if metadata:
+            kwargs["Metadata"] = metadata
+            
+        response = await client.put_object(**kwargs)
+        
+        return ObjectMetadata(
+            bucket_name=bucket,
+            object_name=object,
+            version_id=response.get("VersionId"),
+            etag=response.get("ETag", "").strip('"'),
+            size=size,
             content_type=content_type,
-            length=size,
-            part_size=part_size,
             metadata=metadata or {},
         )
 
-        return ObjectMetadata.from_minio_write_response(response)
-
-    except S3Error as se:
-        _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {se}")
-        raise se
+    except ClientError as ce:
+        _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {ce}")
+        raise ce
     except Exception as e:
         _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {e}")
         raise e
 
 
-def delete_object(client: Minio | LocalFileStorage, bucket: str, object: str, version_id: str | None = None):
+async def delete_object(client, bucket: str, object: str, version_id: str | None = None):
+    """
+    Delete object from S3 bucket or LocalFileStorage.
+    
+    Args:
+        client: S3 client or LocalFileStorage instance
+        bucket: Bucket name
+        object: Object key
+        version_id: Specific version ID to delete
+    """
+    if isinstance(client, LocalFileStorage):
+        try:
+            client.remove_object(bucket, object, version_id=version_id)
+        except LocalS3Error as se:
+            _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {se}")
+            raise se
+        except Exception as e:
+            _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
+            raise e
+        return
+    
+    # For S3 client
     try:
-        client.remove_object(bucket, object, version_id=version_id)
+        kwargs = {"Bucket": bucket, "Key": object}
+        if version_id:
+            kwargs["VersionId"] = version_id
+            
+        await client.delete_object(**kwargs)
 
-    except S3Error as se:
-        _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {se}")
-        raise se
+    except ClientError as ce:
+        _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {ce}")
+        raise ce
     except Exception as e:
         _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
         raise e
 
 
-def create_bucket(
-    client: Minio | LocalFileStorage,
+async def create_bucket(
+    client,
     workspace_name: str,
     excluded_prefixes: list[str] = EXCLUDED_VERSIONING_PREFIXES,
 ):
-    try:
-        client.make_bucket(workspace_name)
+    """
+    Create bucket in S3 or LocalFileStorage.
+    
+    Args:
+        client: S3 client or LocalFileStorage instance
+        workspace_name: Name of the bucket/workspace
+        excluded_prefixes: Prefixes to exclude from versioning (not used for S3)
+    """
+    if isinstance(client, LocalFileStorage):
         try:
-            client.set_bucket_versioning(workspace_name, VersioningConfig(ENABLED))
+            client.make_bucket(workspace_name)
+            try:
+                client.set_bucket_versioning(workspace_name, None)  # LocalFileStorage doesn't need versioning config
+            except Exception as e:
+                _LOGGER.error(f"Error enabling versioning for bucket {workspace_name}: {e}")
+        except LocalS3Error as se:
+            if "BucketAlreadyExists" in str(se):
+                pass
+            else:
+                _LOGGER.error(f"Error creating bucket {workspace_name}: {se}")
+                raise se
+        except Exception as e:
+            _LOGGER.error(f"Error creating bucket {workspace_name}: {e}")
+            raise e
+        return
+    
+    # For S3 client
+    try:
+        await client.create_bucket(Bucket=workspace_name)
+        try:
+            # Enable versioning for the bucket
+            await client.put_bucket_versioning(
+                Bucket=workspace_name,
+                VersioningConfiguration={"Status": "Enabled"}
+            )
         except Exception as e:
             _LOGGER.error(f"Error enabling versioning for bucket {workspace_name}: {e}")
 
-    except S3Error as se:
-        if se.code in ["BucketAlreadyOwnedByYou", "BucketAlreadyExists"]:
+    except ClientError as ce:
+        error_code = ce.response["Error"]["Code"]
+        if error_code in ["BucketAlreadyOwnedByYou", "BucketAlreadyExists"]:
             pass
         else:
-            _LOGGER.error(f"Error creating bucket {workspace_name}: {se}")
-            raise se
+            _LOGGER.error(f"Error creating bucket {workspace_name}: {ce}")
+            raise ce
     except Exception as e:
         _LOGGER.error(f"Error creating bucket {workspace_name}: {e}")
         raise e
 
 
-def put_document_file(
-    client: Minio | LocalFileStorage,
+async def put_document_file(
+    client,
     workspace_name: str,
     document_id: UUID,
     file_data: bytes,
@@ -544,7 +873,7 @@ def put_document_file(
     Upload a document file to S3/local storage with deduplication.
 
     Args:
-        client: Minio or LocalFileStorage client
+        client: S3 client or LocalFileStorage instance
         workspace_name: Name of the workspace bucket
         document_id: UUID of the document
         file_data: File data as bytes
@@ -557,9 +886,9 @@ def put_document_file(
     object_path = get_pdf_s3_object_path(document_id)
 
     # Check if file already exists with same hash
-    existing_files = list_objects(client, workspace_name, prefix=object_path, include_version=False, recursive=False)
+    existing_files = await list_objects(client, workspace_name, prefix=object_path, include_version=False, recursive=False)
 
-    put_object = False
+    put_object_flag = False
 
     if existing_files.objects:
         new_file_hash = compute_hash(file_data)
@@ -568,16 +897,17 @@ def put_document_file(
         ]
 
         if new_file_hash not in existing_hashes:
-            put_object = True
+            put_object_flag = True
     else:
-        put_object = True
+        put_object_flag = True
 
-    if put_object:
-        response = client.put_object(
+    if put_object_flag:
+        response = await put_object(
+            client,
             workspace_name,
             object_path,
-            io.BytesIO(file_data),
-            length=len(file_data),
+            file_data,
+            len(file_data),
             content_type="application/pdf",
             metadata=metadata or {},
         )
@@ -587,12 +917,12 @@ def put_document_file(
     return None
 
 
-def download_file_content(client: Minio | LocalFileStorage, document_url: str) -> bytes:
+async def download_file_content(client, document_url: str) -> bytes:
     """
     Download file content from a document URL.
 
     Args:
-        client: Minio or LocalFileStorage client
+        client: S3 client or LocalFileStorage instance
         document_url: URL in format "/api/v1/file/{bucket_name}/{object_path}"
 
     Returns:
@@ -608,11 +938,24 @@ def download_file_content(client: Minio | LocalFileStorage, document_url: str) -
 
     bucket_name, object_path = url_parts
 
-    file_response = get_object(client, bucket_name, object_path)
-    return file_response.response.read()
+    file_response = await get_object(client, bucket_name, object_path)
+    
+    # Handle different response types
+    if isinstance(client, LocalFileStorage):
+        return file_response.response.read()
+    else:
+        # For S3 client, response.response is a StreamingBody
+        return await file_response.response.read()
 
 
-def delete_bucket(client: Minio | LocalFileStorage, workspace_name: str):
+async def delete_bucket(client, workspace_name: str):
+    """
+    Delete bucket from S3 or LocalFileStorage.
+    
+    Args:
+        client: S3 client or LocalFileStorage instance
+        workspace_name: Name of the bucket/workspace to delete
+    """
     if isinstance(client, LocalFileStorage):
         try:
             bucket_path = client._get_bucket_path(workspace_name)
@@ -622,31 +965,32 @@ def delete_bucket(client: Minio | LocalFileStorage, workspace_name: str):
         except Exception as e:
             _LOGGER.error(f"Error deleting local bucket directory {workspace_name}: {e}")
             raise e
-    elif isinstance(client, Minio):
-        try:
-            # Existing Minio logic
-            objects = client.list_objects(workspace_name, prefix="", recursive=True, include_version=True)
-            # Convert generator to list to avoid issues during iteration
-            obj_list = list(objects)
-            for obj in obj_list:
-                try:
-                    if obj.object_name is not None:
-                        client.remove_object(workspace_name, obj.object_name, version_id=obj.version_id)
-                except S3Error as remove_err:
-                    _LOGGER.warning(
-                        f"Error removing object {obj.object_name} (version: {obj.version_id}) during bucket delete: {remove_err}"
-                    )
+        return
+    
+    # For S3 client
+    try:
+        # List and delete all objects in the bucket
+        objects_response = await list_objects(client, workspace_name, prefix="", include_version=True, recursive=True)
+        
+        for obj in objects_response.objects:
+            try:
+                if obj.object_name is not None:
+                    await delete_object(client, workspace_name, obj.object_name, version_id=obj.version_id)
+            except ClientError as remove_err:
+                _LOGGER.warning(
+                    f"Error removing object {obj.object_name} (version: {obj.version_id}) during bucket delete: {remove_err}"
+                )
 
-            client.remove_bucket(workspace_name)
-        except S3Error as se:
-            if se.code in {"NoSuchBucket", "NotImplemented"}:
-                pass
-            else:
-                _LOGGER.error(f"Error deleting Minio bucket {workspace_name}: {se}")
-                raise se
-        except Exception as e:
-            _LOGGER.error(f"Error deleting Minio bucket {workspace_name}: {e}")
-            raise e
-    else:
-        _LOGGER.error(f"Unknown client type for delete_bucket: {type(client)}")
-        raise TypeError("Unsupported client type for delete_bucket")
+        # Delete the bucket itself
+        await client.delete_bucket(Bucket=workspace_name)
+        
+    except ClientError as ce:
+        error_code = ce.response["Error"]["Code"]
+        if error_code in {"NoSuchBucket", "NotImplemented"}:
+            pass
+        else:
+            _LOGGER.error(f"Error deleting S3 bucket {workspace_name}: {ce}")
+            raise ce
+    except Exception as e:
+        _LOGGER.error(f"Error deleting S3 bucket {workspace_name}: {e}")
+        raise e
