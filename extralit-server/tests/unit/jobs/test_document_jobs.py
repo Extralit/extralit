@@ -30,7 +30,7 @@ class TestDocumentJobs:
     @patch("extralit_server.jobs.document_jobs.PDFOCRLayerDetector")
     @patch("extralit_server.jobs.document_jobs.AsyncSessionLocal")
     @patch("extralit_server.jobs.document_jobs.get_current_job")
-    def test_analysis_and_preprocess_job_success(
+    async def test_analysis_and_preprocess_job_success(
         self,
         mock_get_current_job,
         mock_session,
@@ -96,7 +96,7 @@ class TestDocumentJobs:
         mock_session.return_value.__enter__.return_value = mock_db
 
         # Execute job
-        result = analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
+        result = await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
 
         # Verify result structure
         assert "document_id" in result
@@ -131,7 +131,7 @@ class TestDocumentJobs:
 
     @patch("extralit_server.jobs.document_jobs.files")
     @patch("extralit_server.jobs.document_jobs.get_current_job")
-    def test_analysis_and_preprocess_job_no_client(self, mock_get_current_job, mock_files):
+    async def test_analysis_and_preprocess_job_no_client(self, mock_get_current_job, mock_files):
         """Test analysis and preprocess job when storage client is not available."""
         # Setup test data
         document_id = uuid4()
@@ -149,7 +149,7 @@ class TestDocumentJobs:
 
         # Execute job and expect exception
         with pytest.raises(Exception, match="Failed to get storage client"):
-            analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
+            await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
 
         # Verify job meta was updated with error
         assert "error" in mock_job.meta
@@ -158,7 +158,7 @@ class TestDocumentJobs:
     @patch("extralit_server.jobs.document_jobs.PDFAnalyzer")
     @patch("extralit_server.jobs.document_jobs.PDFOCRLayerDetector")
     @patch("extralit_server.jobs.document_jobs.get_current_job")
-    def test_analysis_and_preprocess_job_no_thumbnail(
+    async def test_analysis_and_preprocess_job_no_thumbnail(
         self, mock_get_current_job, mock_ocr_detector_class, mock_analyzer_class, mock_files
     ):
         """Test analysis and preprocess job when thumbnail generation fails."""
@@ -218,7 +218,7 @@ class TestDocumentJobs:
                 mock_session.return_value.__enter__.return_value = mock_db
 
                 # Execute job
-                result = analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
+                result = await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
 
                 # Verify that thumbnail was not generated
                 analysis_result = result["analysis_result"]
