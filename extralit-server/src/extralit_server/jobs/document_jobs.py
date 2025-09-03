@@ -66,7 +66,6 @@ async def analysis_and_preprocess_job(
             "reference": reference,
             "workspace_name": str(workspace_name),
             "workflow_step": "analysis_and_preprocess",
-            "started_at": datetime.now(timezone.utc).isoformat(),
         }
     )
     current_job.save_meta()
@@ -191,7 +190,6 @@ async def analysis_and_preprocess_job(
         current_job.meta["needs_ocr"] = analysis_result["needs_ocr"]
         current_job.meta["analysis_complete"] = True
         current_job.meta["preprocessing_complete"] = True
-        current_job.meta["completed_at"] = datetime.now(timezone.utc).isoformat()
         current_job.save_meta()
 
         return combined_result
@@ -199,6 +197,5 @@ async def analysis_and_preprocess_job(
     except Exception as e:
         _LOGGER.error(f"Error in analysis_and_preprocess_job for document {document_id}: {e}")
         current_job.meta["error"] = str(e)
-        current_job.meta["completed_at"] = datetime.now(timezone.utc).isoformat()
         current_job.save_meta()
         raise
