@@ -290,26 +290,30 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
             metadata={"processing_applied": "ocrmypdf_rotation", "original_filename": filename},
         )
 
-        # Step 3: Generate and store thumbnail image
-        try:
-            thumbnail_object_path = files.get_thumbnail_s3_object_path(document_id)
+        # Step 3: Store thumbnail image if generated
+        analysis_result["thumbnail_generated"] = False
+        if thumbnail_data is not None:
+            try:
+                thumbnail_object_path = files.get_thumbnail_s3_object_path(document_id)
 
-            files.put_object(
-                client,
-                workspace_name,
-                thumbnail_object_path,
-                thumbnail_data,
-                len(thumbnail_data),
-                content_type="image/png",
-                metadata={"source": "first_page_thumbnail", "original_filename": filename},
-            )
+                files.put_object(
+                    client,
+                    workspace_name,
+                    thumbnail_object_path,
+                    thumbnail_data,
+                    len(thumbnail_data),
+                    content_type="image/png",
+                    metadata={"source": "first_page_thumbnail", "original_filename": filename},
+                )
 
-            _LOGGER.info(f"Generated and stored thumbnail for document {document_id}")
-            thumbnail_generated = True
+                _LOGGER.info(f"Generated and stored thumbnail for document {document_id}")
+                analysis_result["thumbnail_generated"] = True
 
-        except Exception as e:
-            _LOGGER.warning(f"Failed to generate thumbnail for document {document_id}: {e}")
-            thumbnail_generated = False
+            except Exception as e:
+                _LOGGER.warning(f"Failed to store thumbnail for document {document_id}: {e}")
+                analysis_result["thumbnail_generated"] = False
+        else:
+            _LOGGER.warning(f"No thumbnail data available for document {document_id}")
 
         # Combine results
         combined_result = {
@@ -320,7 +324,6 @@ def analysis_and_preprocess_job(document_id: UUID, s3_url: str, reference: str, 
                 "ocr_applied": getattr(processing_response.metadata, "ocr_applied", False),
                 "preprocessing_metadata": processing_response.metadata.model_dump(),
             },
-            "thumbnail_generated": thumbnail_generated,
             "needs_ocr": analysis_result["needs_ocr"],
         }
 
