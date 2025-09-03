@@ -14,7 +14,6 @@
 
 """Document processing metadata schemas for workflow tracking."""
 
-from datetime import datetime, timezone
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
@@ -46,7 +45,6 @@ class AnalysisMetadata(BaseModel):
     needs_ocr: Optional[bool] = Field(None, description="Whether additional OCR processing is needed")
     ocr_quality: OCRQualityMetadata = Field(..., description="OCR quality analysis")
     layout_analysis: LayoutAnalysisMetadata = Field(..., description="Layout analysis results")
-    analysis_completed_at: Optional[str] = Field(None, description="When analysis was completed")
     thumbnail_generated: Optional[bool] = Field(
         None, description="Whether a thumbnail was generated during layout analysis"
     )
@@ -58,7 +56,6 @@ class PreprocessingMetadata(BaseModel):
     processing_time: float = Field(..., description="Processing time in seconds")
     ocr_applied: bool = Field(..., description="Whether OCR was applied during preprocessing")
     processed_s3_url: Optional[str] = Field(None, description="S3 URL of processed PDF")
-    preprocessing_completed_at: Optional[str] = Field(None, description="When preprocessing was completed")
 
 
 class TextExtractionMetadata(BaseModel):
@@ -66,7 +63,6 @@ class TextExtractionMetadata(BaseModel):
 
     markdown: str = Field(None, description="Extracted text")
     extraction_method: str = Field(..., description="Method used for extraction")
-    text_extraction_completed_at: Optional[str] = Field(None, description="When text extraction was completed")
 
 
 class DocumentProcessingMetadata(BaseModel):
@@ -76,8 +72,6 @@ class DocumentProcessingMetadata(BaseModel):
     analysis_metadata: Optional[AnalysisMetadata] = Field(None, description="Analysis results")
     preprocessing_metadata: Optional[PreprocessingMetadata] = Field(None, description="Preprocessing results")
     text_extraction_metadata: Optional[TextExtractionMetadata] = Field(None, description="Text extraction results")
-    workflow_started_at: Optional[datetime] = Field(None, description="When workflow was started")
-    workflow_completed_at: Optional[datetime] = Field(None, description="When workflow was completed")
     workflow_status: str = Field(default="running", description="Overall workflow status")
 
     def update_analysis_results(self, analysis_result: dict) -> None:
@@ -87,7 +81,6 @@ class DocumentProcessingMetadata(BaseModel):
             needs_ocr=analysis_result.get("needs_ocr"),
             ocr_quality=OCRQualityMetadata(**analysis_result.get("analysis_metadata", {})),
             layout_analysis=LayoutAnalysisMetadata(**analysis_result.get("layout_analysis", {})),
-            analysis_completed_at=datetime.now(timezone.utc).isoformat(),
         )
 
     def update_preprocessing_results(self, preprocess_result: dict) -> None:
@@ -96,7 +89,6 @@ class DocumentProcessingMetadata(BaseModel):
             processing_time=preprocess_result["processing_time"],
             ocr_applied=preprocess_result.get("ocr_applied", False),
             processed_s3_url=preprocess_result.get("processed_s3_url"),
-            preprocessing_completed_at=datetime.now(timezone.utc).isoformat(),
         )
 
     def is_workflow_complete(self) -> bool:

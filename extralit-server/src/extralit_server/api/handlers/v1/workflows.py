@@ -12,11 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import logging
+import time
 from typing import Annotated, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security, status
+from rq.group import Group
+from sqlalchemy import select
+from sqlalchemy.exc import MultipleResultsFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.policies.v1 import JobPolicy, authorize
@@ -32,6 +37,7 @@ from extralit_server.contexts.workflows import (
     restart_failed_jobs_in_workflow,
 )
 from extralit_server.database import get_async_db
+from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.models import User
 from extralit_server.models.database import Document, DocumentWorkflow, Workspace
 from extralit_server.security import auth
@@ -47,9 +53,9 @@ router = APIRouter(tags=["workflows"])
 )
 async def start_workflow(
     *,
+    request: StartWorkflowRequest,
     db: Annotated[AsyncSession, Depends(get_async_db)],
     current_user: Annotated[User, Security(auth.get_current_user)],
-    request: StartWorkflowRequest,
 ) -> StartWorkflowResponse:
     """Start PDF processing workflow for a document."""
     await authorize(current_user, JobPolicy.get)
@@ -63,9 +69,6 @@ async def start_workflow(
                 detail=f"Document with id `{request.document_id}` not found",
             )
 
-        # Get workspace by name
-        from sqlalchemy import select
-
         workspace_result = await db.execute(select(Workspace).where(Workspace.name == request.workspace_name))
         workspace = workspace_result.scalar_one_or_none()
         if not workspace:
@@ -74,7 +77,6 @@ async def start_workflow(
                 detail=f"Workspace `{request.workspace_name}` not found",
             )
 
-        # Check if workflow already exists
         existing_workflow = await DocumentWorkflow.get_by_document_id(db, request.document_id)
         if existing_workflow and not request.force:
             raise HTTPException(
@@ -82,18 +84,10 @@ async def start_workflow(
                 detail=f"Workflow already exists for document {request.document_id}. Use force=true to restart.",
             )
 
-        # Generate reference if not provided
-        reference = request.reference or f"doc_{str(request.document_id)[:8]}"
-
-        # Get document S3 URL (assuming it's stored in document metadata or similar)
-        # This is a placeholder - you'll need to implement the actual S3 URL retrieval
-        s3_url = getattr(document, "s3_url", None) or f"s3://documents/{document.id}"
-
-        # Start the workflow
         await create_document_workflow(
             document_id=request.document_id,
-            s3_url=s3_url,
-            reference=reference,
+            s3_url=document.url,
+            reference=document.reference,
             workspace_name=request.workspace_name,
             workspace_id=workspace.id,
         )
@@ -106,18 +100,42 @@ async def start_workflow(
                 detail="Failed to create workflow record",
             )
 
+        if request.wait:
+            start_time = time.time()
+            group = None
+            while request.timeout is None or time.time() - start_time < request.timeout:
+                try:
+                    group = Group.fetch(name=workflow.group_id, connection=REDIS_CONNECTION)
+                    jobs = group.get_jobs()
+                    if not jobs:
+                        break
+                    all_done = all(job.is_finished or job.is_failed for job in jobs)
+                    if all_done:
+                        break
+                except Exception:
+                    break
+                await asyncio.sleep(5)
+            workflow = await DocumentWorkflow.get_by_document_id(db, request.document_id)
+
         return StartWorkflowResponse(
             workflow_id=str(workflow.id),
             document_id=str(request.document_id),
             group_id=workflow.group_id,
             status=workflow.status,
-            reference=reference,
+            reference=document.reference,
+            restarted_jobs=None,
         )
 
     except HTTPException:
         raise
+    except MultipleResultsFound as e:
+        _LOGGER.error(f"Multiple documents found with ID {request.document_id} %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Multiple documents found with ID {request.document_id}",
+        )
     except Exception as e:
-        _LOGGER.error(f"Error starting workflow for document {request.document_id}: {e}")
+        _LOGGER.error(f"Error starting workflow for document \n{type(e)}{e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to start workflow: {e!s}",
@@ -333,7 +351,7 @@ def _convert_to_workflow_status_response(workflow_status: dict) -> WorkflowStatu
         status=workflow_status.get("status", "unknown"),
         progress=workflow_status.get("progress", 0.0),
         reference=workflow_status.get("reference"),
-        workspace_name=workflow_status.get("workspace_name"),
+        workspace_name=workflow_status.get("workspace_name") if "workspace_name" in workflow_status else None,
         workspace_id=str(workflow_status.get("workspace_id", "")),
         workflow_type=workflow_status.get("workflow_type", "unknown"),
         total_jobs=workflow_status.get("total_jobs", 0),
@@ -343,5 +361,5 @@ def _convert_to_workflow_status_response(workflow_status: dict) -> WorkflowStatu
         created_at=workflow_status.get("created_at"),
         updated_at=workflow_status.get("updated_at"),
         error=workflow_status.get("error"),
-        jobs=workflow_status.get("jobs"),
+        jobs=workflow_status.get("jobs") if "jobs" in workflow_status else None,
     )

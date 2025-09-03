@@ -62,7 +62,14 @@ class LoggingMixin:
 
 def configure_logging():
     """Normalizes logging configuration for extralit and its dependencies"""
-    handler = ExtralitHandler()
+    handler = ExtralitHandler(show_time=False, show_level=False)
+
+    if hasattr(handler, "set_formatter"):
+        # For RichHandler, use its own formatter
+        handler.set_formatter(None)
+    else:
+        # For StreamHandler, use a minimal formatter
+        handler.setFormatter(logging.Formatter("%(message)s"))
 
     # See the note here: https://docs.python.org/3/library/logging.html#logging.Logger.propagate
     # We only attach our handler to the root logger and let propagation take care of the rest

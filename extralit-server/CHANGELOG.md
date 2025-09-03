@@ -15,6 +15,10 @@ These are the section headers that we use:
 -->
 
 ## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.6.1...v0.6.2)
+### Added
+
+- Refactor document analysis and preprocessing job to support asynchronous s3 IO operations and large file processing.
+- Added `wait` parameter to the POST /workflows/start endpoint to waiting for the workflow to complete and return the final status.
 
 ## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 

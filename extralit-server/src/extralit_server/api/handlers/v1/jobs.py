@@ -23,7 +23,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from extralit_server.api.policies.v1 import JobPolicy, authorize
 from extralit_server.api.schemas.v1.jobs import Job as JobSchema
 from extralit_server.api.schemas.v1.jobs import WorkflowJobResult
-from extralit_server.contexts.workflows import get_jobs_by_reference, get_jobs_for_document
+from extralit_server.contexts.workflows import (
+    get_jobs_by_reference,
+    get_jobs_for_document,
+    get_workflow_status_from_group,
+)
 from extralit_server.database import get_async_db
 from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.models import User
@@ -94,9 +98,12 @@ async def get_jobs(
                     detail=f"Workflow with group_id `{group_id}` not found",
                 )
 
-            from extralit_server.contexts.workflows import get_workflow_status_from_group
-
             group_status = get_workflow_status_from_group(group_id)
+            if group_status.get("status") == "expired":
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"RQ Group with group_id `{group_id}` not found or expired",
+                )
 
             # Convert group jobs to WorkflowJobResult format
             results = []
@@ -125,7 +132,7 @@ async def get_jobs(
 
     except Exception as e:
         if isinstance(e, HTTPException):
-            raise
+            raise e
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error retrieving jobs: {e!s}",
