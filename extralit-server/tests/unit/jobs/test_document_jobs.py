@@ -17,167 +17,209 @@ from uuid import uuid4
 
 import pytest
 
-from extralit_server.jobs.document_jobs import upload_and_preprocess_documents_job
-from tests.factories import UserFactory, WorkspaceFactory
+from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
 
 
-@pytest.mark.asyncio
 class TestDocumentJobs:
     """Test suite for document job functions."""
 
     @patch("extralit_server.jobs.document_jobs.files")
-    @patch("extralit_server.jobs.document_jobs.datasets")
-    @patch("extralit_server.jobs.document_jobs.imports")
-    @pytest.mark.skip("temporarily skipping")
-    async def test_upload_reference_documents_job_success(self, mock_imports, mock_datasets, mock_files):
-        """Test successful reference documents upload job."""
-        # Create test data
-        workspace = await WorkspaceFactory.create()
-        user = await UserFactory.create()
+    @patch("extralit_server.jobs.document_jobs.PDFPreprocessor")
+    @patch("extralit_server.jobs.document_jobs.PDFAnalyzer")
+    @patch("extralit_server.jobs.document_jobs.PDFOCRLayerDetector")
+    @patch("extralit_server.jobs.document_jobs.SyncSessionLocal")
+    @patch("extralit_server.jobs.document_jobs.get_current_job")
+    def test_analysis_and_preprocess_job_success(
+        self,
+        mock_get_current_job,
+        mock_session,
+        mock_ocr_detector_class,
+        mock_analyzer_class,
+        mock_preprocessor_class,
+        mock_files,
+    ):
+        """Test successful analysis and preprocess job."""
+        # Setup test data
+        document_id = uuid4()
+        s3_url = f"/api/v1/file/test-workspace/documents/{document_id}/test.pdf"
         reference = "test_ref"
+        workspace_name = "test-workspace"
 
-        # Create document data
-        document_data = {
-            "workspace_id": str(workspace.id),
-            "reference": reference,
-            "doi": "10.1234/test.doi",
-            "pmid": None,
-        }
-
-        # Create file data list
-        file_data_list = [
-            ("test1.pdf", b"%PDF-1.5 test pdf content 1"),
-            ("test2.pdf", b"%PDF-1.5 test pdf content 2"),
-        ]
+        # Mock current job
+        mock_job = MagicMock()
+        mock_job.meta = {}
+        mock_get_current_job.return_value = mock_job
 
         # Mock file operations
-        mock_files.get_minio_client.return_value = MagicMock()
-        mock_files.list_objects.return_value = MagicMock(objects=[])
-        mock_files.get_pdf_s3_object_path.return_value = "documents/test-id/test.pdf"
-        mock_files.put_object.return_value = MagicMock(bucket_name=workspace.name, object_name="test.pdf")
-        mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test.pdf"
-        mock_files.compute_hash.return_value = "test_hash"
+        mock_client = MagicMock()
+        mock_files.get_minio_client.return_value = mock_client
+        mock_files.download_file_content.return_value = b"%PDF-1.5 test pdf content"
+        mock_files.get_thumbnail_s3_object_path.return_value = f"thumbnails/{document_id}"
 
-        # Mock imports.check_existing_document to return None (no existing document)
-        mock_imports.check_existing_document.return_value = None
-
-        # Mock document creation
-        mock_document = MagicMock()
-        mock_document.id = uuid4()
-        mock_datasets.create_document.return_value = mock_document
-
-        # Mock the model_dump method for DocumentCreate objects
-        with patch("extralit_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
-            mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
-
-            # Execute job
-            result = await upload_and_preprocess_documents_job(reference, document_data, file_data_list, user.id)
-
-            # Debug: print the actual result
-            print(f"DEBUG: result = {result}")
-
-            # Verify result
-            assert result["success"] is True
-            assert result["reference"] == reference
-            assert result["total_files"] == 2
-            assert result["successful_files"] == 2
-            assert result["failed_files"] == 0
-
-            # Verify file operations were called for each file
-            assert mock_files.put_object.call_count == 2
-            assert mock_datasets.create_document.call_count == 2
-
-    async def test_upload_reference_documents_job_workspace_not_found(self):
-        """Test reference documents upload job with non-existent workspace."""
-        # Create test data
-        workspace_id = uuid4()
-        user = await UserFactory.create()
-        reference = "test_ref"
-
-        # Create document data
-        document_data = {
-            "workspace_id": str(workspace_id),
-            "reference": reference,
-            "doi": "10.1234/test.doi",
-            "pmid": None,
+        # Mock OCR detector
+        mock_ocr_detector = MagicMock()
+        mock_ocr_detector.has_ocr_text_layer.return_value = True
+        mock_ocr_detector.analyze_character_quality.return_value = {
+            "ocr_quality_score": 0.8,
+            "total_chars": 1000,
+            "ocr_artifacts": 5,
+            "suspicious_patterns": 2,
         }
+        mock_ocr_detector_class.return_value = mock_ocr_detector
 
-        # Create file data list
-        file_data_list = [("test.pdf", b"%PDF-1.5 test pdf content")]
+        # Mock PDF analyzer - now returns tuple (layout_analysis, thumbnail_data)
+        mock_analyzer = MagicMock()
+        layout_analysis = {
+            "page_count": 1,
+            "page_dimensions": {"width": 612, "height": 792},
+            "layout_analysis": {"analysis_method": "single_page_default"},
+        }
+        thumbnail_data = b"mock_thumbnail_data"
+        mock_analyzer.analyze_pdf_layout.return_value = (layout_analysis, thumbnail_data)
+        mock_analyzer_class.return_value = mock_analyzer
 
-        # Use non-existent workspace ID - the job will handle the lookup internally
+        # Mock preprocessor
+        mock_preprocessor = MagicMock()
+        mock_processing_response = MagicMock()
+        mock_processing_response.processed_data = b"%PDF-1.5 processed content"
+        mock_processing_response.metadata.processing_time = 5.0
+        mock_processing_response.metadata.model_dump.return_value = {"processing_time": 5.0}
+        mock_preprocessor.preprocess.return_value = mock_processing_response
+        mock_preprocessor_class.return_value = mock_preprocessor
+
+        # Mock database session
+        mock_db = MagicMock()
+        mock_document = MagicMock()
+        mock_document.metadata_ = None
+        mock_db.get.return_value = mock_document
+        mock_session.return_value.__enter__.return_value = mock_db
 
         # Execute job
-        result = await upload_and_preprocess_documents_job(reference, document_data, file_data_list, user.id)
+        result = analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
 
-        # Verify result
-        assert result["success"] is False
-        assert result["reference"] == reference
-        assert "not found" in result["errors"][0]
+        # Verify result structure
+        assert "document_id" in result
+        assert "analysis_result" in result
+        assert "preprocessing_result" in result
+        assert result["document_id"] == str(document_id)
+
+        # Verify analysis result
+        analysis_result = result["analysis_result"]
+        assert analysis_result["has_ocr_text_layer"] is True
+        assert analysis_result["ocr_quality_score"] == 0.8
+        assert analysis_result["layout_analysis"] == layout_analysis
+        assert analysis_result["thumbnail_generated"] is True
+
+        # Verify preprocessing result
+        preprocessing_result = result["preprocessing_result"]
+        assert preprocessing_result["processing_time"] == 5.0
+
+        # Verify file operations were called
+        mock_files.download_file_content.assert_called_once()
+        mock_files.put_object.assert_called()  # Called for both processed PDF and thumbnail
+
+        # Verify analyzers were called correctly
+        mock_ocr_detector.has_ocr_text_layer.assert_called_once()
+        mock_ocr_detector.analyze_character_quality.assert_called_once()
+        mock_analyzer.analyze_pdf_layout.assert_called_once()
+        mock_preprocessor.preprocess.assert_called_once()
+
+        # Verify database operations
+        mock_db.get.assert_called_once_with(MagicMock, document_id)
+        mock_db.commit.assert_called_once()
 
     @patch("extralit_server.jobs.document_jobs.files")
-    @patch("extralit_server.jobs.document_jobs.datasets")
-    @patch("extralit_server.jobs.document_jobs.imports")
-    @pytest.mark.skip("temporarily skipping")
-    async def test_upload_reference_documents_job_partial_failure(self, mock_imports, mock_datasets, mock_files):
-        """Test reference documents upload job with partial failure."""
-        # Create test data
-        workspace = await WorkspaceFactory.create()
-        user = await UserFactory.create()
+    @patch("extralit_server.jobs.document_jobs.get_current_job")
+    def test_analysis_and_preprocess_job_no_client(self, mock_get_current_job, mock_files):
+        """Test analysis and preprocess job when storage client is not available."""
+        # Setup test data
+        document_id = uuid4()
+        s3_url = f"/api/v1/file/test-workspace/documents/{document_id}/test.pdf"
         reference = "test_ref"
+        workspace_name = "test-workspace"
 
-        # Create document data
-        document_data = {
-            "workspace_id": str(workspace.id),
-            "reference": reference,
-            "doi": "10.1234/test.doi",
-            "pmid": None,
+        # Mock current job
+        mock_job = MagicMock()
+        mock_job.meta = {}
+        mock_get_current_job.return_value = mock_job
+
+        # Mock file operations - no client available
+        mock_files.get_minio_client.return_value = None
+
+        # Execute job and expect exception
+        with pytest.raises(Exception, match="Failed to get storage client"):
+            analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
+
+        # Verify job meta was updated with error
+        assert "error" in mock_job.meta
+
+    @patch("extralit_server.jobs.document_jobs.files")
+    @patch("extralit_server.jobs.document_jobs.PDFAnalyzer")
+    @patch("extralit_server.jobs.document_jobs.PDFOCRLayerDetector")
+    @patch("extralit_server.jobs.document_jobs.get_current_job")
+    def test_analysis_and_preprocess_job_no_thumbnail(
+        self, mock_get_current_job, mock_ocr_detector_class, mock_analyzer_class, mock_files
+    ):
+        """Test analysis and preprocess job when thumbnail generation fails."""
+        # Setup test data
+        document_id = uuid4()
+        s3_url = f"/api/v1/file/test-workspace/documents/{document_id}/test.pdf"
+        reference = "test_ref"
+        workspace_name = "test-workspace"
+
+        # Mock current job
+        mock_job = MagicMock()
+        mock_job.meta = {}
+        mock_get_current_job.return_value = mock_job
+
+        # Mock file operations
+        mock_client = MagicMock()
+        mock_files.get_minio_client.return_value = mock_client
+        mock_files.download_file_content.return_value = b"%PDF-1.5 test pdf content"
+
+        # Mock OCR detector
+        mock_ocr_detector = MagicMock()
+        mock_ocr_detector.has_ocr_text_layer.return_value = False
+        mock_ocr_detector.analyze_character_quality.return_value = {
+            "ocr_quality_score": 0.3,
+            "total_chars": 500,
+            "ocr_artifacts": 50,
+            "suspicious_patterns": 20,
         }
+        mock_ocr_detector_class.return_value = mock_ocr_detector
 
-        # Create file data list
-        file_data_list = [
-            ("test1.pdf", b"%PDF-1.5 test pdf content 1"),
-            ("test2.pdf", b"%PDF-1.5 test pdf content 2"),
-        ]
+        # Mock PDF analyzer - returns no thumbnail data
+        mock_analyzer = MagicMock()
+        layout_analysis = {
+            "page_count": 1,
+            "page_dimensions": {"width": 612, "height": 792},
+            "layout_analysis": {"analysis_method": "single_page_default"},
+        }
+        mock_analyzer.analyze_pdf_layout.return_value = (layout_analysis, None)  # No thumbnail
+        mock_analyzer_class.return_value = mock_analyzer
 
-        # Mock file operations - first succeeds, second fails
-        mock_files.get_minio_client.return_value = MagicMock()
-        mock_files.list_objects.return_value = MagicMock(objects=[])
-        mock_files.get_pdf_s3_object_path.return_value = "documents/test-id/test.pdf"
+        # Mock preprocessor to skip it for this test by raising exception early
+        with patch("extralit_server.jobs.document_jobs.PDFPreprocessor") as mock_preprocessor_class:
+            mock_preprocessor = MagicMock()
+            mock_processing_response = MagicMock()
+            mock_processing_response.processed_data = b"%PDF-1.5 processed content"
+            mock_processing_response.metadata.processing_time = 3.0
+            mock_processing_response.metadata.model_dump.return_value = {"processing_time": 3.0}
+            mock_preprocessor.preprocess.return_value = mock_processing_response
+            mock_preprocessor_class.return_value = mock_preprocessor
 
-        # First call succeeds, second fails
-        mock_files.put_object.side_effect = [
-            MagicMock(bucket_name=workspace.name, object_name="test1.pdf"),
-            Exception("S3 upload failed"),
-        ]
-        mock_files.get_s3_object_url.return_value = f"s3://{workspace.name}/test1.pdf"
-        mock_files.compute_hash.return_value = "test_hash"
+            # Mock database
+            with patch("extralit_server.jobs.document_jobs.SyncSessionLocal") as mock_session:
+                mock_db = MagicMock()
+                mock_document = MagicMock()
+                mock_document.metadata_ = None
+                mock_db.get.return_value = mock_document
+                mock_session.return_value.__enter__.return_value = mock_db
 
-        # Mock imports.check_existing_document to return None (no existing document)
-        mock_imports.check_existing_document.return_value = None
+                # Execute job
+                result = analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
 
-        # Mock document creation - only called once for successful file
-        mock_document = MagicMock()
-        mock_document.id = uuid4()
-        mock_datasets.create_document.return_value = mock_document
-
-        # Mock the model_dump method for DocumentCreate objects
-        with patch("extralit_server.api.schemas.v1.documents.DocumentCreate.model_dump") as mock_model_dump:
-            mock_model_dump.return_value = {"file_name": "test.pdf", "pmid": None, "doi": "10.1234/test.doi"}
-
-            # Execute job
-            result = await upload_and_preprocess_documents_job(reference, document_data, file_data_list, user.id)
-
-            # Debug: print the actual result
-            print(f"DEBUG: result = {result}")
-
-            # Verify result
-            assert result["success"] is False  # Overall failure due to partial failure
-            assert result["reference"] == reference
-            assert result["total_files"] == 2
-            assert result["successful_files"] == 1
-            assert result["failed_files"] == 1
-
-            # Verify operations were attempted for both files
-            assert mock_files.put_object.call_count == 2
-            assert mock_datasets.create_document.call_count == 1  # Only for successful file
+                # Verify that thumbnail was not generated
+                analysis_result = result["analysis_result"]
+                assert analysis_result["thumbnail_generated"] is False
+                assert analysis_result["needs_ocr"] is True  # Low quality score and no OCR layer
