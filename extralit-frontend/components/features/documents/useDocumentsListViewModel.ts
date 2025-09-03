@@ -101,6 +101,19 @@ export const useDocumentsListViewModel = (props: { workspaceId: string }) => {
     }
   };
 
+  // Thumbnail error handling
+  const onThumbnailError = (event: Event) => {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      // Hide the broken image and show placeholder
+      target.style.display = 'none';
+      const thumbnailContainer = target.parentElement;
+      if (thumbnailContainer) {
+        thumbnailContainer.innerHTML = '<div class="thumbnail-placeholder"><svg-icon name="document" width="24" height="24" /></div>';
+      }
+    }
+  };
+
   // Modal methods
   const showDocumentMetadata = (document: Document) => {
     selectedDocumentMetadata.value = document.metadata;
@@ -162,6 +175,7 @@ export const useDocumentsListViewModel = (props: { workspaceId: string }) => {
     // Methods
     loadDocuments,
     openDocument,
+    onThumbnailError,
     retryLoad,
     refresh,
     showDocumentMetadata,

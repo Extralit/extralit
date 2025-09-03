@@ -334,6 +334,27 @@ def get_pdf_s3_object_path(id: UUID | str) -> str:
     return object_path
 
 
+def get_thumbnail_s3_object_path(id: UUID | str) -> str:
+    """
+    Generate S3 object path for document thumbnail images.
+    
+    Args:
+        id: Document UUID or string identifier
+        
+    Returns:
+        S3 object path for thumbnail (e.g., "thumbnails/{document_id}")
+    """
+    if not id:
+        raise Exception("id cannot be None")
+
+    elif isinstance(id, UUID):
+        object_path = f"thumbnails/{id!s}"
+    else:
+        object_path = f"thumbnails/{id}"
+
+    return object_path
+
+
 def get_proxy_document_url(bucket_name: str, object_path: str) -> str:
     return f"/api/v1/file/{bucket_name}/{object_path}"
 

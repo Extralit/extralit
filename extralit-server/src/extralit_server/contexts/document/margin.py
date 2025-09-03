@@ -14,7 +14,7 @@
 
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 import lazy_loader as lazy
 
@@ -31,6 +31,8 @@ except Exception as e:
 pdf2image = lazy.load("pdf2image")
 PIL = lazy.load("PIL")
 
+from extralit_server.contexts.document.thumbnail import generate_thumbnail_from_image
+
 if TYPE_CHECKING:
     from numpy import ndarray as NDArray
     from PIL.Image import Image
@@ -45,7 +47,7 @@ def pil_to_cv(image: "Image") -> "NDArray":
 
 def classify_and_draw_layout_regions(
     reference: "Image", mask: "Image", min_area: int = 5000, label: bool = True
-) -> tuple["Image", list[dict]]:
+) -> tuple["Image", list[dict[str, Any]]]:
     """
     Classify and optionally draw layout regions using contour detection.
 
@@ -132,7 +134,7 @@ def find_horizontal_bands(mask: "Image", min_height: int = 15, min_ratio: float 
 
 
 class PDFAnalyzer:
-    def analyze_pdf_layout(self, pdf_data: bytes, filename: str) -> dict:
+    def analyze_pdf_layout(self, pdf_data: bytes, filename: str) -> tuple[dict[str, Any], Optional[bytes]]:
         """
         Analyze PDF layout to extract margin and region information.
 
@@ -141,30 +143,41 @@ class PDFAnalyzer:
             filename: Filename for logging
 
         Returns:
-            Dictionary containing layout analysis metadata
+            Tuple of (dictionary containing layout analysis metadata, thumbnail bytes or None)
         """
 
         try:
             images = pdf2image.convert_from_bytes(pdf_data, dpi=150)  # type: ignore
             if not images:
-                return {"error": "No pages found"}
+                return {"error": "No pages found"}, None
 
             _LOGGER.info(f"Analyzing layout for {filename} with {len(images)} pages")
+
+            # Generate thumbnail from first page
+            thumbnail_bytes = None
+            try:
+                thumbnail_bytes = generate_thumbnail_from_image(images[0])
+                _LOGGER.info(f"Generated thumbnail for {filename}")
+            except Exception as e:
+                _LOGGER.warning(f"Failed to generate thumbnail for {filename}: {e}")
+                thumbnail_bytes = None
 
             # Analyze layout
             layout_data = self._analyze_page_layout(images)
 
-            return {
+            layout_result = {
                 "page_count": len(images),
                 "page_dimensions": {"width": images[0].size[0], "height": images[0].size[1]} if images else {},
                 **layout_data,
             }
 
+            return layout_result, thumbnail_bytes
+
         except Exception as e:
             _LOGGER.error(f"PDF layout analysis failed for {filename}: {e}")
-            return {"error": str(e)}
+            return {"error": str(e)}, None
 
-    def _analyze_page_layout(self, images: list["Image"]) -> dict:
+    def _analyze_page_layout(self, images: list["Image"]) -> dict[str, Any]:
         """
         Analyze page layout by comparing pages to find common regions.
         """
@@ -187,7 +200,7 @@ class PDFAnalyzer:
         else:
             return self._analyze_single_page(reference_img)
 
-    def _compare_pages_for_margins(self, reference: "Image", compare: "Image") -> dict | None:
+    def _compare_pages_for_margins(self, reference: "Image", compare: "Image") -> Optional[dict[str, Any]]:
         """
         Compare two pages to identify common regions using advanced CV2 techniques.
         """
@@ -225,8 +238,8 @@ class PDFAnalyzer:
             return None
 
     def _classify_regions_advanced(
-        self, bands: list[tuple[int, int]], detected_regions: list[dict], page_size: tuple[int, int]
-    ) -> dict:
+        self, bands: list[tuple[int, int]], detected_regions: list[dict[str, Any]], page_size: tuple[int, int]
+    ) -> dict[str, Any]:
         """
         Advanced region classification combining horizontal bands and contour detection.
         """
@@ -255,8 +268,8 @@ class PDFAnalyzer:
         return regions
 
     def _estimate_margins_advanced(
-        self, regions: dict, detected_regions: list[dict], page_size: tuple[int, int]
-    ) -> dict:
+        self, regions: dict[str, Any], detected_regions: list[dict[str, Any]], page_size: tuple[int, int]
+    ) -> dict[str, Any]:
         """
         Advanced margin estimation using both band and contour information.
         """
@@ -315,7 +328,7 @@ class PDFAnalyzer:
             "right_percent": (margins["right"] / width) * 100 if width > 0 else 0,
         }
 
-    def _classify_regions(self, bands: list[tuple[int, int]], page_size: tuple[int, int]) -> dict:
+    def _classify_regions(self, bands: list[tuple[int, int]], page_size: tuple[int, int]) -> dict[str, Any]:
         """
         Classify horizontal bands into headers, footers, and margins.
         """
@@ -337,7 +350,7 @@ class PDFAnalyzer:
 
         return regions
 
-    def _estimate_margins_from_bands(self, regions: dict, page_size: tuple[int, int]) -> dict:
+    def _estimate_margins_from_bands(self, regions: dict[str, Any], page_size: tuple[int, int]) -> dict[str, Any]:
         """
         Estimate page margins based on detected bands.
         """
@@ -371,7 +384,7 @@ class PDFAnalyzer:
             "right_percent": (margins["right"] / width) * 100,
         }
 
-    def _aggregate_margin_data(self, margin_data: list[dict], page_size: tuple[int, int]) -> dict:
+    def _aggregate_margin_data(self, margin_data: list[dict[str, Any]], page_size: tuple[int, int]) -> dict[str, Any]:
         """
         Aggregate margin data from multiple page comparisons.
         """
@@ -432,13 +445,13 @@ class PDFAnalyzer:
             }
         }
 
-    def _analyze_single_page(self, image: "Image") -> dict:
+    def _analyze_single_page(self, image: "Image") -> dict[str, Any]:
         """
         Analyze a single page when comparison isn't possible.
         """
         return self._analyze_single_page_size(image.size)
 
-    def _analyze_single_page_size(self, page_size: tuple[int, int]) -> dict:
+    def _analyze_single_page_size(self, page_size: tuple[int, int]) -> dict[str, Any]:
         """
         Provide default margin estimates for single page analysis.
         """

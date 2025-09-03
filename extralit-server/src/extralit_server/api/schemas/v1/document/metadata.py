@@ -47,6 +47,9 @@ class AnalysisMetadata(BaseModel):
     ocr_quality: OCRQualityMetadata = Field(..., description="OCR quality analysis")
     layout_analysis: LayoutAnalysisMetadata = Field(..., description="Layout analysis results")
     analysis_completed_at: Optional[str] = Field(None, description="When analysis was completed")
+    thumbnail_generated: Optional[bool] = Field(
+        None, description="Whether a thumbnail was generated during layout analysis"
+    )
 
 
 class PreprocessingMetadata(BaseModel):

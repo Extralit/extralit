@@ -32,6 +32,7 @@ export class Document {
 		public reference?: string,
 		public segments?: Segment[],
 		public readonly metadata?: Record<string, any>,
+		public readonly thumbnail_url?: string,
 		public readonly inserted_at?: string,
 		public readonly updated_at?: string,
 	) {
