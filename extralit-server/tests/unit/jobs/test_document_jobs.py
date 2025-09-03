@@ -18,6 +18,7 @@ from uuid import uuid4
 import pytest
 
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
+from extralit_server.models.database import Document
 
 
 class TestDocumentJobs:
@@ -125,7 +126,7 @@ class TestDocumentJobs:
         mock_preprocessor.preprocess.assert_called_once()
 
         # Verify database operations
-        mock_db.get.assert_called_once_with(MagicMock, document_id)
+        mock_db.get.assert_called_once_with(Document, document_id)
         mock_db.commit.assert_called_once()
 
     @patch("extralit_server.jobs.document_jobs.files")

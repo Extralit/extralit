@@ -728,14 +728,14 @@ class DocumentWorkflow(DatabaseModel):
     @classmethod
     async def get_by_document_id(cls, db: AsyncSession, document_id: UUID) -> Optional["DocumentWorkflow"]:
         """Get workflow by document ID."""
-        result = await db.execute(select(cls).where(cls.document_id == document_id))
-        return result.scalar_one_or_none()
+        result = await db.execute(select(cls).where(cls.document_id == document_id).order_by(cls.inserted_at.desc()))
+        return result.scalars().first()
 
     @classmethod
     async def get_by_group_id(cls, db: AsyncSession, group_id: str) -> Optional["DocumentWorkflow"]:
         """Get workflow by RQ Group ID."""
-        result = await db.execute(select(cls).where(cls.group_id == group_id))
-        return result.scalar_one_or_none()
+        result = await db.execute(select(cls).where(cls.group_id == group_id)).order_by(cls.inserted_at.desc())
+        return result.scalars().first()
 
     @classmethod
     async def get_by_reference(
