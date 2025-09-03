@@ -7,10 +7,6 @@
 
 # SDK and Core Extraction
 /extralit/* @extralit/sdk
-/extralit/src/**/* @extralit/sdk
-/extralit/tests/**/* @extralit/sdk
-/extralit/pyproject.toml @extralit/sdk
-/extralit/pdm.lock @extralit/sdk
 
 # Backend Server
 /extralit-server/**/* @extralit/backend
@@ -18,27 +14,16 @@
 # Frontend
 /extralit-frontend/**/* @extralit/frontend
 
-# Legacy compatibility layer
-/extralit-v1/**/* @extralit/sdk @extralit/backend
-
-# AI/ML-specific code
-/extralit/src/extralit/{extraction,metrics,preprocessing,schema}/**/* @extralit/ai
-/extralit/src/extralit/pipeline/**/* @extralit/ai @extralit/backend
-/extralit/src/extralit/server/**/* @extralit/ai @extralit/backend
-/extralit/src/extralit/storage/**/* @extralit/ai @extralit/backend
-
 # Infrastructure and configuration
-/.github/** @extralit/infra
 /.devcontainer/** @extralit/infra
 /docker/** @extralit/infra
 *.Dockerfile @extralit/infra
 Tiltfile @extralit/infra
 codecov.yml @extralit/infra
+/examples/**/* @extralit/infra
 
 # Documentation
-*.md @extralit/docs
 /extralit/docs/**/* @extralit/docs
-/examples/**/* @extralit/docs @extralit/sdk
 
 # Security and legal
 /.github/CODEOWNERS @extralit/core-team
