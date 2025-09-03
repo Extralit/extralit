@@ -53,10 +53,9 @@
                   <svgicon name="document" width="24" height="24" />
                 </div>
               </div>
-              
+
               <div class="document-item__info">
                 <div class="document-item__name">
-                  <svgicon name="document" width="16" height="16" />
                   <span>{{ document.file_name }}</span>
                 </div>
                 <div class="document-item__details">
