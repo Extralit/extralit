@@ -29,7 +29,7 @@ class TestJWT:
         token = JWT.create_access_token(user_info)
 
         # Decode without verification to check payload
-        payload = jwt.decode(token, options={"verify_signature": False})
+        payload = jwt.decode(token, JWT.secret, options={"verify_signature": False})
 
         assert payload["type"] == "access"
         assert payload["identity"] == "123"
@@ -49,7 +49,7 @@ class TestJWT:
         token = JWT.create_refresh_token(user_info)
 
         # Decode without verification to check payload
-        payload = jwt.decode(token, options={"verify_signature": False})
+        payload = jwt.decode(token, JWT.secret, options={"verify_signature": False})
 
         assert payload["type"] == "refresh"
         assert payload["identity"] == "123"
@@ -73,8 +73,8 @@ class TestJWT:
         assert access_token != refresh_token
 
         # Verify token types
-        access_payload = jwt.decode(access_token, options={"verify_signature": False})
-        refresh_payload = jwt.decode(refresh_token, options={"verify_signature": False})
+        access_payload = jwt.decode(access_token, JWT.secret, options={"verify_signature": False})
+        refresh_payload = jwt.decode(refresh_token, JWT.secret, options={"verify_signature": False})
 
         assert access_payload["type"] == "access"
         assert refresh_payload["type"] == "refresh"
@@ -107,7 +107,7 @@ class TestJWT:
 
         # Legacy method should create access token
         token = JWT.create(user_info)
-        payload = jwt.decode(token, options={"verify_signature": False})
+        payload = jwt.decode(token, JWT.secret, options={"verify_signature": False})
 
         assert payload["type"] == "access"
         assert payload["identity"] == "123"
@@ -118,8 +118,8 @@ class TestJWT:
 
         access_token, refresh_token = JWT.create_token_pair(user_info)
 
-        access_payload = jwt.decode(access_token, options={"verify_signature": False})
-        refresh_payload = jwt.decode(refresh_token, options={"verify_signature": False})
+        access_payload = jwt.decode(access_token, JWT.secret, options={"verify_signature": False})
+        refresh_payload = jwt.decode(refresh_token, JWT.secret, options={"verify_signature": False})
 
         access_exp = datetime.fromtimestamp(access_payload["exp"])
         refresh_exp = datetime.fromtimestamp(refresh_payload["exp"])
