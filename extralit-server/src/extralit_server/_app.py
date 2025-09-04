@@ -41,12 +41,12 @@ from extralit_server.api.routes import api_v1
 from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
 from extralit_server.contexts import accounts, files
 from extralit_server.database import get_async_db
+from extralit_server.helpers import create_s3_client, shared_resources
 from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.logging import configure_logging
 from extralit_server.models import User, Workspace
 from extralit_server.search_engine import get_search_engine
 from extralit_server.settings import settings
-from extralit_server.shared_resources import initialize_s3_client, shared_resources
 from extralit_server.static_rewrite import RewriteStaticFiles
 from extralit_server.telemetry import get_telemetry_client
 
@@ -61,7 +61,7 @@ async def app_lifespan(app: FastAPI):
     configure_redis()
 
     try:
-        await initialize_s3_client()
+        await create_s3_client()
         track_server_startup()
         yield
     finally:

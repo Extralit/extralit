@@ -22,7 +22,7 @@ from botocore.exceptions import ClientError
 from fastapi import HTTPException
 
 from extralit_server.api.schemas.v1.files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
-from extralit_server.shared_resources import shared_resources
+from extralit_server.helpers import shared_resources
 
 EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 CHUNK_LENGTH_MB = 10 * 1024 * 1024
@@ -34,7 +34,7 @@ async def get_s3_client():
     """Dependency function to get shared S3 client."""
     s3_client = shared_resources.get("s3_client")
     if s3_client is None:
-        from extralit_server.shared_resources import initialize_s3_client
+        from extralit_server.helpers import initialize_s3_client
 
         try:
             s3_client = await initialize_s3_client()

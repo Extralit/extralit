@@ -37,8 +37,8 @@ from extralit_server.api.schemas.v1.imports import (
 )
 from extralit_server.contexts import files as file_context
 from extralit_server.database import AsyncSessionLocal
+from extralit_server.helpers import shared_resources
 from extralit_server.models.database import Document, ImportHistory, Workspace
-from extralit_server.shared_resources import shared_resources
 from extralit_server.workflows.documents import create_document_workflow
 
 _LOGGER = logging.getLogger(__name__)
