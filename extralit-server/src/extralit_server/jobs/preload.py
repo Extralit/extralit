@@ -45,7 +45,6 @@ except ImportError:
 
 # Common ML/processing libraries that may be used in jobs
 import asyncio  # noqa: F401
-import logging
 from datetime import datetime, timezone  # noqa: F401
 from uuid import UUID  # noqa: F401
 
@@ -53,6 +52,4 @@ from uuid import UUID  # noqa: F401
 from rq import Retry, get_current_job  # noqa: F401
 from rq.decorators import job  # noqa: F401
 
-# Logging setup
-_LOGGER = logging.getLogger(__name__)
-_LOGGER.info("Preloaded heavy modules for RQ worker optimization")
+print("Preloaded heavy modules for RQ worker optimization")
