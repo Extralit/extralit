@@ -33,44 +33,53 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.asyncio
-async def test_get_file(async_client: "AsyncClient"):
-    # Mock the entire files.get_s3_client function directly
-    with patch("extralit_server.api.handlers.v1.files.files.get_s3_client") as mock_get_s3_client:
-        # Create mock S3 client
-        mock_s3_client = MagicMock()
-        mock_get_s3_client.return_value = mock_s3_client
+async def test_get_file(async_client: "AsyncClient", app):
+    # Create mock S3 client
+    mock_s3_client = MagicMock()
 
-        # Mock head_object as async
-        async def mock_head_object(Bucket=None, Key=None, **kwargs):
-            return {
-                "ContentLength": 9,
-                "ETag": '"test-etag"',
-                "ContentType": "application/octet-stream",
-            }
+    # Mock head_object as async
+    async def mock_head_object(Bucket=None, Key=None, **kwargs):
+        return {
+            "ContentLength": 9,
+            "ETag": '"test-etag"',
+            "ContentType": "application/octet-stream",
+        }
 
-        mock_s3_client.head_object = mock_head_object
+    mock_s3_client.head_object = mock_head_object
 
-        # Mock get_object as async
-        async def mock_get_object(Bucket=None, Key=None, **kwargs):
-            # Create a simple async stream
-            class MockBody:
-                def __aiter__(self):
-                    return self
+    # Mock get_object as async
+    async def mock_get_object(Bucket=None, Key=None, **kwargs):
+        # Create a simple async stream
+        class MockBody:
+            def __aiter__(self):
+                return self
 
-                async def __anext__(self):
-                    if not hasattr(self, "_done"):
-                        self._done = True
-                        return b"test data"
-                    raise StopAsyncIteration
+            async def __anext__(self):
+                if not hasattr(self, "_done"):
+                    self._done = True
+                    return b"test data"
+                raise StopAsyncIteration
 
-            return {"Body": MockBody()}
+        return {"Body": MockBody()}
 
-        mock_s3_client.get_object = mock_get_object
+    mock_s3_client.get_object = mock_get_object
 
+    # Override the dependency
+    async def mock_get_s3_client():
+        return mock_s3_client
+
+    from extralit_server.contexts import files
+
+    app.dependency_overrides[files.get_s3_client] = mock_get_s3_client
+
+    try:
         file = MinioFileFactory.build()
         response = await async_client.get(f"/api/v1/file/{file.bucket_name}/{file.object_name}")
 
         assert response.status_code == 200
+    finally:
+        # Clean up the override
+        app.dependency_overrides.pop(files.get_s3_client, None)
 
 
 @pytest.mark.asyncio
