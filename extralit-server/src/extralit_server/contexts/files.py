@@ -34,10 +34,10 @@ async def get_s3_client():
     """Dependency function to get shared S3 client."""
     s3_client = shared_resources.get("s3_client")
     if s3_client is None:
-        from extralit_server.helpers import initialize_s3_client
+        from extralit_server.helpers import create_s3_client
 
         try:
-            s3_client = await initialize_s3_client()
+            s3_client = await create_s3_client()
         except ValueError as e:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
