@@ -38,7 +38,7 @@ RUN mkdir -p "$EXTRALIT_HOME_PATH" && \
     chown extralit:extralit "$EXTRALIT_HOME_PATH" && \
     apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends libpq-dev libgl1 libglib2.0-0 && \
+    apt-get install -y --no-install-recommends libpq-dev libgl1 libglib2.0-0 poppler-utils && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 VOLUME $EXTRALIT_HOME_PATH
