@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
@@ -53,45 +54,57 @@ class TestCreateWorkspace:
     async def test_create_workspace_with_predefined_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
-        workspace_id = uuid4()
-        response = await async_client.post(
-            self.url(),
-            headers=owner_auth_header,
-            json={"id": str(workspace_id), "name": "workspace"},
-        )
+        with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
+            # Mock S3 client for bucket creation
+            mock_s3_client = MagicMock()
+            mock_get_s3_client.return_value = mock_s3_client
+            mock_s3_client.create_bucket.return_value = None
 
-        assert response.status_code == 201
+            workspace_id = uuid4()
+            response = await async_client.post(
+                self.url(),
+                headers=owner_auth_header,
+                json={"id": str(workspace_id), "name": "workspace"},
+            )
 
-        assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
-        workspace = (await db.execute(select(Workspace).filter_by(name="workspace"))).scalar_one()
+            assert response.status_code == 201
 
-        assert response.json() == {
-            "id": str(workspace_id),
-            "name": "workspace",
-            "inserted_at": workspace.inserted_at.isoformat(),
-            "updated_at": workspace.updated_at.isoformat(),
-        }
+            assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
+            workspace = (await db.execute(select(Workspace).filter_by(name="workspace"))).scalar_one()
+
+            assert response.json() == {
+                "id": str(workspace_id),
+                "name": "workspace",
+                "inserted_at": workspace.inserted_at.isoformat(),
+                "updated_at": workspace.updated_at.isoformat(),
+            }
 
     async def test_create_workspace_with_none_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
-        response = await async_client.post(
-            self.url(),
-            headers=owner_auth_header,
-            json={"id": None, "name": "workspace"},
-        )
+        with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
+            # Mock S3 client for bucket creation
+            mock_s3_client = MagicMock()
+            mock_get_s3_client.return_value = mock_s3_client
+            mock_s3_client.create_bucket.return_value = None
 
-        assert response.status_code == 201
+            response = await async_client.post(
+                self.url(),
+                headers=owner_auth_header,
+                json={"id": None, "name": "workspace"},
+            )
 
-        assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
-        workspace = (await db.execute(select(Workspace).filter_by(name="workspace"))).scalar_one()
+            assert response.status_code == 201
 
-        assert response.json() == {
-            "id": str(workspace.id),
-            "name": "workspace",
-            "inserted_at": workspace.inserted_at.isoformat(),
-            "updated_at": workspace.updated_at.isoformat(),
-        }
+            assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
+            workspace = (await db.execute(select(Workspace).filter_by(name="workspace"))).scalar_one()
+
+            assert response.json() == {
+                "id": str(workspace.id),
+                "name": "workspace",
+                "inserted_at": workspace.inserted_at.isoformat(),
+                "updated_at": workspace.updated_at.isoformat(),
+            }
 
     async def test_create_workspace_with_wrong_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
@@ -109,17 +122,23 @@ class TestCreateWorkspace:
     async def test_create_workspace_with_existing_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
-        workspace_id = uuid4()
-        await WorkspaceFactory.create(id=workspace_id)
+        with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
+            # Mock S3 client for bucket creation
+            mock_s3_client = MagicMock()
+            mock_get_s3_client.return_value = mock_s3_client
+            mock_s3_client.create_bucket.return_value = None
 
-        response = await async_client.post(
-            self.url(),
-            headers=owner_auth_header,
-            json={"id": str(workspace_id), "name": "workspace"},
-        )
+            workspace_id = uuid4()
+            await WorkspaceFactory.create(id=workspace_id)
 
-        assert response.status_code == 409
-        assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
+            response = await async_client.post(
+                self.url(),
+                headers=owner_auth_header,
+                json={"id": str(workspace_id), "name": "workspace"},
+            )
+
+            assert response.status_code == 409
+            assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
 
     async def test_create_workspace_without_authentication(self, db: AsyncSession, async_client: AsyncClient):
         response = await async_client.post(

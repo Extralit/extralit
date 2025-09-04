@@ -34,22 +34,32 @@ if TYPE_CHECKING:
 
 @pytest.mark.asyncio
 async def test_get_file(async_client: "AsyncClient"):
-    # Mock the Minio client and the response
-    with patch("extralit_server.contexts.files.get_object") as mock_get_object:
-        # Set up mock response
+    # Mock the S3 client dependency
+    with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
+        # Create mock S3 client
+        mock_s3_client = MagicMock()
+        mock_get_s3_client.return_value = mock_s3_client
+
+        # Mock head_object response for metadata
+        mock_s3_client.head_object.return_value = {
+            "ContentLength": 9,
+            "ETag": '"test-etag"',
+            "ContentType": "application/octet-stream",
+        }
+
+        # Mock get_object response for file data
         mock_response = MagicMock()
         mock_response.data = b"test data"
-        mock_get_object.return_value = mock_response
+        mock_s3_client.get_object.return_value = {"Body": mock_response}
 
         file = MinioFileFactory.build()
 
         response = await async_client.get(f"/api/v1/file/{file.bucket_name}/{file.object_name}")
 
         assert response.status_code == 200
-        # Check that mock was called without checking specific arguments
-        assert mock_get_object.called
-        # Skip content assertion as it might be empty in test environment
-        # assert response.content == b"test data"
+        # Verify S3 client methods were called
+        assert mock_s3_client.head_object.called
+        assert mock_s3_client.get_object.called
 
 
 @pytest.mark.asyncio
