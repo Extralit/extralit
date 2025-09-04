@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from extralit_server.contexts import datasets
+from extralit_server.database import retry_db_operation
 from extralit_server.enums import UserRole
 from extralit_server.errors.future import NotUniqueError, UnprocessableEntityError
 from extralit_server.models import User, Workspace, WorkspaceUser
@@ -86,17 +87,29 @@ async def delete_workspace(db: AsyncSession, workspace: Workspace):
 
 
 async def user_exists(db: AsyncSession, user_id: UUID) -> bool:
-    return await db.scalar(select(exists().where(User.id == user_id)))
+    @retry_db_operation(max_retries=3, delay=0.1, backoff=2.0)
+    async def _execute_query():
+        return await db.scalar(select(exists().where(User.id == user_id)))
+
+    return await _execute_query()
 
 
 async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
-    result = await db.execute(select(User).filter_by(username=username).options(selectinload(User.workspaces)))
-    return result.scalar_one_or_none()
+    @retry_db_operation(max_retries=3, delay=0.1, backoff=2.0)
+    async def _execute_query():
+        result = await db.execute(select(User).filter_by(username=username).options(selectinload(User.workspaces)))
+        return result.scalar_one_or_none()
+
+    return await _execute_query()
 
 
 async def get_user_by_api_key(db: AsyncSession, api_key: str) -> User | None:
-    result = await db.execute(select(User).where(User.api_key == api_key).options(selectinload(User.workspaces)))
-    return result.scalar_one_or_none()
+    @retry_db_operation(max_retries=3, delay=0.1, backoff=2.0)
+    async def _execute_query():
+        result = await db.execute(select(User).where(User.api_key == api_key).options(selectinload(User.workspaces)))
+        return result.scalar_one_or_none()
+
+    return await _execute_query()
 
 
 async def list_users(db: "AsyncSession") -> Sequence[User]:
@@ -217,6 +230,17 @@ def generate_user_token(user: User) -> str:
             role=user.role,
         ),
     )
+
+
+def generate_token_pair(user: User) -> tuple[str, str]:
+    """Generate both access and refresh tokens for a user"""
+    user_info = UserInfo(
+        identity=str(user.id),
+        name=user.first_name,
+        username=user.username,
+        role=user.role,
+    )
+    return JWT.create_token_pair(user_info)
 
 
 _DUMMY_SECRET = "dummy_secret"

@@ -12,18 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
+import logging
 import os
 from collections import OrderedDict
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Callable, Generator
+from functools import wraps
+from typing import TypeVar
 
 from sqlalchemy import create_engine, event, make_url
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.interfaces import IsolationLevel
+from sqlalchemy.exc import DBAPIError, DisconnectionError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 import extralit_server
 from extralit_server.settings import settings
+
+logger = logging.getLogger(__name__)
+
+T = TypeVar("T")
 
 ALEMBIC_CONFIG_FILE = os.path.normpath(os.path.join(os.path.dirname(extralit_server.__file__), "alembic.ini"))
 TAGGED_REVISIONS = OrderedDict(
@@ -94,3 +103,67 @@ async def _get_async_db(isolation_level: IsolationLevel | None = None) -> AsyncG
         yield db
     finally:
         await db.close()
+
+
+def retry_db_operation(max_retries: int = 3, delay: float = 0.1, backoff: float = 2.0):
+    """
+    Decorator to retry database operations on connection failures.
+
+    Args:
+        max_retries: Maximum number of retry attempts
+        delay: Initial delay between retries in seconds
+        backoff: Multiplier for delay after each retry
+    """
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @wraps(func)
+        async def async_wrapper(*args, **kwargs) -> T:
+            last_exception = None
+            current_delay = delay
+
+            for attempt in range(max_retries + 1):
+                try:
+                    return await func(*args, **kwargs)
+                except (DBAPIError, DisconnectionError) as e:
+                    last_exception = e
+
+                    # Check if this is a connection-related error
+                    error_msg = str(e).lower()
+                    if any(
+                        msg in error_msg
+                        for msg in [
+                            "connection was closed",
+                            "connection does not exist",
+                            "connection timed out",
+                            "connection refused",
+                            "connection reset",
+                            "broken pipe",
+                        ]
+                    ):
+                        if attempt < max_retries:
+                            logger.warning(
+                                f"Database connection error on attempt {attempt + 1}/{max_retries + 1}: {e}. "
+                                f"Retrying in {current_delay:.2f}s..."
+                            )
+                            await asyncio.sleep(current_delay)
+                            current_delay *= backoff
+                            continue
+
+                    # Re-raise non-connection errors immediately
+                    raise
+                except Exception:
+                    # Re-raise non-database errors immediately
+                    raise
+
+            # If all retries failed, raise the last exception
+            if last_exception:
+                logger.error(f"Database operation failed after {max_retries + 1} attempts: {last_exception}")
+                raise last_exception
+
+        @wraps(func)
+        def sync_wrapper(*args, **kwargs) -> T:
+            return func(*args, **kwargs)
+
+        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
+
+    return decorator

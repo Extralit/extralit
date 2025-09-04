@@ -107,6 +107,22 @@ class Settings(BaseSettings):
         default=DEFAULT_DATABASE_SQLITE_TIMEOUT,
         description="SQLite database connection timeout in seconds",
     )
+    database_postgresql_pool_pre_ping: bool = Field(
+        default=True,
+        description="Enable connection validation before use for PostgreSQL",
+    )
+    database_postgresql_pool_recycle: int = Field(
+        default=3600,
+        description="Number of seconds to recycle connections in PostgreSQL pool",
+    )
+    database_postgresql_connect_timeout: int = Field(
+        default=30,
+        description="PostgreSQL connection establishment timeout in seconds",
+    )
+    database_postgresql_command_timeout: int = Field(
+        default=30,
+        description="PostgreSQL query execution timeout in seconds",
+    )
 
     s3_endpoint: str | None = Field(default=None, description="The S3 endpoint for data storage")
     s3_access_key: str | None = Field(default=None, description="The access key for the S3 storage")
@@ -276,6 +292,14 @@ class Settings(BaseSettings):
             return {
                 "pool_size": self.database_postgresql_pool_size,
                 "max_overflow": self.database_postgresql_max_overflow,
+                "pool_pre_ping": self.database_postgresql_pool_pre_ping,
+                "pool_recycle": self.database_postgresql_pool_recycle,
+                "connect_args": {
+                    "server_settings": {
+                        "application_name": "extralit-server",
+                    },
+                    "command_timeout": self.database_postgresql_command_timeout,
+                },
             }
 
         return {}
