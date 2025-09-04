@@ -45,11 +45,11 @@ async def _create_default(api_key: str, password: str, quiet: bool):
         )
 
         if workspaces:
-            minio_client = files.get_minio_client()
+            minio_client = await files.get_s3_client()
             if minio_client is not None:
                 for workspace in workspaces:
                     try:
-                        files.create_bucket(minio_client, workspace.name)
+                        await files.create_bucket(minio_client, workspace.name)
                         typer.echo(f"✓ Created/verified bucket for workspace: {workspace.name}") if not quiet else None
                     except Exception as e:
                         typer.echo(

@@ -101,11 +101,11 @@ async def _create(
 
         # Create MinIO buckets for each workspace if they don't exist
         if workspace:
-            minio_client = files.get_minio_client()
+            minio_client = await files.get_s3_client()
             if minio_client is not None:
                 for workspace_name in workspace:
                     try:
-                        files.create_bucket(minio_client, workspace_name)
+                        await files.create_bucket(minio_client, workspace_name)
                         typer.echo(f"✓ Created/verified bucket for workspace: {workspace_name}")
                     except Exception as e:
                         typer.echo(f"⚠ Warning: Failed to create bucket for workspace {workspace_name}: {e}")

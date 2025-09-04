@@ -22,7 +22,7 @@ from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUS
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
-from extralit_server.contexts.files import ObjectMetadata, get_minio_client
+from extralit_server.contexts.files import ObjectMetadata, get_s3_client
 from extralit_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
 from extralit_server.models import (
     Dataset,
@@ -169,7 +169,7 @@ class WorkspaceSyncFactory(BaseSyncFactory):
     @classmethod
     async def create_with_s3(cls, **kwargs):
         workspace = await cls.create(**kwargs)
-        minio_client = await get_minio_client()
+        minio_client = await get_s3_client()
         try:
             await minio_client.make_bucket(workspace.name)
         except Exception as e:
@@ -626,18 +626,18 @@ class MinioFileFactory(factory.Factory):
     @classmethod
     def create(cls, **kwargs):
         """Create a MinioFile and mock the put_object and get_object methods to return it."""
-        from extralit_server.contexts.files import get_minio_client
+        from extralit_server.contexts.files import get_s3_client
 
         file = cls.build(**kwargs)
 
-        client = get_minio_client()
+        client = get_s3_client()
 
         # Store original methods
         getattr(client, "put_object", None)
         getattr(client, "get_object", None)
 
         # Mock put_object to return our file
-        def mock_put_object(bucket_name, object_name, data, length, content_type=None, metadata=None):
+        def mock_put_object(bucket_name, object_name, data, content_type=None, metadata=None):
             return file
 
         # Mock get_object to return file data

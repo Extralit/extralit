@@ -15,14 +15,13 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Header, HTTPException, Request, Security, UploadFile
+from botocore.exceptions import ClientError
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Security, UploadFile
 from fastapi.responses import Response, StreamingResponse
-from minio import Minio, S3Error
 
 from extralit_server.api.policies.v1 import FilePolicy, authorize
 from extralit_server.api.schemas.v1.files import ListObjectsResponse, ObjectMetadata
 from extralit_server.contexts import files
-from extralit_server.contexts.files import LocalFileStorage
 from extralit_server.models import User
 from extralit_server.security import auth
 
@@ -36,30 +35,30 @@ async def get_file(
     *,
     bucket: str,
     object: str,
-    request: Request,
     version_id: str | None = None,
     range_header: str | None = Header(None, alias="range"),
     if_none_match: str | None = Header(None, alias="if-none-match"),
-    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
+    s3_client=Depends(files.get_s3_client),
     current_user: User | None = Security(auth.get_optional_current_user),
 ):
-    # TODO LocalFileStorage currently needs to disable authorization checks since clients cannot access the bucket directly.
-    if current_user is not None and isinstance(client, Minio):
+    if current_user is not None:
         await authorize(current_user, FilePolicy.get(bucket))
 
     try:
-        file_response = files.get_object(client, bucket, object, version_id=version_id, include_versions=True)
+        # Get object metadata first
+        head_response = await s3_client.head_object(Bucket=bucket, Key=object)
+        content_length = head_response["ContentLength"]
+        etag = head_response["ETag"].strip('"')
+        content_type = head_response.get("ContentType", "application/octet-stream")
 
         # Handle ETag for caching
-        etag = file_response.metadata.etag
-        if if_none_match and etag and if_none_match.strip('"') == etag.strip('"'):
+        if if_none_match and etag and if_none_match.strip('"') == etag:
             return Response(status_code=304)
 
         # Prepare headers for caching and CORS
         headers = {
-            **file_response.http_headers,
             "Cache-Control": "public, max-age=3600",  # Cache for 1 hour
-            "ETag": f'"{etag}"' if etag else None,
+            "ETag": f'"{etag}"',
             "Access-Control-Allow-Origin": "*",  # Allow CORS for file access
             "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
             "Access-Control-Allow-Headers": "Range, If-None-Match",
@@ -68,20 +67,15 @@ async def get_file(
         }
 
         # PDF-specific optimizations
-        if file_response.metadata.content_type == "application/pdf":
+        if content_type == "application/pdf":
             headers.update(
                 {
                     "Content-Disposition": "inline",
                     "X-Content-Type-Options": "nosniff",
-                    "Cache-Control": "public, max-age=3600",
                 }
             )
 
-        # Remove None values
-        headers = {k: v for k, v in headers.items() if v is not None}
-
         # Handle range requests for partial content
-        content_length = file_response.metadata.size
         if range_header and content_length:
             try:
                 # Parse range header (e.g., "bytes=0-1023")
@@ -94,30 +88,43 @@ async def get_file(
                     headers["Content-Range"] = f"bytes */{content_length}"
                     return Response(status_code=416, headers=headers)
 
+                # Get object with range
+                response = await s3_client.get_object(Bucket=bucket, Key=object, Range=f"bytes={start}-{end}")
+
                 # Update headers for partial content
                 headers["Content-Range"] = f"bytes {start}-{end}/{content_length}"
                 headers["Content-Length"] = str(end - start + 1)
 
                 return StreamingResponse(
-                    file_response.response,
+                    response["Body"],
                     status_code=206,
-                    media_type=file_response.metadata.content_type,
+                    media_type=content_type,
                     headers=headers,
                 )
             except (ValueError, IndexError):
                 # Invalid range header, serve full content
                 pass
 
-        return StreamingResponse(
-            file_response.response, media_type=file_response.metadata.content_type, headers=headers
-        )
-    except S3Error as se:
-        _LOGGER.error(f"Error getting object '{bucket}/{object}': {se}")
-        raise HTTPException(status_code=404, detail=f"No object at path '{object}' was found") from se
+        # Get full object
+        response = await s3_client.get_object(Bucket=bucket, Key=object)
 
+        # Use chunked streaming for large files
+        if content_length > files.CHUNK_LENGTH_MB:
+            file_chunks = files.get_file_chunk(s3_client, bucket, object, files.CHUNK_LENGTH_MB)
+            return StreamingResponse(file_chunks, media_type=content_type, headers=headers)
+
+        return StreamingResponse(response["Body"], media_type=content_type, headers=headers)
+
+    except ClientError as e:
+        if e.response["Error"]["Code"] in {"NoSuchKey", "404"}:
+            _LOGGER.error(f"Object '{bucket}/{object}' not found")
+            raise HTTPException(status_code=404, detail=f"No object at path '{object}' was found")
+        else:
+            _LOGGER.error(f"Error getting object '{bucket}/{object}': {e.response['Error']}", exc_info=True)
+            raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
-        _LOGGER.error(f"Error getting object '{bucket}/{object}': {e}")
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        _LOGGER.error(f"Error getting object '{bucket}/{object}': {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.options("/file/{bucket}/{object:path}")
@@ -140,58 +147,54 @@ async def put_file(
     bucket: str,
     object: str,
     file: Annotated[UploadFile, File()],
-    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
+    s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_current_user),
 ):
-    # Check if the current user is in the workspace to have access to the s3 bucket of the same name
     await authorize(current_user, FilePolicy.put_object(bucket))
 
     try:
-        response = files.put_object(
-            client,
+        file_data = await file.read()
+        response = await files.put_object(
+            s3_client,
             bucket,
             object,
-            data=file.file,
-            size=file.size,  # type: ignore
-            content_type=file.content_type,  # type: ignore
+            data=file_data,
+            content_type=file.content_type or "application/octet-stream",
         )
         return response
-    except S3Error as se:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {se.message}") from se
+    except Exception as e:
+        _LOGGER.error(f"Error uploading file to {bucket}/{object}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error uploading file: {e!s}")
 
 
 @router.get("/files/{bucket}/{prefix:path}", response_model=ListObjectsResponse)
-async def list_objects(
+async def list_objects_endpoint(
     *,
     bucket: str,
     prefix: str,
     include_version=True,
     recursive=True,
     start_after: str | None = None,
-    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
+    s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_optional_current_user),
 ):
-    # Check if the current user is in the workspace to have access to the s3 bucket of the same name
     await authorize(current_user, FilePolicy.list(bucket))
 
     try:
-        objects = files.list_objects(
-            client, bucket, prefix=prefix, include_version=include_version, recursive=recursive, start_after=start_after
+        objects = await files.list_objects(
+            s3_client,
+            bucket,
+            prefix=prefix,
+            include_version=include_version,
+            recursive=recursive,
+            start_after=start_after,
         )
         return objects
-    except S3Error as se:
-        _LOGGER.error(f"Error listing objects in '{bucket}/{prefix}': {se}")
-        if se.code == "NoSuchBucket":
-            raise HTTPException(
-                status_code=404,
-                detail=f"Bucket '{bucket}' not found, please run `ex.Workspace.create('{bucket}')` to create the S3 bucket.",
-            ) from se
-        else:
-            raise HTTPException(
-                status_code=404, detail=f"Cannot list objects as '{bucket}/{prefix}' is not found"
-            ) from se
+    except HTTPException:
+        raise
     except Exception as e:
-        raise e
+        _LOGGER.error(f"Error listing objects in '{bucket}/{prefix}': {e}")
+        raise HTTPException(status_code=500, detail=f"Error listing objects: {e!s}")
 
 
 @router.delete("/file/{bucket}/{object:path}")
@@ -200,16 +203,16 @@ async def delete_files(
     bucket: str,
     object: str,
     version_id: str | None = None,
-    client: Minio | files.LocalFileStorage = Depends(files.get_minio_client),
+    s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_current_user),
 ):
-    # Check if the current user is in the workspace to have access to the s3 bucket of the same name
     await authorize(current_user, FilePolicy.delete(bucket))
 
     try:
-        files.delete_object(client, bucket, object, version_id=version_id)
+        await files.delete_object(s3_client, bucket, object, version_id=version_id)
         return {"message": "File deleted"}
-    except S3Error as se:
-        raise HTTPException(status_code=500, detail="Internal server error") from se
+    except HTTPException:
+        raise
     except Exception as e:
-        raise e
+        _LOGGER.error(f"Error deleting file {bucket}/{object}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error deleting file: {e!s}")

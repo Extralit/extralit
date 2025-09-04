@@ -38,6 +38,7 @@ from extralit_server.api.schemas.v1.imports import (
 from extralit_server.contexts import files as file_context
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models.database import Document, ImportHistory, Workspace
+from extralit_server.shared_resources import shared_resources
 from extralit_server.workflows.documents import create_document_workflow
 
 _LOGGER = logging.getLogger(__name__)
@@ -380,10 +381,9 @@ async def process_bulk_upload(
             )
         reference_to_doc[doc.reference] = doc
 
-    # Get storage client
-    client = file_context.get_minio_client()
-    if client is None:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to get storage client")
+    s3_client = shared_resources.get("s3_client")
+    if s3_client is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="S3 client not available")
 
     # Process each reference: upload files to S3, create documents, start workflows
     job_ids: dict[str, str] = {}
@@ -450,8 +450,8 @@ async def process_bulk_upload(
                             continue
 
                         # Upload file to S3
-                        file_url = file_context.put_document_file(
-                            client=client,
+                        file_url = await file_context.put_document_file(
+                            s3_client=s3_client,
                             workspace_name=workspace.name,
                             document_id=file_document_create.id,  # type: ignore[arg-type]
                             file_data=file_content,

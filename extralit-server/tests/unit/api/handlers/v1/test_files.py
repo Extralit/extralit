@@ -120,16 +120,16 @@ async def test_list_objects_with_versions(async_client: "AsyncClient", owner_aut
     prefix = "schemas"
     object_name = os.path.join(prefix, "test")
 
-    # Mock get_minio_client and bucket_exists
+    # Mock get_s3_client and bucket_exists
     with (
-        patch("extralit_server.contexts.files.get_minio_client") as mock_get_minio_client,
+        patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client,
         patch("extralit_server.contexts.files.delete_bucket"),
         patch("extralit_server.contexts.files.list_objects") as mock_list_objects,
     ):
         # Setup mocks
         mock_client = MagicMock()
         mock_client.bucket_exists.return_value = True
-        mock_get_minio_client.return_value = mock_client
+        mock_get_s3_client.return_value = mock_client
 
         # Create workspace and user
         workspace_a = await WorkspaceFactory.create(name=bucket_name)

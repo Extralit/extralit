@@ -46,6 +46,7 @@ from extralit_server.logging import configure_logging
 from extralit_server.models import User, Workspace
 from extralit_server.search_engine import get_search_engine
 from extralit_server.settings import settings
+from extralit_server.shared_resources import initialize_s3_client, shared_resources
 from extralit_server.static_rewrite import RewriteStaticFiles
 from extralit_server.telemetry import get_telemetry_client
 
@@ -58,9 +59,17 @@ async def app_lifespan(app: FastAPI):
     await configure_database()
     await configure_search_engine()
     configure_redis()
-    track_server_startup()
 
-    yield
+    try:
+        await initialize_s3_client()
+        track_server_startup()
+        yield
+    finally:
+        # Clean up S3 client if it exists
+        s3_client = shared_resources.get("s3_client")
+        if s3_client:
+            await s3_client.__aexit__(None, None, None)
+        shared_resources.clear()
 
 
 def configure_share_your_progress(app: FastAPI):
@@ -309,7 +318,8 @@ async def _create_oauth_allowed_workspaces(db: AsyncSession):
         if await Workspace.get_by(db, name=allowed_workspace.name) is None:
             _LOGGER.info(f"Creating workspace with name {allowed_workspace.name!r}")
             try:
-                files.create_bucket(files.get_minio_client(), allowed_workspace.name)
+                client = await files.get_s3_client()
+                await files.create_bucket(client, allowed_workspace.name)
             except Exception as e:
                 _LOGGER.error(f"Failed to create bucket for workspace {allowed_workspace.name!r}: {e}")
 
