@@ -17,8 +17,6 @@ from collections.abc import Iterable
 from datetime import datetime
 from typing import Any
 
-from minio.datatypes import Object
-from minio.helpers import ObjectWriteResult
 from pydantic import BaseModel, Field, field_validator
 from urllib3 import HTTPResponse
 from urllib3._collections import HTTPHeaderDict
@@ -44,34 +42,6 @@ class ObjectMetadata(BaseModel):
             v = None
         return v
 
-    @classmethod
-    def from_minio_object(cls, minio_object: Object) -> "ObjectMetadata":
-        return cls(
-            bucket_name=minio_object.bucket_name,
-            object_name=minio_object.object_name or "",
-            last_modified=minio_object.last_modified,
-            is_latest=None if minio_object.is_latest is None else minio_object.is_latest.lower() == "true",
-            etag=minio_object.etag,
-            size=minio_object.size,
-            content_type=minio_object.content_type,
-            version_id=minio_object.version_id,
-            metadata=minio_object.metadata,
-        )
-
-    @classmethod
-    def from_minio_write_response(cls, write_result: ObjectWriteResult) -> "ObjectMetadata":
-        return cls(
-            bucket_name=write_result.bucket_name,
-            object_name=write_result.object_name,
-            last_modified=write_result.last_modified,
-            is_latest=True,
-            etag=write_result.etag,
-            size=None,
-            content_type=write_result.http_headers.get("Content-Type"),
-            version_id=write_result.version_id,
-            metadata=write_result.http_headers,
-        )
-
 
 class ListObjectsResponse(BaseModel):
     objects: Iterable[ObjectMetadata] = Field(default_factory=list)
@@ -84,12 +54,6 @@ class ListObjectsResponse(BaseModel):
 
     def __iter__(self):
         return iter(self.objects)
-
-    @field_validator("objects", mode="before")
-    def convert_objects(cls, v):
-        if isinstance(v, list):
-            return [ObjectMetadata.from_minio_object(item) if isinstance(item, Object) else item for item in v]
-        return v
 
     @field_validator("objects")
     def assign_version_id(cls, objects: list[ObjectMetadata]) -> list[ObjectMetadata]:
@@ -163,10 +127,4 @@ class FileObjectResponse(BaseModel):
     def validate_response(cls, v):
         if v is None:
             raise ValueError("Response cannot be None")
-        return v
-
-    @field_validator("metadata", "versions", mode="before")
-    def convert_minio_object(cls, v):
-        if isinstance(v, Object):
-            return ObjectMetadata.from_minio_object(v)
         return v

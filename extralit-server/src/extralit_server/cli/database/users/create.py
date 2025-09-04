@@ -99,18 +99,18 @@ async def _create(
             workspaces=[await get_or_new_workspace(session, workspace.name) for workspace in user_create.workspaces],
         )
 
-        # Create MinIO buckets for each workspace if they don't exist
+        # Create S3 buckets for each workspace if they don't exist
         if workspace:
-            minio_client = await files.get_s3_client()
-            if minio_client is not None:
+            s3_client = await files.get_s3_client()
+            if s3_client is not None:
                 for workspace_name in workspace:
                     try:
-                        await files.create_bucket(minio_client, workspace_name)
+                        await files.create_bucket(s3_client, workspace_name)
                         typer.echo(f"✓ Created/verified bucket for workspace: {workspace_name}")
                     except Exception as e:
                         typer.echo(f"⚠ Warning: Failed to create bucket for workspace {workspace_name}: {e}")
             else:
-                typer.echo("⚠ Warning: MinIO client not available, skipping bucket creation")
+                typer.echo("⚠ Warning: S3 client not available, skipping bucket creation")
 
         typer.echo("User successfully created:")
         typer.echo(f"• first_name: {user.first_name!r}")
