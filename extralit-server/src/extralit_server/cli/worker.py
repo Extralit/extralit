@@ -28,6 +28,8 @@ def worker(
 ) -> None:
     from rq.worker_pool import WorkerPool
 
+    # Preload heavy modules before forking worker processes
+    from extralit_server.jobs import preload  # noqa: F401
     from extralit_server.jobs.queues import REDIS_CONNECTION
 
     worker_pool = WorkerPool(connection=REDIS_CONNECTION, queues=queues, num_workers=num_workers, reload=True)
