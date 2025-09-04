@@ -58,15 +58,22 @@ def upgrade() -> None:
     # Find all questions with dynamic question types
     questions_table = sa.table("questions", sa.column("id", sa.Uuid), sa.column("settings", sa.JSON))
 
-    # Query for questions with dynamic types
-    dynamic_questions = connection.execute(
-        questions_table.select().where(
-            sa.or_(
-                sa.func.json_extract(questions_table.c.settings, "$.type") == "dynamic_label_selection",
-                sa.func.json_extract(questions_table.c.settings, "$.type") == "dynamic_multi_label_selection",
-            )
-        )
-    ).fetchall()
+    # Query for all questions first, then filter in Python for database compatibility
+    all_questions = connection.execute(questions_table.select()).fetchall()
+
+    dynamic_questions = []
+    for question in all_questions:
+        settings = question.settings
+        if isinstance(settings, str):
+            try:
+                settings = json.loads(settings)
+            except (json.JSONDecodeError, TypeError):
+                continue
+
+        if isinstance(settings, dict):
+            question_type = settings.get("type")
+            if question_type in ["dynamic_label_selection", "dynamic_multi_label_selection"]:
+                dynamic_questions.append(question)
 
     # Update each dynamic question to use strict=False
     for question in dynamic_questions:

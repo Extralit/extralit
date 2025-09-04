@@ -54,7 +54,7 @@ pdm run cli search_engine reindex             # Reindex all datasets in search e
 ### Database Layer (SQLAlchemy + Alembic)
 - **Models**: `src/extralit_server/models/database.py` - Core domain models (User, Workspace, Dataset, Record, etc.)
 - **Base Model**: `src/extralit_server/models/base.py` - Abstract base with common CRUD operations
-- **Migrations**: `src/extralit_server/alembic/versions/` - Database schema evolution
+- **Migrations**: `src/extralit_server/alembic/versions/` - Database schema evolution (note, use json.loads instead of sa.func.json_extract to be DB agnostic)
 - **Connection**: `src/extralit_server/database.py` - Async database session management
 
 ### Background Job Processing (RQ)
