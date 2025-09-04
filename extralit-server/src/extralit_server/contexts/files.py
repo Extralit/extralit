@@ -19,6 +19,7 @@ import logging
 import os
 import shutil
 import uuid
+from collections.abc import AsyncGenerator
 from datetime import datetime
 from pathlib import Path
 from typing import Any, BinaryIO, Optional, Union
@@ -32,6 +33,10 @@ from extralit_server.api.schemas.v1.files import FileObjectResponse, ListObjects
 from extralit_server.settings import settings
 
 EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
+
+# Constants for chunked streaming
+CHUNK_LENGTH_MB = 10
+DEFAULT_CHUNK_SIZE = CHUNK_LENGTH_MB * 1024 * 1024  # 10MB in bytes
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -561,6 +566,219 @@ async def list_objects(
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
+async def get_s3_file_chunks(
+    session: aioboto3.Session, bucket_name: str, key: str, chunk_size: int = DEFAULT_CHUNK_SIZE
+) -> AsyncGenerator[bytes, None]:
+    """
+    Async generator to stream S3 file content in chunks using range requests.
+
+    This solves the connection lifecycle issue by creating a new S3 client connection
+    for each chunk, ensuring connections don't get closed while streaming.
+
+    Args:
+        session: aioboto3 Session instance
+        bucket_name: S3 bucket name
+        key: S3 object key
+        chunk_size: Size of each chunk in bytes (default: 10MB)
+
+    Yields:
+        bytes: File content chunks
+
+    Raises:
+        ClientError: If S3 operations fail
+        HTTPException: For HTTP-level errors
+    """
+    try:
+        s3_client_kwargs = _get_s3_client_kwargs()
+
+        # First, get the file metadata to determine total size
+        async with session.client("s3", **s3_client_kwargs) as s3_client:
+            head_response = await s3_client.head_object(Bucket=bucket_name, Key=key)
+            content_length = head_response["ContentLength"]
+
+        # Stream the file in chunks using range requests
+        for offset in range(0, content_length, chunk_size):
+            end = min(offset + chunk_size - 1, content_length - 1)
+
+            async with session.client("s3", **s3_client_kwargs) as s3_client:
+                # Get this specific chunk with a range request
+                s3_response = await s3_client.get_object(Bucket=bucket_name, Key=key, Range=f"bytes={offset}-{end}")
+
+                # Properly handle the streaming response body
+                async with s3_response["Body"] as stream:
+                    chunk_data = await stream.read()
+                    if chunk_data:
+                        yield chunk_data
+
+    except ClientError as e:
+        _LOGGER.error(f"Error streaming S3 object {bucket_name}/{key}: {e}")
+        error_code = e.response.get("Error", {}).get("Code", "UnknownError")
+        if error_code == "NoSuchKey":
+            raise HTTPException(status_code=404, detail=f"Object {key} not found in bucket {bucket_name}")
+        else:
+            raise HTTPException(status_code=500, detail=f"S3 error: {e}")
+    except Exception as e:
+        _LOGGER.error(f"Error streaming S3 object {bucket_name}/{key}: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
+
+async def get_local_file_chunks(
+    local_client: "LocalFileStorage", bucket_name: str, key: str, chunk_size: int = DEFAULT_CHUNK_SIZE
+) -> AsyncGenerator[bytes, None]:
+    """
+    Async generator to stream LocalFileStorage content in chunks.
+
+    Args:
+        local_client: LocalFileStorage instance
+        bucket_name: Bucket name (directory)
+        key: Object key (file path)
+        chunk_size: Size of each chunk in bytes
+
+    Yields:
+        bytes: File content chunks
+
+    Raises:
+        LocalS3Error: If local file operations fail
+        HTTPException: For HTTP-level errors
+    """
+    try:
+        # Get the file using LocalFileStorage
+        file_response = local_client.get_object(bucket_name, key)
+
+        # Read the content and yield it in chunks
+        content = file_response.read()
+
+        # Yield the content in chunks
+        for i in range(0, len(content), chunk_size):
+            chunk = content[i : i + chunk_size]
+            if chunk:
+                yield chunk
+
+    except LocalS3Error as e:
+        _LOGGER.error(f"Error streaming local file {bucket_name}/{key}: {e}")
+        raise HTTPException(status_code=404, detail=f"Object {key} not found in bucket {bucket_name}")
+    except Exception as e:
+        _LOGGER.error(f"Error streaming local file {bucket_name}/{key}: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
+
+async def stream_file_chunks(
+    client: ClientType, bucket_name: str, key: str, chunk_size: int = DEFAULT_CHUNK_SIZE
+) -> AsyncGenerator[bytes, None]:
+    """
+    Unified async generator to stream file content in chunks for both S3 and local storage.
+
+    This function automatically detects the client type and uses the appropriate
+    streaming method to avoid connection lifecycle issues.
+
+    Args:
+        client: Either aioboto3.Session or LocalFileStorage instance
+        bucket_name: Bucket/directory name
+        key: Object/file key
+        chunk_size: Size of each chunk in bytes (default: 10MB)
+
+    Yields:
+        bytes: File content chunks
+
+    Raises:
+        HTTPException: For various error conditions
+    """
+    if isinstance(client, LocalFileStorage):
+        # Use local file streaming
+        async for chunk in get_local_file_chunks(client, bucket_name, key, chunk_size):
+            yield chunk
+    else:
+        # Use S3 streaming with aioboto3.Session
+        async for chunk in get_s3_file_chunks(client, bucket_name, key, chunk_size):
+            yield chunk
+
+
+async def get_object_metadata(
+    client: ClientType,
+    bucket: str,
+    object: str,
+    version_id: str | None = None,
+) -> ObjectMetadata:
+    """
+    Get only object metadata without streaming the content.
+
+    This is useful when you only need metadata (size, etag, content-type)
+    and will use chunked streaming separately for the actual content.
+
+    Args:
+        client: S3 client or LocalFileStorage instance
+        bucket: Bucket name
+        object: Object key
+        version_id: Specific version ID
+
+    Returns:
+        ObjectMetadata containing object information
+
+    Raises:
+        HTTPException: For various error conditions
+    """
+    if isinstance(client, LocalFileStorage):
+        try:
+            return client.stat_object(bucket, object, version_id=version_id)
+        except LocalS3Error as se:
+            if version_id:
+                _LOGGER.warning(
+                    f"Error getting metadata for {object} from bucket {bucket} with version {version_id}: {se}"
+                )
+                try:
+                    _LOGGER.info(f"Retrying without version_id for object {object} in bucket {bucket}")
+                    return client.stat_object(bucket, object)
+                except LocalS3Error as se_retry:
+                    _LOGGER.error(f"Error getting metadata for {object} from bucket {bucket}: {se_retry}")
+                    raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
+            else:
+                _LOGGER.error(f"Error getting metadata for {object} from bucket {bucket}: {se}")
+                raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
+    else:
+        # For S3 client - use head_object which is lightweight and doesn't stream content
+        try:
+            s3_client_kwargs = _get_s3_client_kwargs()
+            async with client.client("s3", **s3_client_kwargs) as s3_client:
+                # Get object metadata only
+                kwargs = {"Bucket": bucket, "Key": object}
+                if version_id:
+                    kwargs["VersionId"] = version_id
+
+                try:
+                    head_response = await s3_client.head_object(**kwargs)
+                    from pprint import pprint
+
+                    pprint(head_response)
+                except ClientError as ce:
+                    if version_id:
+                        _LOGGER.warning(
+                            f"Error getting metadata for {object} from bucket {bucket} with version {version_id}: {ce}"
+                        )
+                        _LOGGER.info(f"Retrying without version_id for object {object} in bucket {bucket}")
+                        head_response = await s3_client.head_object(Bucket=bucket, Key=object)
+                    else:
+                        raise ce
+
+                # Create ObjectMetadata from head response
+                return ObjectMetadata(
+                    bucket_name=bucket,
+                    object_name=object,
+                    version_id=head_response.get("VersionId"),
+                    etag=head_response.get("ETag", "").strip('"'),
+                    size=head_response.get("ContentLength", 0),
+                    last_modified=head_response.get("LastModified"),
+                    content_type=head_response.get("ContentType", "application/octet-stream"),
+                    metadata=head_response.get("Metadata", {}),
+                )
+
+        except ClientError as ce:
+            _LOGGER.error(f"Error getting metadata for {object} from bucket {bucket}: {ce}")
+            raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
+        except Exception as e:
+            _LOGGER.error(f"Error getting metadata for {object} from bucket {bucket}: {e}")
+            raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+
+
 async def get_object(
     client: ClientType,
     bucket: str,
@@ -873,7 +1091,7 @@ async def put_document_file(
     workspace_name: str,
     document_id: UUID,
     file_data: bytes,
-    _filename: str,
+    filename: str,
     metadata: dict[str, Any] | None = None,
 ) -> str | None:
     """
@@ -892,38 +1110,17 @@ async def put_document_file(
     """
     object_path = get_pdf_s3_object_path(document_id)
 
-    # Check if file already exists with same hash
-    existing_files = await list_objects(
-        client, workspace_name, prefix=object_path, include_version=False, recursive=False
+    response = await put_object(
+        client,
+        workspace_name,
+        object_path,
+        file_data,
+        len(file_data),
+        content_type="application/pdf",
+        metadata=metadata or {},
     )
 
-    put_object_flag = False
-
-    if existing_files.objects:
-        new_file_hash = compute_hash(file_data)
-        existing_hashes = [
-            existing_file.etag.strip('"') for existing_file in existing_files.objects if existing_file.etag is not None
-        ]
-
-        if new_file_hash not in existing_hashes:
-            put_object_flag = True
-    else:
-        put_object_flag = True
-
-    if put_object_flag:
-        response = await put_object(
-            client,
-            workspace_name,
-            object_path,
-            file_data,
-            len(file_data),
-            content_type="application/pdf",
-            metadata=metadata or {},
-        )
-
-        return get_proxy_document_url(response.bucket_name, response.object_name)
-
-    return None
+    return get_proxy_document_url(response.bucket_name, response.object_name)
 
 
 async def download_file_content(client: ClientType, document_url: str) -> bytes:
