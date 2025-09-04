@@ -18,7 +18,6 @@ from typing import TYPE_CHECKING, Annotated
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Path, Query, Security, UploadFile, status
-from minio import Minio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,7 +25,6 @@ from extralit_server.api.policies.v1 import DocumentPolicy, authorize
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem, DocumentUpdate
 from extralit_server.api.schemas.v1.imports import DocumentsBulkCreate, DocumentsBulkResponse
 from extralit_server.contexts import files, imports
-from extralit_server.contexts.files import LocalFileStorage
 from extralit_server.database import get_async_db
 from extralit_server.models import User, Workspace
 from extralit_server.models.database import Document
@@ -46,7 +44,7 @@ async def add_document(
     document_create: Annotated[DocumentCreate, Depends()],
     file_data: UploadFile | None = File(None),
     db: AsyncSession = Depends(get_async_db),
-    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
+    s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.create())
@@ -69,8 +67,8 @@ async def add_document(
             document_create.file_name = file_data.filename
 
         # Upload file using the reusable function
-        file_url = files.put_document_file(
-            client=client,
+        file_url = await files.put_document_file(
+            s3_client=s3_client,
             workspace_name=workspace.name,
             document_id=document_create.id,  # type: ignore[arg-type]
             file_data=file_data_bytes,
@@ -118,7 +116,7 @@ async def get_document(
     doi: Annotated[str | None, Query(description="DOI")] = None,
     limit: Annotated[int | None, Query(description="Maximum number of documents to return")] = None,
     db: AsyncSession = Depends(get_async_db),
-    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
+    s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_current_user),
 ) -> list[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.get())
@@ -197,7 +195,7 @@ async def delete_documents_by_workspace_id(
     workspace_id: UUID,
     document_delete: Annotated[DocumentDelete | None, Body()] = None,
     db: AsyncSession = Depends(get_async_db),
-    client: Minio | LocalFileStorage = Depends(files.get_minio_client),
+    s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.delete(workspace_id))
@@ -221,7 +219,7 @@ async def delete_documents_by_workspace_id(
     _LOGGER.info(f"Deleting {len(documents)} documents")
     for document in documents:
         object_path = files.get_pdf_s3_object_path(document.id)
-        files.delete_object(client, workspace.name, object_path)
+        await files.delete_object(s3_client, workspace.name, object_path)
 
     return len(documents)
 

@@ -19,6 +19,7 @@ These are the section headers that we use:
 
 - Refactor document analysis and preprocessing job to support asynchronous s3 IO operations and large file processing.
 - Added `wait` parameter to the POST /workflows/start endpoint to waiting for the workflow to complete and return the final status.
+- Migrated minio_client to aioboto3 for async file handling
 
 ## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 
@@ -30,7 +31,7 @@ These are the section headers that we use:
 ### Changed
 - Replaced separate /documents/by-id/{id} and /documents/by-pmid/{pmid} endpoints with a single /documents endpoint that accepts workspace_id and one or more identifiers (id, pmid, doi, reference), returning a list of matching documents
 - Updated GET "/documents" endpoint to support multiple identifiers (id, reference, url, pmid, doi, file_name) in a single request, to return multiple documents ordered respectively, handled by "find_existing_documents"
-- Replaced the existing MinIO client dependency with singleton version across various document and file handling endpoints
+- Replaced the existing S3 client dependency with singleton version across various document and file handling endpoints
  - Standardized import history database index naming for consistency across Alembic migration and SQLAlchemy model
 
 ## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.0)

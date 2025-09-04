@@ -71,12 +71,8 @@ async def analysis_and_preprocess_job(
     current_job.save_meta()
 
     try:
-        # Download original PDF from storage
-        client = files.get_minio_client()
-        if client is None:
-            raise Exception("Failed to get storage client")
-
-        pdf_data = files.download_file_content(client, s3_url)
+        s3_client = await files.get_s3_client()
+        pdf_data = await files.download_file_content(s3_client, s3_url)
         filename = s3_url.split("/")[-1]
 
         # Step 1: Analyze original PDF structure and content
@@ -110,16 +106,12 @@ async def analysis_and_preprocess_job(
         # OCRmyPDF overwrites the same S3 object path, so we upload back to same location
         object_path = s3_url.replace(f"/api/v1/file/{workspace_name}/", "")
 
-        # Create upload tasks for concurrent execution
         upload_tasks = [
-            # Upload processed PDF
-            asyncio.to_thread(
-                files.put_object,
-                client,
+            files.put_object(
+                s3_client,
                 workspace_name,
                 object_path,
                 processing_response.processed_data,
-                len(processing_response.processed_data),
                 content_type="application/pdf",
                 metadata={"processing_applied": "ocrmypdf_rotation", "original_filename": filename},
             )
@@ -130,13 +122,11 @@ async def analysis_and_preprocess_job(
         if thumbnail_data is not None:
             thumbnail_object_path = files.get_thumbnail_s3_object_path(document_id)
             upload_tasks.append(
-                asyncio.to_thread(
-                    files.put_object,
-                    client,
+                files.put_object(
+                    s3_client,
                     workspace_name,
                     thumbnail_object_path,
                     thumbnail_data,
-                    len(thumbnail_data),
                     content_type="image/png",
                     metadata={"original_filename": filename},
                 )

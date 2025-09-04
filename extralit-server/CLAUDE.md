@@ -12,7 +12,7 @@ Extralit-server is the FastAPI backend component of the Extralit ecosystem for s
 - **Background Jobs**: Asynchronous document processing, OCR, and ML inference via Redis Queue (rq)
 - **Vector Search**: Integration with Elasticsearch/OpenSearch for semantic similarity searches
 - **Webhook System**: Event notifications and external integrations
-- **File Storage**: Document management with MinIO S3-compatible storage
+- **File Storage**: Document management with S3 S3-compatible storage
 
 ## Development Commands
 
@@ -87,7 +87,7 @@ EXTRALIT_DATABASE_URL=sqlite+aiosqlite:///extralit.db    # Database connection
 EXTRALIT_REDIS_URL=redis://localhost:6379/0             # Redis for background jobs
 EXTRALIT_ELASTICSEARCH=http://localhost:9200            # Search engine endpoint
 EXTRALIT_SEARCH_ENGINE=elasticsearch                    # elasticsearch|opensearch
-EXTRALIT_S3_ENDPOINT=http://localhost:9000              # MinIO/S3 storage
+EXTRALIT_S3_ENDPOINT=http://localhost:9000              # S3/S3 storage
 EXTRALIT_CORS_ORIGINS=["*"]                             # CORS configuration
 ```
 
@@ -125,4 +125,4 @@ EXTRALIT_CORS_ORIGINS=["*"]                             # CORS configuration
 ### File Processing
 - Document uploads trigger background OCR and preprocessing jobs
 - Large files are processed asynchronously to avoid blocking API requests
-- File storage integrates with MinIO for scalable object storage
+- File storage integrates with S3 for scalable object storage

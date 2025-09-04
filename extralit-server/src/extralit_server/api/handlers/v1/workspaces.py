@@ -16,7 +16,6 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
-from minio import Minio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.policies.v1 import WorkspacePolicy, WorkspaceUserPolicy, authorize
@@ -58,12 +57,12 @@ async def create_workspace(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_create: WorkspaceCreate,
     current_user: Annotated[User, Security(auth.get_current_user)],
-    minio_client: Annotated[Minio | files.LocalFileStorage, Depends(files.get_minio_client)],
+    s3_client=Depends(files.get_s3_client),
 ):
     await authorize(current_user, WorkspacePolicy.create)
 
     try:
-        files.create_bucket(minio_client, workspace_create.name)
+        await files.create_bucket(s3_client, workspace_create.name)
     except Exception as e:
         raise GenericServerError(e)
 
@@ -81,7 +80,7 @@ async def delete_workspace(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_id: UUID,
     current_user: Annotated[User, Security(auth.get_current_user)],
-    minio_client: Annotated[Minio | files.LocalFileStorage, Depends(files.get_minio_client)],
+    s3_client=Depends(files.get_s3_client),
 ):
     await authorize(current_user, WorkspacePolicy.delete)
 
@@ -91,7 +90,7 @@ async def delete_workspace(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     try:
-        await files.delete_bucket(minio_client, workspace.name)
+        await files.delete_bucket(s3_client, workspace.name)
     except Exception as e:
         # Log the error but continue with workspace deletion
         print(f"Error deleting bucket for workspace {workspace.name}: {e!s}")

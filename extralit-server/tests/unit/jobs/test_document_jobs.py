@@ -53,7 +53,7 @@ class TestDocumentJobs:
 
         # Mock file operations
         mock_client = MagicMock()
-        mock_files.get_minio_client.return_value = mock_client
+        mock_files.get_s3_client.return_value = mock_client
         mock_files.download_file_content.return_value = b"%PDF-1.5 test pdf content"
         mock_files.get_thumbnail_s3_object_path.return_value = f"thumbnails/{document_id}"
 
@@ -145,7 +145,7 @@ class TestDocumentJobs:
         mock_get_current_job.return_value = mock_job
 
         # Mock file operations - no client available
-        mock_files.get_minio_client.return_value = None
+        mock_files.get_s3_client.return_value = None
 
         # Execute job and expect exception
         with pytest.raises(Exception, match="Failed to get storage client"):
@@ -175,7 +175,7 @@ class TestDocumentJobs:
 
         # Mock file operations
         mock_client = MagicMock()
-        mock_files.get_minio_client.return_value = mock_client
+        mock_files.get_s3_client.return_value = mock_client
         mock_files.download_file_content.return_value = b"%PDF-1.5 test pdf content"
 
         # Mock OCR detector

@@ -239,6 +239,30 @@ class Settings(BaseSettings):
 
         return instance
 
+    @model_validator(mode="after")
+    @classmethod
+    def validate_s3_config(cls, instance: "Settings") -> "Settings":
+        """Validate that S3 configuration is complete when any S3 setting is provided."""
+        s3_fields = [instance.s3_endpoint, instance.s3_access_key, instance.s3_secret_key]
+
+        # If any S3 field is provided, all required fields must be provided
+        if any(s3_fields):
+            missing_fields = []
+            if not instance.s3_endpoint:
+                missing_fields.append("s3_endpoint")
+            if not instance.s3_access_key:
+                missing_fields.append("s3_access_key")
+            if not instance.s3_secret_key:
+                missing_fields.append("s3_secret_key")
+
+            if missing_fields:
+                raise ValueError(
+                    f"S3 configuration incomplete. Missing required fields: {', '.join(missing_fields)}. "
+                    "When using S3 storage, s3_endpoint, s3_access_key, and s3_secret_key are all required."
+                )
+
+        return instance
+
     @property
     def database_engine_args(self) -> dict:
         if self.database_is_sqlite:
