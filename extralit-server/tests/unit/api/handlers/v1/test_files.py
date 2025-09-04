@@ -52,16 +52,30 @@ async def test_get_file(async_client: "AsyncClient"):
 
         # Mock get_object response for file data as async
         async def mock_get_object(*args, **kwargs):
-            mock_body = MagicMock()
-            # Make the Body act as an async iterator for StreamingResponse
-            mock_body.__aiter__ = lambda self: iter([b"test data"])
-            return {"Body": mock_body}
+            # Create a proper async iterator for the response body
+            class AsyncBody:
+                def __aiter__(self):
+                    return self
+
+                async def __anext__(self):
+                    # Return data once, then stop iteration
+                    if not hasattr(self, "_yielded"):
+                        self._yielded = True
+                        return b"test data"
+                    raise StopAsyncIteration
+
+                async def read(self):
+                    return b"test data"
+
+            return {"Body": AsyncBody()}
 
         mock_s3_client.get_object = mock_get_object
 
-        file = MinioFileFactory.build()
+        # Use explicit bucket and object names to avoid factory issues
+        bucket_name = "test-bucket"
+        object_name = "test-file.txt"
 
-        response = await async_client.get(f"/api/v1/file/{file.bucket_name}/{file.object_name}")
+        response = await async_client.get(f"/api/v1/file/{bucket_name}/{object_name}")
 
         assert response.status_code == 200
 
