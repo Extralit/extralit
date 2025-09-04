@@ -28,8 +28,6 @@ export class GetDocumentByRecordMetadataUseCase {
 
     if (metadata?.reference) params.reference = metadata.reference;
     if (metadata?.doc_id) params.doc_id = metadata.doc_id;
-    if (metadata?.pmid) params.pmid = metadata.pmid;
-    if (metadata?.doi) params.doi = metadata.doi;
 
     return params;
   }
