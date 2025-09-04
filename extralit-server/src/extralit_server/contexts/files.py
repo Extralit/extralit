@@ -38,6 +38,7 @@ async def get_s3_client():
 
         try:
             s3_client = await create_s3_client()
+            shared_resources["s3_client"] = s3_client
         except ValueError as e:
             raise HTTPException(status_code=500, detail=str(e)) from e
 

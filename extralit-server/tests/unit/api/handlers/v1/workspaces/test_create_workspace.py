@@ -58,7 +58,12 @@ class TestCreateWorkspace:
             # Mock S3 client for bucket creation
             mock_s3_client = MagicMock()
             mock_get_s3_client.return_value = mock_s3_client
-            mock_s3_client.create_bucket.return_value = None
+
+            # Mock create_bucket as async
+            async def mock_create_bucket(*args, **kwargs):
+                return None
+
+            mock_s3_client.create_bucket = mock_create_bucket
 
             workspace_id = uuid4()
             response = await async_client.post(
@@ -86,7 +91,12 @@ class TestCreateWorkspace:
             # Mock S3 client for bucket creation
             mock_s3_client = MagicMock()
             mock_get_s3_client.return_value = mock_s3_client
-            mock_s3_client.create_bucket.return_value = None
+
+            # Mock create_bucket as async
+            async def mock_create_bucket(*args, **kwargs):
+                return None
+
+            mock_s3_client.create_bucket = mock_create_bucket
 
             response = await async_client.post(
                 self.url(),
@@ -126,7 +136,12 @@ class TestCreateWorkspace:
             # Mock S3 client for bucket creation
             mock_s3_client = MagicMock()
             mock_get_s3_client.return_value = mock_s3_client
-            mock_s3_client.create_bucket.return_value = None
+
+            # Mock create_bucket as async
+            async def mock_create_bucket(*args, **kwargs):
+                return None
+
+            mock_s3_client.create_bucket = mock_create_bucket
 
             workspace_id = uuid4()
             await WorkspaceFactory.create(id=workspace_id)

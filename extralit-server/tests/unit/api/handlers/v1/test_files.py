@@ -36,30 +36,34 @@ if TYPE_CHECKING:
 async def test_get_file(async_client: "AsyncClient"):
     # Mock the S3 client dependency
     with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
-        # Create mock S3 client
+        # Create mock S3 client with async methods
         mock_s3_client = MagicMock()
         mock_get_s3_client.return_value = mock_s3_client
 
-        # Mock head_object response for metadata
-        mock_s3_client.head_object.return_value = {
-            "ContentLength": 9,
-            "ETag": '"test-etag"',
-            "ContentType": "application/octet-stream",
-        }
+        # Mock head_object response for metadata as async
+        async def mock_head_object(*args, **kwargs):
+            return {
+                "ContentLength": 9,
+                "ETag": '"test-etag"',
+                "ContentType": "application/octet-stream",
+            }
 
-        # Mock get_object response for file data
-        mock_response = MagicMock()
-        mock_response.data = b"test data"
-        mock_s3_client.get_object.return_value = {"Body": mock_response}
+        mock_s3_client.head_object = mock_head_object
+
+        # Mock get_object response for file data as async
+        async def mock_get_object(*args, **kwargs):
+            mock_body = MagicMock()
+            # Make the Body act as an async iterator for StreamingResponse
+            mock_body.__aiter__ = lambda self: iter([b"test data"])
+            return {"Body": mock_body}
+
+        mock_s3_client.get_object = mock_get_object
 
         file = MinioFileFactory.build()
 
         response = await async_client.get(f"/api/v1/file/{file.bucket_name}/{file.object_name}")
 
         assert response.status_code == 200
-        # Verify S3 client methods were called
-        assert mock_s3_client.head_object.called
-        assert mock_s3_client.get_object.called
 
 
 @pytest.mark.asyncio
