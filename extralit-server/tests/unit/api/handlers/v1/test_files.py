@@ -34,14 +34,14 @@ if TYPE_CHECKING:
 
 @pytest.mark.asyncio
 async def test_get_file(async_client: "AsyncClient"):
-    # Mock the S3 client dependency
-    with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
-        # Create mock S3 client with async methods
+    # Mock the entire files.get_s3_client function directly
+    with patch("extralit_server.api.handlers.v1.files.files.get_s3_client") as mock_get_s3_client:
+        # Create mock S3 client
         mock_s3_client = MagicMock()
         mock_get_s3_client.return_value = mock_s3_client
 
-        # Mock head_object response for metadata as async
-        async def mock_head_object(*args, **kwargs):
+        # Mock head_object as async
+        async def mock_head_object(Bucket=None, Key=None, **kwargs):
             return {
                 "ContentLength": 9,
                 "ETag": '"test-etag"',
@@ -50,32 +50,25 @@ async def test_get_file(async_client: "AsyncClient"):
 
         mock_s3_client.head_object = mock_head_object
 
-        # Mock get_object response for file data as async
-        async def mock_get_object(*args, **kwargs):
-            # Create a proper async iterator for the response body
-            class AsyncBody:
+        # Mock get_object as async
+        async def mock_get_object(Bucket=None, Key=None, **kwargs):
+            # Create a simple async stream
+            class MockBody:
                 def __aiter__(self):
                     return self
 
                 async def __anext__(self):
-                    # Return data once, then stop iteration
-                    if not hasattr(self, "_yielded"):
-                        self._yielded = True
+                    if not hasattr(self, "_done"):
+                        self._done = True
                         return b"test data"
                     raise StopAsyncIteration
 
-                async def read(self):
-                    return b"test data"
-
-            return {"Body": AsyncBody()}
+            return {"Body": MockBody()}
 
         mock_s3_client.get_object = mock_get_object
 
-        # Use explicit bucket and object names to avoid factory issues
-        bucket_name = "test-bucket"
-        object_name = "test-file.txt"
-
-        response = await async_client.get(f"/api/v1/file/{bucket_name}/{object_name}")
+        file = MinioFileFactory.build()
+        response = await async_client.get(f"/api/v1/file/{file.bucket_name}/{file.object_name}")
 
         assert response.status_code == 200
 

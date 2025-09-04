@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
@@ -54,16 +54,10 @@ class TestCreateWorkspace:
     async def test_create_workspace_with_predefined_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
-        with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
-            # Mock S3 client for bucket creation
-            mock_s3_client = MagicMock()
-            mock_get_s3_client.return_value = mock_s3_client
-
-            # Mock create_bucket as async
-            async def mock_create_bucket(*args, **kwargs):
-                return None
-
-            mock_s3_client.create_bucket = mock_create_bucket
+        # Mock the create_bucket function directly
+        with patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket:
+            # Mock create_bucket as async coroutine
+            mock_create_bucket.return_value = None
 
             workspace_id = uuid4()
             response = await async_client.post(
@@ -87,16 +81,10 @@ class TestCreateWorkspace:
     async def test_create_workspace_with_none_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
-        with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
-            # Mock S3 client for bucket creation
-            mock_s3_client = MagicMock()
-            mock_get_s3_client.return_value = mock_s3_client
-
-            # Mock create_bucket as async
-            async def mock_create_bucket(*args, **kwargs):
-                return None
-
-            mock_s3_client.create_bucket = mock_create_bucket
+        # Mock the create_bucket function directly
+        with patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket:
+            # Mock create_bucket as async coroutine
+            mock_create_bucket.return_value = None
 
             response = await async_client.post(
                 self.url(),
@@ -132,16 +120,10 @@ class TestCreateWorkspace:
     async def test_create_workspace_with_existing_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
-        with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
-            # Mock S3 client for bucket creation
-            mock_s3_client = MagicMock()
-            mock_get_s3_client.return_value = mock_s3_client
-
-            # Mock create_bucket as async
-            async def mock_create_bucket(*args, **kwargs):
-                return None
-
-            mock_s3_client.create_bucket = mock_create_bucket
+        # Mock the create_bucket function directly
+        with patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket:
+            # Mock create_bucket as async coroutine
+            mock_create_bucket.return_value = None
 
             workspace_id = uuid4()
             await WorkspaceFactory.create(id=workspace_id)
