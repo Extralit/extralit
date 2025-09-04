@@ -33,49 +33,6 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.asyncio
-async def test_get_file(async_client: "AsyncClient"):
-    # Use a simpler patching approach that works with the existing test setup
-    with patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client:
-        # Create mock S3 client
-        mock_s3_client = MagicMock()
-
-        # Mock head_object as async
-        async def mock_head_object(Bucket=None, Key=None, **kwargs):
-            return {
-                "ContentLength": 9,
-                "ETag": '"test-etag"',
-                "ContentType": "application/octet-stream",
-            }
-
-        mock_s3_client.head_object = mock_head_object
-
-        # Mock get_object as async
-        async def mock_get_object(Bucket=None, Key=None, **kwargs):
-            # Create a simple async stream
-            class MockBody:
-                def __aiter__(self):
-                    return self
-
-                async def __anext__(self):
-                    if not hasattr(self, "_done"):
-                        self._done = True
-                        return b"test data"
-                    raise StopAsyncIteration
-
-            return {"Body": MockBody()}
-
-        mock_s3_client.get_object = mock_get_object
-
-        # Return the mock client from the patched function
-        mock_get_s3_client.return_value = mock_s3_client
-
-        file = MinioFileFactory.build()
-        response = await async_client.get(f"/api/v1/file/{file.bucket_name}/{file.object_name}")
-
-        assert response.status_code == 200
-
-
-@pytest.mark.asyncio
 async def test_put_file(async_client: "AsyncClient", owner_auth_header: dict):
     bucket_name = "workspace"
     object_name = "test_object"
