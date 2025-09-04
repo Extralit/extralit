@@ -112,4 +112,5 @@ async def get_access_token(
         await db.commit()
         await db.refresh(oauth_user)
 
-    return Token(access_token=accounts.generate_user_token(oauth_user))
+    access_token, refresh_token = accounts.generate_token_pair(oauth_user)
+    return Token(access_token=access_token, refresh_token=refresh_token)
