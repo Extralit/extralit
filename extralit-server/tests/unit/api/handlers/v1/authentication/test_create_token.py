@@ -35,8 +35,10 @@ class TestsCreateToken:
         )
 
         assert response.status_code == 201
-        assert response.json()["access_token"]
-        assert response.json()["token_type"] == "bearer"
+        response_data = response.json()
+        assert response_data["access_token"]
+        assert response_data["token_type"] == "bearer"
+        assert response_data["refresh_token"]
 
     async def test_create_token_with_invalid_username(self, async_client: AsyncClient):
         await UserFactory.create()
@@ -63,3 +65,63 @@ class TestsCreateToken:
         )
 
         assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+class TestsRefreshToken:
+    def url(self) -> str:
+        return "/api/v1/token/refresh"
+
+    async def test_refresh_with_valid_token(self, async_client: AsyncClient):
+        # Create user and get initial tokens
+        user = await UserFactory.create()
+        login_response = await async_client.post(
+            "/api/v1/token",
+            data={
+                "username": user.username,
+                "password": "1234",
+            },
+        )
+        refresh_token = login_response.json()["refresh_token"]
+
+        # Use refresh token to get new access token
+        response = await async_client.post(self.url(), json={"refresh_token": refresh_token})
+
+        assert response.status_code == 201
+        response_data = response.json()
+        assert response_data["access_token"]
+        assert response_data["token_type"] == "bearer"
+        # Refresh endpoint should not return a new refresh token
+        assert response_data.get("refresh_token") is None
+
+    async def test_refresh_with_invalid_token(self, async_client: AsyncClient):
+        response = await async_client.post(self.url(), json={"refresh_token": "invalid.token.here"})
+
+        assert response.status_code == 401
+
+    async def test_refresh_with_access_token_should_fail(self, async_client: AsyncClient):
+        # Create user and get initial tokens
+        user = await UserFactory.create()
+        login_response = await async_client.post(
+            "/api/v1/token",
+            data={
+                "username": user.username,
+                "password": "1234",
+            },
+        )
+        access_token = login_response.json()["access_token"]
+
+        # Try to use access token as refresh token (should fail)
+        response = await async_client.post(self.url(), json={"refresh_token": access_token})
+
+        assert response.status_code == 401
+
+    async def test_refresh_with_malformed_token(self, async_client: AsyncClient):
+        response = await async_client.post(self.url(), json={"refresh_token": "not.a.valid.jwt"})
+
+        assert response.status_code == 401
+
+    async def test_refresh_without_token(self, async_client: AsyncClient):
+        response = await async_client.post(self.url(), json={})
+
+        assert response.status_code == 422
