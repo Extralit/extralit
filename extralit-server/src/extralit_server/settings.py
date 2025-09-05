@@ -233,12 +233,12 @@ class Settings(BaseSettings):
         if "postgres" in database_url:
             parsed_url = urlparse(database_url)
             if parsed_url.scheme.__contains__("postgres") and not parsed_url.scheme.__contains__("asyncpg"):
-                warnings.warn(
-                    "From version 1.14.0, Extralit will use `asyncpg` as default PostgreSQL driver. The protocol in the"
-                    " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
-                    " Please, update your database URL to use `postgresql+asyncpg` protocol.",
-                    stacklevel=2,
-                )
+                # warnings.warn(
+                #     "From version 1.14.0, Extralit will use `asyncpg` as default PostgreSQL driver. The protocol in the"
+                #     " provided database URL has been automatically replaced from `postgresql` to `postgresql+asyncpg`."
+                #     " Please, update your database URL to use `postgresql+asyncpg` protocol.",
+                #     stacklevel=2,
+                # )
                 database_url = urlunparse(parsed_url._replace(scheme=DEFAULT_DATABASE_POSTGRESQL_SCHEME))
 
             if not database_url.startswith("postgresql+asyncpg://"):

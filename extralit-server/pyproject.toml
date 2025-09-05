@@ -205,6 +205,7 @@ migrate = { cmd = "alembic upgrade head" }
 alembic = { cmd = "alembic -c src/extralit_server/alembic.ini" }
 revision = { cmd = "alembic -c src/extralit_server/alembic.ini revision --autogenerate" }
 worker = { cmd = "python -m extralit_server worker" }
+reindex = { cmd = "python -m extralit_server search-engine reindex" }
 server-dev.composite = [
     "migrate",
     "cli database users create_default",
