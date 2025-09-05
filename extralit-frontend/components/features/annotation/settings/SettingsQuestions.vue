@@ -163,7 +163,7 @@ export default {
     },
   },
   setup() {
-    return useSettingsQuestionsViewModel()
+    return useSettingsQuestionsViewModel();
   },
 };
 </script>
@@ -365,10 +365,14 @@ export default {
       display: inline-flex;
       gap: $base-space;
     }
+  }
+
+  &__preview {
     flex-basis: 37em;
     flex-direction: column;
     height: 100%;
     overflow: auto;
+
     &__content {
       padding: $base-space * 3;
       background: var(--bg-solid-grey-1);

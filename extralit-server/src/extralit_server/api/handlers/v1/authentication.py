@@ -17,10 +17,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from extralit_server.api.schemas.v1.oauth2 import Token
+from extralit_server.api.schemas.v1.oauth2 import RefreshTokenRequest, Token
 from extralit_server.contexts import accounts
 from extralit_server.database import get_async_db
 from extralit_server.errors import UnauthorizedError
+from extralit_server.security.authentication.jwt import JWT
+from extralit_server.security.authentication.userinfo import UserInfo
 
 router = APIRouter(tags=["Authentication"])
 
@@ -36,4 +38,34 @@ async def create_token(
     if not user:
         raise UnauthorizedError()
 
-    return Token(access_token=accounts.generate_user_token(user))
+    access_token, refresh_token = accounts.generate_token_pair(user)
+    return Token(access_token=access_token, refresh_token=refresh_token)
+
+
+@router.post("/token/refresh", status_code=status.HTTP_201_CREATED, response_model=Token)
+async def refresh_token(request: RefreshTokenRequest):
+    """
+    Refresh an access token using a valid refresh token.
+    This endpoint does not require database access, improving reliability.
+    """
+    try:
+        # Validate the refresh token
+        payload = JWT.validate_refresh_token(request.refresh_token)
+
+        # Create a minimal UserInfo object for access token generation
+        user_info = UserInfo(
+            {
+                "identity": payload["identity"],
+                "username": payload["username"],
+                # For refresh, we only create access tokens, so we need to get fresh user data
+                # if needed, but for now we'll use minimal info
+            }
+        )
+
+        # Generate new access token (no database query needed)
+        new_access_token = JWT.create_access_token(user_info)
+
+        return Token(access_token=new_access_token)
+
+    except Exception as e:
+        raise UnauthorizedError("Invalid refresh token") from e
