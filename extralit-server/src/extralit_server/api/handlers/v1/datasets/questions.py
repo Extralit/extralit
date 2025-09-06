@@ -21,7 +21,7 @@ from sqlalchemy.orm import selectinload
 from starlette import status
 
 from extralit_server.api.policies.v1 import DatasetPolicy, authorize
-from extralit_server.api.schemas.v1.questions import Question, QuestionCreate, Questions
+from extralit_server.api.schemas.v1.questions import Question, QuestionCreate, Questions, QuestionWithPanderaSchema
 from extralit_server.contexts import questions
 from extralit_server.database import get_async_db
 from extralit_server.models import Dataset, User

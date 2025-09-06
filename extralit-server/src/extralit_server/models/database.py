@@ -341,6 +341,13 @@ class Question(DatabaseModel):
     def values(self) -> list[Any]:
         return [option["value"] for option in self.settings.get("options", [])]
 
+    @property
+    def pandera_schema(self) -> dict | None:
+        """Get the Pandera schema from metadata."""
+        if self.metadata_:
+            return self.metadata_.get("pandera_schema")
+        return None
+
     def __repr__(self):
         return (
             f"Question(id={str(self.id)!r}, name={self.name!r}, required={self.required!r}, "

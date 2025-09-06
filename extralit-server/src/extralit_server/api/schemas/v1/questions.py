@@ -368,7 +368,7 @@ class Question(BaseModel):
 
 
 class QuestionWithPanderaSchema(Question):
-    pandera_schema: dict | None = None
+    pandera_schema: dict | None = Field(None, exclude_unset=True)
 
     @field_validator("pandera_schema", mode="before")
     @classmethod
@@ -376,6 +376,8 @@ class QuestionWithPanderaSchema(Question):
         if v is not None and not validate_pandera_schema_dict(v):
             raise ValueError("Invalid Pandera schema format")
         return v
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Questions(BaseModel):

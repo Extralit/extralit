@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from extralit_server.api.policies.v1 import QuestionPolicy, authorize
-from extralit_server.api.schemas.v1.questions import Question as QuestionSchema
+from extralit_server.api.schemas.v1.questions import Question as QuestionSchema, QuestionWithPanderaSchema
 from extralit_server.api.schemas.v1.questions import QuestionUpdate
 from extralit_server.contexts import questions
 from extralit_server.database import get_async_db
