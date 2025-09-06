@@ -33,6 +33,14 @@
       />
     </template>
     <span class="separator"></span>
+    
+    <!-- Pandera Schema Configuration -->
+    <DatasetConfigurationPandera
+      :question="question"
+      @is-focused="$emit('is-focused', $event)"
+    />
+    
+    <span class="separator"></span>
     <DatasetConfigurationColumnSelector
       v-if="showColumnSelector"
       v-model="question.column"

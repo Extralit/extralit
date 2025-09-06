@@ -292,6 +292,7 @@ class Question(DatabaseModel):
     description: Mapped[str] = mapped_column(Text, nullable=True)
     required: Mapped[bool] = mapped_column(default=False)
     settings: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default={})
+    metadata_: Mapped[dict | None] = mapped_column("metadata", MutableDict.as_mutable(JSON), nullable=True)
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
 
     dataset: Mapped["Dataset"] = relationship(back_populates="questions")
@@ -339,6 +340,13 @@ class Question(DatabaseModel):
     @property
     def values(self) -> list[Any]:
         return [option["value"] for option in self.settings.get("options", [])]
+
+    @property
+    def pandera_schema(self) -> dict | None:
+        """Get the Pandera schema from metadata."""
+        if self.metadata_:
+            return self.metadata_.get("pandera_schema")
+        return None
 
     def __repr__(self):
         return (

@@ -16,12 +16,13 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, conlist, constr, model_validator
+from pydantic import BaseModel, ConfigDict, Field, conlist, constr, model_validator, field_validator
 
 from extralit_server.api.schemas.v1.commons import UpdateSchema
 from extralit_server.api.schemas.v1.fields import FieldName
 from extralit_server.enums import OptionsOrder, QuestionType
 from extralit_server.settings import settings
+from extralit_server.utils.pandera_utils import validate_pandera_schema_dict
 
 try:
     from typing import Annotated
@@ -366,6 +367,19 @@ class Question(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class QuestionWithPanderaSchema(Question):
+    pandera_schema: dict | None = Field(None, exclude_unset=True)
+
+    @field_validator("pandera_schema", mode="before")
+    @classmethod
+    def validate_pandera_schema(cls, v):
+        if v is not None and not validate_pandera_schema_dict(v):
+            raise ValueError("Invalid Pandera schema format")
+        return v
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class Questions(BaseModel):
     items: list[Question]
 
@@ -376,11 +390,27 @@ class QuestionCreate(BaseModel):
     description: QuestionDescription | None = None
     required: bool | None = None
     settings: QuestionSettingsCreate
+    pandera_schema: dict | None = None
+
+    @field_validator("pandera_schema", mode="before")
+    @classmethod
+    def validate_pandera_schema(cls, v):
+        if v is not None and not validate_pandera_schema_dict(v):
+            raise ValueError("Invalid Pandera schema format")
+        return v
 
 
 class QuestionUpdate(UpdateSchema):
     title: QuestionTitle | None = None
     description: QuestionDescription | None = None
     settings: QuestionSettingsUpdate | None = None
+    pandera_schema: dict | None = None
+
+    @field_validator("pandera_schema", mode="before")
+    @classmethod
+    def validate_pandera_schema(cls, v):
+        if v is not None and not validate_pandera_schema_dict(v):
+            raise ValueError("Invalid Pandera schema format")
+        return v
 
     __non_nullable_fields__ = {"title", "settings"}

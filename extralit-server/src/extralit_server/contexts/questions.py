@@ -36,6 +36,11 @@ async def create_question(db: AsyncSession, dataset: Dataset, question_create: Q
 
     QuestionCreateValidator.validate(question_create, dataset)
 
+    # Prepare metadata with pandera_schema if provided
+    metadata = {}
+    if question_create.pandera_schema is not None:
+        metadata["pandera_schema"] = question_create.pandera_schema
+
     return await Question.create(
         db,
         name=question_create.name,
@@ -43,6 +48,7 @@ async def create_question(db: AsyncSession, dataset: Dataset, question_create: Q
         description=question_create.description,
         required=question_create.required,
         settings=question_create.settings.model_dump(),
+        metadata_=metadata if metadata else None,
         dataset_id=dataset.id,
     )
 
@@ -51,6 +57,21 @@ async def update_question(db: AsyncSession, question: Question, question_update:
     QuestionUpdateValidator.validate(question_update, question)
 
     params = question_update.model_dump(exclude_unset=True)
+    
+    # Handle pandera_schema separately - it goes into metadata
+    if "pandera_schema" in params:
+        pandera_schema = params.pop("pandera_schema")
+        
+        # Get existing metadata or create new
+        metadata = question.metadata_ or {}
+        
+        if pandera_schema is not None:
+            metadata["pandera_schema"] = pandera_schema
+        else:
+            # Remove pandera_schema if set to None
+            metadata.pop("pandera_schema", None)
+        
+        params["metadata_"] = metadata if metadata else None
 
     return await question.update(db, **params)
 
