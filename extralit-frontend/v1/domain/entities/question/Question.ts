@@ -1,6 +1,7 @@
 import { Answer, LabelAnswer } from "../IAnswer";
 import { Guard } from "../error";
 import { Color } from "../color/Color";
+import { PanderaSchema } from "../../infrastructure/types/PanderaSchema";
 import {
   QuestionAnswer,
   TextQuestionAnswer,
@@ -20,12 +21,14 @@ interface OriginalQuestion {
   description: string;
   settings: any;
   answer: QuestionAnswer;
+  panderaSchema?: PanderaSchema | null;
 }
 
 export class Question {
   public settings: QuestionSetting;
   public answer: QuestionAnswer;
   public suggestion: Suggestion;
+  public panderaSchema: PanderaSchema | null;
   private original: OriginalQuestion;
 
   constructor(
@@ -35,11 +38,13 @@ export class Question {
     public readonly datasetId: string,
     title: string,
     public readonly isRequired: boolean,
-    settings: any
+    settings: any,
+    panderaSchema?: PanderaSchema | null
   ) {
     this.description = description;
     this.title = title;
     this.settings = new QuestionSetting(settings);
+    this.panderaSchema = panderaSchema || null;
 
     this.initialize();
   }
@@ -102,6 +107,18 @@ export class Question {
     return this.type.isRatingType;
   }
 
+  public get hasPanderaSchema(): boolean {
+    return this.panderaSchema !== null;
+  }
+
+  public setPanderaSchema(schema: PanderaSchema | null): void {
+    this.panderaSchema = schema;
+  }
+
+  public get panderaSchemaJson(): string | null {
+    return this.panderaSchema ? JSON.stringify(this.panderaSchema, null, 2) : null;
+  }
+
   public get isAnswerModified(): boolean {
     return !this.answer.isEqual(this.original.answer);
   }
@@ -110,7 +127,8 @@ export class Question {
     return (
       this.title !== this.original.title ||
       this.description !== this.original.description ||
-      !this.settings.isEqual(this.original.settings)
+      !this.settings.isEqual(this.original.settings) ||
+      this.panderaSchema !== this.original.panderaSchema
     );
   }
 
@@ -154,6 +172,7 @@ export class Question {
   restore() {
     this.title = this.original.title;
     this.description = this.original.description;
+    this.panderaSchema = this.original.panderaSchema || null;
 
     this.restoreOriginal();
   }
@@ -276,6 +295,7 @@ export class Question {
         options: options?.map((option: string) => option),
       }),
       answer: originalAnswer,
+      panderaSchema: this.panderaSchema,
     };
   }
 
