@@ -14,12 +14,13 @@
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from extralit_server.api.schemas.v1.records import RecordUpsert
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert
 from extralit_server.contexts.records_bulk import UpsertRecordsBulk
 from extralit_server.enums import DatasetStatus
-from extralit_server.models import Record
+from extralit_server.models import Dataset, Record
 from extralit_server.search_engine import SearchEngine
 from tests.factories import DatasetFactory, RecordFactory, TextFieldFactory
 
@@ -31,6 +32,9 @@ class TestUpsertRecordsBulk:
         """Tests that records with existing external_id are updated instead of creating duplicates."""
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="text-field", dataset=dataset)
+
+        # Reload dataset with fields to avoid lazy loading issues
+        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
 
         # Create initial record with external_id
         await RecordFactory.create(fields={"text-field": "original value"}, external_id="existing-id", dataset=dataset)
@@ -64,6 +68,9 @@ class TestUpsertRecordsBulk:
         """Tests that external_id from metadata (like reference field) is properly used for deduplication."""
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="text-field", dataset=dataset)
+
+        # Reload dataset with fields to avoid lazy loading issues
+        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
 
         # Create initial record with external_id from reference metadata
         await RecordFactory.create(
@@ -109,6 +116,9 @@ class TestUpsertRecordsBulk:
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="title", dataset=dataset)
         await TextFieldFactory.create(name="content", dataset=dataset)
+
+        # Reload dataset with fields to avoid lazy loading issues
+        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
 
         # Create initial record
         original_record = await RecordFactory.create(
@@ -166,6 +176,9 @@ class TestUpsertRecordsBulk:
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="document", dataset=dataset)
 
+        # Reload dataset with fields to avoid lazy loading issues
+        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
+
         # Create initial records with different external_ids
         record_1 = await RecordFactory.create(fields={"document": "Document 1"}, external_id="doc_001", dataset=dataset)
 
@@ -220,6 +233,9 @@ class TestUpsertRecordsBulk:
         """Tests handling of batch with both new external_ids and duplicate external_ids."""
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="title", dataset=dataset)
+
+        # Reload dataset with fields to avoid lazy loading issues
+        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
 
         # Create initial records
         existing_record_1 = await RecordFactory.create(

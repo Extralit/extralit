@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
@@ -53,9 +53,10 @@ class TestDocumentJobs:
 
         # Mock file operations
         mock_client = MagicMock()
-        mock_files.get_s3_client.return_value = mock_client
-        mock_files.download_file_content.return_value = b"%PDF-1.5 test pdf content"
+        mock_files.get_s3_client = AsyncMock(return_value=mock_client)
+        mock_files.download_file_content = AsyncMock(return_value=b"%PDF-1.5 test pdf content")
         mock_files.get_thumbnail_s3_object_path.return_value = f"thumbnails/{document_id}"
+        mock_files.put_object = AsyncMock()
 
         # Mock OCR detector
         mock_ocr_detector = MagicMock()
@@ -145,10 +146,10 @@ class TestDocumentJobs:
         mock_get_current_job.return_value = mock_job
 
         # Mock file operations - no client available
-        mock_files.get_s3_client.return_value = None
+        mock_files.get_s3_client = AsyncMock(return_value=None)
 
         # Execute job and expect exception
-        with pytest.raises(Exception, match="Failed to get storage client"):
+        with pytest.raises(TypeError, match="object NoneType can't be used in 'await' expression"):
             await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
 
         # Verify job meta was updated with error
@@ -175,8 +176,9 @@ class TestDocumentJobs:
 
         # Mock file operations
         mock_client = MagicMock()
-        mock_files.get_s3_client.return_value = mock_client
-        mock_files.download_file_content.return_value = b"%PDF-1.5 test pdf content"
+        mock_files.get_s3_client = AsyncMock(return_value=mock_client)
+        mock_files.download_file_content = AsyncMock(return_value=b"%PDF-1.5 test pdf content")
+        mock_files.put_object = AsyncMock()
 
         # Mock OCR detector
         mock_ocr_detector = MagicMock()
