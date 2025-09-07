@@ -19,7 +19,7 @@ dependencies = [
     "huggingface_hub>=0.22.0",
     "tqdm>=4.60.0",
     "rich>=10.0.0",
-    "datasets>=3.0.0",
+    "datasets~=3.6.0",
     "pillow>=9.5.0",
     "standardwebhooks>=1.0.0",
     "typer>=0.9.0",
@@ -28,13 +28,12 @@ dependencies = [
     "bibtexparser>=1.4.3",
     "pandera[io]>=0.26.1, < 0.27.0",
     "pandas>=2.3.2",
+
+    "llama-index-embeddings-openai>=0.5.0"
 ]
 nlp = [
     "textdescriptives",
     "setfit ~= 0.7.0",
-]
-rag = [
-    "llama-index-embeddings-openai>=0.5.0"
 ]
 
 [build-system]
