@@ -76,11 +76,31 @@ class DocumentProcessingMetadata(BaseModel):
 
     def update_analysis_results(self, analysis_result: dict) -> None:
         """Update analysis metadata from job result."""
+        layout_data = analysis_result.get("layout_analysis", {})
+
+        # Extract margin analysis from layout_analysis if it exists
+        margin_analysis = {}
+        if "layout_analysis" in layout_data:
+            # The margin data is in layout_data["layout_analysis"]["estimated_margins"]
+            nested_layout = layout_data["layout_analysis"]
+            margin_analysis = nested_layout.get("estimated_margins", {})
+        elif "estimated_margins" in layout_data:
+            margin_analysis = layout_data["estimated_margins"]
+
         self.analysis_metadata = AnalysisMetadata(
+            thumbnail_generated=analysis_result.get("thumbnail_generated"),
             has_ocr_text_layer=analysis_result.get("has_ocr_text_layer"),
             needs_ocr=analysis_result.get("needs_ocr"),
             ocr_quality=OCRQualityMetadata(**analysis_result.get("analysis_metadata", {})),
-            layout_analysis=LayoutAnalysisMetadata(**analysis_result.get("layout_analysis", {})),
+            layout_analysis=LayoutAnalysisMetadata(
+                page_count=layout_data.get("page_count"),
+                margin_analysis=margin_analysis,
+                **{
+                    k: v
+                    for k, v in layout_data.items()
+                    if k not in ["layout_analysis", "estimated_margins", "page_count"]
+                },
+            ),
         )
 
     def update_preprocessing_results(self, preprocess_result: dict) -> None:
