@@ -23,7 +23,7 @@ from typing import TypeVar
 from sqlalchemy import create_engine, event, make_url
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.interfaces import IsolationLevel
-from sqlalchemy.exc import DBAPIError, DisconnectionError
+from sqlalchemy.exc import DBAPIError, DisconnectionError, OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
@@ -124,7 +124,7 @@ def retry_db_operation(max_retries: int = 3, delay: float = 0.1, backoff: float 
             for attempt in range(max_retries + 1):
                 try:
                     return await func(*args, **kwargs)
-                except (DBAPIError, DisconnectionError) as e:
+                except (DBAPIError, DisconnectionError, OperationalError, ConnectionRefusedError, OSError) as e:
                     last_exception = e
 
                     # Check if this is a connection-related error
@@ -138,6 +138,11 @@ def retry_db_operation(max_retries: int = 3, delay: float = 0.1, backoff: float 
                             "connection refused",
                             "connection reset",
                             "broken pipe",
+                            "network is unreachable",
+                            "no route to host",
+                            "connection aborted",
+                            "errno 111",  # Connection refused errno
+                            "errno 110",  # Connection timed out errno
                         ]
                     ):
                         if attempt < max_retries:
