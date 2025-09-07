@@ -141,6 +141,10 @@ sw.*
 # yarn & npm
 yarn.lock
 
+# pdm and uv
+uv.lock
+pyproject.toml.*
+
 # App generated files
 src/**/server/static/
 
