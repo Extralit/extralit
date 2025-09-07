@@ -90,11 +90,13 @@ class TestDocumentJobs:
         mock_preprocessor_class.return_value = mock_preprocessor
 
         # Mock database session
-        mock_db = MagicMock()
+        mock_db = AsyncMock()
         mock_document = MagicMock()
         mock_document.metadata_ = None
-        mock_db.get.return_value = mock_document
-        mock_session.return_value.__enter__.return_value = mock_db
+        mock_db.get = AsyncMock(return_value=mock_document)
+        mock_db.commit = AsyncMock()
+        mock_session.return_value.__aenter__ = AsyncMock(return_value=mock_db)
+        mock_session.return_value.__aexit__ = AsyncMock(return_value=None)
 
         # Execute job
         result = await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
@@ -149,7 +151,7 @@ class TestDocumentJobs:
         mock_files.get_s3_client = AsyncMock(return_value=None)
 
         # Execute job and expect exception
-        with pytest.raises(TypeError, match="object NoneType can't be used in 'await' expression"):
+        with pytest.raises(TypeError, match="object.*can't be used in 'await' expression"):
             await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
 
         # Verify job meta was updated with error
@@ -213,11 +215,13 @@ class TestDocumentJobs:
 
             # Mock database
             with patch("extralit_server.jobs.document_jobs.AsyncSessionLocal") as mock_session:
-                mock_db = MagicMock()
+                mock_db = AsyncMock()
                 mock_document = MagicMock()
                 mock_document.metadata_ = None
-                mock_db.get.return_value = mock_document
-                mock_session.return_value.__enter__.return_value = mock_db
+                mock_db.get = AsyncMock(return_value=mock_document)
+                mock_db.commit = AsyncMock()
+                mock_session.return_value.__aenter__ = AsyncMock(return_value=mock_db)
+                mock_session.return_value.__aexit__ = AsyncMock(return_value=None)
 
                 # Execute job
                 result = await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)

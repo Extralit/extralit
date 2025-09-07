@@ -12,29 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from unittest.mock import AsyncMock, patch
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from extralit_server.api.schemas.v1.records import RecordUpsert
 from extralit_server.api.schemas.v1.records_bulk import RecordsBulkUpsert
 from extralit_server.contexts.records_bulk import UpsertRecordsBulk
 from extralit_server.enums import DatasetStatus
-from extralit_server.models import Dataset, Record
+from extralit_server.models import Record
 from extralit_server.search_engine import SearchEngine
 from tests.factories import DatasetFactory, RecordFactory, TextFieldFactory
 
 
 class TestUpsertRecordsBulk:
+    @patch("extralit_server.contexts.records_bulk.RecordUpsertValidator.validate")
     async def test_upsert_records_bulk_with_existing_external_id(
-        self, db: AsyncSession, mock_search_engine: SearchEngine
+        self, mock_validate, db: AsyncSession, mock_search_engine: SearchEngine
     ):
         """Tests that records with existing external_id are updated instead of creating duplicates."""
+        # Mock the validator to avoid SQLAlchemy greenlet spawn issues
+        mock_validate.return_value = AsyncMock()
+
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="text-field", dataset=dataset)
-
-        # Reload dataset with fields to avoid lazy loading issues
-        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
 
         # Create initial record with external_id
         await RecordFactory.create(fields={"text-field": "original value"}, external_id="existing-id", dataset=dataset)
@@ -62,15 +64,16 @@ class TestUpsertRecordsBulk:
         assert record.external_id == "existing-id"
         assert record.fields["text-field"] == "updated value"
 
+    @patch("extralit_server.contexts.records_bulk.RecordUpsertValidator.validate")
     async def test_upsert_records_bulk_with_reference_metadata_external_id(
-        self, db: AsyncSession, mock_search_engine: SearchEngine
+        self, mock_validate, db: AsyncSession, mock_search_engine: SearchEngine
     ):
         """Tests that external_id from metadata (like reference field) is properly used for deduplication."""
+        # Mock the validator to avoid SQLAlchemy greenlet spawn issues
+        mock_validate.return_value = AsyncMock()
+
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="text-field", dataset=dataset)
-
-        # Reload dataset with fields to avoid lazy loading issues
-        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
 
         # Create initial record with external_id from reference metadata
         await RecordFactory.create(
@@ -109,16 +112,17 @@ class TestUpsertRecordsBulk:
         assert record.metadata_["reference"] == "123456"
         assert record.metadata_["pmid"] == "987654"  # New metadata added
 
+    @patch("extralit_server.contexts.records_bulk.RecordUpsertValidator.validate")
     async def test_upsert_records_bulk_updates_existing_records_with_matching_external_id(
-        self, db: AsyncSession, mock_search_engine: SearchEngine
+        self, mock_validate, db: AsyncSession, mock_search_engine: SearchEngine
     ):
         """Tests that existing records with matching external_id have their fields updated from the upsert."""
+        # Mock the validator to avoid SQLAlchemy greenlet spawn issues
+        mock_validate.return_value = AsyncMock()
+
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="title", dataset=dataset)
         await TextFieldFactory.create(name="content", dataset=dataset)
-
-        # Reload dataset with fields to avoid lazy loading issues
-        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
 
         # Create initial record
         original_record = await RecordFactory.create(
@@ -169,15 +173,16 @@ class TestUpsertRecordsBulk:
         assert updated_record.metadata_["source"] == "updated"
         assert updated_record.metadata_["version"] == "2.0"
 
+    @patch("extralit_server.contexts.records_bulk.RecordUpsertValidator.validate")
     async def test_upsert_records_bulk_preserves_different_external_ids(
-        self, db: AsyncSession, mock_search_engine: SearchEngine
+        self, mock_validate, db: AsyncSession, mock_search_engine: SearchEngine
     ):
         """Tests that records with different external_ids are both preserved."""
+        # Mock the validator to avoid SQLAlchemy greenlet spawn issues
+        mock_validate.return_value = AsyncMock()
+
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="document", dataset=dataset)
-
-        # Reload dataset with fields to avoid lazy loading issues
-        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
 
         # Create initial records with different external_ids
         record_1 = await RecordFactory.create(fields={"document": "Document 1"}, external_id="doc_001", dataset=dataset)
@@ -227,15 +232,16 @@ class TestUpsertRecordsBulk:
         assert records[2].fields["document"] == "Document 3"
         assert records[2].id != record_1.id and records[2].id != record_2.id  # New record ID
 
+    @patch("extralit_server.contexts.records_bulk.RecordUpsertValidator.validate")
     async def test_upsert_records_bulk_mixed_new_and_duplicate_external_ids(
-        self, db: AsyncSession, mock_search_engine: SearchEngine
+        self, mock_validate, db: AsyncSession, mock_search_engine: SearchEngine
     ):
         """Tests handling of batch with both new external_ids and duplicate external_ids."""
+        # Mock the validator to avoid SQLAlchemy greenlet spawn issues
+        mock_validate.return_value = AsyncMock()
+
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
         await TextFieldFactory.create(name="title", dataset=dataset)
-
-        # Reload dataset with fields to avoid lazy loading issues
-        dataset = await db.get(Dataset, dataset.id, options=[selectinload(Dataset.fields)])
 
         # Create initial records
         existing_record_1 = await RecordFactory.create(
