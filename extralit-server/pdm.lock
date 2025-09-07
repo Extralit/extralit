@@ -5,7 +5,7 @@
 groups = ["default", "postgresql", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:09670de5aa04a23910deb6d1bff44891d7cd71e67f175a391a70b659a62613f5"
+content_hash = "sha256:9943033b2e4fb898e67fdac2f947f022297bf76483dfd338a07eb49734d4a9be"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -748,9 +748,10 @@ files = [
 
 [[package]]
 name = "datasets"
-version = "4.0.0"
+version = "3.0.2"
 summary = ""
 dependencies = [
+    "aiohttp",
     "dill",
     "filelock",
     "fsspec[http]",
@@ -766,8 +767,8 @@ dependencies = [
     "xxhash",
 ]
 files = [
-    {file = "datasets-4.0.0-py3-none-any.whl", hash = "sha256:7ef95e62025fd122882dbce6cb904c8cd3fbc829de6669a5eb939c77d50e203d"},
-    {file = "datasets-4.0.0.tar.gz", hash = "sha256:9657e7140a9050db13443ba21cb5de185af8af944479b00e7ff1e00a61c8dbf1"},
+    {file = "datasets-3.0.2-py3-none-any.whl", hash = "sha256:220bfbea0be9bf81d121bd2ac76fe4ef3f7defe0e8586ce1e7f66dcaaf69f88d"},
+    {file = "datasets-3.0.2.tar.gz", hash = "sha256:07204c389ce0491ef3ad50dd79966d3fd40422a12b831cf84a117323ac74fbc1"},
 ]
 
 [[package]]
