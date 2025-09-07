@@ -120,6 +120,7 @@ log_format = "%(asctime)s %(name)s %(levelname)s %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
 testpaths = ["tests"]
 env = ["HF_HUB_DISABLE_TELEMETRY=1"]
+asyncio_mode = "auto"
 
 [tool.coverage.run]
 concurrency = ["greenlet", "thread", "multiprocessing"]
