@@ -15,7 +15,7 @@
 import hashlib
 import logging
 from collections.abc import AsyncGenerator
-from typing import Any, BinaryIO
+from typing import TYPE_CHECKING, Any, BinaryIO
 from uuid import UUID
 
 from botocore.exceptions import ClientError
@@ -24,13 +24,16 @@ from fastapi import HTTPException
 from extralit_server.api.schemas.v1.files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
 from extralit_server.helpers import shared_resources
 
+if TYPE_CHECKING:
+    from types_aiobotocore_s3.client import S3Client
+
 EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 CHUNK_LENGTH_MB = 10 * 1024 * 1024
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def get_s3_client():
+async def get_s3_client() -> "S3Client":
     """Dependency function to get shared S3 client."""
     s3_client = shared_resources.get("s3_client")
     if s3_client is None:
@@ -45,7 +48,9 @@ async def get_s3_client():
     return s3_client
 
 
-async def get_file_chunk(s3_client, bucket_name: str, key: str, chunk_length: int) -> AsyncGenerator[bytes, None]:
+async def get_file_chunk(
+    s3_client: "S3Client", bucket_name: str, key: str, chunk_length: int
+) -> AsyncGenerator[bytes, None]:
     """Async generator to get file chunks for streaming."""
     head = await s3_client.head_object(Bucket=bucket_name, Key=key)
     content_length = head["ContentLength"]
@@ -58,19 +63,24 @@ async def get_file_chunk(s3_client, bucket_name: str, key: str, chunk_length: in
             yield await stream.read()
 
 
-async def get_object_with_range(s3_client, bucket: str, key: str, start: int, end: int):
+async def get_object_with_range(s3_client: "S3Client", bucket: str, key: str, start: int, end: int):
     """Get S3 object with byte range support for streaming."""
     response = await s3_client.get_object(Bucket=bucket, Key=key, Range=f"bytes={start}-{end}")
     return response
 
 
-async def get_object_metadata(s3_client, bucket: str, key: str):
+async def get_object_metadata(s3_client: "S3Client", bucket: str, key: str):
     """Get S3 object metadata using head_object."""
     return await s3_client.head_object(Bucket=bucket, Key=key)
 
 
 async def put_object_to_s3(
-    s3_client, bucket: str, key: str, data: BinaryIO | bytes, content_type: str, metadata: dict[str, Any] | None = None
+    s3_client: "S3Client",
+    bucket: str,
+    key: str,
+    data: BinaryIO | bytes,
+    content_type: str,
+    metadata: dict[str, Any] | None = None,
 ):
     """Put object to S3."""
     kwargs = {
@@ -85,12 +95,15 @@ async def put_object_to_s3(
     return await s3_client.put_object(**kwargs)
 
 
-async def delete_object_from_s3(s3_client, bucket: str, key: str):
+async def delete_object_from_s3(s3_client: "S3Client", bucket: str, key: str, version_id: str | None = None):
     """Delete object from S3."""
-    return await s3_client.delete_object(Bucket=bucket, Key=key)
+    kwargs = {"Bucket": bucket, "Key": key}
+    if version_id:
+        kwargs["VersionId"] = version_id
+    return await s3_client.delete_object(**kwargs)
 
 
-async def list_objects_from_s3(s3_client, bucket: str, prefix: str | None = None):
+async def list_objects_from_s3(s3_client: "S3Client", bucket: str, prefix: str | None = None):
     """List objects in S3 bucket."""
     kwargs = {"Bucket": bucket}
     if prefix:
@@ -98,7 +111,7 @@ async def list_objects_from_s3(s3_client, bucket: str, prefix: str | None = None
     return await s3_client.list_objects_v2(**kwargs)
 
 
-async def create_bucket_in_s3(s3_client, bucket_name: str):
+async def create_bucket_in_s3(s3_client: "S3Client", bucket_name: str):
     """Create S3 bucket."""
     try:
         return await s3_client.create_bucket(Bucket=bucket_name)
@@ -189,7 +202,7 @@ async def get_presigned_url_from_document_url(s3_client, document_url: str, expi
 
 
 async def list_objects(
-    s3_client,
+    s3_client: "S3Client",
     bucket: str,
     prefix: str | None = None,
     include_version=True,
@@ -201,24 +214,74 @@ async def list_objects(
         kwargs = {"Bucket": bucket}
         if prefix:
             kwargs["Prefix"] = prefix
-        if start_after:
-            kwargs["StartAfter"] = start_after
+        if not recursive:
+            kwargs["Delimiter"] = "/"
 
-        response = await s3_client.list_objects_v2(**kwargs)
         objects = []
 
-        for obj in response.get("Contents", []):
-            objects.append(
-                ObjectMetadata(
-                    bucket_name=bucket,
-                    object_name=obj["Key"],
-                    etag=obj["ETag"].strip('"'),
-                    size=obj["Size"],
-                    last_modified=obj["LastModified"],
-                    content_type="application/octet-stream",  # Default, would need head_object for actual
-                    metadata={},
+        if include_version:
+            # Use list_object_versions to get all versions of objects
+            version_kwargs = {"Bucket": bucket}
+            if prefix:
+                version_kwargs["Prefix"] = prefix
+            if start_after:
+                version_kwargs["KeyMarker"] = start_after
+            if not recursive:
+                version_kwargs["Delimiter"] = "/"
+
+            response = await s3_client.list_object_versions(**version_kwargs)
+
+            # Process versions
+            for version in response.get("Versions", []):
+                objects.append(
+                    ObjectMetadata(
+                        bucket_name=bucket,
+                        object_name=version.get("Key") or "",
+                        etag=version.get("ETag", "").strip('"'),
+                        size=version.get("Size"),
+                        last_modified=version.get("LastModified"),
+                        content_type="application/octet-stream",  # Default, would need head_object for actual
+                        version_id=version.get("VersionId"),
+                        is_latest=version.get("IsLatest", False),
+                        metadata={},
+                    )
                 )
-            )
+
+            # Process delete markers if needed
+            for delete_marker in response.get("DeleteMarkers", []):
+                objects.append(
+                    ObjectMetadata(
+                        bucket_name=bucket,
+                        object_name=delete_marker.get("Key") or "",
+                        etag="",  # Delete markers don't have ETags
+                        size=0,
+                        last_modified=delete_marker.get("LastModified"),
+                        content_type="application/octet-stream",
+                        version_id=delete_marker.get("VersionId"),
+                        is_latest=delete_marker.get("IsLatest", False),
+                        metadata={},
+                    )
+                )
+        else:
+            # Use list_objects_v2 for current versions only
+            if start_after:
+                kwargs["StartAfter"] = start_after
+
+            response = await s3_client.list_objects_v2(**kwargs)
+
+            for obj in response.get("Contents", []):
+                objects.append(
+                    ObjectMetadata(
+                        bucket_name=bucket,
+                        object_name=obj.get("Key") or "",
+                        etag=obj.get("ETag", "").strip('"'),
+                        size=obj.get("Size"),
+                        last_modified=obj.get("LastModified"),
+                        content_type="application/octet-stream",  # Default, would need head_object for actual
+                        is_latest=True,  # All objects from list_objects_v2 are latest versions
+                        metadata={},
+                    )
+                )
 
         return ListObjectsResponse(objects=objects)
     except ClientError as e:
@@ -227,7 +290,7 @@ async def list_objects(
 
 
 async def get_object(
-    s3_client,
+    s3_client: "S3Client",
     bucket: str,
     object: str,
     version_id: str | None = None,
@@ -236,10 +299,16 @@ async def get_object(
     """Get object from S3 and return as FileObjectResponse."""
     try:
         # Get object metadata first
-        head_response = await s3_client.head_object(Bucket=bucket, Key=object)
+        head_kwargs = {"Bucket": bucket, "Key": object}
+        if version_id:
+            head_kwargs["VersionId"] = version_id
+        head_response = await s3_client.head_object(**head_kwargs)
 
         # Get the actual object
-        get_response = await s3_client.get_object(Bucket=bucket, Key=object)
+        get_kwargs = {"Bucket": bucket, "Key": object}
+        if version_id:
+            get_kwargs["VersionId"] = version_id
+        get_response = await s3_client.get_object(**get_kwargs)
 
         metadata = ObjectMetadata(
             bucket_name=bucket,
@@ -248,6 +317,7 @@ async def get_object(
             size=head_response["ContentLength"],
             last_modified=head_response["LastModified"],
             content_type=head_response.get("ContentType", "application/octet-stream"),
+            version_id=head_response.get("VersionId") or version_id,
             metadata=head_response.get("Metadata", {}),
         )
 
@@ -271,7 +341,7 @@ async def get_object(
 
 
 async def put_object(
-    s3_client,
+    s3_client: "S3Client",
     bucket: str,
     object: str,
     data: BinaryIO | bytes | str,
@@ -313,7 +383,7 @@ async def put_object(
 async def delete_object(s3_client, bucket: str, object: str, version_id: str | None = None):
     """Delete object from S3."""
     try:
-        await delete_object_from_s3(s3_client, bucket, object)
+        await delete_object_from_s3(s3_client, bucket, object, version_id=version_id)
     except ClientError as e:
         _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
         raise HTTPException(status_code=500, detail=f"Error deleting file: {e!s}")
@@ -323,7 +393,7 @@ async def delete_object(s3_client, bucket: str, object: str, version_id: str | N
 
 
 async def create_bucket(
-    s3_client,
+    s3_client: "S3Client",
     workspace_name: str,
     excluded_prefixes: list[str] = EXCLUDED_VERSIONING_PREFIXES,
 ):
@@ -346,7 +416,7 @@ async def create_bucket(
 
 
 async def put_document_file(
-    s3_client,
+    s3_client: "S3Client",
     workspace_name: str,
     document_id: UUID,
     file_data: bytes,

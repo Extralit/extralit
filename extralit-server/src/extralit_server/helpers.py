@@ -17,16 +17,20 @@ Common helper functions
 """
 
 import logging
+from typing import TYPE_CHECKING
 
 import aioboto3
 
 from extralit_server.settings import settings
 
+if TYPE_CHECKING:
+    from types_aiobotocore_s3.client import S3Client
+
 _LOGGER = logging.getLogger("extralit_server")
 shared_resources = {}
 
 
-async def create_s3_client():
+async def create_s3_client() -> "S3Client":
     """Initialize S3 client with settings configuration."""
     if not all([settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]):
         raise ValueError("S3 configuration required: s3_endpoint, s3_access_key, s3_secret_key")
