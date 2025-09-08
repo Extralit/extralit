@@ -46,9 +46,9 @@ class DocumentsAPI(ResourceAPI):
                 files = {
                     "file_data": (file_name, file_data, "application/pdf"),
                 }
-                response = self.http_client.post(url=url, params=document_payload, files=files)
+                response = self.http_client.post(url=url, data=document_payload, files=files)
         else:
-            response = self.http_client.post(url=url, params=document_payload)
+            response = self.http_client.post(url=url, json=document_payload)
 
         response.raise_for_status()
         document_id = UUID(response.json())
