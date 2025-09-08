@@ -401,8 +401,13 @@ async def create_bucket(
     try:
         await create_bucket_in_s3(s3_client, workspace_name)
 
-        # Note: Versioning configuration would need separate implementation
-        # depending on S3 provider support
+        await s3_client.put_bucket_versioning(
+            Bucket=workspace_name,
+            VersioningConfiguration={
+                "Status": "Enabled",
+                "MFADelete": "Disabled",
+            },
+        )
 
     except ClientError as e:
         if e.response["Error"]["Code"] in ["BucketAlreadyOwnedByYou", "BucketAlreadyExists"]:
