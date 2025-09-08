@@ -63,18 +63,7 @@ async def get_file_chunk(
             yield await stream.read()
 
 
-async def get_object_with_range(s3_client: "S3Client", bucket: str, key: str, start: int, end: int):
-    """Get S3 object with byte range support for streaming."""
-    response = await s3_client.get_object(Bucket=bucket, Key=key, Range=f"bytes={start}-{end}")
-    return response
-
-
-async def get_object_metadata(s3_client: "S3Client", bucket: str, key: str):
-    """Get S3 object metadata using head_object."""
-    return await s3_client.head_object(Bucket=bucket, Key=key)
-
-
-async def put_object_to_s3(
+async def _put_object_to_s3(
     s3_client: "S3Client",
     bucket: str,
     key: str,
@@ -93,33 +82,6 @@ async def put_object_to_s3(
         kwargs["Metadata"] = metadata
 
     return await s3_client.put_object(**kwargs)
-
-
-async def delete_object_from_s3(s3_client: "S3Client", bucket: str, key: str, version_id: str | None = None):
-    """Delete object from S3."""
-    kwargs = {"Bucket": bucket, "Key": key}
-    if version_id:
-        kwargs["VersionId"] = version_id
-    return await s3_client.delete_object(**kwargs)
-
-
-async def list_objects_from_s3(s3_client: "S3Client", bucket: str, prefix: str | None = None):
-    """List objects in S3 bucket."""
-    kwargs = {"Bucket": bucket}
-    if prefix:
-        kwargs["Prefix"] = prefix
-    return await s3_client.list_objects_v2(**kwargs)
-
-
-async def create_bucket_in_s3(s3_client: "S3Client", bucket_name: str):
-    """Create S3 bucket."""
-    try:
-        return await s3_client.create_bucket(Bucket=bucket_name)
-    except ClientError as e:
-        if e.response["Error"]["Code"] in ["BucketAlreadyOwnedByYou", "BucketAlreadyExists"]:
-            pass  # Bucket already exists, that's fine
-        else:
-            raise
 
 
 def compute_hash(data: bytes) -> str:
@@ -357,7 +319,7 @@ async def put_object(
             data = data.read()
 
         # Upload to S3
-        await put_object_to_s3(s3_client, bucket, object, data, content_type, metadata)
+        await _put_object_to_s3(s3_client, bucket, object, data, content_type, metadata)
 
         # Get metadata for response
         head_response = await s3_client.head_object(Bucket=bucket, Key=object)
@@ -383,7 +345,10 @@ async def put_object(
 async def delete_object(s3_client, bucket: str, object: str, version_id: str | None = None):
     """Delete object from S3."""
     try:
-        await delete_object_from_s3(s3_client, bucket, object, version_id=version_id)
+        kwargs = {"Bucket": bucket, "Key": object}
+        if version_id:
+            kwargs["VersionId"] = version_id
+        await s3_client.delete_object(**kwargs)
     except ClientError as e:
         _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
         raise HTTPException(status_code=500, detail=f"Error deleting file: {e!s}")
@@ -399,7 +364,7 @@ async def create_bucket(
 ):
     """Create S3 bucket."""
     try:
-        await create_bucket_in_s3(s3_client, workspace_name)
+        await s3_client.create_bucket(Bucket=workspace_name)
 
         await s3_client.put_bucket_versioning(
             Bucket=workspace_name,
@@ -462,7 +427,7 @@ async def put_document_file(
                 should_upload = False
 
         if should_upload:
-            await put_object_to_s3(
+            await _put_object_to_s3(
                 s3_client,
                 workspace_name,
                 object_path,
