@@ -29,7 +29,7 @@ jobs:
   build:
     if: github.event.pull_request.draft == false
     services:
-      extralit-server:
+      extralit-container:
         image: extralitdev/extralit-hf-space:develop
         ports:
           - 6900:6900
@@ -39,7 +39,6 @@ jobs:
           USERNAME: extralit
           PASSWORD: 12345678
           API_KEY: extralit.apikey
-          # Configure storage to use local files instead of MinIO
           EXTRALIT_S3_ENDPOINT: ""
           EXTRALIT_S3_ACCESS_KEY: ""
           EXTRALIT_S3_SECRET_KEY: ""
@@ -78,9 +77,17 @@ jobs:
 
           pdm install
           uv cache prune --ci
-      - name: Wait for extralit-server to start
+      - name: Wait for extralit-container to start
         run: |
+          echo "Waiting for services to start..."
+          # Start streaming logs in background
+          docker logs -f extralit-container &
+          LOGS_PID=$!
+          # Wait for the service to be ready
           while ! curl -s -o /dev/null -XGET http://localhost:6900/api/v1/status; do sleep 10; done
+          echo "✅ Services are ready!"
+          # Stop log streaming
+          kill $LOGS_PID || true
 
           # Create a directory for local storage that the container can access
           mkdir -p /tmp/extralit-files
