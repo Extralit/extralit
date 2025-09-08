@@ -7,6 +7,8 @@ x-common-variables: &common-variables
 services:
   extralit:
     image: extralitdev/extralit-server:latest
+    profiles:
+      - no-auto-start
     restart: unless-stopped
     ports:
       - "6900:6900"
@@ -20,7 +22,6 @@ services:
       # REINDEX_DATASETS: 1
       # Opt-out for telemetry https://huggingface.co/docs/huggingface_hub/main/en/package_reference/utilities#huggingface_hub.utils.send_telemetry
       # HF_HUB_DISABLE_TELEMETRY: 1
-      # Opt-out for telemetry https://huggingface.co/docs/huggingface_hub/main/en/package_reference/utilities#huggingface_hub.utils.send_telemetry
       # HF_HUB_OFFLINE: 1
     networks:
       - extralit
@@ -35,6 +36,8 @@ services:
 
   worker:
     image: extralitdev/extralit-server:latest
+    profiles:
+      - no-auto-start
     environment:
       <<: *common-variables
       BACKGROUND_NUM_WORKERS: 2

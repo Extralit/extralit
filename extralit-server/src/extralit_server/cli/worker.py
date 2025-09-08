@@ -13,6 +13,8 @@
 # limitations under the License.
 
 
+import platform
+
 import typer
 
 from extralit_server.jobs.queues import DEFAULT_QUEUE, HIGH_QUEUE, OCR_QUEUE
@@ -26,12 +28,18 @@ def worker(
     ),
     num_workers: int = typer.Option(DEFAULT_NUM_WORKERS, help="Number of workers to start"),
 ) -> None:
-    from rq.worker_pool import WorkerPool
-
     # Preload heavy modules before forking worker processes
     from extralit_server.jobs import preload  # noqa: F401
     from extralit_server.jobs.queues import REDIS_CONNECTION
 
-    worker_pool = WorkerPool(connection=REDIS_CONNECTION, queues=queues, num_workers=num_workers, reload=True)
+    # Use SimpleWorker on Windows due to multiprocessing limitations
+    if platform.system() == "Windows":
+        from rq import Worker as SimpleWorker
 
-    worker_pool.start()
+        worker = SimpleWorker(connection=REDIS_CONNECTION, queues=queues)
+        worker.work()
+    else:
+        from rq.worker_pool import WorkerPool
+
+        worker_pool = WorkerPool(connection=REDIS_CONNECTION, queues=queues, num_workers=num_workers, reload=True)
+        worker_pool.start()

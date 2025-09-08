@@ -212,7 +212,7 @@ reindex = { cmd = "python -m extralit_server search-engine reindex" }
 server-dev.composite = [
     "migrate",
     "cli database users create_default",
-    "server-and-worker",
+    "server",
 ]
 server-and-worker = { shell = "pdm run server & pdm run worker & wait" }
 test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test" }
