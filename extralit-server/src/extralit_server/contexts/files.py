@@ -351,6 +351,7 @@ async def put_document_file(
     document_id: UUID,
     file_data: bytes,
     filename: str,
+    content_type: str = "application/pdf",
     metadata: dict[str, Any] | None = None,
 ) -> str | None:
     """
@@ -391,7 +392,7 @@ async def put_document_file(
                 workspace_name,
                 object_path,
                 file_data,
-                "application/pdf",
+                content_type,
                 metadata,
             )
 

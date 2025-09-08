@@ -69,6 +69,21 @@ async def add_document(
     if not document_new.id:
         document_new.id = uuid4()
 
+    existing_documents = await imports.query_documents(
+        db=db,
+        workspace_id=document_new.workspace_id,
+        document_id=document_new.id,
+        reference=document_new.reference,
+        file_name=document_new.file_name,
+        url=document_new.url,
+        limit=1,
+    )
+    if existing_documents:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Document already exists in workspace with: {existing_documents[0].model_dump(include=['id', 'reference', 'file_name', 'url', 'pmid', 'doi'], exclude_none=True)}",
+        )
+
     if file_data is not None:
         if file_data.filename and not document_new.file_name:
             document_new.file_name = file_data.filename
@@ -79,21 +94,11 @@ async def add_document(
             document_id=document_new.id,  # type: ignore[arg-type]
             file_data=await file_data.read(),
             filename=file_data.filename or "",
+            content_type=file_data.content_type or "application/octet-stream",
         )
 
         if file_url:
             document_new.url = file_url
-
-    existing_documents = await imports.find_existing_documents(
-        db=db,
-        workspace_id=document_new.workspace_id,
-        document_id=document_new.id,
-        file_name=document_new.file_name,
-        url=document_new.url,
-        limit=1,
-    )
-    if existing_documents:
-        return existing_documents[0].id
 
     new_document = DocumentCreate(
         id=document_new.id,
@@ -144,7 +149,7 @@ async def get_document(
             detail="At least one of id, pmid, doi, or reference must be provided",
         )
 
-    documents = await imports.find_existing_documents(
+    documents = await imports.query_documents(
         db=db,
         workspace_id=workspace_id,
         document_id=id,

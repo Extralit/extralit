@@ -86,17 +86,19 @@ async def delete_documents(
 
 
 async def list_documents(db: "AsyncSession", workspace_id: UUID) -> list[DocumentListItem]:
-    result = await db.execute(select(Document).filter_by(workspace_id=workspace_id))
+    result = await db.execute(
+        select(Document).filter_by(workspace_id=workspace_id).order_by(Document.updated_at.desc())
+    )
     documents = [DocumentListItem.model_validate(doc) for doc in result.scalars().all()]
 
     return documents
 
 
-async def find_existing_documents(
+async def query_documents(
     db: AsyncSession,
     workspace_id: UUID,
+    reference: str,
     document_id: UUID | None = None,
-    reference: str | None = None,
     file_name: str | None = None,
     pmid: str | None = None,
     doi: str | None = None,
@@ -104,7 +106,7 @@ async def find_existing_documents(
     limit: int | None = None,
 ) -> list[DocumentListItem]:
     """
-    Find existing documents that matches any of provided criteria.
+    Find existing documents that matches any of id, pmid, doi, url, file_name within the same `workspace` and `reference`.
 
     Args:
         db: Database session
@@ -125,8 +127,6 @@ async def find_existing_documents(
         conditions.append(Document.id == document_id)
     if url:
         conditions.append(Document.url == url)
-    if reference:
-        conditions.append(Document.reference == reference)
     if pmid:
         conditions.append(Document.pmid == pmid)
     if doi:
@@ -137,11 +137,11 @@ async def find_existing_documents(
     if not conditions:
         return []
 
-    # Find documents matching any of the conditions within the workspace
-    query = select(Document).where(and_(Document.workspace_id == workspace_id, or_(*conditions)))
+    query = select(Document).where(
+        and_(Document.workspace_id == workspace_id, Document.reference == reference, or_(*conditions))
+    )
 
     if conditions:
-        # Create a CASE statement for ordering based on ordinal position
         order_case = case(*[(condition, i) for i, condition in enumerate(conditions)], else_=len(conditions))
         query = query.order_by(order_case)
 
@@ -171,7 +171,7 @@ async def analyze_import_status(db: AsyncSession, analysis_request: ImportAnalys
 
     for reference, file_metadata in analysis_request.documents.items():
         try:
-            existing_documents_list = await find_existing_documents(
+            existing_documents_list = await query_documents(
                 db=db,
                 workspace_id=file_metadata.document_create.workspace_id,
                 document_id=file_metadata.document_create.id,
@@ -410,21 +410,9 @@ async def process_bulk_upload(
 
                 for filename in doc.associated_files:
                     try:
-                        file = file_mapping[filename]
+                        file: UploadFile = file_mapping[filename]
 
-                        if not file.filename or not file.filename.lower().endswith(".pdf"):
-                            failed_validations.append(f"{filename}: Not a PDF file")
-                            reference_failed = True
-                            continue
-
-                        # Read file content
-                        file_content = await file.read()
-
-                        # Reset file position for potential future reads
-                        await file.seek(0)
-
-                        # Create document record first
-                        file_document_create = DocumentCreate(
+                        document_new = DocumentCreate(
                             id=uuid4(),
                             reference=doc.document_create.reference,
                             pmid=doc.document_create.pmid,
@@ -436,11 +424,11 @@ async def process_bulk_upload(
                         )
 
                         # Check for existing documents
-                        existing_documents = await find_existing_documents(
+                        existing_documents = await query_documents(
                             db=db,
-                            workspace_id=file_document_create.workspace_id,
-                            document_id=file_document_create.id,
-                            file_name=file_document_create.file_name,
+                            workspace_id=document_new.workspace_id,
+                            document_id=document_new.id,
+                            file_name=document_new.file_name,
                             limit=1,
                         )
 
@@ -453,16 +441,17 @@ async def process_bulk_upload(
                         file_url = await file_context.put_document_file(
                             s3_client=s3_client,
                             workspace_name=workspace.name,
-                            document_id=file_document_create.id,  # type: ignore[arg-type]
-                            file_data=file_content,
+                            document_id=document_new.id,  # type: ignore[arg-type]
+                            file_data=await file.read(),
                             filename=filename,
+                            content_type=file.content_type or "application/octet-stream",
                         )
 
                         if file_url:
-                            file_document_create.url = file_url
+                            document_new.url = file_url
 
                             # Create document in database
-                            document = await create_document(db, file_document_create)
+                            document = await create_document(db, document_new)
                             uploaded_documents.append(document)
 
                             _LOGGER.info(f"Uploaded file {filename} to S3 and created document {document.id}")

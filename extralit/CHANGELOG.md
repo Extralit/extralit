@@ -17,6 +17,7 @@ These are the section headers that we use:
 ## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.6.1...v0.6.2)
 ### Added
 - Added `wait` parameter to the `extralit workflows start` CLI to waiting for the workflow to complete and return the final status.
+- Added dynamic mimetypes support for document uploads based on file extension or UploadFile types.
 
 ### Fixed
 - Fixed single document uploads via CLI (`extralit documents add`) to start PDF workflow.

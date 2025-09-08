@@ -86,11 +86,23 @@ export const useDocumentsListViewModel = (props: { workspaceId: string }) => {
     });
 
     return Array.from(groups.values()).sort((a, b) => {
-      // Sort by reference, with 'no-reference' at the end
-      if (!a.reference && b.reference) return 1;
-      if (a.reference && !b.reference) return -1;
-      if (!a.reference && !b.reference) return 0;
-      return a.reference.localeCompare(b.reference);
+      // Get the latest updated_at timestamp for each group
+      const getLatestUpdatedAt = (group: DocumentGroup): Date => {
+        const validTimestamps = group.documents
+          .map(doc => doc.updated_at)
+          .filter(timestamp => timestamp)
+          .map(timestamp => new Date(timestamp));
+
+        return validTimestamps.length > 0
+          ? new Date(Math.max(...validTimestamps.map(date => date.getTime())))
+          : new Date(0); // Fallback for groups with no valid timestamps
+      };
+
+      const latestA = getLatestUpdatedAt(a);
+      const latestB = getLatestUpdatedAt(b);
+
+      // Sort by latest updated_at in descending order (most recent first)
+      return latestB.getTime() - latestA.getTime();
     });
   };
 

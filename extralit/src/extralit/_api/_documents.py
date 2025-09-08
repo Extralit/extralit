@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import mimetypes
 import os
 from typing import TYPE_CHECKING
 from uuid import UUID
@@ -39,17 +40,21 @@ class DocumentsAPI(ResourceAPI):
         """
 
         url = "/api/v1/documents"
+        document_data = {"document_create": json.dumps(model.model_dump(exclude_none=True))}
+        assert model.workspace_id is not None, "Workspace ID is required"
 
         if model.file_path:
             file_name = os.path.basename(model.file_path)
             with open(model.file_path, "rb") as file_data:
+                mime_type, _ = mimetypes.guess_type(file_name)
+                if mime_type is None:
+                    mime_type = "application/octet-stream"
+
                 files = {
-                    "file_data": (file_name, file_data, "application/pdf"),
+                    "file_data": (file_name, file_data, mime_type),
                 }
-                document_data = {"document_create": json.dumps(model.model_dump(exclude_none=True))}
                 response = self.http_client.post(url=url, data=document_data, files=files)
         else:
-            document_data = {"document_create": json.dumps(model.model_dump(exclude_none=True))}
             response = self.http_client.post(url=url, data=document_data, files={})
 
         response.raise_for_status()

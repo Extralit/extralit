@@ -20,6 +20,12 @@ These are the section headers that we use:
 - Refactor document analysis and preprocessing job to support asynchronous s3 IO operations and large file processing.
 - Added `wait` parameter to the POST /workflows/start endpoint to waiting for the workflow to complete and return the final status.
 - Migrated minio_client to aioboto3 for async file handling
+- Added dynamic mimetypes support for document uploads based on file extension or UploadFile types.
+
+### Changed
+- Deduplicating document is based on any matching of id, pmid, doi, url, file_name within the same `workspace` and `reference`.
+- Adding document with existing document found matching above criteria will return error.
+- Listing documents now returns documents ordered by updated_at descending.
 
 ## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 

@@ -29,8 +29,8 @@ class DocumentCreate(BaseModel):
         description="A URL to the PDF document if it is public available online. If the `file_data` is uploaded, this field should be left empty.",
         repr=False,
     )
+    reference: str = Field(..., description="Extraction reference for the document")
     file_name: str | None = Field(None, description="The name of the file.")
-    reference: str | None = Field(None, description="Extraction reference for the document")
     pmid: str | None = Field(None, description="The PubMed ID of the document.")
     doi: str | None = Field(None, description="The DOI of the document.")
     metadata: dict | None = Field(None, description="Additional metadata for the document")

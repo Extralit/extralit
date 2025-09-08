@@ -33,6 +33,7 @@ The CLI workflow:
 """
 
 import json
+import mimetypes
 from pathlib import Path
 from typing import Optional
 
@@ -343,7 +344,12 @@ def _execute_document_bulk_import(
                 file_path = file_map.get(file_name)
                 if file_path:
                     valid_file_names.append(file_path.name)
-                    files_to_upload.append(("files", (file_path.name, open(file_path, "rb"), "application/pdf")))
+                    # Determine content type based on file extension (default to application/pdf)
+                    if file_path.suffix.lower() == ".pdf":
+                        content_type = "application/pdf"
+                    else:
+                        content_type = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
+                    files_to_upload.append(("files", (file_path.name, open(file_path, "rb"), content_type)))
 
             # Create one BulkDocumentInfo entry per reference with multiple files
             if valid_file_names:

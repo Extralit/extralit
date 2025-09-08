@@ -16,7 +16,10 @@ import os
 import tempfile
 import uuid
 
+import pytest
+
 from extralit import Workspace
+from extralit._exceptions._api import ConflictError
 from extralit.client.resources import Documents
 
 
@@ -259,7 +262,7 @@ class TestWorkspaceDocuments:
         assert any(doc.url == test_url for doc in documents_from_list)
 
     def test_documents_multiple_with_same_reference(self, workspace: Workspace):
-        """Test that multiple documents with the same reference are all returned."""
+        """Test that multiple documents with the same reference can be added if they have different identifying fields."""
         shared_reference = f"shared-ref-{uuid.uuid4().hex[:8]}"
         test_url1 = f"https://example.com/test1_{uuid.uuid4()}"
         test_url2 = f"https://example.com/test2_{uuid.uuid4()}"
@@ -281,3 +284,98 @@ class TestWorkspaceDocuments:
 
         for doc in documents:
             assert doc.reference == shared_reference
+
+    def test_add_duplicate_document_by_url_raises_conflict(self, workspace: Workspace):
+        """Test that adding a document with the same URL and reference raises ConflictError."""
+        test_url = f"https://example.com/duplicate_{uuid.uuid4()}"
+        test_reference = f"test-ref-duplicate-{uuid.uuid4().hex[:8]}"
+
+        # Add first document successfully
+        document_id1 = workspace.add_document(url=test_url, reference=test_reference)
+        assert document_id1 is not None
+
+        # Try to add duplicate - should raise ConflictError
+        with pytest.raises(ConflictError) as exc_info:
+            workspace.add_document(url=test_url, reference=test_reference)
+
+        assert hasattr(exc_info.value, "status_code") and exc_info.value.status_code == 409
+        assert "already exists" in str(exc_info.value)
+
+    def test_add_duplicate_document_by_pmid_raises_conflict(self, workspace: Workspace):
+        """Test that adding a document with the same PMID and reference raises ConflictError."""
+        test_pmid = f"PMC{uuid.uuid4().hex[:8]}"
+        test_reference = f"test-ref-pmid-duplicate-{uuid.uuid4().hex[:8]}"
+        test_url1 = f"https://example.com/pmid1_{uuid.uuid4()}.pdf"
+        test_url2 = f"https://example.com/pmid2_{uuid.uuid4()}.pdf"
+
+        # Add first document with PMID
+        document_id1 = workspace.add_document(url=test_url1, pmid=test_pmid, reference=test_reference)
+        assert document_id1 is not None
+
+        # Try to add another document with same PMID and reference - should raise ConflictError
+        with pytest.raises(ConflictError) as exc_info:
+            workspace.add_document(url=test_url2, pmid=test_pmid, reference=test_reference)
+
+        assert hasattr(exc_info.value, "status_code") and exc_info.value.status_code == 409
+        assert "already exists" in str(exc_info.value)
+
+    def test_add_duplicate_document_by_doi_raises_conflict(self, workspace: Workspace):
+        """Test that adding a document with the same DOI and reference raises ConflictError."""
+        test_doi = f"10.1234/duplicate.{uuid.uuid4().hex[:8]}"
+        test_reference = f"test-ref-doi-duplicate-{uuid.uuid4().hex[:8]}"
+        test_url1 = f"https://example.com/doi1_{uuid.uuid4()}.pdf"
+        test_url2 = f"https://example.com/doi2_{uuid.uuid4()}.pdf"
+
+        # Add first document with DOI
+        document_id1 = workspace.add_document(url=test_url1, doi=test_doi, reference=test_reference)
+        assert document_id1 is not None
+
+        # Try to add another document with same DOI and reference - should raise ConflictError
+        with pytest.raises(ConflictError) as exc_info:
+            workspace.add_document(url=test_url2, doi=test_doi, reference=test_reference)
+
+        assert hasattr(exc_info.value, "status_code") and exc_info.value.status_code == 409
+        assert "already exists" in str(exc_info.value)
+
+    def test_add_duplicate_document_by_file_name_raises_conflict(self, workspace: Workspace):
+        """Test that adding documents with URLs that derive to the same file_name and reference raises ConflictError."""
+        test_filename = f"duplicate_file_{uuid.uuid4().hex[:8]}.pdf"
+        test_reference = f"test-ref-filename-duplicate-{uuid.uuid4().hex[:8]}"
+        # Use the same filename in URLs so they derive to the same file_name
+        test_url1 = f"https://example.com/path1/{test_filename}"
+        test_url2 = f"https://example.com/path2/{test_filename}"
+
+        # Add first document
+        document_id1 = workspace.add_document(url=test_url1, reference=test_reference)
+        assert document_id1 is not None
+
+        # Try to add another document with same derived filename and reference - should raise ConflictError
+        with pytest.raises(ConflictError) as exc_info:
+            workspace.add_document(url=test_url2, reference=test_reference)
+
+        assert hasattr(exc_info.value, "status_code") and exc_info.value.status_code == 409
+        assert "already exists" in str(exc_info.value)
+
+    def test_add_same_document_different_reference_succeeds(self, workspace: Workspace):
+        """Test that adding a document with the same URL but different reference succeeds."""
+        test_url = f"https://example.com/same_url_{uuid.uuid4()}.pdf"
+        test_reference1 = f"test-ref1-{uuid.uuid4().hex[:8]}"
+        test_reference2 = f"test-ref2-{uuid.uuid4().hex[:8]}"
+
+        # Add first document
+        document_id1 = workspace.add_document(url=test_url, reference=test_reference1)
+        assert document_id1 is not None
+
+        # Add same URL with different reference - should succeed
+        document_id2 = workspace.add_document(url=test_url, reference=test_reference2)
+        assert document_id2 is not None
+        assert document_id1 != document_id2
+
+        # Verify both documents exist
+        documents1 = workspace.documents(reference=test_reference1)
+        documents2 = workspace.documents(reference=test_reference2)
+
+        assert len(documents1) >= 1
+        assert len(documents2) >= 1
+        assert documents1[0].reference == test_reference1
+        assert documents2[0].reference == test_reference2
