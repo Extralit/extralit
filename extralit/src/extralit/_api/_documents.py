@@ -46,11 +46,8 @@ class DocumentsAPI(ResourceAPI):
                 files = {
                     "file_data": (file_name, file_data, "application/pdf"),
                 }
-                # Send document data as form fields (data) instead of URL params 
-                # to match server endpoint expectations
                 response = self.http_client.post(url=url, data=document_payload, files=files)
         else:
-            # For non-file uploads, send as JSON data
             response = self.http_client.post(url=url, json=document_payload)
 
         response.raise_for_status()
