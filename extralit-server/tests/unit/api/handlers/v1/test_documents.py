@@ -256,11 +256,12 @@ async def test_delete_documents_by_id(async_client: AsyncClient, db: AsyncSessio
 @pytest.mark.asyncio
 async def test_list_documents(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
     workspace = await WorkspaceFactory.create()
-    document_a = await DocumentFactory.create(workspace=workspace)
-    await DocumentFactory.create(workspace=workspace)
+    await DocumentFactory.create(workspace=workspace, id=uuid4())
+    doc_id = "123e4567-e89b-12d3-a456-426614174000"
+    await DocumentFactory.create(workspace=workspace, id=doc_id)
 
     response = await async_client.get(f"/api/v1/documents/workspace/{workspace.id}", headers=owner_auth_header)
 
     assert response.status_code == 200
     assert len(response.json()) == 2
-    assert response.json()[0]["id"] == str(document_a.id)
+    assert response.json()[0]["id"] == str(doc_id)
