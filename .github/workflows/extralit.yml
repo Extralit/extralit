@@ -70,18 +70,13 @@ jobs:
           pdm config use_uv true
           pdm config python.install_root "$(uv python dir)"
 
-          # Special handling for Python 3.13
-          if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
-            uv pip install --only-binary=:all: spacy thinc pyarrow
-          fi
-
           pdm install
           uv cache prune --ci
       - name: Wait for extralit-container to start
         run: |
           echo "Waiting for services to start..."
           # Start streaming logs in background
-          docker logs -f extralit-container &
+          docker logs -f ${{ job.services.extralit-container.id }} &
           LOGS_PID=$!
           # Wait for the service to be ready
           while ! curl -s -o /dev/null -XGET http://localhost:6900/api/v1/status; do sleep 10; done
