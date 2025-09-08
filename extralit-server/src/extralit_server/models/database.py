@@ -642,7 +642,7 @@ class Document(DatabaseModel):
     __tablename__ = "documents"
 
     url: Mapped[str] = mapped_column(String, nullable=True)
-    file_name: Mapped[str] = mapped_column(String, nullable=False)
+    file_name: Mapped[str] = mapped_column(String, nullable=True)
     reference: Mapped[str] = mapped_column(String, index=True, nullable=True)
     pmid: Mapped[str] = mapped_column(String, index=True, nullable=True)
     doi: Mapped[str] = mapped_column(String, index=True, nullable=True)

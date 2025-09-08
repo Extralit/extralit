@@ -35,7 +35,7 @@ def upgrade() -> None:
         sa.Column("reference", sa.String(), nullable=True),
         sa.Column("pmid", sa.String(), nullable=True),
         sa.Column("doi", sa.String(), nullable=True),
-        sa.Column("file_name", sa.String(), nullable=False),
+        sa.Column("file_name", sa.String(), nullable=True),
         sa.Column("url", sa.String(), nullable=True),
         sa.Column("id", sa.Uuid(), nullable=False),
         sa.Column(

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""create import_history table
+"""create imports table
 
 Revision ID: 7d6b33203390
 Revises: 580a6553186f
