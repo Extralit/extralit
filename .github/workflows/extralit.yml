@@ -39,9 +39,9 @@ jobs:
           USERNAME: extralit
           PASSWORD: 12345678
           API_KEY: extralit.apikey
-          EXTRALIT_S3_ENDPOINT: ""
-          EXTRALIT_S3_ACCESS_KEY: ""
-          EXTRALIT_S3_SECRET_KEY: ""
+          EXTRALIT_S3_ENDPOINT: "http://localhost:9000"
+          EXTRALIT_S3_ACCESS_KEY: "minioadmin"
+          EXTRALIT_S3_SECRET_KEY: "minioadmin"
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -73,6 +73,7 @@ jobs:
           pdm install
           uv cache prune --ci
       - name: Wait for extralit-container to start
+        timeout-minutes: 2
         run: |
           echo "Waiting for services to start..."
           # Start streaming logs in background
