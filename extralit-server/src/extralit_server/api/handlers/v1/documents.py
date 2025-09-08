@@ -81,7 +81,7 @@ async def add_document(
     if existing_documents:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Document already exists in workspace with: {existing_documents[0].model_dump(include=['id', 'reference', 'file_name', 'url', 'pmid', 'doi'], exclude_none=True)}",
+            detail=f"Document already exists in workspace with: {existing_documents[0].model_dump(include=['id', 'reference', 'file_name', 'url', 'pmid', 'doi'], exclude_none=True)!s}",
         )
 
     if file_data is not None:
