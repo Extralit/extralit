@@ -400,7 +400,7 @@ async def put_document_file(
         return None
 
     except Exception as e:
-        _LOGGER.error(f"Error uploading document file {document_id}: {e}")
+        _LOGGER.error(f"Error uploading document file {document_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error uploading document: {e!s}")
 
 

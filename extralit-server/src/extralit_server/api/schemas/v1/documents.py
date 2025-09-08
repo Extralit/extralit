@@ -59,7 +59,7 @@ class DocumentListItem(BaseModel):
     workspace_id: UUID
     url: str
     file_name: str | None
-    reference: str | None
+    reference: str
     pmid: str | None
     doi: str | None
     metadata: dict | None = Field(None, alias="metadata_", serialization_alias="metadata")

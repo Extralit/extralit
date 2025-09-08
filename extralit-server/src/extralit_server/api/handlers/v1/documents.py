@@ -29,6 +29,7 @@ from extralit_server.database import get_async_db
 from extralit_server.models import User, Workspace
 from extralit_server.models.database import Document
 from extralit_server.security import auth
+from extralit_server.workflows.documents import create_document_workflow
 
 if TYPE_CHECKING:
     from extralit_server.models import Document
@@ -41,67 +42,82 @@ router = APIRouter(tags=["documents"])
 @router.post("/documents", status_code=status.HTTP_201_CREATED, response_model=UUID)
 async def add_document(
     *,
-    document_create: Annotated[DocumentCreate, Depends()],
-    file_data: UploadFile | None = File(None),
+    document_create: Annotated[str, Form()],
+    file_data: Annotated[UploadFile, File()],
     db: AsyncSession = Depends(get_async_db),
     s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.create())
+    try:
+        document_dict = json.loads(document_create)
+        document_new: DocumentCreate = DocumentCreate.model_validate(document_dict)  # pyright: ignore[reportAssignmentType]
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid JSON in document_create",
+        )
 
-    workspace = await Workspace.get(db, document_create.workspace_id)
+    workspace = await Workspace.get(db, document_new.workspace_id)
     if not workspace:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Workspace with id `{document_create.workspace_id}` not found",
+            detail=f"Workspace with id `{document_new.workspace_id}` not found",
         )
 
-    if not document_create.id:
-        document_create.id = uuid4()
+    if not document_new.id:
+        document_new.id = uuid4()
 
     if file_data is not None:
-        file_data_bytes = await file_data.read()
+        if file_data.filename and not document_new.file_name:
+            document_new.file_name = file_data.filename
 
-        # Set filename if not provided
-        if file_data.filename and not document_create.file_name:
-            document_create.file_name = file_data.filename
-
-        # Upload file using the reusable function
         file_url = await files.put_document_file(
             s3_client=s3_client,
             workspace_name=workspace.name,
-            document_id=document_create.id,  # type: ignore[arg-type]
-            file_data=file_data_bytes,
+            document_id=document_new.id,  # type: ignore[arg-type]
+            file_data=await file_data.read(),
             filename=file_data.filename or "",
-            metadata=document_create.dict(include={"file_name": True, "pmid": True, "doi": True}),
         )
 
         if file_url:
-            document_create.url = file_url
+            document_new.url = file_url
 
     existing_documents = await imports.find_existing_documents(
         db=db,
-        workspace_id=document_create.workspace_id,
-        document_id=document_create.id,
-        file_name=document_create.file_name,
-        url=document_create.url,
+        workspace_id=document_new.workspace_id,
+        document_id=document_new.id,
+        file_name=document_new.file_name,
+        url=document_new.url,
         limit=1,
     )
     if existing_documents:
         return existing_documents[0].id
 
     new_document = DocumentCreate(
-        id=document_create.id,
-        reference=document_create.reference,
-        pmid=document_create.pmid,
-        doi=document_create.doi,
-        url=document_create.url,
-        file_name=document_create.file_name,
-        workspace_id=document_create.workspace_id,
-        metadata=document_create.metadata,
+        id=document_new.id,
+        reference=document_new.reference,
+        pmid=document_new.pmid,
+        doi=document_new.doi,
+        url=document_new.url,
+        file_name=document_new.file_name,
+        workspace_id=document_new.workspace_id,
+        metadata=document_new.metadata,
     )
 
     document = await imports.create_document(db, new_document)
+
+    try:
+        if document_new.url:
+            await create_document_workflow(
+                document_id=document.id,
+                s3_url=document.url,
+                reference=document.reference,
+                workspace_name=workspace.name,
+                workspace_id=workspace.id,
+            )
+    except Exception as e:
+        _LOGGER.error(f"Failed to start workflow for document {document.id}: {e}")
 
     return document.id
 

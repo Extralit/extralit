@@ -85,19 +85,9 @@ class DocumentModel(ResourceModel):
     def serialize_workspace_id(self, value: UUID) -> str:
         return str(value)
 
-    def to_server_payload(self) -> dict[str, Any]:
-        json = {
-            "file_name": self.file_name,
-            "reference": self.reference,
-            "url": self.url,
-            "workspace_id": str(self.workspace_id),
-            "pmid": self.pmid,
-            "doi": self.doi,
-        }
-        if self.id is not None:
-            json["id"] = str(self.id)
-
-        return json
+    @field_serializer("id", when_used="unless-none")
+    def serialize_id(self, value: UUID) -> str:
+        return str(value)
 
 
 # Backwards compatibility alias

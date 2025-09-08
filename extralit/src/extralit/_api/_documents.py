@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 from typing import TYPE_CHECKING
 from uuid import UUID
@@ -38,7 +39,6 @@ class DocumentsAPI(ResourceAPI):
         """
 
         url = "/api/v1/documents"
-        document_payload = model.to_server_payload()
 
         if model.file_path:
             file_name = os.path.basename(model.file_path)
@@ -46,9 +46,13 @@ class DocumentsAPI(ResourceAPI):
                 files = {
                     "file_data": (file_name, file_data, "application/pdf"),
                 }
-                response = self.http_client.post(url=url, data=document_payload, files=files)
+                document_data = {
+                    "document_create": json.dumps(model.model_dump(exclude={"file_path"}, exclude_none=True))
+                }
+                response = self.http_client.post(url=url, data=document_data, files=files)
         else:
-            response = self.http_client.post(url=url, json=document_payload)
+            document_data = model.model_dump(exclude={"file_path"}, exclude_none=True)
+            response = self.http_client.post(url=url, json=document_data)
 
         response.raise_for_status()
         document_id = UUID(response.json())
