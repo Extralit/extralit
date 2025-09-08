@@ -46,13 +46,11 @@ class DocumentsAPI(ResourceAPI):
                 files = {
                     "file_data": (file_name, file_data, "application/pdf"),
                 }
-                document_data = {
-                    "document_create": json.dumps(model.model_dump(exclude={"file_path"}, exclude_none=True))
-                }
+                document_data = {"document_create": json.dumps(model.model_dump(exclude_none=True))}
                 response = self.http_client.post(url=url, data=document_data, files=files)
         else:
-            document_data = model.model_dump(exclude={"file_path"}, exclude_none=True)
-            response = self.http_client.post(url=url, json=document_data)
+            document_data = {"document_create": json.dumps(model.model_dump(exclude_none=True))}
+            response = self.http_client.post(url=url, data=document_data, files={})
 
         response.raise_for_status()
         document_id = UUID(response.json())

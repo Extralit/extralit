@@ -41,7 +41,7 @@ class DocumentModel(ResourceModel):
     reference: str = Field(..., description="A reference to the document, e.g., an identifier.")
     url: Optional[str] = None
     file_name: Optional[str] = Field(None)
-    file_path: Optional[str] = Field(None, description="Local file path")
+    file_path: Optional[str] = Field(None, description="Local file path", exclude=True)
     doi: Optional[str] = None
     pmid: Optional[str] = None
     metadata: Optional[dict] = None

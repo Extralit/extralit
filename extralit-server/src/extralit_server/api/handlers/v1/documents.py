@@ -43,7 +43,7 @@ router = APIRouter(tags=["documents"])
 async def add_document(
     *,
     document_create: Annotated[str, Form()],
-    file_data: Annotated[UploadFile, File()],
+    file_data: Annotated[UploadFile | None, File()] = None,
     db: AsyncSession = Depends(get_async_db),
     s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_current_user),
@@ -52,7 +52,8 @@ async def add_document(
     try:
         document_dict = json.loads(document_create)
         document_new: DocumentCreate = DocumentCreate.model_validate(document_dict)  # pyright: ignore[reportAssignmentType]
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        _LOGGER.error(f"JSON decode error: {e}. \n Input: {document_create}")
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Invalid JSON in document_create",
@@ -117,7 +118,7 @@ async def add_document(
                 workspace_id=workspace.id,
             )
     except Exception as e:
-        _LOGGER.error(f"Failed to start workflow for document {document.id}: {e}")
+        _LOGGER.error(f"Failed to start workflow for document {new_document.id}: {e}")
 
     return document.id
 
