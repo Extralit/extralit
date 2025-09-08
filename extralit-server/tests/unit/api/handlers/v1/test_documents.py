@@ -14,7 +14,7 @@
 
 import json
 from unittest.mock import MagicMock, patch
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from httpx import AsyncClient
@@ -257,7 +257,7 @@ async def test_delete_documents_by_id(async_client: AsyncClient, db: AsyncSessio
 async def test_list_documents(async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict):
     workspace = await WorkspaceFactory.create()
     await DocumentFactory.create(workspace=workspace, id=uuid4())
-    doc_id = "123e4567-e89b-12d3-a456-426614174000"
+    doc_id = UUID("123e4567-e89b-12d3-a456-426614174000")
     await DocumentFactory.create(workspace=workspace, id=doc_id)
 
     response = await async_client.get(f"/api/v1/documents/workspace/{workspace.id}", headers=owner_auth_header)
