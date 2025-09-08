@@ -18,6 +18,9 @@ These are the section headers that we use:
 ### Added
 - Added `wait` parameter to the `extralit workflows start` CLI to waiting for the workflow to complete and return the final status.
 
+### Fixed
+- Fixed single document uploads via CLI (`extralit documents add`) to start PDF workflow.
+
 ## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 ### Added
 - Introduced structured dataset mapping via `DatasetMappingModel` and `DatasetMapping` abstractions for validated, first-class mapping support

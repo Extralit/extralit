@@ -26,7 +26,7 @@
 
             <div
               class="settings__edition-form__group --subcategories"
-              v-if="question.isMultiLabelType || question.isSingleLabelType || question.isSpanType"
+              v-if="question.isMultiLabelType || question.isSingleLabelType || question.isSpanType  || question.isRankingType"
             >
               <label :for="`options-${question.id}`" v-text="$t('question.labels')" />
 

@@ -15,7 +15,7 @@
       </BaseButton>
     </div>
     <BaseButton @click="addOption" class="secondary small dataset-config-ranking__add-button"
-      ><svgicon name="plus" width="12" color="var(--fg-secondary)" /> Include option</BaseButton
+      ><svgicon name="plus" width="12" color="var(--fg-secondary)" /> {{$t("question.addLabel")}}</BaseButton
     >
   </div>
 </template>
