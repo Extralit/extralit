@@ -97,7 +97,7 @@ async def list_documents(db: "AsyncSession", workspace_id: UUID) -> list[Documen
 async def query_documents(
     db: AsyncSession,
     workspace_id: UUID,
-    reference: str,
+    reference: str | None = None,
     document_id: UUID | None = None,
     file_name: str | None = None,
     pmid: str | None = None,
@@ -134,12 +134,19 @@ async def query_documents(
     if file_name:
         conditions.append(Document.file_name == file_name)
 
-    if not conditions:
+    query_conditions = [Document.workspace_id == workspace_id]
+    if reference is not None:
+        query_conditions.append(Document.reference == reference)
+
+    # If we have specific field conditions, add them
+    if conditions:
+        query_conditions.append(or_(*conditions))
+
+    # If we have no conditions at all (not even reference), return empty
+    if len(query_conditions) == 1 and not conditions:
         return []
 
-    query = select(Document).where(
-        and_(Document.workspace_id == workspace_id, Document.reference == reference, or_(*conditions))
-    )
+    query = select(Document).where(and_(*query_conditions))
 
     if conditions:
         order_case = case(*[(condition, i) for i, condition in enumerate(conditions)], else_=len(conditions))

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -96,29 +97,35 @@ async def test_upload_duplicate_document(async_client: AsyncClient, db: AsyncSes
 
         upload_response = await async_client.post(
             "/api/v1/documents",
-            params=existing_document,
+            data={"document_create": json.dumps(existing_document)},
             files={"file_data": ("test.pdf", b"test file content", "application/pdf")},
             headers=owner_auth_header,
         )
 
-        # Attempt to upload a new document with the same pmid, url, doi, or id
-        update_document = {
-            "id": upload_response.json(),
-            "reference": "Test Document",
-            "pmid": "123456",
-            "doi": "10.1234/test.doi",
-            "file_name": "test.pdf",
+        assert upload_response.status_code == 201
+
+        # Attempt to upload a duplicate document with the same pmid and reference - should get 409
+        duplicate_document = {
+            "id": str(uuid4()),  # Different ID
+            "reference": "Test Document",  # Same reference
+            "pmid": "123456",  # Same PMID
+            "doi": "10.1234/different.doi",  # Different DOI
+            "file_name": "different_test.pdf",  # Different filename
             "workspace_id": str(workspace.id),
         }
 
-        await async_client.post(
+        duplicate_response = await async_client.post(
             "/api/v1/documents",
-            params=update_document,
-            files={"file_data": ("test.pdf", b"updated data", "application/pdf")},
+            data={"document_create": json.dumps(duplicate_document)},
+            files={"file_data": ("different_test.pdf", b"updated data", "application/pdf")},
             headers=owner_auth_header,
         )
 
-        # Ensure no new document was created in the database
+        # Should get 409 Conflict due to matching PMID within same reference
+        assert duplicate_response.status_code == 409
+        assert "already exists" in duplicate_response.json()["detail"]
+
+        # Ensure only one document was created in the database
         result = await db.execute(select(Document))
         documents = result.scalars().all()
         assert len(documents) == 1
