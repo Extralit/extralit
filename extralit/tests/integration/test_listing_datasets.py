@@ -17,7 +17,7 @@ from extralit import Dataset, Extralit, Settings, TaskDistribution, TextField, T
 
 class TestDatasetsList:
     def test_list_datasets(self, client: Extralit):
-        workspace = Workspace(name="test_workspace", client=client)
+        workspace = Workspace(name="test-workspace", client=client)
         workspace.create()
 
         dataset = Dataset(

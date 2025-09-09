@@ -32,7 +32,7 @@ class WorkspaceModel(ResourceModel):
     @field_validator("name")
     @classmethod
     def validate_name(cls, value):
-        """Validate the name of the workspace is url safe"""
-        if not re.match(r"^[a-zA-Z0-9_-]+$", value):
-            raise ValueError("Workspace name must be url safe")
+        """Validate the name of the workspace is url safe and does not contain underscores"""
+        if not re.match(r"^[a-zA-Z0-9.-]+$", value):
+            raise ValueError("Workspace name must be url safe and cannot contain underscores")
         return value

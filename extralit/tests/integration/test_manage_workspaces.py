@@ -18,7 +18,7 @@ from extralit import Extralit, User, Workspace
 
 class TestWorkspacesManagement:
     def test_create_workspace(self, client: Extralit):
-        workspace = Workspace(name=f"test_workspace{uuid.uuid4()}")
+        workspace = Workspace(name=f"test-workspace{uuid.uuid4()}")
         client.workspaces.add(workspace)
 
         assert workspace in client.workspaces
@@ -26,26 +26,26 @@ class TestWorkspacesManagement:
 
     def test_create_workspace_with_id(self, client: Extralit):
         workspace_id = uuid.uuid4()
-        workspace = Workspace(id=workspace_id, name=f"test_workspace{uuid.uuid4()}")
+        workspace = Workspace(id=workspace_id, name=f"test-workspace{uuid.uuid4()}")
         client.workspaces.add(workspace)
         assert workspace in client.workspaces
         assert client.workspaces(workspace.name).id == workspace_id
 
     def test_create_and_delete_workspace(self, client: Extralit):
-        workspace = client.workspaces(name="test_workspace")
+        workspace = client.workspaces(name="test-workspace")
         if workspace:
             for dataset in workspace.datasets:
                 dataset.delete()
             workspace.delete()
 
-        workspace = Workspace(name="test_workspace").create()
+        workspace = Workspace(name="test-workspace").create()
         assert client.api.workspaces.exists(workspace.id)
 
         workspace.delete()
         assert not client.api.workspaces.exists(workspace.id)
 
     def test_add_and_remove_users_to_workspace(self, client: Extralit, workspace: Workspace):
-        ws_name = "test_workspace"
+        ws_name = "test-workspace"
         username = "test_user"
 
         workspace = client.workspaces(name=ws_name)

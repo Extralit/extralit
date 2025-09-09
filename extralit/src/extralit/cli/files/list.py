@@ -45,7 +45,7 @@ def list_files(
 
         files = workspace_obj.list_files(path, recursive=recursive, include_version=include_version)
 
-        files.objects = [obj for obj in files.objects if obj.etag is not None]
+        files.objects = [obj for obj in files.objects if obj.etag is not None and obj.size is not None]
 
         if not files.objects:
             panel = get_themed_panel(

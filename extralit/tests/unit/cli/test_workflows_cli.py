@@ -60,7 +60,7 @@ class TestWorkflowsCLI:
                 "workflow_id": str(uuid4()),
                 "group_id": "document_workflow_123_abcd1234",
                 "reference": "test_ref",
-                "workspace_name": "test_workspace",
+                "workspace_name": "test-workspace",
                 "status": "running",
                 "progress": 0.5,
                 "total_jobs": 2,
@@ -85,7 +85,7 @@ class TestWorkflowsCLI:
         with patch("extralit.cli.workflows.__main__.Extralit.from_credentials", return_value=mock_client):
             result = runner.invoke(
                 app,
-                ["start", "--document-id", str(uuid4()), "--workspace", "test_workspace", "--reference", "test_ref"],
+                ["start", "--document-id", str(uuid4()), "--workspace", "test-workspace", "--reference", "test_ref"],
             )
 
             assert result.exit_code == 0
@@ -99,13 +99,13 @@ class TestWorkflowsCLI:
 
             request_data = call_args[1]["json"]
             assert "document_id" in request_data
-            assert request_data["workspace_name"] == "test_workspace"
+            assert request_data["workspace_name"] == "test-workspace"
             assert request_data["reference"] == "test_ref"
 
     def test_start_command_invalid_document_id(self, runner, mock_client):
         """Test start command with invalid document ID format."""
         with patch("extralit.cli.workflows.__main__.Extralit.from_credentials", return_value=mock_client):
-            result = runner.invoke(app, ["start", "--document-id", "invalid-uuid", "--workspace", "test_workspace"])
+            result = runner.invoke(app, ["start", "--document-id", "invalid-uuid", "--workspace", "test-workspace"])
 
             assert result.exit_code == 1
             assert "Invalid document ID format" in result.stdout
@@ -118,7 +118,7 @@ class TestWorkflowsCLI:
         mock_client.api.http_client.post.return_value = mock_response
 
         with patch("extralit.cli.workflows.__main__.Extralit.from_credentials", return_value=mock_client):
-            result = runner.invoke(app, ["start", "--document-id", str(uuid4()), "--workspace", "test_workspace"])
+            result = runner.invoke(app, ["start", "--document-id", str(uuid4()), "--workspace", "test-workspace"])
 
             assert result.exit_code == 1
             assert "Error starting workflow" in result.stdout
@@ -133,7 +133,7 @@ class TestWorkflowsCLI:
 
         with patch("extralit.cli.workflows.__main__.Extralit.from_credentials", return_value=mock_client):
             result = runner.invoke(
-                app, ["start", "--document-id", str(uuid4()), "--workspace", "test_workspace", "--verbose"]
+                app, ["start", "--document-id", str(uuid4()), "--workspace", "test-workspace", "--verbose"]
             )
 
             assert result.exit_code == 0
@@ -172,7 +172,7 @@ class TestWorkflowsCLI:
         mock_client.api.http_client.get.return_value = mock_response
 
         with patch("extralit.cli.workflows.__main__.Extralit.from_credentials", return_value=mock_client):
-            result = runner.invoke(app, ["status", "--reference", "test_ref", "--workspace", "test_workspace"])
+            result = runner.invoke(app, ["status", "--reference", "test_ref", "--workspace", "test-workspace"])
 
             assert result.exit_code == 0
             assert "PDF Processing Workflows" in result.stdout
@@ -181,7 +181,7 @@ class TestWorkflowsCLI:
             call_args = mock_client.api.http_client.get.call_args
             params = call_args[1]["params"]
             assert params["reference"] == "test_ref"
-            assert params["workspace_name"] == "test_workspace"
+            assert params["workspace_name"] == "test-workspace"
 
     def test_status_command_json_output(self, runner, mock_client, sample_status_response):
         """Test status command with JSON output format."""
@@ -379,7 +379,7 @@ class TestWorkflowsCLI:
 
         with patch("extralit.cli.workflows.__main__.Extralit.from_credentials", return_value=mock_client):
             result = runner.invoke(
-                app, ["list", "--workspace", "test_workspace", "--status", "failed", "--limit", "25"]
+                app, ["list", "--workspace", "test-workspace", "--status", "failed", "--limit", "25"]
             )
 
             assert result.exit_code == 0
@@ -387,7 +387,7 @@ class TestWorkflowsCLI:
             # Verify API call parameters
             call_args = mock_client.api.http_client.get.call_args
             params = call_args[1]["params"]
-            assert params["workspace_name"] == "test_workspace"
+            assert params["workspace_name"] == "test-workspace"
             assert params["status_filter"] == "failed"
             assert params["limit"] == 25
 
@@ -429,7 +429,7 @@ class TestWorkflowsCLI:
         with patch(
             "extralit.cli.workflows.__main__.Extralit.from_credentials", side_effect=Exception("Authentication failed")
         ):
-            result = runner.invoke(app, ["start", "--document-id", str(uuid4()), "--workspace", "test_workspace"])
+            result = runner.invoke(app, ["start", "--document-id", str(uuid4()), "--workspace", "test-workspace"])
 
             assert result.exit_code == 1
             assert "Authentication failed" in result.stdout
@@ -439,7 +439,7 @@ class TestWorkflowsCLI:
         mock_client.api.http_client.post.side_effect = Exception("Connection refused")
 
         with patch("extralit.cli.workflows.__main__.Extralit.from_credentials", return_value=mock_client):
-            result = runner.invoke(app, ["start", "--document-id", str(uuid4()), "--workspace", "test_workspace"])
+            result = runner.invoke(app, ["start", "--document-id", str(uuid4()), "--workspace", "test-workspace"])
 
             assert result.exit_code == 1
             assert "Unexpected error" in result.stdout
@@ -452,7 +452,7 @@ class TestWorkflowsCLI:
                 "workflow_id": str(uuid4()),
                 "group_id": "group_1",
                 "reference": "completed_workflow",
-                "workspace_name": "test_workspace",
+                "workspace_name": "test-workspace",
                 "status": "completed",
                 "progress": 1.0,
                 "total_jobs": 3,
@@ -466,7 +466,7 @@ class TestWorkflowsCLI:
                 "workflow_id": str(uuid4()),
                 "group_id": "group_2",
                 "reference": "failed_workflow",
-                "workspace_name": "test_workspace",
+                "workspace_name": "test-workspace",
                 "status": "failed",
                 "progress": 0.67,
                 "total_jobs": 3,
@@ -480,7 +480,7 @@ class TestWorkflowsCLI:
                 "workflow_id": str(uuid4()),
                 "group_id": "group_3",
                 "reference": "running_workflow",
-                "workspace_name": "test_workspace",
+                "workspace_name": "test-workspace",
                 "status": "running",
                 "progress": 0.33,
                 "total_jobs": 3,

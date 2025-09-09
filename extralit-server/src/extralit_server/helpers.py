@@ -311,9 +311,11 @@ class LocalFileClient(S3Client):
                     # Get the key relative to bucket path and normalize path separators
                     key = str(file_path.relative_to(bucket_path)).replace("\\", "/")
 
-                    # Apply prefix filter
-                    if Prefix and not key.startswith(Prefix):
-                        continue
+                    # Apply prefix filter (ensure prefix is normalized)
+                    if Prefix:
+                        normalized_prefix = Prefix.replace("\\", "/").rstrip("/")
+                        if not key.startswith(normalized_prefix):
+                            continue
 
                     # Apply start_after filter
                     if StartAfter and key <= StartAfter:
@@ -326,9 +328,13 @@ class LocalFileClient(S3Client):
                         metadata_path = self._get_metadata_path(Bucket, key)
                         etag = ""
                         if metadata_path.exists():
-                            async with aiofiles.open(metadata_path) as f:
-                                metadata = json.loads(await f.read())
-                                etag = metadata.get("etag", "")
+                            try:
+                                async with aiofiles.open(metadata_path) as f:
+                                    metadata = json.loads(await f.read())
+                                    etag = metadata.get("etag", "")
+                            except (json.JSONDecodeError, OSError):
+                                # Ignore metadata read errors
+                                pass
 
                         contents.append(
                             {
@@ -474,9 +480,11 @@ class LocalFileClient(S3Client):
 class MockAsyncStreamingBody:
     """Mock streaming body for local file content."""
 
-    def __init__(self, content: bytes):
+    def __init__(self, content: bytes, chunk_size: int = 8192):
         self._content = content
         self._stream = io.BytesIO(content)
+        self._chunk_size = chunk_size
+        self._position = 0
 
     async def read(self, amt: int | None = None) -> bytes:
         """Read content."""
@@ -486,6 +494,20 @@ class MockAsyncStreamingBody:
         else:
             # For partial reads, use the stream position
             return self._stream.read(amt)
+
+    def __aiter__(self):
+        """Async iterator for streaming."""
+        self._position = 0
+        return self
+
+    async def __anext__(self) -> bytes:
+        """Return next chunk of data."""
+        if self._position >= len(self._content):
+            raise StopAsyncIteration
+
+        chunk = self._content[self._position : self._position + self._chunk_size]
+        self._position += len(chunk)
+        return chunk
 
     async def __aenter__(self):
         return self
