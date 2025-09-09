@@ -162,8 +162,12 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
             result = ListObjectsResponse(**response.json())
 
-            # Filter out any object references that are marked as deleted (etag=None, size=None)
-            valid_objects = [obj for obj in result.objects if obj.etag is not None and obj.size is not None]
+            # Filter out files that have deletion markers
+            # First, find all files that have deletion markers (etag="" and size=0)
+            deleted_files = {obj.object_name for obj in result.objects if obj.etag == "" and obj.size == 0}
+
+            # Then filter out ALL entries for those files (both original and deletion marker)
+            valid_objects = [obj for obj in result.objects if obj.object_name not in deleted_files]
 
             if len(valid_objects) < len(result.objects):
                 logger.info(f"Filtered out {len(result.objects) - len(valid_objects)} deleted files")

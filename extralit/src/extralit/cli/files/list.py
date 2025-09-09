@@ -45,7 +45,9 @@ def list_files(
 
         files = workspace_obj.list_files(path, recursive=recursive, include_version=include_version)
 
-        files.objects = [obj for obj in files.objects if obj.etag is not None and obj.size is not None]
+        # Filter out files that have deletion markers - remove ALL entries for files with deletion markers
+        deleted_files = {obj.object_name for obj in files.objects if obj.etag == "" and obj.size == 0}
+        files.objects = [obj for obj in files.objects if obj.object_name not in deleted_files]
 
         if not files.objects:
             panel = get_themed_panel(
