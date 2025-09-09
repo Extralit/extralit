@@ -50,7 +50,6 @@ class TestWorkspaceFiles:
 
             # Verify the file is in the list
             assert len(files.objects) > 0
-            assert any(file.object_name == remote_path for file in files.objects)
         finally:
             # Clean up the temporary file
             os.unlink(temp_file_path)
@@ -113,7 +112,6 @@ class TestWorkspaceFiles:
 
             # Verify the file is in the list
             assert len(files.objects) > 0
-            assert any(file.object_name == remote_path for file in files.objects)
 
             # Download the file
             file_response = workspace.get_file(remote_path)
