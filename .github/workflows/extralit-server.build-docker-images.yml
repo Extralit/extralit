@@ -124,6 +124,6 @@ jobs:
         with:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
-          repository: $${{ env.SERVER_DOCKER_IMAGE }}
+          repository: ${{ env.SERVER_DOCKER_IMAGE }}
           readme-filepath: extralit-server/docker/server/README.md
 
