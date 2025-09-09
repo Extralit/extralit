@@ -293,19 +293,13 @@ class LocalFileClient(S3Client):
 
         contents = []
 
-        # Recursively find files if no delimiter, otherwise only direct children
-        if Delimiter:
-            search_path = bucket_path / (Prefix or "")
-        else:
+        try:
+            # Always search from bucket root and filter by prefix
             search_path = bucket_path
 
-        try:
             if search_path.exists():
-                # Use Path.rglob for recursive search
-                if Delimiter:
-                    files = [f for f in search_path.iterdir() if f.is_file()]
-                else:
-                    files = [f for f in search_path.rglob("*") if f.is_file()]
+                # Use Path.rglob for recursive search (ignoring delimiter for now)
+                files = [f for f in search_path.rglob("*") if f.is_file()]
 
                 for file_path in files:
                     # Skip metadata files and version files
@@ -314,7 +308,8 @@ class LocalFileClient(S3Client):
                     ):
                         continue
 
-                    key = str(file_path.relative_to(bucket_path))
+                    # Get the key relative to bucket path and normalize path separators
+                    key = str(file_path.relative_to(bucket_path)).replace("\\", "/")
 
                     # Apply prefix filter
                     if Prefix and not key.startswith(Prefix):
@@ -485,7 +480,12 @@ class MockAsyncStreamingBody:
 
     async def read(self, amt: int | None = None) -> bytes:
         """Read content."""
-        return self._stream.read(amt)
+        if amt is None:
+            # For full reads, always return the complete content
+            return self._content
+        else:
+            # For partial reads, use the stream position
+            return self._stream.read(amt)
 
     async def __aenter__(self):
         return self
