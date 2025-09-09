@@ -128,7 +128,7 @@ def test_telemetry(mocker: "MockerFixture") -> "TelemetryClient":
 
 
 @pytest_asyncio.fixture(scope="function")
-async def argilla_user() -> Generator[User, None, None]:
+async def extralit_user() -> Generator[User, None, None]:
     user = await UserFactory.create(
         first_name="Extralit",
         username="extralit",

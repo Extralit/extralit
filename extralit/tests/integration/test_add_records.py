@@ -74,7 +74,7 @@ def test_add_records(client):
 
 
 def test_add_dict_records(client: Extralit, dataset_name: str):
-    ws_name = "new_ws"
+    ws_name = "new-ws"
     ws = client.workspaces(ws_name) or Workspace(name=ws_name).create()
 
     ds = client.datasets("new_ds", workspace=ws)

@@ -125,7 +125,7 @@ class TestCreateDatasets:
         ).create()
 
         new_client = Extralit()
-        new_ws = Workspace("test_copy_workspace")
+        new_ws = Workspace("test-copy-workspace")
         new_client.workspaces.add(new_ws)
 
         new_dataset = Dataset(

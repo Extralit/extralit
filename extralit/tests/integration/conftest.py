@@ -24,7 +24,7 @@ def client() -> ex.Extralit:
     client = ex.Extralit()
 
     if len(list(client.workspaces)) == 0:
-        client.workspaces.add(ex.Workspace(name=f"test_{uuid.uuid4()}"))
+        client.workspaces.add(ex.Workspace(name=f"test-{uuid.uuid4()}"))
 
     yield client
 
@@ -33,17 +33,17 @@ def client() -> ex.Extralit:
 
 def _cleanup(client: ex.Extralit):
     for dataset in client.datasets:
-        if dataset.name.startswith("test_"):
+        if dataset.name.startswith("test-"):
             dataset.delete()
 
     for workspace in client.workspaces:
-        if workspace.name.startswith("test_"):
+        if workspace.name.startswith("test-"):
             for dataset in workspace.datasets:
                 dataset.delete()
             workspace.delete()
 
     for user in client.users:
-        if user.username.startswith("test_"):
+        if user.username.startswith("test-"):
             user.delete()
 
 

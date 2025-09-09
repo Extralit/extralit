@@ -32,7 +32,7 @@ from extralit import (
 
 
 def test_publish_dataset(client: "Extralit", dataset_name: str):
-    ws_name = "new_ws"
+    ws_name = "new-ws"
 
     new_ws = client.workspaces(ws_name) or Workspace(name=ws_name).create()
     assert client.api.workspaces.exists(new_ws.id), "The workspace was not created"
