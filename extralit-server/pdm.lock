@@ -5,7 +5,7 @@
 groups = ["default", "postgresql", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:fbc8bf451fd50920ff7fdacd4851dcf9d32afa86cb37091bf0e672f87bf09799"
+content_hash = "sha256:4c6bbe5afeffb90981e7b5edf598edebf662bbdad882f7658b1cf1b7986e4e07"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -2632,6 +2632,18 @@ dependencies = [
 files = [
     {file = "typer-0.9.4-py3-none-any.whl", hash = "sha256:aa6c4a4e2329d868b80ecbaf16f807f2b54e192209d7ac9dd42691d63f7a54eb"},
     {file = "typer-0.9.4.tar.gz", hash = "sha256:f714c2d90afae3a7929fcd72a3abb08df305e1ff61719381384211c4070af57f"},
+]
+
+[[package]]
+name = "types-aiobotocore-s3"
+version = "2.24.2"
+summary = ""
+dependencies = [
+    "typing-extensions; python_full_version < \"3.12\"",
+]
+files = [
+    {file = "types_aiobotocore_s3-2.24.2-py3-none-any.whl", hash = "sha256:b5541e994f9c5f41d551570be8788d4189fb55759f8f7d15a2893b29eae3114f"},
+    {file = "types_aiobotocore_s3-2.24.2.tar.gz", hash = "sha256:7274bcca558385ef5f98037f5474f4583663634141d46d9d978ab7d37ca96324"},
 ]
 
 [[package]]

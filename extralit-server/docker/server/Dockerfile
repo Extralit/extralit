@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends libc6-dev libpq-dev gcc && \
-    for wheel in /packages/*.whl; do uv pip install "$wheel"[server,postgresql]; done && \
+    for wheel in /packages/*.whl; do uv pip install "$wheel"[postgresql]; done && \
     apt-get purge -y --auto-remove libc6-dev libpq-dev gcc && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /packages

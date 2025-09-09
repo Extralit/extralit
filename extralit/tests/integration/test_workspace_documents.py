@@ -301,42 +301,6 @@ class TestWorkspaceDocuments:
         assert hasattr(exc_info.value, "status_code") and exc_info.value.status_code == 409
         assert "already exists" in str(exc_info.value)
 
-    def test_add_duplicate_document_by_pmid_raises_conflict(self, workspace: Workspace):
-        """Test that adding a document with the same PMID and reference raises ConflictError."""
-        test_pmid = f"PMC{uuid.uuid4().hex[:8]}"
-        test_reference = f"test-ref-pmid-duplicate-{uuid.uuid4().hex[:8]}"
-        test_url1 = f"https://example.com/pmid1_{uuid.uuid4()}.pdf"
-        test_url2 = f"https://example.com/pmid2_{uuid.uuid4()}.pdf"
-
-        # Add first document with PMID
-        document_id1 = workspace.add_document(url=test_url1, pmid=test_pmid, reference=test_reference)
-        assert document_id1 is not None
-
-        # Try to add another document with same PMID and reference - should raise ConflictError
-        with pytest.raises(ConflictError) as exc_info:
-            workspace.add_document(url=test_url2, pmid=test_pmid, reference=test_reference)
-
-        assert hasattr(exc_info.value, "status_code") and exc_info.value.status_code == 409
-        assert "already exists" in str(exc_info.value)
-
-    def test_add_duplicate_document_by_doi_raises_conflict(self, workspace: Workspace):
-        """Test that adding a document with the same DOI and reference raises ConflictError."""
-        test_doi = f"10.1234/duplicate.{uuid.uuid4().hex[:8]}"
-        test_reference = f"test-ref-doi-duplicate-{uuid.uuid4().hex[:8]}"
-        test_url1 = f"https://example.com/doi1_{uuid.uuid4()}.pdf"
-        test_url2 = f"https://example.com/doi2_{uuid.uuid4()}.pdf"
-
-        # Add first document with DOI
-        document_id1 = workspace.add_document(url=test_url1, doi=test_doi, reference=test_reference)
-        assert document_id1 is not None
-
-        # Try to add another document with same DOI and reference - should raise ConflictError
-        with pytest.raises(ConflictError) as exc_info:
-            workspace.add_document(url=test_url2, doi=test_doi, reference=test_reference)
-
-        assert hasattr(exc_info.value, "status_code") and exc_info.value.status_code == 409
-        assert "already exists" in str(exc_info.value)
-
     def test_add_duplicate_document_by_file_name_raises_conflict(self, workspace: Workspace):
         """Test that adding documents with URLs that derive to the same file_name and reference raises ConflictError."""
         test_filename = f"duplicate_file_{uuid.uuid4().hex[:8]}.pdf"

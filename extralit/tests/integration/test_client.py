@@ -39,7 +39,7 @@ def user(client: Extralit) -> User:
 
 @pytest.fixture
 def workspace(client: Extralit) -> Workspace:
-    return Workspace(name=f"test_workspace{uuid.uuid4()}").create()
+    return Workspace(name=f"test-workspace{uuid.uuid4()}").create()
 
 
 # TODO: We can move this test suite to tests/unit once we have a mock client implementation

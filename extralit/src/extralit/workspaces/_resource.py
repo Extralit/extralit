@@ -12,10 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
 from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union, overload
 from urllib.parse import unquote, urlparse
+
+from pydantic import field_validator
 
 from extralit._api._workspaces import WorkspacesAPI
 from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
@@ -45,6 +48,14 @@ class Workspace(Resource):
     """
 
     name: Optional[str]
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value):
+        """Validate the name of the workspace is url safe and does not contain underscores"""
+        if not re.match(r"^[a-zA-Z0-9.-]+$", value):
+            raise ValueError("Workspace name must be url safe and cannot contain underscores")
+        return value
 
     _api: "WorkspacesAPI"
 
