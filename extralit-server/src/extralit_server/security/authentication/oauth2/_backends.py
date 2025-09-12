@@ -113,6 +113,7 @@ def load_supported_backends(extra_backends: list | None = None) -> dict[str, typ
     backends = [
         "extralit_server.security.authentication.oauth2._backends.HuggingfaceOpenId",
         "extralit_server.security.authentication.oauth2._backends.KeycloakOpenId",
+        "extralit_server.security.authentication.oauth2.extralit_hub.ExtralitHubOpenId",
         "social_core.backends.github.GithubOAuth2",
         "social_core.backends.google.GoogleOAuth2",
     ]
