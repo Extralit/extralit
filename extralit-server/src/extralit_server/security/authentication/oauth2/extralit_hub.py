@@ -178,7 +178,7 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
     def _prepare_self_hosted_registration(self) -> dict[str, Any]:
         """Prepare registration data for self-hosted instances."""
         # Get base URL for self-hosted instance
-        base_url = getattr(settings, "BASE_URL", "http://localhost:8000")
+        base_url = getattr(settings, "BASE_URL", "http://localhost:6900")
         instance_name = getattr(settings, "INSTANCE_NAME", "extralit-self-hosted")
 
         redirect_uri = f"{base_url.rstrip('/')}/api/auth/callback/extralit_hub"
@@ -272,5 +272,5 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
             space_id = HUGGINGFACE_SETTINGS.space_id
             return f"https://{space_id}.hf.space/api/auth/callback/extralit_hub"
         else:
-            base_url = getattr(settings, "BASE_URL", "http://localhost:8000")
+            base_url = getattr(settings, "BASE_URL", "http://localhost:6900")
             return f"{base_url.rstrip('/')}/api/auth/callback/extralit_hub"
