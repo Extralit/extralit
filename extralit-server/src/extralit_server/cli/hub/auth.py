@@ -18,7 +18,14 @@ from typing import Optional
 import typer
 
 from extralit_server.integrations.huggingface.spaces import HUGGINGFACE_SETTINGS
+from extralit_server.security.authentication.oauth2._backends import Strategy
 from extralit_server.security.authentication.oauth2.extralit_hub import ExtralitHubOpenId
+
+
+def _create_hub_backend() -> ExtralitHubOpenId:
+    """Create a properly initialized ExtralitHubOpenId backend."""
+    strategy = Strategy()
+    return ExtralitHubOpenId(strategy)
 
 
 def register_instance(
@@ -30,7 +37,7 @@ def register_instance(
 
     try:
         # Initialize the Hub OIDC backend
-        hub_backend = ExtralitHubOpenId()
+        hub_backend = _create_hub_backend()
 
         if hub_url:
             hub_backend._hub_base_url = hub_url.rstrip("/")
@@ -39,7 +46,8 @@ def register_instance(
         # Check current status
         if not force and hub_backend._load_stored_credentials():
             typer.echo("✅ Instance already registered with Hub")
-            typer.echo(f"   Client ID: {hub_backend._client_credentials['client_id']}")
+            if hub_backend._client_credentials:
+                typer.echo(f"   Client ID: {hub_backend._client_credentials['client_id']}")
             return
 
         # Force re-registration
@@ -70,7 +78,7 @@ def check_status():
     typer.echo("🔍 Checking Hub authentication status...")
 
     try:
-        hub_backend = ExtralitHubOpenId()
+        hub_backend = _create_hub_backend()
 
         typer.echo(f"   Hub URL: {hub_backend._hub_base_url}")
 
@@ -101,7 +109,7 @@ def test_oidc_flow():
     typer.echo("🧪 Testing OIDC configuration...")
 
     try:
-        hub_backend = ExtralitHubOpenId()
+        hub_backend = _create_hub_backend()
 
         if not hub_backend._client_credentials:
             typer.echo("❌ No credentials found. Register first with: pdm run cli hub-auth register")
