@@ -33,32 +33,129 @@ def extract_figure_bboxes(marker_layout: dict[str, Any]) -> list[dict[str, Any]]
     """
     figures = []
 
+    # Input validation
+    if not marker_layout or not isinstance(marker_layout, dict):
+        return figures
+
     # Handle different possible Marker output formats
     pages_data = marker_layout.get("pages", [])
     if not pages_data and "blocks" in marker_layout:
         # Single page format
         pages_data = [marker_layout]
 
+    # Validate pages data
+    if not isinstance(pages_data, list):
+        return figures
+
     for page_idx, page_data in enumerate(pages_data):
+        # Validate page data structure
+        if not isinstance(page_data, dict):
+            continue
+
         page_number = page_data.get("page", page_idx)
         blocks = page_data.get("blocks", [])
 
+        # Validate blocks structure
+        if not isinstance(blocks, list):
+            continue
+
         for block in blocks:
-            block_type = block.get("type") or block.get("block_type")
-            if block_type and block_type.lower() in ["figure", "image", "picture", "picturegroup", "figuregroup"]:
-                bbox = block.get("bbox") or block.get("coordinates")
-                if bbox and len(bbox) == 4:
+            # Validate block structure
+            if not isinstance(block, dict):
+                continue
+
+            # Try different naming conventions for block type
+            block_type = (
+                block.get("type") or block.get("block_type") or block.get("category") or block.get("label") or ""
+            ).lower()
+
+            # Multiple patterns for figure detection
+            if any(
+                keyword in block_type
+                for keyword in [
+                    "figure",
+                    "image",
+                    "graphic",
+                    "chart",
+                    "diagram",
+                    "plot",
+                    "picture",
+                    "picturegroup",
+                    "figuregroup",
+                ]
+            ):
+                # Try different naming conventions for bounding box
+                bbox = (
+                    block.get("bbox")
+                    or block.get("coordinates")
+                    or block.get("bounding_box")
+                    or block.get("rect")
+                    or block.get("box")
+                )
+
+                # Additional fallback: try nested structure
+                if not bbox and "geometry" in block:
+                    bbox = block["geometry"].get("bbox") or block["geometry"].get("coordinates")
+
+                # Validate bbox format with multiple possible formats
+                valid_bbox = None
+                if bbox:
+                    if isinstance(bbox, list) and len(bbox) == 4:
+                        # Standard [x1, y1, x2, y2] format
+                        try:
+                            valid_bbox = [float(x) for x in bbox]
+                        except (ValueError, TypeError):
+                            pass
+                    elif isinstance(bbox, dict):
+                        # Object format like {x1, y1, x2, y2} or {left, top, right, bottom}
+                        try:
+                            if all(k in bbox for k in ["x1", "y1", "x2", "y2"]):
+                                valid_bbox = [
+                                    float(bbox["x1"]),
+                                    float(bbox["y1"]),
+                                    float(bbox["x2"]),
+                                    float(bbox["y2"]),
+                                ]
+                            elif all(k in bbox for k in ["left", "top", "right", "bottom"]):
+                                valid_bbox = [
+                                    float(bbox["left"]),
+                                    float(bbox["top"]),
+                                    float(bbox["right"]),
+                                    float(bbox["bottom"]),
+                                ]
+                        except (ValueError, TypeError, KeyError):
+                            pass
+
+                if valid_bbox:
+                    # Try different naming conventions for caption/description
+                    caption = (
+                        block.get("caption")
+                        or block.get("text")
+                        or block.get("content")
+                        or block.get("description")
+                        or block.get("alt_text")
+                        or ""
+                    )
+
+                    # Try different naming conventions for confidence score
+                    score = (
+                        block.get("score")
+                        or block.get("confidence")
+                        or block.get("probability")
+                        or block.get("certainty")
+                    )
                     figures.append(
                         {
                             "page": page_number,
-                            "bbox": bbox,
-                            "score": block.get("score") or block.get("confidence"),
+                            "bbox": valid_bbox,
+                            "score": score,
                             "type": "figure",
-                            "subtype": block_type,
+                            "caption": caption,
                             "metadata": {
                                 "source": "marker",
-                                "block_id": block.get("id"),
-                                "polygon": block.get("polygon"),
+                                "block_id": block.get("id") or block.get("block_id"),
+                                "polygon": block.get("polygon") or block.get("shape"),
+                                "original_type": block.get("type") or block.get("block_type"),
                             },
                         }
                     )

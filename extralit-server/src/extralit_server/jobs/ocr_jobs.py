@@ -142,46 +142,70 @@ def _call_marker_layout_detection(pdf_path: str, pages: Optional[list[int]] = No
     """
     try:
         # Import marker components only when function is called (optional dependency)
+        from marker.config.parser import ConfigParser
         from marker.converters.pdf import PdfConverter
         from marker.models import create_model_dict
 
-        # Create converter with JSON output for layout detection
+        # Create configuration for JSON output
+        config = {
+            "output_format": "json",
+        }
+        if pages is not None:
+            config["page_range"] = pages
+
+        config_parser = ConfigParser(config)
+
+        # Create converter with proper configuration
         converter = PdfConverter(
+            config=config_parser.generate_config_dict(),
             artifact_dict=create_model_dict(),
-            output_format="json",  # Request JSON output with block structure
-            disable_ocr=False,  # Keep OCR enabled for better layout detection
-            page_range=pages,  # Limit to specific pages if requested
+            processor_list=config_parser.get_processors(),
+            renderer=config_parser.get_renderer(),
+            llm_service=config_parser.get_llm_service(),
         )
 
-        # Build document to get structured layout information
-        document = converter.build_document(pdf_path)
+        # Convert PDF to JSON format
+        rendered = converter(pdf_path)
 
-        # Render to JSON format to get the block structure
-        renderer = converter.resolve_dependencies(converter.renderer)
-        json_output = renderer(document)
-
-        # Convert to dictionary format expected by our utility functions
+        # Convert to the format expected by our utility functions
         result = {"pages": []}
 
-        for page_output in json_output.children:
-            page_data = {
-                "page": int(page_output.id.split("/")[-1]),  # Extract page number from ID
-                "blocks": [],
-            }
+        # The rendered object should have a children attribute with pages
+        if hasattr(rendered, "children") and rendered.children:
+            for page_output in rendered.children:
+                # Extract page number from block ID or use index
+                page_num = 0
+                if hasattr(page_output, "id") and page_output.id:
+                    # Try to extract page number from ID like "/page/0/Page/123"
+                    id_parts = str(page_output.id).split("/")
+                    if len(id_parts) >= 3 and id_parts[1] == "page":
+                        try:
+                            page_num = int(id_parts[2])
+                        except (ValueError, IndexError):
+                            pass
 
-            # Extract blocks from the page
-            if hasattr(page_output, "children") and page_output.children:
-                for block in page_output.children:
-                    block_data = {
-                        "type": block.block_type.lower(),
-                        "bbox": block.bbox,
-                        "polygon": block.polygon,
-                        "id": block.id,
-                        "confidence": 1.0,  # Marker doesn't provide confidence scores
-                    }
-                    page_data["blocks"].append(block_data)
+                page_data = {
+                    "page": page_num,
+                    "blocks": [],
+                }
 
-            result["pages"].append(page_data)
+                # Extract blocks from the page
+                if hasattr(page_output, "children") and page_output.children:
+                    for block in page_output.children:
+                        if hasattr(block, "block_type") and hasattr(block, "bbox"):
+                            block_data = {
+                                "type": str(block.block_type).lower(),
+                                "bbox": block.bbox if hasattr(block, "bbox") else [],
+                                "polygon": block.polygon if hasattr(block, "polygon") else [],
+                                "id": str(block.id) if hasattr(block, "id") else "",
+                                "confidence": 1.0,  # Marker doesn't provide confidence scores
+                            }
+                            # Add text content if available
+                            if hasattr(block, "html") and block.html:
+                                block_data["content"] = block.html
+                            page_data["blocks"].append(block_data)
+
+                result["pages"].append(page_data)
 
         return result
 
@@ -213,20 +237,6 @@ def marker_layout_job(
     Returns:
         Dictionary containing structured layout information
     """
-    # Run the async function in the current event loop or create a new one
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_running():
-            # If there's already a running loop, we need to run in a thread
-            import concurrent.futures
-
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(
-                    asyncio.run, async_marker_layout_job(pdf_path, pages, extract_text, document_id)
-                )
-                return future.result()
-        else:
-            return loop.run_until_complete(async_marker_layout_job(pdf_path, pages, extract_text, document_id))
-    except RuntimeError:
-        # No event loop exists, create a new one
-        return asyncio.run(async_marker_layout_job(pdf_path, pages, extract_text, document_id))
+    # Since RQ runs jobs synchronously, we can just call the async function directly
+    # using asyncio.run() which handles event loop creation properly
+    return asyncio.run(async_marker_layout_job(pdf_path, pages, extract_text, document_id))
