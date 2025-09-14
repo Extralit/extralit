@@ -131,83 +131,82 @@ async def async_marker_layout_job(
 
 def _call_marker_layout_detection(pdf_path: str, pages: Optional[list[int]] = None) -> dict[str, Any]:
     """
-    Call Marker's layout detection API using PdfConverter with JSON output.
+    Call Marker's layout detection API using the standard PdfConverter.
 
     Args:
         pdf_path: Path to the PDF file
         pages: Optional list of page numbers to process (0-indexed)
 
     Returns:
-        Marker's JSON layout detection results with block structure
+        Marker's layout detection results with block structure
     """
+    # Basic input validation
+    if not pdf_path:
+        raise ValueError("PDF path cannot be empty")
+
+    pdf_file = Path(pdf_path)
+    if not pdf_file.exists():
+        raise FileNotFoundError(f"PDF file does not exist: {pdf_path}")
+
+    if pdf_file.suffix.lower() != ".pdf":
+        raise ValueError(f"File is not a PDF: {pdf_path}")
+
     try:
         # Import marker components only when function is called (optional dependency)
         from marker.config.parser import ConfigParser
         from marker.converters.pdf import PdfConverter
         from marker.models import create_model_dict
 
-        # Create configuration for JSON output
-        config = {
-            "output_format": "json",
+        # Create optimized configuration for layout detection
+        config_dict = {
+            "output_format": "markdown",
+            "parallel_factor": 1,
         }
+
         if pages is not None:
-            config["page_range"] = pages
+            config_dict["page_range"] = pages
 
-        config_parser = ConfigParser(config)
+        config = ConfigParser(config_dict)
+        model_dict = create_model_dict()
 
-        # Create converter with proper configuration
         converter = PdfConverter(
-            config=config_parser.generate_config_dict(),
-            artifact_dict=create_model_dict(),
-            processor_list=config_parser.get_processors(),
-            renderer=config_parser.get_renderer(),
-            llm_service=config_parser.get_llm_service(),
+            config=config.generate_config_dict(),
+            artifact_dict=model_dict,
         )
 
-        # Convert PDF to JSON format
-        rendered = converter(pdf_path)
+        # Convert PDF - this will return a Document object with detected layout
+        result = converter.convert(pdf_path)
 
-        # Convert to the format expected by our utility functions
-        result = {"pages": []}
+        # Extract layout information from the result
+        # The result should have metadata and blocks that we can process
+        layout_data = {"pages": []}
 
-        # The rendered object should have a children attribute with pages
-        if hasattr(rendered, "children") and rendered.children:
-            for page_output in rendered.children:
-                # Extract page number from block ID or use index
-                page_num = 0
-                if hasattr(page_output, "id") and page_output.id:
-                    # Try to extract page number from ID like "/page/0/Page/123"
-                    id_parts = str(page_output.id).split("/")
-                    if len(id_parts) >= 3 and id_parts[1] == "page":
-                        try:
-                            page_num = int(id_parts[2])
-                        except (ValueError, IndexError):
-                            pass
-
-                page_data = {
-                    "page": page_num,
-                    "blocks": [],
-                }
+        if hasattr(result, "pages") and result.pages:
+            for page_idx, page in enumerate(result.pages):
+                page_data = {"page": page_idx, "blocks": []}
 
                 # Extract blocks from the page
-                if hasattr(page_output, "children") and page_output.children:
-                    for block in page_output.children:
+                if hasattr(page, "blocks") and page.blocks:
+                    for block in page.blocks:
                         if hasattr(block, "block_type") and hasattr(block, "bbox"):
                             block_data = {
                                 "type": str(block.block_type).lower(),
-                                "bbox": block.bbox if hasattr(block, "bbox") else [],
-                                "polygon": block.polygon if hasattr(block, "polygon") else [],
-                                "id": str(block.id) if hasattr(block, "id") else "",
-                                "confidence": 1.0,  # Marker doesn't provide confidence scores
+                                "bbox": list(block.bbox) if block.bbox else [],
+                                "id": str(getattr(block, "id", "")),
+                                "score": getattr(block, "confidence", 1.0),
                             }
-                            # Add text content if available
-                            if hasattr(block, "html") and block.html:
-                                block_data["content"] = block.html
+
+                            # Add content based on block type
+                            if hasattr(block, "content"):
+                                block_data["content"] = str(block.content)
+                            elif hasattr(block, "text"):
+                                block_data["content"] = str(block.text)
+
                             page_data["blocks"].append(block_data)
 
-                result["pages"].append(page_data)
+                layout_data["pages"].append(page_data)
 
-        return result
+        return layout_data
 
     except ImportError as e:
         _LOGGER.error(f"Marker dependencies not available: {e}")

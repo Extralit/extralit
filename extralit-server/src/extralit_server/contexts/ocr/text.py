@@ -70,7 +70,7 @@ def extract_text_bboxes(marker_layout: dict[str, Any]) -> list[dict[str, Any]]:
                 block.get("type") or block.get("block_type") or block.get("category") or block.get("label") or ""
             ).lower()
 
-            # Multiple patterns for text detection
+            # Multiple patterns for text detection (including Marker-specific types)
             if any(
                 keyword in block_type
                 for keyword in [
@@ -83,7 +83,10 @@ def extract_text_bboxes(marker_layout: dict[str, Any]) -> list[dict[str, Any]]:
                     "listitem",
                     "line",
                     "span",
-                    "caption",
+                    "textblock",
+                    "text_block",
+                    "paragraphblock",
+                    "paragraph_block",
                 ]
             ):
                 # Try different naming conventions for bounding box

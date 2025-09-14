@@ -69,7 +69,7 @@ def extract_figure_bboxes(marker_layout: dict[str, Any]) -> list[dict[str, Any]]
                 block.get("type") or block.get("block_type") or block.get("category") or block.get("label") or ""
             ).lower()
 
-            # Multiple patterns for figure detection
+            # Multiple patterns for figure detection (including Marker-specific types)
             if any(
                 keyword in block_type
                 for keyword in [
@@ -82,6 +82,10 @@ def extract_figure_bboxes(marker_layout: dict[str, Any]) -> list[dict[str, Any]]
                     "picture",
                     "picturegroup",
                     "figuregroup",
+                    "figureblock",
+                    "figure_block",
+                    "imageblock",
+                    "image_block",  #
                 ]
             ):
                 # Try different naming conventions for bounding box

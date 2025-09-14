@@ -69,8 +69,17 @@ def extract_table_bboxes(marker_layout: dict[str, Any]) -> list[dict[str, Any]]:
                 block.get("type") or block.get("block_type") or block.get("category") or block.get("label") or ""
             ).lower()
 
-            # Multiple patterns for table detection
-            if any(keyword in block_type for keyword in ["table", "grid", "matrix"]):
+            # Multiple patterns for table detection (including Marker-specific types)
+            if any(
+                keyword in block_type
+                for keyword in [
+                    "table",
+                    "grid",
+                    "matrix",
+                    "tableblock",
+                    "table_block",
+                ]
+            ):
                 # Try different naming conventions for bounding box
                 bbox = (
                     block.get("bbox")
