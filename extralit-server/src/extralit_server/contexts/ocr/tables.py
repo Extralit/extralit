@@ -12,3 +12,78 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Table detection and bounding box utilities for OCR processing."""
+
+from typing import Any
+
+
+def extract_table_bboxes(marker_layout: dict[str, Any]) -> list[dict[str, Any]]:
+    """
+    Extract table bounding boxes from Marker layout detection results.
+
+    Args:
+        marker_layout: Dictionary containing Marker's layout detection results
+
+    Returns:
+        List of dictionaries containing table bounding box information:
+        - page: Page number (0-indexed)
+        - bbox: Bounding box coordinates [x0, y0, x1, y1]
+        - score: Confidence score (if available)
+        - type: Element type ('table')
+    """
+    tables = []
+
+    # Handle different possible Marker output formats
+    pages_data = marker_layout.get("pages", [])
+    if not pages_data and "blocks" in marker_layout:
+        # Single page format
+        pages_data = [marker_layout]
+
+    for page_idx, page_data in enumerate(pages_data):
+        page_number = page_data.get("page", page_idx)
+        blocks = page_data.get("blocks", [])
+
+        for block in blocks:
+            block_type = block.get("type", "").lower()
+            if block_type in ["table", "tablegroup"]:
+                bbox = block.get("bbox") or block.get("coordinates")
+                if bbox and len(bbox) == 4:
+                    tables.append(
+                        {
+                            "page": page_number,
+                            "bbox": bbox,
+                            "score": block.get("score") or block.get("confidence"),
+                            "type": "table",
+                            "metadata": {
+                                "source": "marker",
+                                "block_id": block.get("id"),
+                                "polygon": block.get("polygon"),
+                            },
+                        }
+                    )
+
+    return tables
+
+
+def normalize_table_bbox(bbox: list[float], page_width: float, page_height: float) -> list[float]:
+    """
+    Normalize bounding box coordinates to relative values (0-1 range).
+
+    Args:
+        bbox: Bounding box coordinates [x0, y0, x1, y1]
+        page_width: Page width in points
+        page_height: Page height in points
+
+    Returns:
+        Normalized bounding box coordinates [x0, y0, x1, y1]
+    """
+    if not bbox or len(bbox) != 4:
+        return [0.0, 0.0, 0.0, 0.0]
+
+    x0, y0, x1, y1 = bbox
+    return [
+        max(0.0, min(1.0, x0 / page_width)),
+        max(0.0, min(1.0, y0 / page_height)),
+        max(0.0, min(1.0, x1 / page_width)),
+        max(0.0, min(1.0, y1 / page_height)),
+    ]
