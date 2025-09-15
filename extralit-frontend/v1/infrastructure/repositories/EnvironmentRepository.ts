@@ -20,7 +20,7 @@ export class EnvironmentRepository implements IEnvironmentRepository {
       const { data } = await this.axios.get<BackendEnvironment>("v1/settings", largeCache());
 
       const {
-        argilla = {
+        extralit = {
           share_your_progress_enabled: false,
           show_huggingface_space_persistent_storage_warning: false,
         },
@@ -37,8 +37,8 @@ export class EnvironmentRepository implements IEnvironmentRepository {
 
       return new Environment(
         {
-          showHuggingfaceSpacePersistentStorageWarning: argilla.show_huggingface_space_persistent_storage_warning,
-          shareYourProgressEnabled: argilla.share_your_progress_enabled,
+          showHuggingfaceSpacePersistentStorageWarning: extralit.show_huggingface_space_persistent_storage_warning,
+          shareYourProgressEnabled: extralit.share_your_progress_enabled,
         },
         {
           spaceId: huggingface.space_id,
