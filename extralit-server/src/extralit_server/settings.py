@@ -81,8 +81,8 @@ class Settings(BaseSettings):
         validate_default=True,
         description="The home path where extralit related files will be stored",
     )
-    base_url: str | None = Field(
-        None,
+    base_url: str = Field(
+        "http://localhost:6900",
         validate_default=True,
         description="The default base url where server will be deployed",
     )

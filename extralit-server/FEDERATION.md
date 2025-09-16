@@ -36,8 +36,8 @@ pdm run cli hub-auth status
 2. **Set Environment Variables** (optional, for persistence):
    ```bash
    export EXTRALIT_HUB_URL=https://hub.extralit.ai
-   export OAUTH2_EXTRALIT_HUB_CLIENT_ID=your_client_id
-   export OAUTH2_EXTRALIT_HUB_CLIENT_SECRET=your_client_secret
+   export OAUTH2_EXTRALITHUB_CLIENT_ID=your_client_id
+   export OAUTH2_EXTRALITHUB_CLIENT_SECRET=your_client_secret
    ```
 
 3. **Test Configuration**:
@@ -52,8 +52,8 @@ pdm run cli hub-auth status
 | Variable                            | Description          | Default                                                                         |
 | ----------------------------------- | -------------------- | ------------------------------------------------------------------------------- |
 | `EXTRALIT_HUB_URL`                  | Hub base URL         | `https://hub.extralit.ai` (production)<br>`http://localhost:3000` (development) |
-| `OAUTH2_EXTRALIT_HUB_CLIENT_ID`     | OAuth2 client ID     | Auto-generated during registration                                              |
-| `OAUTH2_EXTRALIT_HUB_CLIENT_SECRET` | OAuth2 client secret | Auto-generated during registration                                              |
+| `OAUTH2_EXTRALITHUB_CLIENT_ID`     | OAuth2 client ID     | Auto-generated during registration                                              |
+| `OAUTH2_EXTRALITHUB_CLIENT_SECRET` | OAuth2 client secret | Auto-generated during registration                                              |
 
 ### HuggingFace Spaces Detection
 
@@ -80,7 +80,7 @@ Add the Hub provider to your OAuth2 configuration:
 ```python
 # In your settings or configuration
 OAUTH2_PROVIDERS = {
-    "extralit_hub": {
+    "extralithub": {
         "enabled": True,
         "auto_register": True,  # Automatically create users
         "sync_user_data": True,  # Keep user data in sync
@@ -92,7 +92,7 @@ OAUTH2_PROVIDERS = {
 
 Credentials are stored in the following priority order:
 
-1. **Environment Variables**: `OAUTH2_EXTRALIT_HUB_CLIENT_ID` and `OAUTH2_EXTRALIT_HUB_CLIENT_SECRET`
+1. **Environment Variables**: `OAUTH2_EXTRALITHUB_CLIENT_ID` and `OAUTH2_EXTRALITHUB_CLIENT_SECRET`
 2. **Credential File**: Stored at `~/.extralit/.extralit_hub_credentials.json` (or `$EXTRALIT_HOME_PATH/.extralit_hub_credentials.json`)
 
 The credential file is automatically created during registration and has restricted permissions (600) for security.
@@ -139,7 +139,7 @@ pdm run cli hub-auth clear-credentials
 1. **"Hub client credentials not available"**
    - Run `pdm run cli hub-auth register` to register your instance
    - Check that `EXTRALIT_HUB_URL` is correctly set
-   - Verify `OAUTH2_EXTRALIT_HUB_CLIENT_ID` and `OAUTH2_EXTRALIT_HUB_CLIENT_SECRET` are set if using environment variables
+   - Verify `OAUTH2_EXTRALITHUB_CLIENT_ID` and `OAUTH2_EXTRALITHUB_CLIENT_SECRET` are set if using environment variables
 
 2. **"Registration failed: Connection refused"**
    - Verify Hub URL is accessible

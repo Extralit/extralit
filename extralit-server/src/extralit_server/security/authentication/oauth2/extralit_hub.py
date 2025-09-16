@@ -37,7 +37,7 @@ class HubRegistrationError(AuthException):
 class ExtralitHubOpenId(OpenIdConnectAuth):
     """Extralit Hub OpenID Connect authentication backend."""
 
-    name = "extralit_hub"
+    name = "extralithub"
 
     # Will be set during initialization
     AUTHORIZATION_URL = f"{settings.hub_url}/api/auth/oauth2/authorize"
@@ -159,8 +159,8 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
     def _prepare_self_hosted_registration(self) -> dict[str, Any]:
         """Prepare registration data for self-hosted instances."""
         # Get base URL for self-hosted instance
-        base_url = getattr(settings, "BASE_URL", "http://localhost:6900")
-        instance_name = getattr(settings, "INSTANCE_NAME", "extralit-self-hosted")
+        base_url = settings.base_url
+        instance_name = "extralit-self-hosted"
 
         redirect_uri = f"{base_url.rstrip('/')}/api/auth/callback/extralit_hub"
 

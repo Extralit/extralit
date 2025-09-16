@@ -74,7 +74,7 @@ def _get_provider_display_name(provider_name: str) -> str:
     """Get user-friendly display name for OAuth provider."""
     display_names = {
         "huggingface": "HuggingFace",
-        "extralit_hub": "Extralit Hub",
+        "extralithub": "Extralit Hub",
         "github": "GitHub",
         "google": "Google",
         "keycloak": "Keycloak",
@@ -86,7 +86,7 @@ def _get_provider_icon(provider_name: str) -> str | None:
     """Get icon identifier for OAuth provider."""
     icons = {
         "huggingface": "huggingface",
-        "extralit_hub": "extralit",
+        "extralithub": "extralit",
         "github": "github",
         "google": "google",
         "keycloak": "keycloak",
