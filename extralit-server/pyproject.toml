@@ -65,7 +65,7 @@ dependencies = [
     # NumPy 2.x compatibility
     "numpy>=2.0.0,<3.0.0",
     # For Telemetry
-    "huggingface-hub~=0.30.0",
+    "huggingface-hub~=0.34.0",
     "Jinja2>=3.1.4",           # Used by huggingface-hub to render dataset card templates
     # For file storage
     "aioboto3>=13.1.1",
@@ -73,7 +73,7 @@ dependencies = [
     # For document processing
     "ocrmypdf>=16.11.0",
     "pdf2image>=1.17.0",
-    "opencv-python-headless>=4.12.0",
+    "opencv-python-headless>=4.11.0.86",
 ]
 
 [project.optional-dependencies]
@@ -83,7 +83,7 @@ postgresql = [
     "asyncpg ~= 0.30.0",
 ]
 marker = [
-    "marker-pdf>=1.9.2",
+    "marker-pdf>=1.9.3",
     "torch>=2.5.0",
     "torchvision>=0.20.0",
     "transformers>=4.51.0",
