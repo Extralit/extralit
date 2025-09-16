@@ -1,3 +1,5 @@
+import type { OAuthProvider } from "../../../infrastructure/types/environment";
+
 export class Environment {
   constructor(
     private readonly extralit: {
@@ -12,7 +14,8 @@ export class Environment {
       spaceRepoName: string;
       spaceAuthorName: string;
       spacePersistentStorageEnabled: boolean;
-    }
+    },
+    private readonly oauthProviders: OAuthProvider[] = []
   ) {}
 
   get shouldShowHuggingfaceSpacePersistentStorageWarning(): boolean {
@@ -31,5 +34,13 @@ export class Environment {
         host: this.huggingface.spaceHost,
       };
     }
+  }
+
+  get availableOAuthProviders(): OAuthProvider[] {
+    return this.oauthProviders.filter(provider => provider.enabled);
+  }
+
+  hasOAuthProvider(providerName: string): boolean {
+    return this.oauthProviders.some(provider => provider.name === providerName && provider.enabled);
   }
 }

@@ -4,6 +4,7 @@
     <ul class="oauth__container__providers">
       <li v-for="provider in providers" :key="provider.name">
         <HuggingFaceButton v-if="provider.isHuggingFace" @click="authorize(provider.name)" />
+        <ExtralitHubButton v-else-if="provider.isExtralitHub" @click="authorize(provider.name)" />
         <OAuthLoginButton v-else :provider="provider.name" @click="authorize(provider.name)" />
       </li>
     </ul>

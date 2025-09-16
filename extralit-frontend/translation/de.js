@@ -134,6 +134,7 @@ export default {
     login: "Anmelden",
     signin_with_provider: "Mit {provider} anmelden",
     "hf-login": "Mit Hugging Face anmelden",
+    "extralit-hub-login": "Mit Extralit Hub anmelden",
     sign_in_with_username: "Mit Benutzername anmelden",
     cancel: "Abbrechen",
     continue: "Fortfahren",

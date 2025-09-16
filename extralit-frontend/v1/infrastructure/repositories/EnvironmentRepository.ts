@@ -33,6 +33,7 @@ export class EnvironmentRepository implements IEnvironmentRepository {
           space_subdomain: "",
           space_title: "",
         },
+        oauth_providers = [],
       } = data;
 
       return new Environment(
@@ -48,7 +49,8 @@ export class EnvironmentRepository implements IEnvironmentRepository {
           spaceRepoName: huggingface.space_repo_name,
           spaceAuthorName: huggingface.space_author_name,
           spacePersistentStorageEnabled: huggingface.space_persistent_storage_enabled,
-        }
+        },
+        oauth_providers
       );
     } catch (err) {
       throw {
