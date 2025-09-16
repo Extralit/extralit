@@ -168,7 +168,7 @@ class RecordValidatorBase(ABC):
                 f"image field {field_name!r} value is exceeding the maximum length of {IMAGE_FIELD_DATA_URL_MAX_LENGTH} characters for Data URLs"
             )
 
-        type, encoding = mimetypes.guess_type(field_value)
+        type, _encoding = mimetypes.guess_type(field_value)
         if type not in IMAGE_FIELD_DATA_URL_VALID_MIME_TYPES:
             raise UnprocessableEntityError(
                 f"image field {field_name!r} value is using an unsupported MIME type, supported MIME types are: {IMAGE_FIELD_DATA_URL_VALID_MIME_TYPES!r}"

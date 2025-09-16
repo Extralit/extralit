@@ -40,7 +40,7 @@ def _memory_size(bytes) -> str:
     ]
 
     factor, suffix = None, None
-    for factor, suffix in system:
+    for factor, suffix in system:  # noqa: B007
         if bytes >= factor:
             break
 
