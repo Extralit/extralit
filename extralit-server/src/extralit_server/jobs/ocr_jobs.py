@@ -14,11 +14,10 @@
 
 """OCR-related job functions for document processing."""
 
-import argparse
-import json
 import logging
 from pathlib import Path
-from typing import Any, Optional, Union
+from pprint import pprint
+from typing import TYPE_CHECKING, Any, Optional, Union
 from uuid import UUID
 
 from rq import Retry, get_current_job
@@ -30,6 +29,9 @@ from extralit_server.contexts.ocr.text import extract_text_bboxes
 from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
 
 _LOGGER = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from marker.renderers.markdown import MarkdownOutput
 
 try:
     from marker.config.parser import ConfigParser
@@ -43,7 +45,7 @@ except ImportError as e:
 @job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=1800, retry=Retry(max=2, interval=[30, 60]))
 async def async_marker_layout_job(
     pdf_path: Union[str, Path],
-    pages: Optional[list[int]] = None,
+    pages: Optional[str] = None,
     extract_text: bool = False,
     document_id: Optional[UUID] = None,
 ) -> dict[str, Any]:
@@ -55,7 +57,7 @@ async def async_marker_layout_job(
 
     Args:
         pdf_path: Path to the PDF file to process
-        pages: Optional list of page numbers to process (0-indexed). If None, processes all pages
+        pages: Optional comma-separated page numbers to process (0-indexed). If None, processes all pages
         extract_text: Whether to extract text blocks in addition to tables/figures
         document_id: Optional document ID for job tracking
 
@@ -110,32 +112,32 @@ async def async_marker_layout_job(
                 "pages_processed": pages or "all",
                 "total_elements": len(tables) + len(figures) + len(text_blocks),
                 "extract_text": extract_text,
-                "processing_time": None,  # Could be added if marker provides this
+                "processing_time": None,
             },
         }
 
         # Update job metadata with results
-        current_job.meta.update(
-            {
-                "layout_extraction_complete": True,
-                "tables_found": len(tables),
-                "figures_found": len(figures),
-                "text_blocks_found": len(text_blocks),
-            }
-        )
-        current_job.save_meta()
+        # current_job.meta.update(
+        #     {
+        #         "layout_extraction_complete": True,
+        #         "tables_found": len(tables),
+        #         "figures_found": len(figures),
+        #         "text_blocks_found": len(text_blocks),
+        #     }
+        # )
+        # current_job.save_meta()
 
         _LOGGER.info(f"Marker layout extraction completed. Found {len(tables)} tables, {len(figures)} figures")
         return result
 
     except Exception as e:
-        _LOGGER.error(f"Error in marker layout extraction job: {e}")
-        current_job.meta["error"] = str(e)
-        current_job.save_meta()
+        _LOGGER.error(f"Error in marker layout extraction job: {e}", exc_info=True)
+        # current_job.meta["error"] = str(e)
+        # current_job.save_meta()
         raise
 
 
-def _call_marker_layout_detection(pdf_path: str, pages: Optional[list[int]] = None) -> dict[str, Any]:
+def _call_marker_layout_detection(pdf_path: str, pages: Optional[str] = None) -> dict[str, Any]:
     """
     Call Marker's layout detection API using the standard PdfConverter.
 
@@ -176,7 +178,8 @@ def _call_marker_layout_detection(pdf_path: str, pages: Optional[list[int]] = No
         )
 
         # Convert PDF - this will return a Document object with detected layout
-        result = converter(pdf_path)
+        result: "MarkdownOutput" = converter(pdf_path)  # noqa: UP037
+        pprint(result.model_dump())
 
         # Extract layout information from the result
         # The result should have metadata and blocks that we can process
@@ -231,14 +234,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--extract-text", action="store_true", help="Extract text blocks in addition to tables/figures."
     )
-    parser.add_argument("--document-id", type=str, default=None, help="Optional document UUID for job tracking.")
-
     args = parser.parse_args()
 
     pdf_path = args.pdf_path
-    pages = [int(p) for p in args.pages.split(",")] if args.pages else None
+    pages = args.pages
     extract_text = args.extract_text
-    document_id = UUID(args.document_id) if args.document_id else None
 
     async def _main():
         # Call the underlying logic directly, not as an RQ job
@@ -246,7 +246,6 @@ if __name__ == "__main__":
             pdf_path=pdf_path,
             pages=pages,
             extract_text=extract_text,
-            document_id=document_id,
         )
         print(json.dumps(result, indent=2, ensure_ascii=False))
 
