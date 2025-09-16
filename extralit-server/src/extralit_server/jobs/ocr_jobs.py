@@ -31,6 +31,7 @@ from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
 _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from marker.renderers.json import JSONOutput
     from marker.renderers.markdown import MarkdownOutput
 
 try:
@@ -162,7 +163,7 @@ def _call_marker_layout_detection(pdf_path: str, pages: Optional[str] = None) ->
     try:
         # Create optimized configuration for layout detection
         config_dict = {
-            "output_format": "markdown",
+            "output_format": "json",
             "parallel_factor": 1,
         }
 
@@ -178,7 +179,8 @@ def _call_marker_layout_detection(pdf_path: str, pages: Optional[str] = None) ->
         )
 
         # Convert PDF - this will return a Document object with detected layout
-        result: "MarkdownOutput" = converter(pdf_path)  # noqa: UP037
+        result: "MarkdownOutput | JSONOutput" = converter(pdf_path)  # noqa: UP037
+        print(type(result))
         pprint(result.model_dump())
 
         # Extract layout information from the result
