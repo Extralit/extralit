@@ -13,7 +13,7 @@ const OAUTH_API_ERRORS = {
 };
 
 interface BackendOAuthProvider {
-  name: "huggingface" | "extralit-hub";
+  name: "huggingface" | "extralithub";
 }
 
 export class OAuthRepository implements IOAuthRepository {

@@ -1,6 +1,6 @@
 import { Dictionary } from "../common/Params";
 
-export type ProviderType = "huggingface" | "extralit-hub";
+export type ProviderType = "huggingface" | "extralithub";
 export type OAuthParams = Dictionary<string | (string | null)[]>;
 export class OAuthProvider {
   constructor(public readonly name: ProviderType) {}
@@ -10,6 +10,6 @@ export class OAuthProvider {
   }
 
   get isExtralitHub() {
-    return this.name === "extralit-hub";
+    return this.name === "extralithub";
   }
 }

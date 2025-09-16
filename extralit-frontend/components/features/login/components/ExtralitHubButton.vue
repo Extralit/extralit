@@ -1,7 +1,7 @@
 <template>
   <BaseButton class="button-extralit-hub" @click="$emit('click')">
     <ExtralitLogo />
-    {{ $t("button.extralit-hub-login") }}
+    {{ $t("button.extralithub-login") }}
   </BaseButton>
 </template>
 

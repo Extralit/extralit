@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 import os
 
 import yaml
@@ -57,6 +58,8 @@ class OAuth2Settings:
         self.allowed_workspaces = self._build_workspaces(settings) or []
         self._providers = self._build_providers(settings, extra_backends) or []
 
+        self._auto_detect_extralit_hub_provider()
+
         if self.allow_http_redirect:
             # See https://stackoverflow.com/questions/27785375/testing-flask-oauthlib-locally-without-https
             os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -90,3 +93,59 @@ class OAuth2Settings:
             providers.append(OAuth2ClientProvider.from_dict(provider, backend_class))
 
         return providers
+
+    def _auto_detect_extralit_hub_provider(self) -> None:
+        """Auto-detect ExtralitHub credentials and add provider if available."""
+        # Skip if ExtralitHub provider is already configured
+        if any(provider.name == "extralithub" for provider in self._providers):
+            return
+
+        credentials = self._detect_extralit_hub_credentials()
+        if credentials:
+            try:
+                load_supported_backends(extra_backends=self.extra_backends)
+
+                # Get ExtralitHub backend class
+                backend_class = get_supported_backend_by_name("extralithub")
+
+                # Create provider with detected credentials
+                provider = OAuth2ClientProvider(
+                    backend_class=backend_class,
+                    client_id=credentials["client_id"],
+                    client_secret=credentials["client_secret"],
+                )
+
+                # Add to providers list
+                self._providers.append(provider)
+
+            except Exception:
+                # If we can't load the backend or create the provider, skip silently
+                pass
+
+    def _detect_extralit_hub_credentials(self) -> dict[str, str] | None:
+        """Detect ExtralitHub credentials from environment variables or credentials file."""
+        # First check environment variables
+        client_id = os.getenv("OAUTH2_EXTRALITHUB_CLIENT_ID")
+        client_secret = os.getenv("OAUTH2_EXTRALITHUB_CLIENT_SECRET")
+
+        if client_id and client_secret:
+            return {"client_id": client_id, "client_secret": client_secret}
+
+        # Then check credentials file
+        try:
+            from extralit_server.settings import settings as app_settings
+
+            credentials_file = os.path.join(app_settings.home_path, ".extralit_hub_credentials.json")
+            if os.path.exists(credentials_file):
+                with open(credentials_file) as f:
+                    credentials = json.load(f)
+                    if credentials.get("client_id") and credentials.get("client_secret"):
+                        return {
+                            "client_id": credentials["client_id"],
+                            "client_secret": credentials["client_secret"],
+                        }
+        except (json.JSONDecodeError, OSError, ImportError):
+            # If we can't read the file or import settings, skip silently
+            pass
+
+        return None
