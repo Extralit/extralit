@@ -21,7 +21,6 @@ import requests
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthException
 
-from extralit_server.api.handlers.v1.models import client
 from extralit_server.integrations.huggingface.spaces import HUGGINGFACE_SETTINGS
 from extralit_server.settings import settings
 
@@ -40,8 +39,8 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
     name = "extralithub"
 
     # Will be set during initialization
-    AUTHORIZATION_URL = f"{settings.hub_url}/api/auth/oauth2/authorize"
-    ACCESS_TOKEN_URL = f"{settings.hub_url}/api/auth/oauth2/token"
+    AUTHORIZATION_URL = f"{settings.hub_url.rstrip('/')}/api/auth/oauth2/authorize"
+    ACCESS_TOKEN_URL = f"{settings.hub_url.rstrip('/')}/api/auth/oauth2/token"
     OIDC_ENDPOINT = settings.hub_url
 
     DEFAULT_SCOPE = ["openid", "profile", "extralit:llm_access"]
@@ -58,14 +57,14 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
             return
         else:
             logger.error(
-                "Failed to load Hub registration, ensure OAUTH2_EXTRALIT_HUB_CLIENT_ID and OAUTH2_EXTRALIT_HUB_CLIENT_SECRET are set"
+                "Failed to load Hub registration, ensure OAUTH2_EXTRALITHUB_CLIENT_ID and OAUTH2_EXTRALITHUB_CLIENT_SECRET are set"
             )
 
     def _load_stored_credentials(self) -> bool:
         """Load stored client credentials if they exist."""
         # Check OAuth2 environment variables first
-        client_id = os.getenv("OAUTH2_EXTRALIT_HUB_CLIENT_ID")
-        client_secret = os.getenv("OAUTH2_EXTRALIT_HUB_CLIENT_SECRET")
+        client_id = os.getenv("OAUTH2_EXTRALITHUB_CLIENT_ID")
+        client_secret = os.getenv("OAUTH2_EXTRALITHUB_CLIENT_SECRET")
 
         if client_id and client_secret:
             self._client_credentials = {"client_id": client_id, "client_secret": client_secret}
@@ -87,28 +86,24 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
 
         return False
 
-    async def _register_with_hub(self) -> None:
+    def _register_with_hub(self) -> None:
         """Register this instance with the Extralit Hub."""
         registration_data = self._prepare_registration_data()
 
         try:
-            response = await client.post(
-                f"{settings.base_url}/api/oauth2/register",
+            response = requests.post(
+                f"{self.OIDC_ENDPOINT.rstrip('/')}/api/oauth2/register",
                 json=registration_data,
                 timeout=30,
                 headers={"Content-Type": "application/json"},
             )
 
-            if response.status_code == 201:
+            if response.status_code in {201, 409}:
                 credentials = response.json()
+                if response.status_code == 409:
+                    logger.info(f"Instance already registered: {response.json().get('client_id')}")
                 self._store_credentials(credentials)
                 logger.info(f"Successfully registered with Hub: {credentials['client_id']}")
-
-            elif response.status_code == 409:
-                # Already registered
-                existing_data = response.json()
-                logger.info(f"Instance already registered: {existing_data.get('existing_client_id')}")
-                # TODO: Handle existing registration lookup
 
             else:
                 error_data = response.json() if response.content else {}
@@ -138,7 +133,7 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
             raise HubRegistrationError("Cannot register HF Space: SPACE_ID not found")
 
         instance_name = f"{space_author}-{space_repo}" if space_author and space_repo else space_id
-        redirect_uri = f"https://{space_id}.hf.space/api/auth/callback/extralit_hub"
+        redirect_uri = f"https://{space_id}.hf.space/oauth/extralithub/callback"
 
         return {
             "instance_name": instance_name,
@@ -159,10 +154,10 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
     def _prepare_self_hosted_registration(self) -> dict[str, Any]:
         """Prepare registration data for self-hosted instances."""
         # Get base URL for self-hosted instance
-        base_url = settings.base_url
+        base_url = settings.base_url.rstrip("/") or "http://localhost:6900"
         instance_name = "extralit-self-hosted"
 
-        redirect_uri = f"{base_url.rstrip('/')}/api/auth/callback/extralit_hub"
+        redirect_uri = f"{base_url.rstrip('/')}/oauth/extralithub/callback"
 
         # Determine instance type
         instance_type = "self_hosted" if "localhost" in base_url or "127.0.0.1" in base_url else "custom"
@@ -188,8 +183,8 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
 
         # Log credentials for manual environment variable setup
         logger.info("Store these credentials as environment variables:")
-        logger.info(f"OAUTH2_EXTRALIT_HUB_CLIENT_ID={credentials['client_id']}")
-        logger.info("OAUTH2_EXTRALIT_HUB_CLIENT_SECRET=[REDACTED]")
+        logger.info(f"OAUTH2_EXTRALITHUB_CLIENT_ID={credentials['client_id']}")
+        logger.info("OAUTH2_EXTRALITHUB_CLIENT_SECRET=[REDACTED]")
 
         try:
             credentials_file = os.path.join(settings.home_path, ".extralit_hub_credentials.json")
@@ -247,6 +242,6 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
         """Get the redirect URI for this instance."""
         if HUGGINGFACE_SETTINGS.is_running_on_huggingface:
             space_id = HUGGINGFACE_SETTINGS.space_id
-            return f"https://{space_id}.hf.space/api/auth/callback/extralit_hub"
+            return f"https://{space_id}.hf.space/oauth/extralithub/callback"
         else:
-            return f"{(settings.base_url or 'localhost:6900').rstrip('/')}/api/auth/callback/extralit_hub"
+            return f"{(settings.base_url or 'localhost:6900').rstrip('/')}/oauth/extralithub/callback"

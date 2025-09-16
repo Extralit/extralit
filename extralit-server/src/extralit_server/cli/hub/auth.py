@@ -56,17 +56,15 @@ def register_instance(
         typer.echo(f"   Redirect URI: {registration_data['redirect_uris'][0]}")
         typer.echo(f"   Hub URL: {hub_backend.OIDC_ENDPOINT}")
 
-        # Perform registration
-        typer.echo("🚀 Registering with Hub...")
-        _ = hub_backend._register_with_hub()
+        hub_backend._register_with_hub()
 
-        typer.echo("✅ Registration successful!")
         if hub_backend._client_credentials:
+            typer.echo("✅ Registration successful!")
             typer.echo(f"   Client ID: {hub_backend._client_credentials['client_id']}")
             typer.echo("   Client secret has been stored securely")
 
     except Exception as e:
-        typer.echo(f"❌ Registration failed: {e}")
+        typer.echo(f"❌ Registration failed: {e}", err=True)
         raise typer.Exit(1)
 
 

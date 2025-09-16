@@ -1,6 +1,6 @@
 <template>
   <BaseButton class="button-extralit-hub" @click="$emit('click')">
-    <ExtralitLogo />
+    <brand-icon class="brand-icon" color="white" aria-label="Extralit icon" />
     {{ $t("button.extralithub-login") }}
   </BaseButton>
 </template>

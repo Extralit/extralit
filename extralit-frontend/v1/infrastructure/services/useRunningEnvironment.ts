@@ -44,7 +44,7 @@ export const useRunningEnvironment = () => {
   const hasExtralitHubOAuthConfigured = async (): Promise<boolean> => {
     const environment = await getEnvironment();
 
-    return environment.hasOAuthProvider("extralit-hub");
+    return environment.hasOAuthProvider("extralithub");
   };
 
   const getShareYourProgressEnabled = async () => {
