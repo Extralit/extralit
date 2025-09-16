@@ -167,5 +167,3 @@ cython_debug/
 
 # Generated static files
 src/extralit_server/static/
-
-.extralit_hub_credentials

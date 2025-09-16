@@ -57,9 +57,6 @@ class OAuth2Settings:
         self.allowed_workspaces = self._build_workspaces(settings) or []
         self._providers = self._build_providers(settings, extra_backends) or []
 
-        # Auto-configure Hub provider if running on HuggingFace Spaces
-        self._auto_configure_hub_provider()
-
         if self.allow_http_redirect:
             # See https://stackoverflow.com/questions/27785375/testing-flask-oauthlib-locally-without-https
             os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
@@ -93,38 +90,3 @@ class OAuth2Settings:
             providers.append(OAuth2ClientProvider.from_dict(provider, backend_class))
 
         return providers
-
-    def _auto_configure_hub_provider(self) -> None:
-        """Auto-configure Extralit Hub provider if appropriate."""
-        try:
-            # Check if Hub provider is already configured
-            if "extralit_hub" in self.providers:
-                return
-
-            # Check if we have Hub credentials available
-            hub_client_id = os.getenv("EXTRALIT_HUB_CLIENT_ID")
-            hub_client_secret = os.getenv("EXTRALIT_HUB_CLIENT_SECRET")
-
-            if not hub_client_id or not hub_client_secret:
-                return
-
-            # Load the Hub backend
-            load_supported_backends(extra_backends=self.extra_backends)
-            backend_class = get_supported_backend_by_name("extralit_hub")
-
-            # Create Hub provider configuration
-            hub_provider_config = {
-                "client_id": hub_client_id,
-                "client_secret": hub_client_secret,
-                "sync_user": True,  # Sync user data from Hub
-            }
-
-            # Create and add the Hub provider
-            hub_provider = OAuth2ClientProvider.from_dict(hub_provider_config, backend_class)
-            hub_provider.name = "extralit_hub"  # Ensure name is set correctly
-            self._providers.append(hub_provider)
-
-        except Exception:
-            # If auto-configuration fails, continue without Hub provider
-            # This ensures the application still works even if Hub integration fails
-            pass

@@ -21,6 +21,7 @@ import requests
 from social_core.backends.open_id_connect import OpenIdConnectAuth
 from social_core.exceptions import AuthException
 
+from extralit_server.api.handlers.v1.models import client
 from extralit_server.integrations.huggingface.spaces import HUGGINGFACE_SETTINGS
 from extralit_server.settings import settings
 
@@ -39,80 +40,60 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
     name = "extralit_hub"
 
     # Will be set during initialization
-    AUTHORIZATION_URL = None
-    ACCESS_TOKEN_URL = None
-    OIDC_ENDPOINT = None
+    AUTHORIZATION_URL = f"{settings.hub_url}/api/auth/oauth2/authorize"
+    ACCESS_TOKEN_URL = f"{settings.hub_url}/api/auth/oauth2/token"
+    OIDC_ENDPOINT = settings.hub_url
 
     DEFAULT_SCOPE = ["openid", "profile", "extralit:llm_access"]
 
     # Client credentials (set during registration)
     _client_credentials: Optional[dict[str, str]] = None
-    _hub_base_url: Optional[str] = None
 
     def __init__(self, *args, **kwargs):
         """Initialize and ensure Hub registration."""
         super().__init__(*args, **kwargs)
-        self._hub_base_url = self._get_hub_base_url()
-        self._setup_oidc_endpoints()
-        self._ensure_registration()
 
-    def _get_hub_base_url(self) -> str:
-        """Get Hub base URL from settings."""
-        hub_url = getattr(settings, "EXTRALIT_HUB_URL", None)
-        if not hub_url:
-            # Default to production Hub or local development
-            if HUGGINGFACE_SETTINGS.is_running_on_huggingface:
-                hub_url = "https://hub.extralit.ai"
-            else:
-                hub_url = os.getenv("EXTRALIT_HUB_URL", "http://localhost:3000")
-
-        return hub_url.rstrip("/")
-
-    def _setup_oidc_endpoints(self) -> None:
-        """Configure OIDC endpoints based on Hub URL."""
-        base_url = self._hub_base_url
-        self.AUTHORIZATION_URL = f"{base_url}/api/auth/oauth2/authorize"
-        self.ACCESS_TOKEN_URL = f"{base_url}/api/auth/oauth2/token"
-        self.OIDC_ENDPOINT = base_url
-
-    def _ensure_registration(self) -> None:
-        """Ensure this instance is registered with the Hub."""
-        try:
-            # Check if we already have credentials
-            if self._load_stored_credentials():
-                logger.info("Found existing Hub OIDC credentials")
-                return
-
-            # Register with Hub
-            logger.info("No Hub OIDC credentials found, registering instance...")
-            self._register_with_hub()
-
-        except Exception as e:
-            logger.error(f"Failed to ensure Hub registration: {e}")
-            # Don't raise exception to allow instance to start
-            # Manual registration may be needed
+        if self._load_stored_credentials():
+            logger.info("Found existing Hub OIDC credentials")
+            return
+        else:
+            logger.error(
+                "Failed to load Hub registration, ensure OAUTH2_EXTRALIT_HUB_CLIENT_ID and OAUTH2_EXTRALIT_HUB_CLIENT_SECRET are set"
+            )
 
     def _load_stored_credentials(self) -> bool:
         """Load stored client credentials if they exist."""
-        # In production, these would be stored securely (encrypted files, vault, etc.)
-        # For now, using environment variables as fallback
-        client_id = os.getenv("EXTRALIT_HUB_CLIENT_ID")
-        client_secret = os.getenv("EXTRALIT_HUB_CLIENT_SECRET")
+        # Check OAuth2 environment variables first
+        client_id = os.getenv("OAUTH2_EXTRALIT_HUB_CLIENT_ID")
+        client_secret = os.getenv("OAUTH2_EXTRALIT_HUB_CLIENT_SECRET")
 
         if client_id and client_secret:
             self._client_credentials = {"client_id": client_id, "client_secret": client_secret}
             return True
 
-        # TODO: Check for credentials file or secure storage
+        credentials_file = os.path.join(settings.home_path, ".extralit_hub_credentials.json")
+        try:
+            if os.path.exists(credentials_file):
+                with open(credentials_file) as f:
+                    credentials = json.load(f)
+                    if credentials.get("client_id") and credentials.get("client_secret"):
+                        self._client_credentials = {
+                            "client_id": credentials["client_id"],
+                            "client_secret": credentials["client_secret"],
+                        }
+                        return True
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning(f"Could not load credentials file: {e}")
+
         return False
 
-    def _register_with_hub(self) -> None:
+    async def _register_with_hub(self) -> None:
         """Register this instance with the Extralit Hub."""
         registration_data = self._prepare_registration_data()
 
         try:
-            response = requests.post(
-                f"{self._hub_base_url}/api/oauth2/register",
+            response = await client.post(
+                f"{settings.base_url}/api/oauth2/register",
                 json=registration_data,
                 timeout=30,
                 headers={"Content-Type": "application/json"},
@@ -205,20 +186,16 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
             "client_secret": credentials["client_secret"],
         }
 
-        # TODO: In production, store credentials securely
-        # For now, log them for manual environment variable setup
+        # Log credentials for manual environment variable setup
         logger.info("Store these credentials as environment variables:")
-        logger.info(f"EXTRALIT_HUB_CLIENT_ID={credentials['client_id']}")
-        logger.info("EXTRALIT_HUB_CLIENT_SECRET=[REDACTED]")
+        logger.info(f"OAUTH2_EXTRALIT_HUB_CLIENT_ID={credentials['client_id']}")
+        logger.info("OAUTH2_EXTRALIT_HUB_CLIENT_SECRET=[REDACTED]")
 
-        # Write to secure file (example implementation)
-        # In production, use proper secrets management
         try:
-            credentials_file = os.path.join(os.getcwd(), ".extralit_hub_credentials")
+            credentials_file = os.path.join(settings.home_path, ".extralit_hub_credentials.json")
             with open(credentials_file, "w") as f:
                 json.dump(credentials, f)
             os.chmod(credentials_file, 0o600)  # Read-only for owner
-            logger.info(f"Credentials stored in {credentials_file}")
         except Exception as e:
             logger.warning(f"Could not store credentials file: {e}")
 
@@ -272,5 +249,4 @@ class ExtralitHubOpenId(OpenIdConnectAuth):
             space_id = HUGGINGFACE_SETTINGS.space_id
             return f"https://{space_id}.hf.space/api/auth/callback/extralit_hub"
         else:
-            base_url = getattr(settings, "BASE_URL", "http://localhost:6900")
-            return f"{base_url.rstrip('/')}/api/auth/callback/extralit_hub"
+            return f"{(settings.base_url or 'localhost:6900').rstrip('/')}/api/auth/callback/extralit_hub"

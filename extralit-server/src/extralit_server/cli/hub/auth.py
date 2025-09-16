@@ -33,15 +33,12 @@ def register_instance(
     force: bool = typer.Option(False, "--force", help="Force re-registration even if credentials exist"),
 ):
     """Register this instance with the Extralit Hub."""
-    typer.echo("🔐 Registering instance with Extralit Hub...")
-
     try:
         # Initialize the Hub OIDC backend
         hub_backend = _create_hub_backend()
 
         if hub_url:
-            hub_backend._hub_base_url = hub_url.rstrip("/")
-            hub_backend._setup_oidc_endpoints()
+            hub_backend.OIDC_ENDPOINT = hub_url.rstrip("/")
 
         # Check current status
         if not force and hub_backend._load_stored_credentials():
@@ -57,11 +54,11 @@ def register_instance(
         typer.echo(f"   Instance Name: {registration_data['instance_name']}")
         typer.echo(f"   Instance Type: {registration_data['instance_type']}")
         typer.echo(f"   Redirect URI: {registration_data['redirect_uris'][0]}")
-        typer.echo(f"   Hub URL: {hub_backend._hub_base_url}")
+        typer.echo(f"   Hub URL: {hub_backend.OIDC_ENDPOINT}")
 
         # Perform registration
         typer.echo("🚀 Registering with Hub...")
-        hub_backend._register_with_hub()
+        _ = hub_backend._register_with_hub()
 
         typer.echo("✅ Registration successful!")
         if hub_backend._client_credentials:
@@ -74,13 +71,10 @@ def register_instance(
 
 
 def check_status():
-    """Check Hub authentication status."""
-    typer.echo("🔍 Checking Hub authentication status...")
-
     try:
         hub_backend = _create_hub_backend()
 
-        typer.echo(f"   Hub URL: {hub_backend._hub_base_url}")
+        typer.echo(f"   Hub URL: {hub_backend.OIDC_ENDPOINT}")
 
         if hub_backend._client_credentials:
             typer.echo("✅ Hub credentials found")
@@ -141,18 +135,17 @@ def test_oidc_flow():
 
 
 def clear_credentials(force: bool = typer.Option(False, "--force", help="Skip confirmation prompt")):
-    """Clear stored Hub credentials."""
     if not force:
         confirm = typer.confirm("Are you sure you want to clear stored credentials?")
         if not confirm:
             typer.echo("Operation cancelled.")
             raise typer.Exit(0)
 
-    typer.echo("🗑️  Clearing stored credentials...")
-
     try:
         # Remove credentials file if it exists
-        credentials_file = os.path.join(os.getcwd(), ".extralit_hub_credentials")
+        from extralit_server.settings import settings
+
+        credentials_file = os.path.join(settings.home_path, ".extralit_hub_credentials.json")
         if os.path.exists(credentials_file):
             os.remove(credentials_file)
             typer.echo(f"   Removed: {credentials_file}")
