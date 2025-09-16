@@ -29,17 +29,21 @@ def worker(
     num_workers: int = typer.Option(DEFAULT_NUM_WORKERS, help="Number of workers to start"),
 ) -> None:
     # Preload heavy modules before forking worker processes
+    from rq import Worker
+    from rq.worker_pool import WorkerPool
+
     from extralit_server.jobs import preload  # noqa: F401
     from extralit_server.jobs.queues import REDIS_CONNECTION
 
-    # Use SimpleWorker on Windows due to multiprocessing limitations
+    worker_class = Worker
+
     if platform.system() == "Windows":
-        from rq import Worker as SimpleWorker
+        # Use SimpleWorker on Windows due to multiprocessing limitations
+        from rq import SimpleWorker
 
-        worker = SimpleWorker(connection=REDIS_CONNECTION, queues=queues)
-        worker.work()
-    else:
-        from rq.worker_pool import WorkerPool
+        worker_class = SimpleWorker
 
-        worker_pool = WorkerPool(connection=REDIS_CONNECTION, queues=queues, num_workers=num_workers, reload=True)
-        worker_pool.start()
+    worker_pool = WorkerPool(
+        connection=REDIS_CONNECTION, queues=queues, num_workers=num_workers, worker_class=worker_class, reload=True
+    )
+    worker_pool.start()
