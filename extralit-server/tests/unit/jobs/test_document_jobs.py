@@ -151,9 +151,8 @@ class TestDocumentJobs:
         mock_files.get_s3_client = AsyncMock(return_value=None)
 
         # Execute job and expect exception
-        with pytest.raises(TypeError, match="object.*can't be used in 'await' expression"):
+        with pytest.raises(TypeError, match=r"object.*can't be used in 'await' expression"):
             await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
-
         # Verify job meta was updated with error
         assert "error" in mock_job.meta
 

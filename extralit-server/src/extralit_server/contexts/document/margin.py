@@ -224,7 +224,7 @@ class PDFAnalyzer:
             horizontal_bands = find_horizontal_bands(sameness_mask)
 
             # Step 4: Use contour-based region classification
-            annotated_img, detected_regions = classify_and_draw_layout_regions(
+            _annotated_img, detected_regions = classify_and_draw_layout_regions(
                 reference, sameness_mask, min_area=5000, label=False
             )
 
@@ -243,7 +243,7 @@ class PDFAnalyzer:
         """
         Advanced region classification combining horizontal bands and contour detection.
         """
-        width, height = page_size
+        _width, height = page_size
         regions = {
             "header_bands": [],
             "footer_bands": [],
@@ -332,7 +332,7 @@ class PDFAnalyzer:
         """
         Classify horizontal bands into headers, footers, and margins.
         """
-        width, height = page_size
+        _width, height = page_size
         regions = {"header_bands": [], "footer_bands": [], "estimated_margins": {}}
 
         for start_y, end_y in bands:

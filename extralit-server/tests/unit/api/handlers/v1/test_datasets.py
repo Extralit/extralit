@@ -4222,7 +4222,7 @@ class TestSuiteDatasets:
         self, async_client: "AsyncClient", mock_search_engine: SearchEngine, owner: User, owner_auth_header: dict
     ):
         workspace = await WorkspaceFactory.create()
-        dataset, _, records, *_ = await self.create_dataset_with_user_responses(owner, workspace)
+        dataset, _, _records, *_ = await self.create_dataset_with_user_responses(owner, workspace)
         vector_settings = await VectorSettingsFactory.create(dataset=dataset)
         wrong_record_id = str(uuid.uuid4())
 
@@ -4243,7 +4243,7 @@ class TestSuiteDatasets:
         self, async_client: "AsyncClient", mock_search_engine: SearchEngine, owner: User, owner_auth_header: dict
     ):
         workspace = await WorkspaceFactory.create()
-        dataset, _, records, *_ = await self.create_dataset_with_user_responses(owner, workspace)
+        dataset, _, _records, *_ = await self.create_dataset_with_user_responses(owner, workspace)
         vector_settings = await VectorSettingsFactory.create(dataset=dataset)
         record = await RecordFactory.create()
 

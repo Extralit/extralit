@@ -495,6 +495,6 @@ def pil_image_to_data_url(image: "Image"):
 
 
 def data_url_to_bytes(data_url: str):
-    header, encoded = data_url.split(",", 1)
+    _header, encoded = data_url.split(",", 1)
 
     return base64.b64decode(encoded)

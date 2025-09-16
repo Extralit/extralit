@@ -381,7 +381,7 @@ class TestRQGroupsWorkflowIntegration:
         self, async_db, test_workspace, mock_redis_connection, mock_rq_queues
     ):
         """Test multiple concurrent workflows using RQ Groups."""
-        mock_default_queue, mock_ocr_queue = mock_rq_queues
+        _mock_default_queue, _mock_ocr_queue = mock_rq_queues
 
         # Create multiple test documents
         documents = []
