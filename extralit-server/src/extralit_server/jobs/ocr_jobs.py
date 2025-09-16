@@ -14,7 +14,8 @@
 
 """OCR-related job functions for document processing."""
 
-import asyncio
+import argparse
+import json
 import logging
 from pathlib import Path
 from typing import Any, Optional, Union
@@ -29,6 +30,14 @@ from extralit_server.contexts.ocr.text import extract_text_bboxes
 from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
 
 _LOGGER = logging.getLogger(__name__)
+
+try:
+    from marker.config.parser import ConfigParser
+    from marker.converters.pdf import PdfConverter
+    from marker.models import create_model_dict
+except ImportError as e:
+    _LOGGER.error(f"Marker dependencies not available: {e}")
+    raise ImportError("Marker not installed. Install with: pip install marker-pdf") from e
 
 
 @job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=1800, retry=Retry(max=2, interval=[30, 60]))
@@ -58,20 +67,17 @@ async def async_marker_layout_job(
         - metadata: Job execution metadata
     """
     current_job = get_current_job()
-    if current_job is None:
-        raise Exception("No current job found")
-
-    # Update job metadata
-    current_job.meta.update(
-        {
-            "pdf_path": str(pdf_path),
-            "document_id": str(document_id) if document_id else None,
-            "pages": pages,
-            "extract_text": extract_text,
-            "workflow_step": "marker_layout_extraction",
-        }
-    )
-    current_job.save_meta()
+    if current_job is not None:
+        current_job.meta.update(
+            {
+                "pdf_path": str(pdf_path),
+                "document_id": str(document_id) if document_id else None,
+                "pages": pages,
+                "extract_text": extract_text,
+                "workflow_step": "marker_layout_extraction",
+            }
+        )
+        current_job.save_meta()
 
     try:
         pdf_path = Path(pdf_path)
@@ -152,11 +158,6 @@ def _call_marker_layout_detection(pdf_path: str, pages: Optional[list[int]] = No
         raise ValueError(f"File is not a PDF: {pdf_path}")
 
     try:
-        # Import marker components only when function is called (optional dependency)
-        from marker.config.parser import ConfigParser
-        from marker.converters.pdf import PdfConverter
-        from marker.models import create_model_dict
-
         # Create optimized configuration for layout detection
         config_dict = {
             "output_format": "markdown",
@@ -175,7 +176,7 @@ def _call_marker_layout_detection(pdf_path: str, pages: Optional[list[int]] = No
         )
 
         # Convert PDF - this will return a Document object with detected layout
-        result = converter.convert(pdf_path)
+        result = converter(pdf_path)
 
         # Extract layout information from the result
         # The result should have metadata and blocks that we can process
@@ -208,34 +209,45 @@ def _call_marker_layout_detection(pdf_path: str, pages: Optional[list[int]] = No
 
         return layout_data
 
-    except ImportError as e:
-        _LOGGER.error(f"Marker dependencies not available: {e}")
-        raise ImportError("Marker not installed. Install with: pip install marker-pdf") from e
     except Exception as e:
         _LOGGER.error(f"Error calling Marker API: {e}")
         raise
 
 
-# Sync wrapper for RQ compatibility
-@job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=1800, retry=Retry(max=2, interval=[30, 60]))
-def marker_layout_job(
-    pdf_path: Union[str, Path],
-    pages: Optional[list[int]] = None,
-    extract_text: bool = False,
-    document_id: Optional[UUID] = None,
-) -> dict[str, Any]:
-    """
-    Synchronous wrapper for async_marker_layout_job for RQ compatibility.
+if __name__ == "__main__":
+    import argparse
+    import asyncio
+    import json
+    from uuid import UUID
 
-    Args:
-        pdf_path: Path to the PDF file to process
-        pages: Optional list of page numbers to process (0-indexed)
-        extract_text: Whether to extract text blocks in addition to tables/figures
-        document_id: Optional document ID for job tracking
+    parser = argparse.ArgumentParser(description="Test async_marker_layout_job from CLI.")
+    parser.add_argument("pdf_path", type=str, help="Path to the PDF file to process.")
+    parser.add_argument(
+        "--pages",
+        type=str,
+        default=None,
+        help="Comma-separated list of page numbers to process (0-indexed). If omitted, all pages are processed.",
+    )
+    parser.add_argument(
+        "--extract-text", action="store_true", help="Extract text blocks in addition to tables/figures."
+    )
+    parser.add_argument("--document-id", type=str, default=None, help="Optional document UUID for job tracking.")
 
-    Returns:
-        Dictionary containing structured layout information
-    """
-    # Since RQ runs jobs synchronously, we can just call the async function directly
-    # using asyncio.run() which handles event loop creation properly
-    return asyncio.run(async_marker_layout_job(pdf_path, pages, extract_text, document_id))
+    args = parser.parse_args()
+
+    pdf_path = args.pdf_path
+    pages = [int(p) for p in args.pages.split(",")] if args.pages else None
+    extract_text = args.extract_text
+    document_id = UUID(args.document_id) if args.document_id else None
+
+    async def _main():
+        # Call the underlying logic directly, not as an RQ job
+        result = await async_marker_layout_job(
+            pdf_path=pdf_path,
+            pages=pages,
+            extract_text=extract_text,
+            document_id=document_id,
+        )
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+
+    asyncio.run(_main())
