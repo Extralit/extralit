@@ -87,14 +87,23 @@ async def async_marker_layout_job(
 
         _LOGGER.info(f"Starting Marker layout extraction for: {pdf_path}")
 
-        # Call Marker's layout detection
-        # Use the real PdfConverter API for layout detection
+        if pdf_path.suffix.lower() != ".pdf":
+            raise ValueError(f"File is not a PDF: {pdf_path}")
+
         try:
-            # Process the PDF and get layout information
-            layout_result = _call_marker_layout_detection(str(pdf_path), pages)
+            # Step 1: Create configuration
+            config_dict, model_dict = create_marker_config(pages)
+
+            # Step 2: Run Marker
+            result = run_marker(str(pdf_path), config_dict, model_dict)
+            print("result", type(result))
+
+            # Step 3: Parse output
+            layout_result = parse_marker_output(result)
+
         except Exception as e:
-            _LOGGER.error(f"Failed to call Marker API: {e}")
-            raise
+            _LOGGER.error(f"Error calling Marker API: {e}", exc_info=True)
+            raise e
 
         # Extract bounding boxes using our utility functions
         tables = extract_table_bboxes(layout_result)
@@ -230,45 +239,6 @@ def parse_marker_output(result: "JSONOutput") -> dict[str, Any]:
     return layout_data
 
 
-def _call_marker_layout_detection(pdf_path: str, pages: Optional[str] = None) -> dict[str, Any]:
-    """
-    Call Marker's layout detection API using the standard PdfConverter.
-
-    Args:
-        pdf_path: Path to the PDF file
-        pages: Optional comma-separated page numbers to process (0-indexed)
-
-    Returns:
-        Marker's layout detection results with block structure
-    """
-    # Basic input validation
-    if not pdf_path:
-        raise ValueError("PDF path cannot be empty")
-
-    pdf_file = Path(pdf_path)
-    if not pdf_file.exists():
-        raise FileNotFoundError(f"PDF file does not exist: {pdf_path}")
-
-    if pdf_file.suffix.lower() != ".pdf":
-        raise ValueError(f"File is not a PDF: {pdf_path}")
-
-    try:
-        # Step 1: Create configuration
-        config_dict, model_dict = create_marker_config(pages)
-
-        # Step 2: Run Marker
-        result = run_marker(pdf_path, config_dict, model_dict)
-
-        # Step 3: Parse output
-        layout_data = parse_marker_output(result)
-
-        return layout_data
-
-    except Exception as e:
-        _LOGGER.error(f"Error calling Marker API: {e}", exc_info=True)
-        raise
-
-
 if __name__ == "__main__":
     import argparse
     import asyncio
@@ -288,9 +258,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    pdf_path = args.pdf_path
-    pages = args.pages
-    extract_text = args.extract_text
+    pdf_path: str = args.pdf_path
+    pages: str = args.pages
+    extract_text: bool = args.extract_text
 
     async def _main():
         # Call the underlying logic directly, not as an RQ job
