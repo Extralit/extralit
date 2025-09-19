@@ -16,7 +16,6 @@
 
 import logging
 from pathlib import Path
-from pprint import pprint
 from typing import TYPE_CHECKING, Any, Optional, Union
 from uuid import UUID
 
@@ -32,7 +31,6 @@ _LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from marker.renderers.json import JSONOutput
-    from marker.renderers.markdown import MarkdownOutput
 
 try:
     from marker.config.parser import ConfigParser
@@ -138,13 +136,107 @@ async def async_marker_layout_job(
         raise
 
 
+def create_marker_config(pages: Optional[str] = None) -> tuple[dict[str, Any], dict[str, Any]]:
+    """
+    Create optimized Marker configuration for layout detection only (no OCR).
+
+    Args:
+        pages: Optional comma-separated page numbers to process
+
+    Returns:
+        Tuple of (config_dict, model_dict) for Marker
+    """
+    # Configure for JSON output and layout detection only
+    config_dict = {
+        "output_format": "json",  # This forces JSONOutput
+        "parallel_factor": 1,
+        "extract_images": False,  # Skip image extraction for speed
+    }
+
+    if pages is not None:
+        config_dict["page_range"] = pages
+
+    # Create model dict - keep all models to avoid dependency resolution issues
+    # Models will be loaded but won't be used for actual OCR due to configuration
+    model_dict = create_model_dict()
+
+    return config_dict, model_dict
+
+
+def run_marker(pdf_path: str, config_dict: dict[str, Any], model_dict: dict[str, Any]) -> "JSONOutput":
+    """
+    Run Marker layout detection on a PDF.
+
+    Args:
+        pdf_path: Path to the PDF file
+        config_dict: Marker configuration dictionary
+        model_dict: Marker model dictionary
+
+    Returns:
+        JSONOutput object containing layout detection results
+    """
+    # Use ConfigParser to properly set up the renderer
+    config_parser = ConfigParser(config_dict)
+    final_config = config_parser.generate_config_dict()
+
+    converter = PdfConverter(
+        config=final_config,
+        artifact_dict=model_dict,
+        processor_list=config_parser.get_processors(),
+        renderer=config_parser.get_renderer(),  # This will return JSONRenderer for "json" format
+    )
+
+    # This should return JSONOutput because of our config
+    result = converter(pdf_path)
+
+    # Verify we got JSONOutput as expected
+    if not hasattr(result, "model_dump"):
+        raise ValueError(f"Expected a Pydantic model with model_dump (like JSONOutput), but got {type(result)}")
+
+    return result
+
+
+def parse_marker_output(result: "JSONOutput") -> dict[str, Any]:
+    """
+    Parse Marker JSONOutput into our application's expected layout format.
+
+    Args:
+        result: JSONOutput object from Marker
+
+    Returns:
+        A dictionary with a structured list of pages and their blocks.
+    """
+    layout_data = {"pages": []}
+
+    # JSONOutput has a children attribute that contains the pages
+    if hasattr(result, "children") and result.children:
+        for page_idx, page in enumerate(result.children):
+            page_data = {"page": page_idx, "blocks": []}
+
+            # Each page can have children (blocks)
+            if hasattr(page, "children") and page.children:
+                for block in page.children:
+                    block_data = {
+                        "type": block.block_type if hasattr(block, "block_type") else "unknown",
+                        "bbox": block.bbox if hasattr(block, "bbox") else [],
+                        "content": (block.html if hasattr(block, "html") else "").strip(),
+                        "id": block.id if hasattr(block, "id") else "",
+                        "score": 1.0,  # Marker doesn't provide confidence scores
+                    }
+                    page_data["blocks"].append(block_data)
+
+            layout_data["pages"].append(page_data)
+
+    return layout_data
+
+
 def _call_marker_layout_detection(pdf_path: str, pages: Optional[str] = None) -> dict[str, Any]:
     """
     Call Marker's layout detection API using the standard PdfConverter.
 
     Args:
         pdf_path: Path to the PDF file
-        pages: Optional list of page numbers to process (0-indexed)
+        pages: Optional comma-separated page numbers to process (0-indexed)
 
     Returns:
         Marker's layout detection results with block structure
@@ -161,61 +253,19 @@ def _call_marker_layout_detection(pdf_path: str, pages: Optional[str] = None) ->
         raise ValueError(f"File is not a PDF: {pdf_path}")
 
     try:
-        # Create optimized configuration for layout detection
-        config_dict = {
-            "output_format": "json",
-            "parallel_factor": 1,
-        }
+        # Step 1: Create configuration
+        config_dict, model_dict = create_marker_config(pages)
 
-        if pages is not None:
-            config_dict["page_range"] = pages
+        # Step 2: Run Marker
+        result = run_marker(pdf_path, config_dict, model_dict)
 
-        config = ConfigParser(config_dict)
-        model_dict = create_model_dict()
-
-        converter = PdfConverter(
-            config=config.generate_config_dict(),
-            artifact_dict=model_dict,
-        )
-
-        # Convert PDF - this will return a Document object with detected layout
-        result: "MarkdownOutput | JSONOutput" = converter(pdf_path)  # noqa: UP037
-        print(type(result))
-        pprint(result.model_dump())
-
-        # Extract layout information from the result
-        # The result should have metadata and blocks that we can process
-        layout_data = {"pages": []}
-
-        if hasattr(result, "pages") and result.pages:
-            for page_idx, page in enumerate(result.pages):
-                page_data = {"page": page_idx, "blocks": []}
-
-                # Extract blocks from the page
-                if hasattr(page, "blocks") and page.blocks:
-                    for block in page.blocks:
-                        if hasattr(block, "block_type") and hasattr(block, "bbox"):
-                            block_data = {
-                                "type": str(block.block_type).lower(),
-                                "bbox": list(block.bbox) if block.bbox else [],
-                                "id": str(getattr(block, "id", "")),
-                                "score": getattr(block, "confidence", 1.0),
-                            }
-
-                            # Add content based on block type
-                            if hasattr(block, "content"):
-                                block_data["content"] = str(block.content)
-                            elif hasattr(block, "text"):
-                                block_data["content"] = str(block.text)
-
-                            page_data["blocks"].append(block_data)
-
-                layout_data["pages"].append(page_data)
+        # Step 3: Parse output
+        layout_data = parse_marker_output(result)
 
         return layout_data
 
     except Exception as e:
-        _LOGGER.error(f"Error calling Marker API: {e}")
+        _LOGGER.error(f"Error calling Marker API: {e}", exc_info=True)
         raise
 
 
