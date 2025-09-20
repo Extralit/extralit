@@ -16,6 +16,7 @@
 
 import logging
 from pathlib import Path
+from pprint import pprint
 from typing import TYPE_CHECKING, Any, Optional, Union
 from uuid import UUID
 
@@ -27,10 +28,10 @@ from extralit_server.contexts.ocr.tables import extract_table_bboxes
 from extralit_server.contexts.ocr.text import extract_text_bboxes
 from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
 
-_LOGGER = logging.getLogger(__name__)
-
 if TYPE_CHECKING:
     from marker.renderers.json import JSONOutput
+
+_LOGGER = logging.getLogger(__name__)
 
 try:
     from marker.config.parser import ConfigParser
@@ -96,7 +97,6 @@ async def async_marker_layout_job(
 
             # Step 2: Run Marker
             result = run_marker(str(pdf_path), config_dict, model_dict)
-            print("result", type(result))
 
             # Step 3: Parse output
             layout_result = parse_marker_output(result)
@@ -108,9 +108,10 @@ async def async_marker_layout_job(
         # Extract bounding boxes using our utility functions
         tables = extract_table_bboxes(layout_result)
         figures = extract_figure_bboxes(layout_result)
-        text_blocks = extract_text_bboxes(layout_result) if extract_text else []
+        text_blocks = extract_text_bboxes(layout_result)
 
-        result = {
+        print(f"Extracted {len(tables)} tables, {len(figures)} figures, {len(text_blocks)} text blocks")
+        output = {
             "tables": tables,
             "figures": figures,
             "text_blocks": text_blocks,
@@ -119,12 +120,13 @@ async def async_marker_layout_job(
                 "pdf_path": str(pdf_path),
                 "pages_processed": pages or "all",
                 "total_elements": len(tables) + len(figures) + len(text_blocks),
-                "extract_text": extract_text,
                 "processing_time": None,
             },
         }
 
-        # Update job metadata with results
+        pprint(output)
+
+        # Update job metadata with outputs
         # current_job.meta.update(
         #     {
         #         "layout_extraction_complete": True,
@@ -136,7 +138,7 @@ async def async_marker_layout_job(
         # current_job.save_meta()
 
         _LOGGER.info(f"Marker layout extraction completed. Found {len(tables)} tables, {len(figures)} figures")
-        return result
+        return output
 
     except Exception as e:
         _LOGGER.error(f"Error in marker layout extraction job: {e}", exc_info=True)
@@ -157,8 +159,9 @@ def create_marker_config(pages: Optional[str] = None) -> tuple[dict[str, Any], d
     """
     # Configure for JSON output and layout detection only
     config_dict = {
-        "output_format": "json",  # This forces JSONOutput
-        "parallel_factor": 1,
+        "output_format": "json",
+        "force_ocr": False,
+        "paginate_output": False,
         "extract_images": False,  # Skip image extraction for speed
     }
 
@@ -192,7 +195,7 @@ def run_marker(pdf_path: str, config_dict: dict[str, Any], model_dict: dict[str,
         config=final_config,
         artifact_dict=model_dict,
         processor_list=config_parser.get_processors(),
-        renderer=config_parser.get_renderer(),  # This will return JSONRenderer for "json" format
+        renderer=config_parser.get_renderer(),
     )
 
     # This should return JSONOutput because of our config
@@ -217,20 +220,18 @@ def parse_marker_output(result: "JSONOutput") -> dict[str, Any]:
     """
     layout_data = {"pages": []}
 
-    # JSONOutput has a children attribute that contains the pages
-    if hasattr(result, "children") and result.children:
+    if result.children:
         for page_idx, page in enumerate(result.children):
             page_data = {"page": page_idx, "blocks": []}
 
-            # Each page can have children (blocks)
-            if hasattr(page, "children") and page.children:
+            if page.children:
                 for block in page.children:
                     block_data = {
-                        "type": block.block_type if hasattr(block, "block_type") else "unknown",
-                        "bbox": block.bbox if hasattr(block, "bbox") else [],
-                        "content": (block.html if hasattr(block, "html") else "").strip(),
-                        "id": block.id if hasattr(block, "id") else "",
-                        "score": 1.0,  # Marker doesn't provide confidence scores
+                        "type": block.block_type or "unknown",
+                        "bbox": block.bbox or [],
+                        "content": (block.html or "").strip(),
+                        "id": block.id or "",
+                        "score": None,  # Marker doesn't provide confidence scores
                     }
                     page_data["blocks"].append(block_data)
 
