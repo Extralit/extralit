@@ -16,7 +16,7 @@ from collections.abc import Iterable, Sequence
 from uuid import UUID
 
 import bcrypt
-from sqlalchemy import exists, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -97,7 +97,11 @@ async def user_exists(db: AsyncSession, user_id: UUID) -> bool:
 async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
     @retry_db_operation(max_retries=3, delay=0.1, backoff=2.0)
     async def _execute_query():
-        result = await db.execute(select(User).filter_by(username=username).options(selectinload(User.workspaces)))
+        result = await db.execute(
+            select(User)
+            .filter(func.lower(User.username) == func.lower(username))
+            .options(selectinload(User.workspaces))
+        )
         return result.scalar_one_or_none()
 
     return await _execute_query()

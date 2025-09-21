@@ -67,7 +67,7 @@ def test_settings_database_sqlite_timeout(monkeypatch):
 
 
 def test_settings_default_database_postgresql_pool_size():
-    assert Settings().database_postgresql_pool_size == 15
+    assert Settings().database_postgresql_pool_size == 10
 
 
 def test_settings_database_postgresql_pool_size(monkeypatch):
