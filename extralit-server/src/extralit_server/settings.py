@@ -112,7 +112,7 @@ class Settings(BaseSettings):
         description="Enable connection validation before use for PostgreSQL",
     )
     database_postgresql_pool_recycle: int = Field(
-        default=3600,
+        default=300,
         description="Number of seconds to recycle connections in PostgreSQL pool",
     )
     database_postgresql_connect_timeout: int = Field(
@@ -294,6 +294,7 @@ class Settings(BaseSettings):
                 "max_overflow": self.database_postgresql_max_overflow,
                 "pool_pre_ping": self.database_postgresql_pool_pre_ping,
                 "pool_recycle": self.database_postgresql_pool_recycle,
+                "pool_timeout": 30,
                 "connect_args": {
                     "server_settings": {
                         "application_name": "extralit-server",
