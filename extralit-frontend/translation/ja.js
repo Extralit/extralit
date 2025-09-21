@@ -136,6 +136,7 @@ export default {
   button: {
     ignore_and_continue: "無視して続ける",
     login: "サインイン",
+    logging_in: "サインイン中...",
     signin_with_provider: "{provider}でサインイン",
     "hf-login": "Hugging Faceでサインイン",
     sign_in_with_username: "ユーザー名でサインイン",
