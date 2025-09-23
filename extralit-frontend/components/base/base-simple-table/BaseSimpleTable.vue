@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { TabulatorFull as Tabulator, ColumnDefinition, CellComponent, RowComponent } from "tabulator-tables";
-import "tabulator-tables/dist/css/tabulator_semanticui.min.css";
+import "tabulator-tables/dist/css/tabulator.min.css";
 
 export default {
   name: "BaseSimpleTable",
