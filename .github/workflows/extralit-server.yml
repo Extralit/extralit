@@ -107,6 +107,10 @@ jobs:
           pdm config python.install_root "$(uv python dir)"
           pdm install --dev
 
+      - name: Verify CLI commands 🔧
+        run: |
+          python -m extralit_server start --help
+
       - name: Run tests 📈
         id: run-tests
         continue-on-error: true
@@ -172,7 +176,7 @@ jobs:
       || github.ref == 'refs/heads/develop'
       || contains(github.ref, 'releases/')
       || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && !github.event.pull_request.draft)
+      || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && !github.event.pull_request.draft && github.event_name == 'workflow_dispatch')
     needs:
       - build
     with:
