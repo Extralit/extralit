@@ -23,13 +23,11 @@ DEFAULT_NUM_WORKERS = 2
 
 
 def worker(
-    queues: list[str] = typer.Option(None, help="Name of queues to listen"),
+    queues: list[str] = typer.Option(
+        [DEFAULT_QUEUE.name, HIGH_QUEUE.name, OCR_QUEUE.name], help="Name of queues to listen"
+    ),
     num_workers: int = typer.Option(DEFAULT_NUM_WORKERS, help="Number of workers to start"),
 ) -> None:
-    # Handle default value for queues
-    if queues is None:
-        queues = [DEFAULT_QUEUE.name, HIGH_QUEUE.name, OCR_QUEUE.name]
-
     # Preload heavy modules before forking worker processes
     from rq import Worker
     from rq.worker_pool import WorkerPool

@@ -55,8 +55,8 @@ dependencies = [
     # For logging, tracebacks, printing, progressbars
     "rich != 13.1.0",
     # For CLI
-    "typer >= 0.6.0, < 0.10.0", # spaCy only supports typer<0.10.0
-    "click >= 8.2.0",
+    "typer>=0.19.1", # spaCy only supports typer<0.10.0
+    "click >= 8.2.0", # click >=8.2.0 has TypeError: Parameter.make_metavar() missing 1 required positional argument: 'ctx'
     "packaging>=23.2",
     # For Webhooks
     "standardwebhooks>=1.0.0",
