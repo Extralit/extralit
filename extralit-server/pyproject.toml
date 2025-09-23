@@ -55,26 +55,26 @@ dependencies = [
     # For logging, tracebacks, printing, progressbars
     "rich != 13.1.0",
     # For CLI
-    "typer >= 0.9.4, < 0.10.0", # spaCy only supports typer<0.10.0
-    "click == 8.1.7", # click >=8.2.0 has TypeError: Parameter.make_metavar() missing 1 required positional argument: 'ctx'
+    "typer>=0.19.1", # spaCy only supports typer<0.10.0
+    "click >= 8.2.0", # click >=8.2.0 has TypeError: Parameter.make_metavar() missing 1 required positional argument: 'ctx'
     "packaging>=23.2",
     # For Webhooks
     "standardwebhooks>=1.0.0",
     # For HF dataset import
     "datasets ~= 3.0.2",
-    "pillow>=11.3.0",
+    "pillow>=10.1.0",
     # NumPy 2.x compatibility
     "numpy>=2.0.0,<3.0.0",
     # For Telemetry
-    "huggingface-hub~=0.26.2",
+    "huggingface-hub~=0.34.0",
     "Jinja2>=3.1.4",           # Used by huggingface-hub to render dataset card templates
     # For file storage
     "aioboto3>=13.1.1",
     "types-aiobotocore-s3==2.24.2",
     # For document processing
-    "ocrmypdf>=16.10.4",
+    "ocrmypdf>=16.11.0",
     "pdf2image>=1.17.0",
-    "opencv-python-headless>=4.12.0",
+    "opencv-python-headless>=4.11.0.86",
 ]
 
 [project.optional-dependencies]
@@ -82,6 +82,12 @@ postgresql = [
     "psycopg2 ~= 2.9.0",
     # Async PostgreSQL
     "asyncpg ~= 0.30.0",
+]
+marker = [
+    "marker-pdf>=1.9.3",
+    "torch>=2.5.0",
+    "torchvision>=0.20.0",
+    "transformers>=4.51.0",
 ]
 
 [project.urls]
