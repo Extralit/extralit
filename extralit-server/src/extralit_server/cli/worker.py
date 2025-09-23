@@ -23,15 +23,11 @@ DEFAULT_NUM_WORKERS = 2
 
 
 def worker(
-    queues: str = typer.Option("", help="Comma-separated list of queue names to listen to"),
+    queues: list[str] = typer.Option(
+        [DEFAULT_QUEUE.name, HIGH_QUEUE.name, OCR_QUEUE.name], help="Name of queues to listen"
+    ),
     num_workers: int = typer.Option(DEFAULT_NUM_WORKERS, help="Number of workers to start"),
 ) -> None:
-    # Handle default value and parse queues
-    if not queues:
-        queue_list = [DEFAULT_QUEUE.name, HIGH_QUEUE.name, OCR_QUEUE.name]
-    else:
-        queue_list = [q.strip() for q in queues.split(",")]
-
     # Preload heavy modules before forking worker processes
     from rq import Worker
     from rq.worker_pool import WorkerPool
@@ -48,6 +44,6 @@ def worker(
         worker_class = SimpleWorker
 
     worker_pool = WorkerPool(
-        connection=REDIS_CONNECTION, queues=queue_list, num_workers=num_workers, worker_class=worker_class
+        connection=REDIS_CONNECTION, queues=queues, num_workers=num_workers, worker_class=worker_class, reload=True
     )
     worker_pool.start()
