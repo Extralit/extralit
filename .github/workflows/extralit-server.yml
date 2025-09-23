@@ -109,6 +109,7 @@ jobs:
 
       - name: Verify CLI commands 🔧
         run: |
+          uv pip install -e .
           python -m extralit_server start --help
 
       - name: Run tests 📈
