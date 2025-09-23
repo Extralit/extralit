@@ -438,7 +438,7 @@ def restart(
             for workflow in failed_workflows:
                 console.print(f"  • Document {workflow['document_id'][:8]}... - {workflow.get('reference', 'N/A')}")
 
-            if not typer.confirm(f"\nRestart {workflow_count} workflow(s)?"):
+            if not typer.confirm(f"\nRestart {workflow_count} workflow(s)?", default=True):
                 console.print("Cancelled")
                 return
 

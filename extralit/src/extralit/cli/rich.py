@@ -215,21 +215,22 @@ def print_rich_table(
         "Document": {
             "columns": ["ID", "Reference", "URL", "File Name", "PMID", "DOI"],
             "getters": {
-                "ID": lambda r: str(r.id),
                 "Reference": lambda r: r.reference,
                 "URL": lambda r: r.url,
                 "File Name": lambda r: r.file_name or "",
                 "PMID": lambda r: r.pmid,
                 "DOI": lambda r: r.doi,
                 "Created": lambda r: r.inserted_at.isoformat(sep=" ") if r.inserted_at else "",
+                "Updated": lambda r: r.updated_at.isoformat(sep=" ") if r.updated_at else "",
             },
             "styles": {
-                "ID": "cyan",
                 "Reference": "green",
                 "URL": "green",
+                "File Name": "cyan",
                 "PMID": "yellow",
                 "DOI": "magenta",
                 "Created": "blue",
+                "Updated": "blue",
             },
         },
         "DataFrameSchema": {
@@ -255,11 +256,21 @@ def print_rich_table(
     styles = config.get("styles", {})
 
     for column in display_columns:
-        table.add_column(
-            column,
-            justify="center" if column != "Name" else "left",
-            style=styles.get(column, "white"),
-        )
+        # Special handling for long columns in Document tables to prevent ellipsis
+        if column in ["Reference"]:
+            table.add_column(
+                column,
+                justify="left",
+                style=styles.get(column, "white"),
+                no_wrap=True,  # Prevent wrapping
+                overflow="fold",  # Use fold instead of ellipsis
+            )
+        else:
+            table.add_column(
+                column,
+                justify="center" if column != "Name" else "left",
+                style=styles.get(column, "white"),
+            )
 
     for resource in resources:
         row_values = []
