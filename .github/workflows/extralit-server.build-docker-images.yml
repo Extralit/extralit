@@ -100,6 +100,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           push: true
 
+      - name: Test CLI command in docker image
+        run: |
+          docker run --rm ${{ env.SERVER_DOCKER_IMAGE }}:${{ env.IMAGE_TAG }} python -m extralit_server start --help
+
       - name: Push latest `extralit-server` image
         if: ${{ env.PUBLISH_LATEST == 'true' }}
         uses: docker/build-push-action@v5
