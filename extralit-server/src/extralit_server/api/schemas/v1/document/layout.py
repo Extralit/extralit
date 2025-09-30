@@ -12,3 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any, Optional
+
+from pydantic import BaseModel
+
+
+class Block(BaseModel):
+    type: str = "unknown"
+    bbox: list[Any] = []
+    content: str = ""
+    id: str = ""
+    score: Optional[float] = None
+
+
+class Page(BaseModel):
+    page: int
+    blocks: list[Block]
+
+
+class Layout(BaseModel):
+    pages: list[Page]

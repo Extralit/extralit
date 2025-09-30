@@ -25,6 +25,7 @@ from dotenv import load_dotenv
 from rq import Retry, get_current_job
 from rq.decorators import job
 
+from extralit_server.api.schemas.v1.document.layout import Block, Layout, Page
 from extralit_server.contexts.ocr.figures import extract_figure_bboxes
 from extralit_server.contexts.ocr.tables import extract_table_bboxes
 from extralit_server.contexts.ocr.text import extract_text_bboxes
@@ -117,6 +118,7 @@ async def async_marker_layout_job(
             "tables": tables,
             "figures": figures,
             "text_blocks": text_blocks,
+            "layout": layout_result.model_dump(),
             "metadata": {
                 "source": "marker",
                 "run_mode": MARKER_RUN_MODE,
@@ -172,48 +174,49 @@ def run_marker(pdf_path: str, config_dict: dict[str, Any], model_dict: dict[str,
     return result
 
 
-def parse_marker_output(result: "JSONOutput") -> dict[str, Any]:
+def parse_marker_output(result: "JSONOutput") -> Layout:
     """
-    Parse Marker JSONOutput into our application's expected layout format.
+    Parse Marker JSONOutput into a Layout Pydantic model.
     """
-    layout_data = {"pages": []}
+    pages = []
     if result.children:
         for page_idx, page in enumerate(result.children):
-            page_data = {"page": page_idx, "blocks": []}
+            blocks = []
             if page.children:
                 for block in page.children:
-                    block_data = {
-                        "type": getattr(block, "block_type", None) or "unknown",
-                        "bbox": getattr(block, "bbox", None) or [],
-                        "content": (getattr(block, "html", None) or "").strip(),
-                        "id": getattr(block, "id", None) or "",
-                        "score": None,
-                    }
-                    page_data["blocks"].append(block_data)
-            layout_data["pages"].append(page_data)
-    return layout_data
+                    blocks.append(
+                        Block(
+                            type=getattr(block, "block_type", "unknown"),
+                            bbox=getattr(block, "bbox", []),
+                            content=(getattr(block, "html", "") or "").strip(),
+                            id=getattr(block, "id", ""),
+                            score=None,
+                        )
+                    )
+            pages.append(Page(page=page_idx, blocks=blocks))
+    return Layout(pages=pages)
 
 
-def parse_marker_json_output(result_json: dict[str, Any]) -> dict[str, Any]:
+def parse_marker_json_output(result_json: dict[str, Any]) -> Layout:
     """
-    Parse the JSON renderer payload returned by Modal (modal_resp['json']).
-    Mirrors Marker JSONOutput.model_dump().
+    Parse the JSON renderer payload returned by Modal (modal_resp['json']) into a Layout Pydantic model.
     """
-    layout_data = {"pages": []}
+    pages = []
     children = result_json.get("children") or []
     for page_idx, page in enumerate(children):
-        page_data = {"page": page_idx, "blocks": []}
+        blocks = []
         for block in page.get("children") or []:
-            block_data = {
-                "type": block.get("block_type") or "unknown",
-                "bbox": block.get("bbox") or [],
-                "content": (block.get("html") or "").strip(),
-                "id": block.get("id") or "",
-                "score": None,
-            }
-            page_data["blocks"].append(block_data)
-        layout_data["pages"].append(page_data)
-    return layout_data
+            blocks.append(
+                Block(
+                    type=block.get("block_type") or "unknown",
+                    bbox=block.get("bbox") or [],
+                    content=(block.get("html") or "").strip(),
+                    id=block.get("id") or "",
+                    score=None,
+                )
+            )
+        pages.append(Page(page=page_idx, blocks=blocks))
+    return Layout(pages=pages)
 
 
 if __name__ == "__main__":
