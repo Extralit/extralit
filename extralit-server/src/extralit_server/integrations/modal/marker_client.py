@@ -16,8 +16,11 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-import requests
+import aiofiles
+import httpx
 from dotenv import load_dotenv
+
+from extralit_server.api.handlers.v1.models import client
 
 load_dotenv()  # loads variables from a .env file in the project root
 
@@ -31,7 +34,7 @@ def get_modal_base_url() -> str:
     return base_url
 
 
-def convert_document_via_modal(
+async def convert_document_via_modal(
     pdf_path: Path,
     output_format: str = "json",
     page_range: Optional[str] = None,
@@ -50,9 +53,12 @@ def convert_document_via_modal(
     if not pdf_path.exists():
         raise FileNotFoundError(f"PDF file not found: {pdf_path}")
 
-    files = {"file": (pdf_path.name, open(pdf_path, "rb"), "application/pdf")}
+    # httpx requires files as (name, file, content_type)
+    async with aiofiles.open(pdf_path, "rb") as f:
+        file_bytes = await f.read()
+    files = {"file": (pdf_path.name, file_bytes, "application/pdf")}
     data = {
-        "output_format": output_format,  # "json" is best for layout parsing
+        "output_format": output_format,
         "page_range": page_range,
         "force_ocr": str(bool(force_ocr)).lower(),
         "paginate_output": str(bool(paginate_output)).lower(),
@@ -62,9 +68,9 @@ def convert_document_via_modal(
 
     headers = extra_headers or {}
     t = timeout if timeout is not None else DEFAULT_TIMEOUT
-    resp = requests.post(url, files=files, data=data, headers=headers, timeout=t)
     try:
+        resp = await client.post(url, files=files, data=data, headers=headers, timeout=t)
         resp.raise_for_status()
-    except requests.HTTPError as e:
+    except httpx.HTTPStatusError as e:
         raise RuntimeError(f"Modal Marker conversion failed: {e}; body={resp.text[:1000]}") from e
     return resp.json()
