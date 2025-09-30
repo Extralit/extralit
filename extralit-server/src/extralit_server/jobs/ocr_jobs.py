@@ -47,7 +47,7 @@ if MARKER_RUN_MODE == "local":
         raise ImportError("Marker not installed. Install with: pip install marker-pdf") from e
 else:
     # Modal mode: use HTTP client, no local Marker deps needed
-    from extralit_server.integrations.marker_modal_client import convert_document_via_modal
+    from extralit_server.integrations.modal.marker_client import convert_document_via_modal
 
 if TYPE_CHECKING:
     from marker.renderers.json import JSONOutput
