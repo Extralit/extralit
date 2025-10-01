@@ -91,7 +91,7 @@ async def async_marker_layout_job(
         if MARKER_RUN_MODE == "modal":
             _LOGGER.info(f"Using Modal endpoint: {os.getenv('MARKER_MODAL_BASE_URL')}")
             # Call Modal-hosted Marker with JSON output for layout parsing
-            modal_resp = convert_document_via_modal(
+            modal_resp = await convert_document_via_modal(
                 pdf_path=pdf_path,
                 output_format="json",
                 page_range=pages,
