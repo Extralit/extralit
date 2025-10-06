@@ -106,7 +106,7 @@ def _has_docker_cgroup() -> bool:
 
 def _is_quickstart_env():
     # TODO: Any modification in the `quickstart.Dockerfile` file should be reflected here
-
+    # Note: These are quickstart-specific env vars not in the main settings config
     for env_var in [
         "OWNER_USERNAME",
         "OWNER_PASSWORD",

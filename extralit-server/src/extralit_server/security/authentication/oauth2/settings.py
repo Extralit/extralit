@@ -59,6 +59,7 @@ class OAuth2Settings:
 
         if self.allow_http_redirect:
             # See https://stackoverflow.com/questions/27785375/testing-flask-oauthlib-locally-without-https
+            # Note: This is a runtime configuration for oauthlib, not a persistent setting
             os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
     @property
