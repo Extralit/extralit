@@ -56,5 +56,19 @@ class Settings(BaseSettings):
     WCS_USERNAME: Optional[str] = None
     WCS_PASSWORD: Optional[SecretStr] = None
 
+    # Marker Modal integration settings
+    MARKER_RUN_MODE: str = "local"
+    MARKER_MODAL_BASE_URL: Optional[str] = None
+    MARKER_MODAL_TIMEOUT_SECS: int = 600
+
+    # Chat validation settings
+    EXTRALIT_MIN_MESSAGE_LENGTH: int = 1
+    EXTRALIT_MAX_MESSAGE_LENGTH: int = 20000
+    EXTRALIT_MIN_ROLE_LENGTH: int = 1
+    EXTRALIT_MAX_ROLE_LENGTH: int = 20
+
+    # Local auth database file
+    EXTRALIT_LOCAL_AUTH_USERS_DB_FILE: str = ".users.yml"
+
 
 settings = Settings()

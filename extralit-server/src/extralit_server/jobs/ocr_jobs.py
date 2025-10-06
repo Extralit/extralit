@@ -15,7 +15,6 @@
 """OCR-related job functions for document processing."""
 
 import logging
-import os
 from pathlib import Path
 from pprint import pprint
 from typing import TYPE_CHECKING, Any, Optional, Union
@@ -26,6 +25,7 @@ from rq import Retry, get_current_job
 from rq.decorators import job
 
 from extralit_server.api.schemas.v1.document.layout import Block, Layout, Page
+from extralit_server.config import settings
 from extralit_server.contexts.ocr.figures import extract_figure_bboxes
 from extralit_server.contexts.ocr.tables import extract_table_bboxes
 from extralit_server.contexts.ocr.text import extract_text_bboxes
@@ -34,7 +34,7 @@ from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
 load_dotenv()
 
 # Switch between local Marker and Modal-remote Marker
-MARKER_RUN_MODE = os.getenv("MARKER_RUN_MODE", "local").lower()
+MARKER_RUN_MODE = settings.MARKER_RUN_MODE.lower()
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ async def async_marker_layout_job(
         _LOGGER.info(f"Starting Marker layout extraction for: {pdf_path} (mode={MARKER_RUN_MODE})")
 
         if MARKER_RUN_MODE == "modal":
-            _LOGGER.info(f"Using Modal endpoint: {os.getenv('MARKER_MODAL_BASE_URL')}")
+            _LOGGER.info(f"Using Modal endpoint: {settings.MARKER_MODAL_BASE_URL}")
             # Call Modal-hosted Marker with JSON output for layout parsing
             modal_resp = await convert_document_via_modal(
                 pdf_path=pdf_path,

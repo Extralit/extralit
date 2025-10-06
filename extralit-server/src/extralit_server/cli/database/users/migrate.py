@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
-import os
 from typing import TYPE_CHECKING, Optional
 
 import typer
 import yaml
 from pydantic import BaseModel, Field, constr
 
+from extralit_server.config import settings
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models import User, UserRole
 
@@ -107,7 +107,7 @@ class UsersMigrator:
 def migrate():
     """Migrate users defined in YAML file to database."""
 
-    users_db_file: str = os.getenv("EXTRALIT_LOCAL_AUTH_USERS_DB_FILE", ".users.yml")
+    users_db_file: str = settings.EXTRALIT_LOCAL_AUTH_USERS_DB_FILE
     asyncio.run(UsersMigrator(users_db_file).migrate())
 
 
