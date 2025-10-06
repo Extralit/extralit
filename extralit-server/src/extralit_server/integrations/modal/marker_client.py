@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from pathlib import Path
 from typing import Any, Optional
 
@@ -21,17 +20,24 @@ import httpx
 from dotenv import load_dotenv
 
 from extralit_server.api.handlers.v1.models import client
+from extralit_server.config import settings
 
 load_dotenv()  # loads variables from a .env file in the project root
 
-DEFAULT_TIMEOUT = int(os.getenv("MARKER_MODAL_TIMEOUT_SECS", "600"))
-
 
 def get_modal_base_url() -> str:
-    base_url = os.getenv("MARKER_MODAL_BASE_URL", "").rstrip("/")
+    """Get the Modal base URL from settings.
+
+    Returns:
+        str: The Modal base URL without trailing slash
+
+    Raises:
+        RuntimeError: If MARKER_MODAL_BASE_URL is not set
+    """
+    base_url = settings.MARKER_MODAL_BASE_URL
     if not base_url:
         raise RuntimeError("MARKER_MODAL_BASE_URL is not set. Set it to your Modal endpoint URL.")
-    return base_url
+    return base_url.rstrip("/")
 
 
 async def convert_document_via_modal(
@@ -67,7 +73,7 @@ async def convert_document_via_modal(
     data = {k: v for k, v in data.items() if v not in (None, "", "none", "null")}
 
     headers = extra_headers or {}
-    t = timeout if timeout is not None else DEFAULT_TIMEOUT
+    t = timeout if timeout is not None else settings.MARKER_MODAL_TIMEOUT_SECS
     try:
         resp = await client.post(url, files=files, data=data, headers=headers, timeout=t)
         resp.raise_for_status()
