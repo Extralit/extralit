@@ -29,9 +29,9 @@ ocr_settings = PDFOCRSettings()
 
 
 def get_modal_base_url() -> str:
-    base_url = ocr_settings.modal_base_url
+    base_url = ocr_settings.marker_modal_base_url
     if not base_url:
-        raise RuntimeError("OCR_MODAL_BASE_URL is not set. Set it to your Modal endpoint URL.")
+        raise RuntimeError("OCR_MARKER_MODAL_BASE_URL is not set. Set it to your Modal endpoint URL.")
     return base_url.rstrip("/")
 
 
@@ -68,7 +68,7 @@ async def convert_document_via_modal(
     data = {k: v for k, v in data.items() if v not in (None, "", "none", "null")}
 
     headers = extra_headers or {}
-    t = timeout if timeout is not None else ocr_settings.modal_timeout_secs
+    t = timeout if timeout is not None else ocr_settings.marker_modal_timeout_secs
     try:
         resp = await client.post(url, files=files, data=data, headers=headers, timeout=t)
         resp.raise_for_status()

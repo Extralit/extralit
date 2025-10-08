@@ -29,9 +29,9 @@ class PDFOCRSettings(BaseSettings):
 
     run_mode: Literal["marker", "local"] = "local"
 
-    modal_base_url: str | None = Field(default=None, description="Base URL for Modal-hosted Marker service")
+    marker_modal_base_url: str | None = Field(default=None, description="Base URL for Modal-hosted Marker service")
 
-    modal_timeout_secs: int = Field(
+    marker_modal_timeout_secs: int = Field(
         default=600, description="Timeout in seconds for requests to Modal-hosted Marker service"
     )
 
