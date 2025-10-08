@@ -15,7 +15,7 @@
 from typing import Literal
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class PDFOCRSettings(BaseSettings):
@@ -25,8 +25,7 @@ class PDFOCRSettings(BaseSettings):
     All settings have the OCR_ prefix.
     """
 
-    class Config:
-        env_prefix = "OCR_"
+    model_config = SettingsConfigDict(env_prefix="OCR_")
 
     run_mode: Literal["marker", "local"] = "local"
 
