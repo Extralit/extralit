@@ -148,4 +148,4 @@ Check the Tilt web interface for services that are not green in deployment statu
 - `minio`: As a standalone pod in the K8s cluster for file blob storage, the Minio service is not automatically backed up. The data in the Minio bucket can be lost if the pod is deleted or the cluster fails in anyway. The data can be restored by re-uploading the data to the Minio bucket.
 
 
-For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA).
+For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).

@@ -11,14 +11,14 @@ Thank you for investing your time in contributing to the project! Any contributi
 ??? Question "New to contributing in general?"
     If you're a new contributor, read the [README](https://github.com/extralit/extralit/blob/main/README.md) to get an overview of the project. In addition, here are some resources to help you get started with open-source contributions:
 
-    * **Slack**: You are welcome to join the [Extralit Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ), where you can keep in touch with other users, contributors and the Extralit team. In the following [section](#first-contact-in-slack), you can find more information on how to get started in Slack.
+    * **Slack**: You are welcome to join the [Extralit Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw), where you can keep in touch with other users, contributors and the Extralit team. In the following [section](#first-contact-in-slack), you can find more information on how to get started in Slack.
     * **Git**: This is a very useful tool to keep track of the changes in your files. Using the command-line interface (CLI), you can make your contributions easily. For that, you need to have it [installed and updated](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) on your computer.
     * **GitHub**: It is a platform and cloud-based service that uses git and allows developers to collaborate on projects. To contribute to Extralit, you'll need to create an account. Check the [Contributor Workflow with Git and Github](#contributor-workflow-with-git-and-github) for more info.
     * **Developer Documentation**: To collaborate, you'll need to set up an efficient environment. Check the [developer documentation](developer.md) to know how to do it.
 
 ## First Contact in Slack
 
-Slack is our primary communication tool for contributors and users. Click [here](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ) to join the Extralit Slack community.
+Slack is our primary communication tool for contributors and users. Click [here](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw) to join the Extralit Slack community.
 
 When you join our Slack workspace, you'll find several channels:
 

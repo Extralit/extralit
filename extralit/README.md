@@ -23,7 +23,7 @@
 <a href="https://www.linkedin.com/company/extralit-ai">
 <img src="https://img.shields.io/badge/linkedin-blue?logo=linkedin"/>
 </a>
-<a href="https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ">
+<a href="https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw">
 <img src="https://img.shields.io/badge/Slack-4A154B?&logo=slack&logoColor=white"/>
 </a>
 </p>
@@ -48,7 +48,7 @@ Whether you're conducting a systematic review, meta-analysis, or building a scie
 
 We're an open-source project built for researchers, by researchers. Here's how to get involved:
 
-- [Slack Community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ): Connect with other researchers and developers
+- [Slack Community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw): Connect with other researchers and developers
 - [Documentation](https://docs.extralit.ai): Learn how to use and contribute to Extralit
 - [Roadmap](https://github.com/orgs/extralit/projects/1/views/1): See what we're building and share your ideas
 
@@ -95,7 +95,7 @@ Need more help? Check out our [detailed tutorials](https://docs.extralit.ai/late
 
 ## 🥇 Contributors
 
-Want to contribute? Great! Check out our [contribution guide](https://docs.extralit.ai/latest/community/contributor) or join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ).
+Want to contribute? Great! Check out our [contribution guide](https://docs.extralit.ai/latest/community/contributor) or join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).
 
 <a href="https://github.com/extralit/extralit/graphs/contributors">
 <img src="https://contrib.rocks/image?repo=extralit/extralit" />

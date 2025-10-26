@@ -419,5 +419,5 @@ After setting up your development environment:
 
 For more information on using Extralit, see the [Quickstart Guide](quickstart.md).
 
-For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA).
+For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).
 

@@ -304,5 +304,5 @@ Common deployment problems:
 - `elasticsearch`: Can fail on restart due to data-shard issues
 - `main-db` Postgres: May fail to remount volumes after redeployment due to password changes
 
-For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA).
+For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).
 

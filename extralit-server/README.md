@@ -142,7 +142,7 @@ However, expect some tests to fail or be skipped when running locally.
 
 ## Contributing
 
-Check our [contribution guide](https://docs.extralit.ai/latest/community/contributor) and join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ).
+Check our [contribution guide](https://docs.extralit.ai/latest/community/contributor) and join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).
 
 ## Roadmap
 

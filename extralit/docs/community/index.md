@@ -33,7 +33,7 @@ We are an open-source community-driven project focused on building a platform th
 
     Join our Slack workspace to get direct support from the community and stay up to date with the latest developments.
 
-    [:octicons-arrow-right-24: Slack ↗](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ)
+    [:octicons-arrow-right-24: Slack ↗](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw)
 
 <!-- -   __Blog__
 
@@ -65,5 +65,5 @@ We are an open-source community-driven project focused on building a platform th
 ## Getting Started
 
 - Check out our [documentation](https://docs.extralit.ai) to learn more about Extralit
-- Join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ) to connect with other users and contributors
+- Join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw) to connect with other users and contributors
 - Read our [contribution guide](contributor.md) to start contributing to the project

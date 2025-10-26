@@ -23,7 +23,7 @@
 <a href="https://www.linkedin.com/company/extralit-ai">
 <img src="https://img.shields.io/badge/linkedin-blue?logo=linkedin"/>
 </a>
-<a href="https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ">
+<a href="https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw">
 <img src="https://img.shields.io/badge/Slack-4A154B?&logo=slack&logoColor=white"/>
 </a>
 </p>
@@ -64,7 +64,7 @@ npm run build
 
 ## 🫱🏾‍🫲🏼 Contribute
 
-To help our community contribute effectively, we have created comprehensive [developer documentation](https://docs.extralit.ai/latest/community/). You can also join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ) to connect with other contributors.
+To help our community contribute effectively, we have created comprehensive [developer documentation](https://docs.extralit.ai/latest/community/). You can also join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw) to connect with other contributors.
 
 <a href="https://github.com/extralit/extralit/graphs/contributors">
 <img src="https://contrib.rocks/image?repo=extralit/extralit" />
