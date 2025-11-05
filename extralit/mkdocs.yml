@@ -208,13 +208,13 @@ nav:
           - Upgrading: admin_guide/upgrading.md
           # - File storage configuration: admin_guide/file_storage.md
       - Advanced:
+          - PDF Preprocessing Configuration: admin_guide/pdf_preprocessing_config.md
           - Custom fields with layout templates: admin_guide/custom_fields.md
           - Use webhooks to respond to server events:
               - admin_guide/webhooks.md
               - Webhooks internals: admin_guide/webhooks_internals.md
           - Use Markdown to format rich content: admin_guide/use_markdown_to_format_rich_content.md
           - Migrate users, workspaces and datasets to Extralit V2: admin_guide/migrate_from_legacy_datasets.md
-          - Custom fields with layout templates: admin_guide/custom_fields.md
   - Tutorials:
       - tutorials/index.md
       - Text classification: tutorials/text_classification.ipynb
