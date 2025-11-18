@@ -25,7 +25,7 @@ from extralit._api._base import ResourceAPI
 from extralit._constants import _DEFAULT_SCHEMA_S3_PATH
 from extralit._exceptions._api import ExtralitAPIError, api_error_handler
 from extralit._models._files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
-from extralit._models._workspace import WorkspaceModel
+from extralit._models._workspace import WorkspaceDoctorResponse, WorkspaceModel
 
 if TYPE_CHECKING:
     from extralit._models._schema import SchemaStructure
@@ -115,6 +115,32 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
         response = self.http_client.post(f"{self.url_stub}/{workspace_id}/users/{user_id}")
         response.raise_for_status()
         self._log_message(message=f"Added user {user_id} to workspace {workspace_id}")
+
+    @api_error_handler
+    def doctor(self, workspace_id: "UUID", autofix: bool = True) -> "WorkspaceDoctorResponse":
+        """
+        Run diagnostics on a workspace and optionally auto-fix issues.
+        
+        Args:
+            workspace_id: The ID of the workspace to diagnose.
+            autofix: Whether to automatically fix issues (default: True).
+        
+        Returns:
+            WorkspaceDoctorResponse with diagnostic results.
+        
+        Raises:
+            ExtralitAPIError: If the API request fails.
+        """
+        logger.info(f"Running doctor diagnostics on workspace {workspace_id}")
+        response = self.http_client.post(
+            url=f"{self.url_stub}/{workspace_id}/doctor",
+            params={"autofix": autofix}
+        )
+        response.raise_for_status()
+        response_json = response.json()
+        doctor_response = WorkspaceDoctorResponse(**response_json)
+        self._log_message(message=f"Doctor check completed for workspace {workspace_id}: {doctor_response.overall_status}")
+        return doctor_response
 
     ####################
     # File methods #

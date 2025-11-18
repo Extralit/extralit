@@ -26,6 +26,8 @@ from extralit_server.api.schemas.v1.workspaces import (
 )
 from extralit_server.api.schemas.v1.workspaces import (
     WorkspaceCreate,
+    WorkspaceDoctorCheckResult,
+    WorkspaceDoctorResponse,
     Workspaces,
     WorkspaceUserCreate,
 )
@@ -178,3 +180,147 @@ async def delete_workspace_user(
     await accounts.delete_workspace_user(db, workspace_user)
 
     return await workspace_user.awaitable_attrs.user
+
+
+@router.post("/workspaces/{workspace_id}/doctor", response_model=WorkspaceDoctorResponse)
+async def workspace_doctor(
+    *,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    workspace_id: UUID,
+    current_user: Annotated[User, Security(auth.get_current_user)],
+    s3_client=Depends(files.get_s3_client),
+    autofix: bool = True,
+):
+    """
+    Run diagnostics on a workspace and optionally auto-fix issues.
+    
+    Checks:
+    - S3 bucket exists (can auto-fix)
+    - Bucket has proper versioning policy (informational)
+    - RQ worker pool connectivity (informational)
+    """
+    await authorize(current_user, WorkspacePolicy.get(workspace_id))
+
+    workspace = await Workspace.get_or_raise(db, workspace_id)
+    checks = []
+    
+    # Check 1: S3 bucket exists
+    bucket_exists = await files.bucket_exists(s3_client, workspace.name)
+    if bucket_exists:
+        checks.append(
+            WorkspaceDoctorCheckResult(
+                check_name="s3_bucket",
+                status="ok",
+                message=f"S3 bucket '{workspace.name}' exists",
+                fixed=False,
+            )
+        )
+    else:
+        if autofix:
+            try:
+                await files.create_bucket(s3_client, workspace.name)
+                checks.append(
+                    WorkspaceDoctorCheckResult(
+                        check_name="s3_bucket",
+                        status="ok",
+                        message=f"S3 bucket '{workspace.name}' was missing and has been created",
+                        fixed=True,
+                    )
+                )
+            except Exception as e:
+                checks.append(
+                    WorkspaceDoctorCheckResult(
+                        check_name="s3_bucket",
+                        status="error",
+                        message=f"S3 bucket '{workspace.name}' does not exist and failed to create: {e!s}",
+                        fixed=False,
+                    )
+                )
+        else:
+            checks.append(
+                WorkspaceDoctorCheckResult(
+                    check_name="s3_bucket",
+                    status="error",
+                    message=f"S3 bucket '{workspace.name}' does not exist (autofix disabled)",
+                    fixed=False,
+                )
+            )
+    
+    # Check 2: Bucket versioning policy
+    if bucket_exists or any(check.check_name == "s3_bucket" and check.fixed for check in checks):
+        versioning = await files.get_bucket_versioning(s3_client, workspace.name)
+        if versioning:
+            if versioning["status"] == "Enabled":
+                checks.append(
+                    WorkspaceDoctorCheckResult(
+                        check_name="bucket_versioning",
+                        status="ok",
+                        message=f"Bucket versioning is enabled (Status: {versioning['status']})",
+                        fixed=False,
+                    )
+                )
+            else:
+                checks.append(
+                    WorkspaceDoctorCheckResult(
+                        check_name="bucket_versioning",
+                        status="warning",
+                        message=f"Bucket versioning is not enabled (Status: {versioning['status']})",
+                        fixed=False,
+                    )
+                )
+        else:
+            checks.append(
+                WorkspaceDoctorCheckResult(
+                    check_name="bucket_versioning",
+                    status="warning",
+                    message="Could not retrieve bucket versioning configuration",
+                    fixed=False,
+                )
+            )
+    
+    # Check 3: RQ worker pool connectivity
+    try:
+        from extralit_server.jobs.queues import DEFAULT_QUEUE
+        
+        # Try to ping Redis through the queue connection
+        connection = DEFAULT_QUEUE.connection
+        connection.ping()
+        
+        checks.append(
+            WorkspaceDoctorCheckResult(
+                check_name="rq_worker_pool",
+                status="ok",
+                message="Redis Queue worker pool is reachable",
+                fixed=False,
+            )
+        )
+    except Exception as e:
+        checks.append(
+            WorkspaceDoctorCheckResult(
+                check_name="rq_worker_pool",
+                status="warning",
+                message=f"Could not connect to RQ worker pool: {e!s}",
+                fixed=False,
+            )
+        )
+    
+    # Determine overall status
+    has_errors = any(check.status == "error" for check in checks)
+    has_fixed = any(check.fixed for check in checks)
+    has_warnings = any(check.status == "warning" for check in checks)
+    
+    if has_errors:
+        overall_status = "issues_found"
+    elif has_fixed:
+        overall_status = "issues_fixed"
+    elif has_warnings:
+        overall_status = "issues_found"
+    else:
+        overall_status = "healthy"
+    
+    return WorkspaceDoctorResponse(
+        workspace_id=workspace.id,
+        workspace_name=workspace.name,
+        checks=checks,
+        overall_status=overall_status,
+    )
