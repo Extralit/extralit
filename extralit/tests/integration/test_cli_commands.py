@@ -179,3 +179,27 @@ class TestCLICommands:
                 f"\n--- CLI stdout ---\n{result.stdout}\n--- CLI stderr ---\n{result.stderr}\n"
             )
             assert "No schemas found" in result.stdout
+
+    def test_workspace_doctor_command(self, test_workspace, client: Extralit):
+        """Test the 'workspaces doctor' command."""
+        # Ensure the CLI is logged in for workspaces doctor command
+        login_result = run_cli_command(f"extralit login --api-url {client.api_url} --api-key {client.api_key}")
+        assert login_result.returncode == 0
+
+        # Run doctor command with autofix
+        result = run_cli_command(f"extralit workspaces --name {test_workspace.name} doctor")
+
+        assert result.returncode == 0, f"\n--- CLI stdout ---\n{result.stdout}\n--- CLI stderr ---\n{result.stderr}\n"
+        assert "Workspace Health Check" in result.stdout
+        assert "s3_bucket" in result.stdout or "bucket" in result.stdout.lower()
+
+    def test_workspace_doctor_command_no_autofix(self, test_workspace, client: Extralit):
+        """Test the 'workspaces doctor' command with --no-autofix."""
+        login_result = run_cli_command(f"extralit login --api-url {client.api_url} --api-key {client.api_key}")
+        assert login_result.returncode == 0
+
+        # Run doctor command without autofix
+        result = run_cli_command(f"extralit workspaces --name {test_workspace.name} doctor --no-autofix")
+
+        assert result.returncode == 0, f"\n--- CLI stdout ---\n{result.stdout}\n--- CLI stderr ---\n{result.stderr}\n"
+        assert "Workspace Health Check" in result.stdout
