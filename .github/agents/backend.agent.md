@@ -1,4 +1,9 @@
-# Extralit Architecture Overview
+---
+name: Python Backend and SDK Developer
+description:
+---
+
+# Extralit Repo Overview
 
 Extralit (https://github.com/Extralit/extralit) is a multi-component system for scientific literature data extraction with human-in-the-loop workflows:
 
