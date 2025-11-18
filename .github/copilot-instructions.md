@@ -12,13 +12,11 @@ Extralit (https://github.com/Extralit/extralit) is a multi-component system for 
 ### Server (extralit-server/)
 ```bash
 cd extralit-server/
-pdm run server-dev        # Start server with auto-reload + worker
+pdm run server-dev       # Start server with db migration init + auto-reload
 pdm run server           # Start server only
 pdm run worker           # Start background worker only
 pdm run migrate          # Run database migrations
 pdm run test             # Run tests
-pdm run test-cov         # Run tests with coverage
-pdm run lint             # Run ruff linting
 ```
 
 ### Frontend (extralit-frontend/)
@@ -27,26 +25,13 @@ cd extralit-frontend/
 npm run dev              # Development server
 npm run build            # Production build
 npm run test             # Run Jest tests
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Run tests with coverage report
-npm run e2e              # Run Playwright e2e tests (interactive UI)
-npm run e2e:silent       # Run e2e tests in headless mode
-npm run e2e:report       # Show Playwright test report
-npm run lint             # ESLint check
-npm run lint:fix         # Fix ESLint issues
-npm run format           # Format with Prettier
-npm run format:check     # Check formatting without modifying files
-npm run generate-icons   # Generate icon components from SVG files
 ```
 
 ### Client SDK (extralit/)
 ```bash
 cd extralit/
 pdm run test             # Run tests
-pdm run test-cov         # Run tests with coverage
 pdm run lint             # Run ruff linting
-pdm run format           # Format with black
-pdm run all              # Format, lint, and test
 ```
 
 ## Key Development Notes
@@ -235,21 +220,6 @@ This SDK package allows researchers to:
 
 ## Development Commands
 
-### Testing and Quality
-```bash
-pdm run test             # Run pytest with warnings disabled
-pdm run test-cov         # Run tests with coverage reporting
-pdm run lint             # Run ruff linting
-pdm run format           # Format code with black
-pdm run all              # Format, lint, and test in sequence
-```
-
-### Package Management
-```bash
-pdm install             # Install dependencies and development packages
-pdm install --prod       # Install production dependencies only
-```
-
 ### CLI Development
 The package provides an `extralit` CLI command that registers multiple subcommands:
 - `extralit datasets` - Dataset management
@@ -309,20 +279,6 @@ npm run start            # Start production server (after build)
 
 # Testing
 npm run test             # Run Jest unit tests
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Run tests with coverage report
-npm run e2e              # Run Playwright e2e tests (interactive UI)
-npm run e2e:silent       # Run e2e tests in headless mode
-npm run e2e:report       # Show Playwright test report
-
-# Code Quality
-npm run lint             # ESLint check
-npm run lint:fix         # Fix ESLint issues automatically
-npm run format           # Format code with Prettier
-npm run format:check     # Check formatting without modifying files
-
-# Assets
-npm run generate-icons   # Generate icon components from SVG files
 ```
 
 ## Architecture Patterns

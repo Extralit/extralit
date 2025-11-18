@@ -12,7 +12,7 @@ Extralit (https://github.com/Extralit/extralit) is a multi-component system for 
 ### Server (extralit-server/)
 ```bash
 cd extralit-server/
-pdm run server-dev       # Start server with db migration init + auto-reload 
+pdm run server-dev       # Start server with db migration init + auto-reload
 pdm run server           # Start server only
 pdm run worker           # Start background worker only
 pdm run migrate          # Run database migrations
