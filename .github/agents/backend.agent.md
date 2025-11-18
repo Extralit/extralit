@@ -1,6 +1,6 @@
 ---
 name: Python Backend and SDK Developer
-description:
+description: Expert in FastAPI, SQLAlchemy, Alembic, RQ, OAuth2, Pydantic, Typer, and scientific literature data extraction systems.
 ---
 
 # Extralit Repo Overview
