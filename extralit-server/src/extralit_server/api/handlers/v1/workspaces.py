@@ -35,7 +35,8 @@ from extralit_server.contexts import accounts, files
 from extralit_server.database import get_async_db
 from extralit_server.errors import GenericServerError
 from extralit_server.errors.future import NotFoundError, NotUniqueError, UnprocessableEntityError
-from extralit_server.models import User, Workspace, WorkspaceUser
+from extralit_server.models import Dataset, User, Workspace, WorkspaceUser
+from extralit_server.search_engine import get_search_engine
 from extralit_server.security import auth
 
 router = APIRouter(tags=["workspaces"])
@@ -300,6 +301,60 @@ async def workspace_doctor(
                 check_name="rq_worker_pool",
                 status="warning",
                 message=f"Could not connect to RQ worker pool: {e!s}",
+                fixed=False,
+            )
+        )
+    
+    # Check 4: Elasticsearch indexes for datasets (informational only)
+    try:
+        # Get datasets for this workspace
+        from sqlalchemy import select
+        
+        result = await db.execute(select(Dataset).where(Dataset.workspace_id == workspace.id))
+        datasets = result.scalars().all()
+        
+        if datasets:
+            async with get_search_engine() as search_engine:
+                missing_indexes = []
+                for dataset in datasets:
+                    index_name = f"ex.{dataset.id}"
+                    index_exists = await search_engine._index_exists_request(index_name)
+                    if not index_exists:
+                        missing_indexes.append(dataset.name)
+                
+                if missing_indexes:
+                    checks.append(
+                        WorkspaceDoctorCheckResult(
+                            check_name="elasticsearch_indexes",
+                            status="warning",
+                            message=f"Missing Elasticsearch indexes for {len(missing_indexes)} dataset(s): {', '.join(missing_indexes[:3])}{'...' if len(missing_indexes) > 3 else ''}",
+                            fixed=False,
+                        )
+                    )
+                else:
+                    checks.append(
+                        WorkspaceDoctorCheckResult(
+                            check_name="elasticsearch_indexes",
+                            status="ok",
+                            message=f"All {len(datasets)} dataset(s) have Elasticsearch indexes",
+                            fixed=False,
+                        )
+                    )
+        else:
+            checks.append(
+                WorkspaceDoctorCheckResult(
+                    check_name="elasticsearch_indexes",
+                    status="ok",
+                    message="No datasets found for this workspace",
+                    fixed=False,
+                )
+            )
+    except Exception as e:
+        checks.append(
+            WorkspaceDoctorCheckResult(
+                check_name="elasticsearch_indexes",
+                status="warning",
+                message=f"Could not check Elasticsearch indexes: {e!s}",
                 fixed=False,
             )
         )
