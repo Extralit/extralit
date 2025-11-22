@@ -157,9 +157,9 @@ def add_user(
             Console().print(panel)
             raise typer.Exit(code=1)
 
-        workspace_obj = client.workspaces(name=workspace["name"])
+        workspace_obj = client.workspaces(name=workspace.name)
         if not workspace_obj:
-            raise ValueError(f"Workspace with name={workspace['name']} not found.")
+            raise ValueError(f"Workspace with name={workspace.name} not found.")
 
         user_obj = client.users(username=username)
         if not user_obj:
@@ -171,7 +171,7 @@ def add_user(
 
         # Display success message
         panel = get_themed_panel(
-            f"User with username={username} has been added to workspace={workspace['name']}",
+            f"User with username={username} has been added to workspace={workspace.name}",
             title="User added",
             title_align="left",
         )
@@ -220,9 +220,9 @@ def delete_user(
             Console().print(panel)
             raise typer.Exit(code=1)
 
-        workspace_obj = client.workspaces(name=workspace["name"])
+        workspace_obj = client.workspaces(name=workspace.name)
         if not workspace_obj:
-            raise ValueError(f"Workspace with name={workspace['name']} not found.")
+            raise ValueError(f"Workspace with name={workspace.name} not found.")
 
         user_obj = client.users(username=username)
         if not user_obj:
@@ -231,7 +231,7 @@ def delete_user(
         workspace_obj.remove_user(user=user_obj)
 
         panel = get_themed_panel(
-            f"User with username={username} has been removed from workspace={workspace['name']}",
+            f"User with username={username} has been removed from workspace={workspace.name}",
             title="User removed",
             title_align="left",
         )
@@ -268,14 +268,26 @@ def workspace_doctor(
     try:
         client = init_callback()
 
-        workspace_obj = client.workspaces(name=workspace["name"])
-        if not workspace_obj:
-            raise ValueError(f"Workspace with name={workspace['name']} not found.")
+        # workspace_obj = client.workspaces(name=workspace.name)
+        # if not workspace_obj:
+        #     raise ValueError(f"Workspace with name={workspace.name} not found.")
 
-        console.print(f"\n[bold]Running diagnostics on workspace: {workspace['name']}[/bold]\n")
+        # console.print(f"\n[bold]Running diagnostics on workspace: {workspace.name}[/bold]\n")
+
+        # # Run doctor diagnostics
+        # doctor_response = client.workspaces.doctor(workspace_id=workspace_obj.id, autofix=autofix)
+        # Use low-level API wrapper (WorkspacesAPI) — NOT the high-level resource layer
+        api = client.api.workspaces
+
+        # Look up workspace by name
+        workspace_obj = api.get_by_name(workspace.name)
+        if not workspace_obj:
+            raise ValueError(f"Workspace with name={workspace.name} not found.")
+
+        console.print(f"\n[bold]Running diagnostics on workspace: {workspace.name}[/bold]\n")
 
         # Run doctor diagnostics
-        doctor_response = client.workspaces.doctor(workspace_id=workspace_obj.id, autofix=autofix)
+        doctor_response = api.doctor(workspace_obj.id, autofix=autofix)
 
         # Display results
         from rich.table import Table
