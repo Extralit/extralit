@@ -359,6 +359,151 @@ async def workspace_doctor(
             )
         )
 
+    # Check 5: Database connections health with autofix
+    try:
+        import asyncio
+
+        from sqlalchemy import text
+        from sqlalchemy.exc import SQLAlchemyError
+
+        # Import the async engine to access database URL and dispose method
+        from extralit_server.database import async_engine
+
+        # Get database URL and detect type
+        db_url = str(async_engine.url)
+        is_postgresql = "postgresql" in db_url.lower()
+        is_sqlite = "sqlite" in db_url.lower()
+
+        async def check_db_health():
+            if is_postgresql:
+                # A. Liveness Check (The most important part)
+                # Simple query to prove the TCP pipe is open.
+                await db.execute(text("SELECT 1"))
+
+                # B. Deep Inspection (Optional - only if Liveness passes)
+                active_connections_query = text("""
+                    SELECT
+                        count(*) as active_connections,
+                        count(*) filter (where state = 'idle in transaction' and now() - state_change > interval '1 minute') as stale_transaction_connections
+                    FROM pg_stat_activity
+                    WHERE datname = current_database()
+                """)
+
+                result = await db.execute(active_connections_query)
+                conn_stats = result.first()
+
+                if conn_stats:
+                    stale_txn = conn_stats.stale_transaction_connections
+                    active = conn_stats.active_connections
+
+                    if stale_txn > 0:
+                        # Idle in transaction is BAD. It blocks table locks.
+                        checks.append(
+                            WorkspaceDoctorCheckResult(
+                                check_name="db_transaction_health",
+                                status="warning",
+                                message=f"Found {stale_txn} connections idle in transaction.",
+                            )
+                        )
+                    else:
+                        checks.append(
+                            WorkspaceDoctorCheckResult(
+                                check_name="db_connection_health",
+                                status="ok",
+                                message=f"Pool healthy. Active DB sessions: {active}",
+                            )
+                        )
+
+            elif is_sqlite:
+                # SQLite doesn't have connection pooling like PostgreSQL
+                # Just check if we can execute a simple query
+                simple_query = text("SELECT 1 as test")
+                result = await db.execute(simple_query)
+                test_result = result.scalar()
+
+                if test_result == 1:
+                    checks.append(
+                        WorkspaceDoctorCheckResult(
+                            check_name="database_connections",
+                            status="ok",
+                            message="SQLite database connection is healthy (SQLite uses file-based connections, no pooling)",
+                            fixed=False,
+                        )
+                    )
+                else:
+                    checks.append(
+                        WorkspaceDoctorCheckResult(
+                            check_name="database_connections",
+                            status="error",
+                            message="SQLite database connection test failed",
+                            fixed=False,
+                        )
+                    )
+            else:
+                # Other database types - skip detailed connection monitoring
+                checks.append(
+                    WorkspaceDoctorCheckResult(
+                        check_name="database_connections",
+                        status="ok",
+                        message=f"Database connection check skipped for {db_url.split('://')[0]} (unsupported for detailed monitoring)",
+                        fixed=False,
+                    )
+                )
+
+        # SAFETY TIMEOUT: If DB doesn't answer in 3s, the connection is dead.
+        # This prevents the doctor check from hanging for 15 mins.
+        await asyncio.wait_for(check_db_health(), timeout=3.0)
+
+    except (asyncio.TimeoutError, SQLAlchemyError, OSError) as e:
+        # Handle database connectivity issues
+        if autofix:
+            # THE AUTOFIX LOGIC
+            # If we timed out or got a connection error, the pool is likely stale.
+
+            error_msg = f"Database unresponsive (Timeout/Error). Resetting connection pool. Error: {e!s}"
+
+            # DISPOSE THE POOL
+            # This closes all internal sockets. The next request will force a fresh handshake.
+            try:
+                await async_engine.dispose()
+                checks.append(
+                    WorkspaceDoctorCheckResult(
+                        check_name="database_connections",
+                        status="warning",  # Warning because we had to reset
+                        message=error_msg,
+                        fixed=True,  # We successfully reset the pool
+                    )
+                )
+            except Exception as dispose_error:
+                error_msg += f" (Failed to dispose pool: {dispose_error!s})"
+                checks.append(
+                    WorkspaceDoctorCheckResult(
+                        check_name="database_connections",
+                        status="error",
+                        message=error_msg,
+                        fixed=False,
+                    )
+                )
+        else:
+            # Just report the issue without fixing
+            checks.append(
+                WorkspaceDoctorCheckResult(
+                    check_name="database_connections",
+                    status="error",
+                    message=f"Database unresponsive (Timeout/Error). Run with --autofix to automatically reset connection pool. Error: {e!s}",
+                    fixed=False,
+                )
+            )
+    except Exception as e:
+        checks.append(
+            WorkspaceDoctorCheckResult(
+                check_name="database_connections",
+                status="warning",
+                message=f"Could not check database connections: {e!s}",
+                fixed=False,
+            )
+        )
+
     # Determine overall status
     has_errors = any(check.status == "error" for check in checks)
     has_fixed = any(check.fixed for check in checks)
