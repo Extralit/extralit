@@ -16,7 +16,6 @@ import os
 import subprocess
 import tempfile
 import uuid
-
 import pytest
 from unittest.mock import patch
 from extralit import Extralit, Workspace
@@ -43,10 +42,7 @@ def test_workspace(client: Extralit, test_workspace_name):
         yield ws
 
 
-from pathlib import Path
-import tempfile
-import subprocess
-import os
+
 
 def run_cli_command(command: str):
     """Run CLI in fully isolated subprocess with Path.home patched BEFORE imports."""
@@ -236,14 +232,10 @@ class TestCLICommands:
             )
             assert "No schemas found" in result.stdout
 
-    from unittest.mock import patch
-
     def test_workspace_doctor_command(self, test_workspace, httpx_mock, client: Extralit):
         """Test the 'workspaces doctor' command with autofix enabled."""
         from typer.testing import CliRunner
         from extralit.cli.workspaces.__main__ import app
-        from unittest.mock import patch
-        
         runner = CliRunner()
         
         # Mock the user's workspaces list endpoint
@@ -282,7 +274,6 @@ class TestCLICommands:
         """Test the 'workspaces doctor' command with autofix disabled."""
         from typer.testing import CliRunner
         from extralit.cli.workspaces.__main__ import app
-        from unittest.mock import patch
         
         runner = CliRunner()
         

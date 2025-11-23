@@ -14,7 +14,6 @@
 
 import uuid
 import pytest
-import os
 import extralit as ex
 from extralit import Extralit, Workspace
 from unittest.mock import patch
