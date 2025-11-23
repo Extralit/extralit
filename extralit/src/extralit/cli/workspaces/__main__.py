@@ -41,19 +41,22 @@ def callback(
         raise typer.BadParameter(
             f"The command requires a workspace name provided using '--name' option before the {typer.style(ctx.invoked_subcommand, bold=True)} keyword"
         )
-
+    
     try:
         workspace = client.workspaces(name)
+
+        if workspace is None:
+            panel = get_themed_panel(
+                f"Workspace with name={name} does not exist.",
+                title="Workspace not found",
+                title_align="left",
+                success=False,
+            )
+            Console().print(panel)
+            raise typer.Exit(code=1)
+
         ctx.obj = workspace
-    except ValueError:
-        panel = get_themed_panel(
-            f"Workspace with name={name} does not exist.",
-            title="Workspace not found",
-            title_align="left",
-            success=False,
-        )
-        Console().print(panel)
-        raise typer.Exit(code=1)
+
     except RuntimeError:
         panel = get_themed_panel(
             "An unexpected error occurred when trying to get the workspace from the Extralit server",
