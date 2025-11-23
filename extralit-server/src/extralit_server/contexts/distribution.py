@@ -14,11 +14,10 @@
 
 from uuid import UUID
 
-import backoff
-import sqlalchemy
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from tenacity import retry, stop_after_delay, wait_exponential
 
 from extralit_server.database import _get_async_db
 from extralit_server.enums import DatasetDistributionStrategy, RecordStatus
@@ -41,7 +40,7 @@ async def unsafe_update_records_status(db: AsyncSession, records: list[Record]):
         await _update_record_status(db, record)
 
 
-@backoff.on_exception(backoff.expo, sqlalchemy.exc.SQLAlchemyError, max_time=MAX_TIME_RETRY_SQLALCHEMY_ERROR)
+@retry(stop=stop_after_delay(MAX_TIME_RETRY_SQLALCHEMY_ERROR), wait=wait_exponential(multiplier=1, min=1, max=15))
 async def update_record_status(search_engine: SearchEngine, record_id: UUID) -> Record:
     async for db in _get_async_db(isolation_level="SERIALIZABLE"):
         record = await Record.get_or_raise(

@@ -25,7 +25,6 @@ from pathlib import Path
 from typing import Annotated
 from urllib.parse import urlencode
 
-import backoff
 import redis
 from brotli_asgi import BrotliMiddleware
 from fastapi import FastAPI, Query, Request
@@ -34,6 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.datastructures import URL
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse, RedirectResponse
+from tenacity import retry, stop_after_delay, wait_exponential
 
 from extralit_server import helpers
 from extralit_server._version import __version__ as extralit_version
@@ -361,7 +361,7 @@ async def configure_search_engine():
         logging.getLogger("opensearch").setLevel(logging.ERROR)
         logging.getLogger("opensearch_transport").setLevel(logging.ERROR)
 
-    @backoff.on_exception(backoff.expo, ConnectionError, max_time=60)
+    @retry(stop=stop_after_delay(60), wait=wait_exponential(multiplier=1, min=1, max=60))
     async def ping_search_engine():
         async for search_engine in get_search_engine():
             if not await search_engine.ping():
@@ -376,7 +376,7 @@ async def configure_search_engine():
 
 
 def configure_redis():
-    @backoff.on_exception(backoff.expo, ConnectionError, max_time=60)
+    @retry(stop=stop_after_delay(60), wait=wait_exponential(multiplier=1, min=1, max=60))
     def ping_redis():
         try:
             REDIS_CONNECTION.ping()

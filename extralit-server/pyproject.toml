@@ -28,7 +28,6 @@ dependencies = [
     "opensearch-py ~= 2.0.0",
     "elasticsearch8[async] ~= 8.7.0",
     "brotli-asgi ~= 1.4.0",
-    "backoff ~= 2.2.0",
     "tenacity>=9.1.2",
     # Database dependencies
     "alembic ~= 1.13.0",
@@ -195,12 +194,13 @@ ignore = [
     "B904",   # exception chaining (will phase in later)
     "UP007",  # | union syntax modernization
     "UP045",  # Optional[...] -> X | None modernization
+    "UP038",
     "B027",   # empty abstract method not marked abstract
     "B024",   # abstract base class without abstract methods
     "B017",   # broad exception asserts in tests
     "RUF012", # mutable class var typing inference
     "B008",   # FastAPI Depends pattern
-    "FAST002" # FastAPI Depends suggestion
+    "FAST002", # FastAPI Depends suggestion
 ]
 
 [tool.ruff.lint.per-file-ignores]
