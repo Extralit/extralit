@@ -29,6 +29,7 @@ dependencies = [
     "elasticsearch8[async] ~= 8.7.0",
     "brotli-asgi ~= 1.4.0",
     "backoff ~= 2.2.0",
+    "tenacity>=9.1.2",
     # Database dependencies
     "alembic ~= 1.13.0",
     "SQLAlchemy ~= 2.0.0",

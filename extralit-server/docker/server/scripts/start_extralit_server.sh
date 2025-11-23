@@ -43,7 +43,7 @@ fi
 
 if [ "$ENV" = "dev" ]; then
   echo 'Running in development mode'
-  uvicorn $UVICORN_APP --host 0.0.0.0 --port $UVICORN_PORT --workers 4 --timeout-keep-alive 75 --reload
+  uvicorn $UVICORN_APP --host 0.0.0.0 --port $UVICORN_PORT --timeout-keep-alive 75 --reload
 else
   uvicorn $UVICORN_APP --host 0.0.0.0 --port $UVICORN_PORT
 fi

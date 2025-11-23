@@ -5,7 +5,7 @@
 groups = ["default", "marker", "postgresql", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:5c7abbe8ca580bf2529d321defa5d14ce03cec41bfa7ac8c60db5099a9d72404"
+content_hash = "sha256:563bad18e739a1014ace175b0dd6330275f1b99d0431730862098a50b55b3dba"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -3686,6 +3686,15 @@ dependencies = [
 files = [
     {file = "sympy-1.14.0-py3-none-any.whl", hash = "sha256:e091cc3e99d2141a0ba2847328f5479b05d94a6635cb96148ccb3f34671bd8f5"},
     {file = "sympy-1.14.0.tar.gz", hash = "sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517"},
+]
+
+[[package]]
+name = "tenacity"
+version = "9.1.2"
+summary = ""
+files = [
+    {file = "tenacity-9.1.2-py3-none-any.whl", hash = "sha256:f77bf36710d8b73a50b2dd155c97b870017ad21afe6ab300326b0371b3b05138"},
+    {file = "tenacity-9.1.2.tar.gz", hash = "sha256:1169d376c297e7de388d18b4481760d478b0e99a777cad3a9c86e556f4b697cb"},
 ]
 
 [[package]]
