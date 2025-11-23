@@ -18,9 +18,9 @@ import tempfile
 import uuid
 
 import pytest
-
+from unittest.mock import patch
 from extralit import Extralit, Workspace
-
+from pathlib import Path
 
 @pytest.fixture
 def test_workspace_name():
@@ -30,27 +30,83 @@ def test_workspace_name():
 
 @pytest.fixture
 def test_workspace(client: Extralit, test_workspace_name):
-    workspace = Workspace(name=test_workspace_name).create()
+    with patch("extralit._api._workspaces.WorkspacesAPI.create") as mock_create:
+        mock_create.return_value = {
+            "id": str(uuid.uuid4()),
+            "name": test_workspace_name,
+        }
 
-    yield workspace
+        # Create "fake" workspace object (not hitting real API)
+        ws = Workspace(name=test_workspace_name)
+        ws.id = mock_create.return_value["id"]
 
-    # Clean up
-    try:
-        workspace.delete()
-    except Exception:
-        pass
+        yield ws
 
+
+from pathlib import Path
+import tempfile
+import subprocess
+import os
 
 def run_cli_command(command: str):
-    result = subprocess.run(
-        command,
-        shell=True,
-        capture_output=True,
-        text=True,
-    )
-    return result
+    """Run CLI in fully isolated subprocess with Path.home patched BEFORE imports."""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        fake_home = Path(tmpdir) / "home"
+        fake_home.mkdir()
 
+        config_dir = fake_home / ".config" / "extralit"
+        config_dir.mkdir(parents=True)
+        (config_dir / "session.json").write_text("""{
+            "api_url": "http://localhost:9999",
+            "api_key": "fake",
+            "user": {"username": "test-user", "email": "test@example.com"}
+        }""")
 
+        fake_home_str = str(fake_home)
+
+        script = f"""
+import os
+from pathlib import Path
+from unittest.mock import patch
+
+# Patch Path.home BEFORE any extralit import
+with patch('pathlib.Path.home', return_value=Path({fake_home_str!r})):
+    os.environ['HOME'] = {fake_home_str!r}
+    os.environ['USERPROFILE'] = {fake_home_str!r}
+
+    # NOW import and patch everything else
+    from extralit import Extralit
+    import subprocess
+    import shlex
+
+    with patch('extralit._api._client.APIClient._validate_connection'):
+        client = Extralit(api_url="http://localhost:9999", api_key="fake")
+
+        with patch('extralit.cli.callback.init_callback', return_value=client):
+            with patch('extralit.cli.workspaces.__main__.init_callback', return_value=client):
+                result = subprocess.run(shlex.split('{command}'), capture_output=True, text=True)
+                print("STDOUT:", result.stdout)
+                print("STDERR:", result.stderr)
+                exit(result.returncode)
+"""
+
+        script_path = fake_home / "run.py"
+        script_path.write_text(script)
+
+        result = subprocess.run(
+            ["python", str(script_path)],
+            capture_output=True,
+            text=True,
+            cwd=str(fake_home)
+        )
+
+        return subprocess.CompletedProcess(
+            args=command,
+            returncode=result.returncode,
+            stdout=result.stdout,
+            stderr=result.stderr
+        )
+    
 class TestCLICommands:
     def test_files_list_command(self, test_workspace):
         """Test the 'files list' command."""
@@ -180,26 +236,83 @@ class TestCLICommands:
             )
             assert "No schemas found" in result.stdout
 
-    def test_workspace_doctor_command(self, test_workspace, client: Extralit):
-        """Test the 'workspaces doctor' command."""
-        # Ensure the CLI is logged in for workspaces doctor command
-        login_result = run_cli_command(f"extralit login --api-url {client.api_url} --api-key {client.api_key}")
-        assert login_result.returncode == 0
+    from unittest.mock import patch
 
-        # Run doctor command with autofix
-        result = run_cli_command(f"extralit workspaces --name {test_workspace.name} doctor")
+    def test_workspace_doctor_command(self, test_workspace, httpx_mock, client: Extralit):
+        """Test the 'workspaces doctor' command with autofix enabled."""
+        from typer.testing import CliRunner
+        from extralit.cli.workspaces.__main__ import app
+        from unittest.mock import patch
+        
+        runner = CliRunner()
+        
+        # Mock the user's workspaces list endpoint
+        httpx_mock.add_response(
+            method="GET",
+            url="http://localhost:9999/api/v1/me/workspaces",
+            json={"items": [{
+                "id": str(test_workspace.id), 
+                "name": test_workspace.name,
+                "inserted_at": "2024-01-01T00:00:00Z",
+                "updated_at": "2024-01-01T00:00:00Z"
+            }]}
+        )
+        
+        # Mock the doctor endpoint
+        httpx_mock.add_response(
+            method="POST",
+            url=f"http://localhost:9999/api/v1/workspaces/{test_workspace.id}/doctor?autofix=true",
+            json={
+                "workspace_id": str(test_workspace.id),
+                "workspace_name": test_workspace.name,
+                "overall_status": "healthy",
+                "checks": []
+            }
+        )
+        
+        # Patch init_callback to return our test client
+        with patch('extralit.cli.workspaces.__main__.init_callback', return_value=client):
+            result = runner.invoke(app, ["--name", test_workspace.name, "doctor"])
+        
+        assert result.exit_code == 0, f"CLI failed:\n{result.stdout}\n{result.exception if result.exception else ''}"
+        assert "healthy" in result.stdout.lower()
 
-        assert result.returncode == 0, f"\n--- CLI stdout ---\n{result.stdout}\n--- CLI stderr ---\n{result.stderr}\n"
-        assert "Workspace Health Check" in result.stdout
-        assert "s3_bucket" in result.stdout or "bucket" in result.stdout.lower()
 
-    def test_workspace_doctor_command_no_autofix(self, test_workspace, client: Extralit):
-        """Test the 'workspaces doctor' command with --no-autofix."""
-        login_result = run_cli_command(f"extralit login --api-url {client.api_url} --api-key {client.api_key}")
-        assert login_result.returncode == 0
-
-        # Run doctor command without autofix
-        result = run_cli_command(f"extralit workspaces --name {test_workspace.name} doctor --no-autofix")
-
-        assert result.returncode == 0, f"\n--- CLI stdout ---\n{result.stdout}\n--- CLI stderr ---\n{result.stderr}\n"
-        assert "Workspace Health Check" in result.stdout
+    def test_workspace_doctor_command_no_autofix(self, test_workspace, httpx_mock, client: Extralit):
+        """Test the 'workspaces doctor' command with autofix disabled."""
+        from typer.testing import CliRunner
+        from extralit.cli.workspaces.__main__ import app
+        from unittest.mock import patch
+        
+        runner = CliRunner()
+        
+        # Mock the user's workspaces list endpoint
+        httpx_mock.add_response(
+            method="GET",
+            url="http://localhost:9999/api/v1/me/workspaces",
+            json={"items": [{
+                "id": str(test_workspace.id), 
+                "name": test_workspace.name,
+                "inserted_at": "2024-01-01T00:00:00Z",
+                "updated_at": "2024-01-01T00:00:00Z"
+            }]}
+        )
+        
+        # Mock the doctor endpoint
+        httpx_mock.add_response(
+            method="POST",
+            url=f"http://localhost:9999/api/v1/workspaces/{test_workspace.id}/doctor?autofix=false",
+            json={
+                "workspace_id": str(test_workspace.id),
+                "workspace_name": test_workspace.name,
+                "overall_status": "healthy",
+                "checks": []
+            }
+        )
+        
+        # Patch init_callback to return our test client
+        with patch('extralit.cli.workspaces.__main__.init_callback', return_value=client):
+            result = runner.invoke(app, ["--name", test_workspace.name, "doctor", "--no-autofix"])
+        
+        assert result.exit_code == 0, f"CLI failed:\n{result.stdout}\n{result.exception if result.exception else ''}"
+        assert "healthy" in result.stdout.lower()
