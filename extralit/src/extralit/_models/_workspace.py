@@ -41,7 +41,7 @@ class WorkspaceModel(ResourceModel):
 
 class WorkspaceDoctorCheckResult(BaseModel):
     """Result of a single doctor check."""
-    
+
     check_name: str
     status: str
     message: str
@@ -50,7 +50,7 @@ class WorkspaceDoctorCheckResult(BaseModel):
 
 class WorkspaceDoctorResponse(BaseModel):
     """Response from workspace doctor diagnostic."""
-    
+
     workspace_id: UUID
     workspace_name: str
     checks: list[WorkspaceDoctorCheckResult]

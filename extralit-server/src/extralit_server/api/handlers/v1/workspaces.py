@@ -194,7 +194,7 @@ async def workspace_doctor(
 ):
     """
     Run diagnostics on a workspace and optionally auto-fix issues.
-    
+
     Checks:
     - S3 bucket exists (can auto-fix)
     - Bucket has proper versioning policy (informational)
@@ -204,7 +204,7 @@ async def workspace_doctor(
 
     workspace = await Workspace.get_or_raise(db, workspace_id)
     checks = []
-    
+
     # Check 1: S3 bucket exists
     bucket_exists = await files.bucket_exists(s3_client, workspace.name)
     if bucket_exists:
@@ -246,7 +246,7 @@ async def workspace_doctor(
                     fixed=False,
                 )
             )
-    
+
     # Check 2: Bucket versioning policy
     if bucket_exists or any(check.check_name == "s3_bucket" and check.fixed for check in checks):
         versioning = await files.get_bucket_versioning(s3_client, workspace.name)
@@ -278,15 +278,15 @@ async def workspace_doctor(
                     fixed=False,
                 )
             )
-    
+
     # Check 3: RQ worker pool connectivity
     try:
         from extralit_server.jobs.queues import DEFAULT_QUEUE
-        
+
         # Try to ping Redis through the queue connection
         connection = DEFAULT_QUEUE.connection
         connection.ping()
-        
+
         checks.append(
             WorkspaceDoctorCheckResult(
                 check_name="rq_worker_pool",
@@ -304,15 +304,15 @@ async def workspace_doctor(
                 fixed=False,
             )
         )
-    
+
     # Check 4: Elasticsearch indexes for datasets (informational only)
     try:
         # Get datasets for this workspace
         from sqlalchemy import select
-        
+
         result = await db.execute(select(Dataset).where(Dataset.workspace_id == workspace.id))
         datasets = result.scalars().all()
-        
+
         if datasets:
             async with get_search_engine() as search_engine:
                 missing_indexes = []
@@ -321,7 +321,7 @@ async def workspace_doctor(
                     index_exists = await search_engine._index_exists_request(index_name)
                     if not index_exists:
                         missing_indexes.append(dataset.name)
-                
+
                 if missing_indexes:
                     checks.append(
                         WorkspaceDoctorCheckResult(
@@ -358,12 +358,12 @@ async def workspace_doctor(
                 fixed=False,
             )
         )
-    
+
     # Determine overall status
     has_errors = any(check.status == "error" for check in checks)
     has_fixed = any(check.fixed for check in checks)
     has_warnings = any(check.status == "warning" for check in checks)
-    
+
     if has_errors:
         overall_status = "issues_found"
     elif has_fixed:
@@ -372,7 +372,7 @@ async def workspace_doctor(
         overall_status = "issues_found"
     else:
         overall_status = "healthy"
-    
+
     return WorkspaceDoctorResponse(
         workspace_id=workspace.id,
         workspace_name=workspace.name,

@@ -16,10 +16,13 @@ import os
 import subprocess
 import tempfile
 import uuid
-import pytest
-from unittest.mock import patch
-from extralit import Extralit, Workspace
 from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
+from extralit import Extralit, Workspace
+
 
 @pytest.fixture
 def test_workspace_name():
@@ -40,8 +43,6 @@ def test_workspace(client: Extralit, test_workspace_name):
         ws.id = mock_create.return_value["id"]
 
         yield ws
-
-
 
 
 def run_cli_command(command: str):
@@ -89,20 +90,13 @@ with patch('pathlib.Path.home', return_value=Path({fake_home_str!r})):
         script_path = fake_home / "run.py"
         script_path.write_text(script)
 
-        result = subprocess.run(
-            ["python", str(script_path)],
-            capture_output=True,
-            text=True,
-            cwd=str(fake_home)
-        )
+        result = subprocess.run(["python", str(script_path)], capture_output=True, text=True, cwd=str(fake_home))
 
         return subprocess.CompletedProcess(
-            args=command,
-            returncode=result.returncode,
-            stdout=result.stdout,
-            stderr=result.stderr
+            args=command, returncode=result.returncode, stdout=result.stdout, stderr=result.stderr
         )
-    
+
+
 class TestCLICommands:
     def test_files_list_command(self, test_workspace):
         """Test the 'files list' command."""
@@ -235,21 +229,27 @@ class TestCLICommands:
     def test_workspace_doctor_command(self, test_workspace, httpx_mock, client: Extralit):
         """Test the 'workspaces doctor' command with autofix enabled."""
         from typer.testing import CliRunner
+
         from extralit.cli.workspaces.__main__ import app
+
         runner = CliRunner()
-        
+
         # Mock the user's workspaces list endpoint
         httpx_mock.add_response(
             method="GET",
             url="http://localhost:9999/api/v1/me/workspaces",
-            json={"items": [{
-                "id": str(test_workspace.id), 
-                "name": test_workspace.name,
-                "inserted_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:00Z"
-            }]}
+            json={
+                "items": [
+                    {
+                        "id": str(test_workspace.id),
+                        "name": test_workspace.name,
+                        "inserted_at": "2024-01-01T00:00:00Z",
+                        "updated_at": "2024-01-01T00:00:00Z",
+                    }
+                ]
+            },
         )
-        
+
         # Mock the doctor endpoint
         httpx_mock.add_response(
             method="POST",
@@ -258,37 +258,41 @@ class TestCLICommands:
                 "workspace_id": str(test_workspace.id),
                 "workspace_name": test_workspace.name,
                 "overall_status": "healthy",
-                "checks": []
-            }
+                "checks": [],
+            },
         )
-        
+
         # Patch init_callback to return our test client
-        with patch('extralit.cli.workspaces.__main__.init_callback', return_value=client):
+        with patch("extralit.cli.workspaces.__main__.init_callback", return_value=client):
             result = runner.invoke(app, ["--name", test_workspace.name, "doctor"])
-        
+
         assert result.exit_code == 0, f"CLI failed:\n{result.stdout}\n{result.exception if result.exception else ''}"
         assert "healthy" in result.stdout.lower()
-
 
     def test_workspace_doctor_command_no_autofix(self, test_workspace, httpx_mock, client: Extralit):
         """Test the 'workspaces doctor' command with autofix disabled."""
         from typer.testing import CliRunner
+
         from extralit.cli.workspaces.__main__ import app
-        
+
         runner = CliRunner()
-        
+
         # Mock the user's workspaces list endpoint
         httpx_mock.add_response(
             method="GET",
             url="http://localhost:9999/api/v1/me/workspaces",
-            json={"items": [{
-                "id": str(test_workspace.id), 
-                "name": test_workspace.name,
-                "inserted_at": "2024-01-01T00:00:00Z",
-                "updated_at": "2024-01-01T00:00:00Z"
-            }]}
+            json={
+                "items": [
+                    {
+                        "id": str(test_workspace.id),
+                        "name": test_workspace.name,
+                        "inserted_at": "2024-01-01T00:00:00Z",
+                        "updated_at": "2024-01-01T00:00:00Z",
+                    }
+                ]
+            },
         )
-        
+
         # Mock the doctor endpoint
         httpx_mock.add_response(
             method="POST",
@@ -297,13 +301,13 @@ class TestCLICommands:
                 "workspace_id": str(test_workspace.id),
                 "workspace_name": test_workspace.name,
                 "overall_status": "healthy",
-                "checks": []
-            }
+                "checks": [],
+            },
         )
-        
+
         # Patch init_callback to return our test client
-        with patch('extralit.cli.workspaces.__main__.init_callback', return_value=client):
+        with patch("extralit.cli.workspaces.__main__.init_callback", return_value=client):
             result = runner.invoke(app, ["--name", test_workspace.name, "doctor", "--no-autofix"])
-        
+
         assert result.exit_code == 0, f"CLI failed:\n{result.stdout}\n{result.exception if result.exception else ''}"
         assert "healthy" in result.stdout.lower()

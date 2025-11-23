@@ -156,23 +156,14 @@ removed_user = workspace.remove_user("my_username")
 
 ## Diagnose workspace health
 
+
 You can run health diagnostics on a workspace to check for common issues like missing S3 buckets, connectivity problems, or configuration issues. The `doctor` method checks various aspects of the workspace setup and can automatically fix certain issues.
 
-```python
-import extralit as ex
-
-client = ex.Extralit(api_url="<api_url>", api_key="<api_key>")
-
-workspace = client.workspaces("my_workspace")
-
-# Run diagnostics with automatic fixes
-doctor_response = client.workspaces.doctor(workspace.id, autofix=True)
-
-# View results
-print(f"Overall status: {doctor_response.overall_status}")
-for check in doctor_response.checks:
-    print(f"{check.check_name}: {check.status} - {check.message}")
-```
+!!! tip "CLI Usage"
+    You can run workspace diagnostics from the command line:
+    ```bash
+    extralit workspaces --name my_workspace doctor
+    ```
 
 The doctor checks:
 - **S3 bucket existence**: Creates the bucket if missing (when autofix=True)
@@ -180,11 +171,6 @@ The doctor checks:
 - **RQ worker pool**: Tests background job queue connectivity (informational)
 - **Elasticsearch indexes**: Checks dataset index availability (informational)
 
-!!! tip "CLI Alternative"
-    You can also run workspace diagnostics from the command line:
-    ```bash
-    extralit workspaces --name my_workspace doctor
-    ```
 
 ## Delete a workspace
 
