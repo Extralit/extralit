@@ -93,7 +93,7 @@ Run health checks on a workspace to identify and fix common issues:
 
 ```bash
 # Run diagnostics with automatic fixes
-extralit workspaces --name my-workspace doctor
+extralit workspaces --name my-workspace doctor --autofix
 
 # Run diagnostics without fixing issues (informational only)
 extralit workspaces --name my-workspace doctor --no-autofix

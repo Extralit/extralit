@@ -26,9 +26,7 @@ class TestWorkspaceDoctor:
     def url(self, workspace_id: str) -> str:
         return f"/api/v1/workspaces/{workspace_id}/doctor"
 
-    async def test_workspace_doctor_healthy(
-        self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
-    ):
+    async def test_workspace_doctor_healthy(self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict):
         workspace = await WorkspaceFactory.create()
 
         # Mock S3 client and Redis connection
