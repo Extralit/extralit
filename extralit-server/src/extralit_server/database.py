@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 import logging
 import os
 from collections import OrderedDict
-from collections.abc import AsyncGenerator, Callable, Generator
-from functools import wraps
+from collections.abc import AsyncGenerator, Generator
 from typing import TypeVar
 
 from sqlalchemy import create_engine, event, make_url
@@ -26,13 +24,48 @@ from sqlalchemy.engine.interfaces import IsolationLevel
 from sqlalchemy.exc import DBAPIError, DisconnectionError, OperationalError, TimeoutError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from tenacity import before_sleep_log, retry, stop_after_attempt, wait_exponential
 
 import extralit_server
 from extralit_server.settings import settings
 
+try:
+    import asyncpg
+
+    ASYNCPG_AVAILABLE = True
+except ImportError:
+    ASYNCPG_AVAILABLE = False
+    asyncpg = None
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
+
+
+def _log_connection_pool_status():
+    """Log current database connection pool status for debugging."""
+    try:
+        if settings.database_is_postgresql:
+            # Log async engine pool status
+            pool = async_engine.pool
+            # SQLAlchemy async pool does not expose sync Pool API (size, checkedin, etc.)
+            logger.info(f"Async connection pool status: class={pool.__class__.__name__}, repr={pool}")
+
+            # Log sync engine pool status
+            sync_pool = sync_engine.pool
+            logger.info(
+                f"Sync connection pool status: "
+                f"pool_size={sync_pool.size}, "
+                f"checkedin={sync_pool.checkedin()}, "
+                f"checkedout={sync_pool.checkedout()}, "
+                f"overflow={sync_pool.overflow()}, "
+                f"invalid={sync_pool.invalid}"
+            )
+        else:
+            logger.info("Using SQLite database (no connection pooling)")
+    except Exception as e:
+        logger.warning(f"Failed to log connection pool status: {e}")
+
 
 ALEMBIC_CONFIG_FILE = os.path.normpath(os.path.join(os.path.dirname(extralit_server.__file__), "alembic.ini"))
 TAGGED_REVISIONS = OrderedDict(
@@ -105,79 +138,67 @@ async def _get_async_db(isolation_level: IsolationLevel | None = None) -> AsyncG
         await db.close()
 
 
-def retry_db_operation(max_retries: int = 3, delay: float = 0.1, backoff: float = 2.0):
-    """
-    Decorator to retry database operations on connection failures.
+def is_db_connection_error(exception):
+    """Custom filter to only retry on actual connection loss, not bad SQL syntax."""
+    error_msg = str(exception).lower()
 
-    Args:
-        max_retries: Maximum number of retry attempts
-        delay: Initial delay between retries in seconds
-        backoff: Multiplier for delay after each retry
-    """
+    # Check for standard SQLAlchemy connection errors
+    if isinstance(
+        exception, OperationalError | DBAPIError | DisconnectionError | TimeoutError | ConnectionRefusedError | OSError
+    ):
+        return True
 
-    def decorator(func: Callable[..., T]) -> Callable[..., T]:
-        @wraps(func)
-        async def async_wrapper(*args, **kwargs) -> T:
-            last_exception = None
-            current_delay = delay
+    # Check for asyncpg-specific connection errors
+    if ASYNCPG_AVAILABLE and asyncpg is not None:
+        try:
+            if isinstance(exception, asyncpg.exceptions.InternalServerError):
+                if (
+                    "MaxClientsInSessionMode" in error_msg
+                    or "max clients reached" in error_msg
+                    or "pool_size" in error_msg
+                ):
+                    return True
+        except AttributeError:
+            pass
 
-            for attempt in range(max_retries + 1):
-                try:
-                    return await func(*args, **kwargs)
-                except (
-                    DBAPIError,
-                    DisconnectionError,
-                    OperationalError,
-                    TimeoutError,
-                    ConnectionRefusedError,
-                    OSError,
-                ) as e:
-                    last_exception = e
+    # Check for other connection-related error messages
+    if any(
+        msg in error_msg
+        for msg in [
+            "connection was closed",
+            "connection does not exist",
+            "connection timed out",
+            "connection refused",
+            "connection reset",
+            "broken pipe",
+            "network is unreachable",
+            "no route to host",
+            "connection aborted",
+            "queuepool limit",  # Pool exhaustion
+            "timeout 30.00",  # Pool timeout
+            "errno 111",  # Connection refused errno
+            "errno 110",  # Connection timed out errno
+        ]
+    ):
+        return True
 
-                    # Check if this is a connection-related error
-                    error_msg = str(e).lower()
-                    if any(
-                        msg in error_msg
-                        for msg in [
-                            "connection was closed",
-                            "connection does not exist",
-                            "connection timed out",
-                            "connection refused",
-                            "connection reset",
-                            "broken pipe",
-                            "network is unreachable",
-                            "no route to host",
-                            "connection aborted",
-                            "queuepool limit",  # Pool exhaustion
-                            "timeout 30.00",  # Pool timeout
-                            "errno 111",  # Connection refused errno
-                            "errno 110",  # Connection timed out errno
-                        ]
-                    ):
-                        if attempt < max_retries:
-                            logger.warning(
-                                f"Database connection error on attempt {attempt + 1}/{max_retries + 1}: {e}. "
-                                f"Retrying in {current_delay:.2f}s..."
-                            )
-                            await asyncio.sleep(current_delay)
-                            current_delay *= backoff
-                            continue
+    return False
 
-                    # Re-raise non-connection errors immediately
-                    raise
-                except Exception:
-                    # Re-raise non-database errors immediately
-                    raise
 
-            # If all retries failed, raise the last exception
-            if last_exception:
-                logger.error(f"Database operation failed after {max_retries + 1} attempts: {last_exception}")
-                raise last_exception
+def before_retry_log_and_pool_status(retry_state):
+    """Log both retry attempt and connection pool status."""
+    before_sleep_log(logger, logging.WARNING)(retry_state)
+    _log_connection_pool_status()
 
-        @wraps(func)
-        def sync_wrapper(*args, **kwargs) -> T:
-            return func(*args, **kwargs)
 
-        return async_wrapper if asyncio.iscoroutinefunction(func) else sync_wrapper
-
-    return decorator
+# Reusable decorator
+db_retry_policy = retry(
+    # Retry only on connection errors using custom filter
+    retry=is_db_connection_error,
+    # Wait 0.1s, then 0.2s, then 0.4s... up to 2 seconds
+    wait=wait_exponential(multiplier=0.1, min=0.1, max=2),
+    # Stop after 3 attempts
+    stop=stop_after_attempt(3),
+    # Log before retrying and check pool status
+    before_sleep=before_retry_log_and_pool_status,
+)
