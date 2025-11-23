@@ -357,6 +357,38 @@ async def delete_object(s3_client, bucket: str, object: str, version_id: str | N
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
+async def bucket_exists(s3_client: "S3Client", bucket_name: str) -> bool:
+    """Check if S3 bucket exists."""
+    try:
+        await s3_client.head_bucket(Bucket=bucket_name)
+        return True
+    except ClientError as e:
+        if e.response["Error"]["Code"] in ["404", "NoSuchBucket"]:
+            return False
+        # For other errors (like permissions), log and return False
+        _LOGGER.warning(f"Error checking bucket {bucket_name}: {e}")
+        return False
+    except Exception as e:
+        _LOGGER.warning(f"Unexpected error checking bucket {bucket_name}: {e}")
+        return False
+
+
+async def get_bucket_versioning(s3_client: "S3Client", bucket_name: str) -> dict[str, str] | None:
+    """Get bucket versioning configuration."""
+    try:
+        response = await s3_client.get_bucket_versioning(Bucket=bucket_name)
+        return {
+            "status": response.get("Status", "Disabled"),
+            "mfa_delete": response.get("MFADelete", "Disabled"),
+        }
+    except ClientError as e:
+        _LOGGER.error(f"Error getting bucket versioning for {bucket_name}: {e}")
+        return None
+    except Exception as e:
+        _LOGGER.error(f"Unexpected error getting bucket versioning for {bucket_name}: {e}")
+        return None
+
+
 async def create_bucket(
     s3_client: "S3Client",
     workspace_name: str,

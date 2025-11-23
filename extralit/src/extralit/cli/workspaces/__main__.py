@@ -22,7 +22,7 @@ from extralit._models._user import Role
 from extralit.cli.callback import init_callback
 from extralit.cli.rich import get_themed_panel, print_rich_table
 
-_COMMANDS_REQUIRING_WORKSPACE = ["add-user", "delete-user"]
+_COMMANDS_REQUIRING_WORKSPACE = ["add-user", "delete-user", "doctor"]
 
 
 def callback(
@@ -44,16 +44,19 @@ def callback(
 
     try:
         workspace = client.workspaces(name)
+
+        if workspace is None:
+            panel = get_themed_panel(
+                f"Workspace with name={name} does not exist.",
+                title="Workspace not found",
+                title_align="left",
+                success=False,
+            )
+            Console().print(panel)
+            raise typer.Exit(code=1)
+
         ctx.obj = workspace
-    except ValueError:
-        panel = get_themed_panel(
-            f"Workspace with name={name} does not exist.",
-            title="Workspace not found",
-            title_align="left",
-            success=False,
-        )
-        Console().print(panel)
-        raise typer.Exit(code=1)
+
     except RuntimeError:
         panel = get_themed_panel(
             "An unexpected error occurred when trying to get the workspace from the Extralit server",
@@ -157,9 +160,9 @@ def add_user(
             Console().print(panel)
             raise typer.Exit(code=1)
 
-        workspace_obj = client.workspaces(name=workspace["name"])
+        workspace_obj = client.workspaces(name=workspace.name)
         if not workspace_obj:
-            raise ValueError(f"Workspace with name={workspace['name']} not found.")
+            raise ValueError(f"Workspace with name={workspace.name} not found.")
 
         user_obj = client.users(username=username)
         if not user_obj:
@@ -171,7 +174,7 @@ def add_user(
 
         # Display success message
         panel = get_themed_panel(
-            f"User with username={username} has been added to workspace={workspace['name']}",
+            f"User with username={username} has been added to workspace={workspace.name}",
             title="User added",
             title_align="left",
         )
@@ -220,9 +223,9 @@ def delete_user(
             Console().print(panel)
             raise typer.Exit(code=1)
 
-        workspace_obj = client.workspaces(name=workspace["name"])
+        workspace_obj = client.workspaces(name=workspace.name)
         if not workspace_obj:
-            raise ValueError(f"Workspace with name={workspace['name']} not found.")
+            raise ValueError(f"Workspace with name={workspace.name} not found.")
 
         user_obj = client.users(username=username)
         if not user_obj:
@@ -231,7 +234,7 @@ def delete_user(
         workspace_obj.remove_user(user=user_obj)
 
         panel = get_themed_panel(
-            f"User with username={username} has been removed from workspace={workspace['name']}",
+            f"User with username={username} has been removed from workspace={workspace.name}",
             title="User removed",
             title_align="left",
         )
@@ -248,6 +251,95 @@ def delete_user(
     except RuntimeError:
         panel = get_themed_panel(
             "An unexpected error occurred when trying to remove user from the workspace.",
+            title="Unexpected error",
+            title_align="left",
+            success=False,
+        )
+        Console().print(panel)
+        raise typer.Exit(code=1)
+
+
+@app.command(name="doctor", help="Run diagnostics on a workspace and auto-fix issues")
+def workspace_doctor(
+    ctx: typer.Context,
+    autofix: bool = typer.Option(False, "--autofix/--no-autofix", help="Automatically fix issues if possible"),
+) -> None:
+    """Run diagnostics on a workspace to check S3 bucket, versioning, RQ worker pool, etc."""
+    workspace = ctx.obj
+    console = Console()
+
+    try:
+        client = init_callback()
+
+        api = client.api.workspaces
+
+        # Look up workspace by name
+        workspace_obj = api.get_by_name(workspace.name)
+        if not workspace_obj:
+            raise ValueError(f"Workspace with name={workspace.name} not found.")
+
+        console.print(f"\n[bold]Running diagnostics on workspace: {workspace.name}[/bold]\n")
+
+        # Run doctor diagnostics
+        doctor_response = api.doctor(workspace_obj.id, autofix=autofix)
+
+        # Display results
+        from rich.table import Table
+
+        table = Table(title=f"Workspace Health Check: {doctor_response.workspace_name}")
+        table.add_column("Check", style="cyan", no_wrap=True)
+        table.add_column("Status", style="magenta")
+        table.add_column("Message", style="white")
+        table.add_column("Fixed", style="green")
+
+        for check in doctor_response.checks:
+            fixed_text = "✓" if check.fixed else ""
+
+            table.add_row(
+                check.check_name,
+                check.status,
+                check.message,
+                fixed_text,
+            )
+
+        console.print(table)
+        console.print()
+
+        # Overall status
+        if doctor_response.overall_status == "healthy":
+            panel = get_themed_panel(
+                "All checks passed. Workspace is healthy.",
+                title="Workspace Health: ✅ Healthy",
+                title_align="left",
+            )
+        elif doctor_response.overall_status == "issues_fixed":
+            panel = get_themed_panel(
+                "Some issues were found and have been automatically fixed.",
+                title="Workspace Health: ✅ Issues Fixed",
+                title_align="left",
+            )
+        else:
+            panel = get_themed_panel(
+                "Some issues were found. Review the details above.",
+                title="Workspace Health: ⚠️ Issues Found",
+                title_align="left",
+                success=False,
+            )
+
+        console.print(panel)
+
+    except ValueError as e:
+        panel = get_themed_panel(
+            str(e),
+            title="Workspace not found",
+            title_align="left",
+            success=False,
+        )
+        Console().print(panel)
+        raise typer.Exit(code=1)
+    except RuntimeError as e:
+        panel = get_themed_panel(
+            f"An unexpected error occurred: {e!s}",
             title="Unexpected error",
             title_align="left",
             success=False,
