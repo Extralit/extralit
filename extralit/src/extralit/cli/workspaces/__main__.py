@@ -41,7 +41,7 @@ def callback(
         raise typer.BadParameter(
             f"The command requires a workspace name provided using '--name' option before the {typer.style(ctx.invoked_subcommand, bold=True)} keyword"
         )
-    
+
     try:
         workspace = client.workspaces(name)
 
@@ -262,7 +262,7 @@ def delete_user(
 @app.command(name="doctor", help="Run diagnostics on a workspace and auto-fix issues")
 def workspace_doctor(
     ctx: typer.Context,
-    autofix: bool = typer.Option(True, "--autofix/--no-autofix", help="Automatically fix issues if possible"),
+    autofix: bool = typer.Option(False, "--autofix/--no-autofix", help="Automatically fix issues if possible"),
 ) -> None:
     """Run diagnostics on a workspace to check S3 bucket, versioning, RQ worker pool, etc."""
     workspace = ctx.obj
@@ -271,15 +271,6 @@ def workspace_doctor(
     try:
         client = init_callback()
 
-        # workspace_obj = client.workspaces(name=workspace.name)
-        # if not workspace_obj:
-        #     raise ValueError(f"Workspace with name={workspace.name} not found.")
-
-        # console.print(f"\n[bold]Running diagnostics on workspace: {workspace.name}[/bold]\n")
-
-        # # Run doctor diagnostics
-        # doctor_response = client.workspaces.doctor(workspace_id=workspace_obj.id, autofix=autofix)
-        # Use low-level API wrapper (WorkspacesAPI) — NOT the high-level resource layer
         api = client.api.workspaces
 
         # Look up workspace by name
@@ -302,17 +293,11 @@ def workspace_doctor(
         table.add_column("Fixed", style="green")
 
         for check in doctor_response.checks:
-            status_emoji = {
-                "ok": "✅",
-                "warning": "⚠️",
-                "error": "❌",
-            }.get(check.status, "❓")
-            
             fixed_text = "✓" if check.fixed else ""
-            
+
             table.add_row(
                 check.check_name,
-                f"{status_emoji} {check.status}",
+                check.status,
                 check.message,
                 fixed_text,
             )
@@ -340,7 +325,7 @@ def workspace_doctor(
                 title_align="left",
                 success=False,
             )
-        
+
         console.print(panel)
 
     except ValueError as e:
