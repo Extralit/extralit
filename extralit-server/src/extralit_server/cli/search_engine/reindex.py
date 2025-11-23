@@ -24,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from extralit_server.cli.rich import echo_in_panel
-from extralit_server.database import AsyncSessionLocal, retry_db_operation
+from extralit_server.database import AsyncSessionLocal, db_retry_policy
 from extralit_server.models import Dataset, Record, Response, Suggestion
 from extralit_server.search_engine import SearchEngine, get_search_engine
 
@@ -33,7 +33,7 @@ class Reindexer:
     YIELD_PER = 100
 
     @classmethod
-    @retry_db_operation(max_retries=3, delay=1.0, backoff=2.0)
+    @db_retry_policy
     async def reindex_dataset(cls, db: AsyncSession, search_engine: SearchEngine, dataset_id: UUID) -> Dataset:
         dataset = (
             await db.execute(
@@ -55,7 +55,7 @@ class Reindexer:
 
     @classmethod
     async def reindex_datasets(cls, db: AsyncSession, search_engine: SearchEngine) -> AsyncGenerator[Dataset, None]:
-        @retry_db_operation(max_retries=3, delay=1.0, backoff=2.0)
+        @db_retry_policy
         async def _get_datasets_batch(offset: int = 0, limit: int = cls.YIELD_PER):
             """Get a batch of datasets with retry logic"""
             return await db.execute(
@@ -109,7 +109,7 @@ class Reindexer:
     async def reindex_dataset_records(
         cls, db: AsyncSession, search_engine: SearchEngine, dataset: Dataset
     ) -> AsyncGenerator[list[Record], None]:
-        @retry_db_operation(max_retries=3, delay=1.0, backoff=2.0)
+        @db_retry_policy
         async def _get_records_batch(offset: int = 0, limit: int = cls.YIELD_PER):
             """Get a batch of records with retry logic"""
             return await db.execute(
@@ -162,12 +162,12 @@ class Reindexer:
                 continue
 
     @classmethod
-    @retry_db_operation(max_retries=3, delay=0.5, backoff=2.0)
+    @db_retry_policy
     async def count_datasets(cls, db: AsyncSession) -> int:
         return (await db.execute(select(func.count(Dataset.id)))).scalar_one()
 
     @classmethod
-    @retry_db_operation(max_retries=3, delay=0.5, backoff=2.0)
+    @db_retry_policy
     async def count_dataset_records(cls, db: AsyncSession, dataset: Dataset) -> int:
         return (await db.execute(select(func.count(Record.id)).filter_by(dataset_id=dataset.id))).scalar_one()
 

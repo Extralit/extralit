@@ -5,7 +5,7 @@
 groups = ["default", "marker", "postgresql", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:5c7abbe8ca580bf2529d321defa5d14ce03cec41bfa7ac8c60db5099a9d72404"
+content_hash = "sha256:c3a2035f7b8cc1ef9c8d04cc9ded68195f03418c57b861d1b5d9c60b08585a57"
 
 [[metadata.targets]]
 requires_python = ">=3.10"
@@ -298,15 +298,6 @@ summary = ""
 files = [
     {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
     {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
-]
-
-[[package]]
-name = "backoff"
-version = "2.2.1"
-summary = ""
-files = [
-    {file = "backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8"},
-    {file = "backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba"},
 ]
 
 [[package]]
