@@ -1354,6 +1354,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#diagnosing-workspace-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      Diagnosing Workspace Issues
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3445,6 +3454,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#diagnosing-workspace-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      Diagnosing Workspace Issues
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3765,12 +3783,30 @@
 <p>List all workspaces you have access to:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>extralit<span class="w"> </span>workspaces<span class="w"> </span>list
 </span></code></pre></div>
+<h3 id="diagnosing-workspace-issues">Diagnosing Workspace Issues<a class="headerlink" href="#diagnosing-workspace-issues" title="Permanent link">&para;</a></h3>
+<p>Run health checks on a workspace to identify and fix common issues:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Run diagnostics with automatic fixes</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>extralit<span class="w"> </span>workspaces<span class="w"> </span>--name<span class="w"> </span>my-workspace<span class="w"> </span>doctor<span class="w"> </span>--autofix
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Run diagnostics without fixing issues (informational only)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>extralit<span class="w"> </span>workspaces<span class="w"> </span>--name<span class="w"> </span>my-workspace<span class="w"> </span>doctor<span class="w"> </span>--no-autofix
+</span></code></pre></div>
+<p>The doctor command checks:
+- <strong>S3 bucket existence</strong>: Automatically creates the bucket if missing (with autofix)
+- <strong>Bucket versioning</strong>: Verifies proper file versioning policy is enabled (informational)
+- <strong>RQ worker pool</strong>: Tests connectivity to the background job queue (informational)
+- <strong>Elasticsearch indexes</strong>: Checks if dataset indexes exist (informational)</p>
+<p>Use this command when:
+- Setting up a new workspace to verify configuration
+- Troubleshooting upload or storage issues
+- After environment changes or migrations
+- Regular health monitoring</p>
 <h2 id="document-management">Document Management<a class="headerlink" href="#document-management" title="Permanent link">&para;</a></h2>
 <h3 id="importing-documents">Importing Documents<a class="headerlink" href="#importing-documents" title="Permanent link">&para;</a></h3>
 <p>Add scientific papers to your workspace:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>extralit<span class="w"> </span>documents<span class="w"> </span>import<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>--papers<span class="w"> </span>path/to/references.csv<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>--metadatas<span class="w"> </span>title,authors,year
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>extralit<span class="w"> </span>documents<span class="w"> </span>import<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>--papers<span class="w"> </span>path/to/references.csv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>--metadatas<span class="w"> </span>title,authors,year
 </span></code></pre></div>
 <p>The references CSV should include:
 - <code>reference</code> (required): Paper ID (e.g., <code>author_year_firstword</code>)
@@ -3780,127 +3816,127 @@
 - <code>title</code>, <code>authors</code>, <code>year</code> (optional): Metadata fields</p>
 <h3 id="managing-documents">Managing Documents<a class="headerlink" href="#managing-documents" title="Permanent link">&para;</a></h3>
 <p>List documents in your workspace:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>extralit<span class="w"> </span>documents<span class="w"> </span>list<span class="w"> </span>--workspace<span class="w"> </span>my-workspace
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>extralit<span class="w"> </span>documents<span class="w"> </span>list<span class="w"> </span>--workspace<span class="w"> </span>my-workspace
 </span></code></pre></div></p>
 <p>Add individual documents:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>extralit<span class="w"> </span>documents<span class="w"> </span>add<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="o">[</span>--file<span class="w"> </span>paper.pdf<span class="o">]</span><span class="w"> </span><span class="o">[</span>--url<span class="w"> </span>https://...<span class="o">]</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="o">[</span>--pmid<span class="w"> </span><span class="m">123456</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>--doi<span class="w"> </span><span class="m">10</span>.1234/...<span class="o">]</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>extralit<span class="w"> </span>documents<span class="w"> </span>add<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="o">[</span>--file<span class="w"> </span>paper.pdf<span class="o">]</span><span class="w"> </span><span class="o">[</span>--url<span class="w"> </span>https://...<span class="o">]</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="o">[</span>--pmid<span class="w"> </span><span class="m">123456</span><span class="o">]</span><span class="w"> </span><span class="o">[</span>--doi<span class="w"> </span><span class="m">10</span>.1234/...<span class="o">]</span>
 </span></code></pre></div></p>
 <p>Delete a document:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>extralit<span class="w"> </span>documents<span class="w"> </span>delete<span class="w"> </span>&lt;document_id&gt;<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>--force
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>extralit<span class="w"> </span>documents<span class="w"> </span>delete<span class="w"> </span>&lt;document_id&gt;<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>--force
 </span></code></pre></div></p>
 <h2 id="schema-management">Schema Management<a class="headerlink" href="#schema-management" title="Permanent link">&para;</a></h2>
 <p>Schemas define the structure of data to be extracted from papers. They specify fields, relationships, and validation rules.</p>
 <h3 id="managing-schemas">Managing Schemas<a class="headerlink" href="#managing-schemas" title="Permanent link">&para;</a></h3>
 <p>Upload schemas to your workspace:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>extralit<span class="w"> </span>schemas<span class="w"> </span>upload<span class="w"> </span>./schemas<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>--overwrite
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>extralit<span class="w"> </span>schemas<span class="w"> </span>upload<span class="w"> </span>./schemas<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>--overwrite
 </span></code></pre></div></p>
 <p>Download existing schemas:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>extralit<span class="w"> </span>schemas<span class="w"> </span>download<span class="w"> </span>./downloaded_schemas<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="o">[</span>--name<span class="w"> </span>specific-schema<span class="o">]</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="o">[</span>--exclude<span class="w"> </span>schema1,schema2<span class="o">]</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>extralit<span class="w"> </span>schemas<span class="w"> </span>download<span class="w"> </span>./downloaded_schemas<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="o">[</span>--name<span class="w"> </span>specific-schema<span class="o">]</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="o">[</span>--exclude<span class="w"> </span>schema1,schema2<span class="o">]</span>
 </span></code></pre></div></p>
 <p>List available schemas:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>extralit<span class="w"> </span>schemas<span class="w"> </span>list<span class="w"> </span>--workspace<span class="w"> </span>my-workspace
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>extralit<span class="w"> </span>schemas<span class="w"> </span>list<span class="w"> </span>--workspace<span class="w"> </span>my-workspace
 </span></code></pre></div></p>
 <h2 id="extraction-workflow">Extraction Workflow<a class="headerlink" href="#extraction-workflow" title="Permanent link">&para;</a></h2>
 <h3 id="1-pdf-preprocessing">1. PDF Preprocessing<a class="headerlink" href="#1-pdf-preprocessing" title="Permanent link">&para;</a></h3>
 <p>Process PDFs to extract text and detect tables:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>extralit<span class="w"> </span>preprocessing<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span>--references<span class="w"> </span>ref1,ref2<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span>--text-ocr<span class="w"> </span>model1,model2<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">  </span>--table-ocr<span class="w"> </span>model1,model2<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">  </span>--output-dataset<span class="w"> </span>preprocessing-results
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>extralit<span class="w"> </span>preprocessing<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span>--references<span class="w"> </span>ref1,ref2<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span>--text-ocr<span class="w"> </span>model1,model2<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span>--table-ocr<span class="w"> </span>model1,model2<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span>--output-dataset<span class="w"> </span>preprocessing-results
 </span></code></pre></div>
 <h3 id="2-llm-based-extraction">2. <abbr title="Large Language Model, an AI system trained on vast amounts of text data.">LLM</abbr>-Based Extraction<a class="headerlink" href="#2-llm-based-extraction" title="Permanent link">&para;</a></h3>
 <p>Extract structured data using <abbr title="Large Language Model, an AI system trained on vast amounts of text data.">LLMs</abbr>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>extralit<span class="w"> </span>extraction<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span>--references<span class="w"> </span>ref1,ref2<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span>--output-dataset<span class="w"> </span>extraction-results
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>extralit<span class="w"> </span>extraction<span class="w"> </span>run<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">  </span>--references<span class="w"> </span>ref1,ref2<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span>--output-dataset<span class="w"> </span>extraction-results
 </span></code></pre></div>
 <h3 id="3-monitor-progress">3. Monitor Progress<a class="headerlink" href="#3-monitor-progress" title="Permanent link">&para;</a></h3>
 <p>Check extraction status:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>extralit<span class="w"> </span>extraction<span class="w"> </span>status<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">  </span>--references<span class="w"> </span>ref1,ref2
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>extralit<span class="w"> </span>extraction<span class="w"> </span>status<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--references<span class="w"> </span>ref1,ref2
 </span></code></pre></div>
 <h3 id="4-export-results">4. Export Results<a class="headerlink" href="#4-export-results" title="Permanent link">&para;</a></h3>
 <p>Export extracted data:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>extralit<span class="w"> </span>extraction<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--output<span class="w"> </span>extracted_data.csv
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>extralit<span class="w"> </span>extraction<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>--output<span class="w"> </span>extracted_data.csv
 </span></code></pre></div>
 <h2 id="dataset-operations">Dataset Operations<a class="headerlink" href="#dataset-operations" title="Permanent link">&para;</a></h2>
 <h3 id="managing-datasets">Managing Datasets<a class="headerlink" href="#managing-datasets" title="Permanent link">&para;</a></h3>
 <p>Create a new dataset:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>extralit<span class="w"> </span>datasets<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span>--name<span class="w"> </span>my-dataset<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Dataset description&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>extralit<span class="w"> </span>datasets<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span>--name<span class="w"> </span>my-dataset<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">  </span>--description<span class="w"> </span><span class="s2">&quot;Dataset description&quot;</span>
 </span></code></pre></div></p>
 <p>List datasets:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>extralit<span class="w"> </span>datasets<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>list
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>extralit<span class="w"> </span>datasets<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>list
 </span></code></pre></div></p>
 <p>Delete a dataset:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>extralit<span class="w"> </span>datasets<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>delete<span class="w"> </span>--name<span class="w"> </span>my-dataset
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>extralit<span class="w"> </span>datasets<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>delete<span class="w"> </span>--name<span class="w"> </span>my-dataset
 </span></code></pre></div></p>
 <h3 id="sharing-datasets">Sharing Datasets<a class="headerlink" href="#sharing-datasets" title="Permanent link">&para;</a></h3>
 <p>Push to HuggingFace Hub:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>extralit<span class="w"> </span>datasets<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>push-to-hub<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">  </span>--name<span class="w"> </span>my-dataset<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">  </span>--repo-id<span class="w"> </span>username/repo-name
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>extralit<span class="w"> </span>datasets<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>push-to-hub<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">  </span>--name<span class="w"> </span>my-dataset<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">  </span>--repo-id<span class="w"> </span>username/repo-name
 </span></code></pre></div></p>
 <h2 id="file-management">File Management<a class="headerlink" href="#file-management" title="Permanent link">&para;</a></h2>
 <h3 id="managing-files">Managing Files<a class="headerlink" href="#managing-files" title="Permanent link">&para;</a></h3>
 <p>List files:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>extralit<span class="w"> </span>files<span class="w"> </span>list<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="o">[</span>--path<span class="w"> </span>documents/<span class="o">]</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>extralit<span class="w"> </span>files<span class="w"> </span>list<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="o">[</span>--path<span class="w"> </span>documents/<span class="o">]</span>
 </span></code></pre></div></p>
 <p>Upload files:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>extralit<span class="w"> </span>files<span class="w"> </span>upload<span class="w"> </span>data.csv<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">  </span>--remote-path<span class="w"> </span>data/data.csv
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>extralit<span class="w"> </span>files<span class="w"> </span>upload<span class="w"> </span>data.csv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">  </span>--remote-path<span class="w"> </span>data/data.csv
 </span></code></pre></div></p>
 <p>Download files:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>extralit<span class="w"> </span>files<span class="w"> </span>download<span class="w"> </span>data/data.csv<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">  </span>--output<span class="w"> </span>./local_data.csv
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>extralit<span class="w"> </span>files<span class="w"> </span>download<span class="w"> </span>data/data.csv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">  </span>--output<span class="w"> </span>./local_data.csv
 </span></code></pre></div></p>
 <p>Delete files:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>extralit<span class="w"> </span>files<span class="w"> </span>delete<span class="w"> </span>data/data.csv<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>--force
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>extralit<span class="w"> </span>files<span class="w"> </span>delete<span class="w"> </span>data/data.csv<span class="w"> </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span>--force
 </span></code></pre></div></p>
 <h2 id="user-management">User Management<a class="headerlink" href="#user-management" title="Permanent link">&para;</a></h2>
 <h3 id="managing-users">Managing Users<a class="headerlink" href="#managing-users" title="Permanent link">&para;</a></h3>
 <p>List users:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>extralit<span class="w"> </span>users<span class="w"> </span>list
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>extralit<span class="w"> </span>users<span class="w"> </span>list
 </span></code></pre></div></p>
 <p>Create a new user:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>extralit<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">  </span>--username<span class="w"> </span>user1<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">  </span>--password<span class="w"> </span>password123<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">  </span>--full-name<span class="w"> </span><span class="s2">&quot;User One&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="w">  </span>--email<span class="w"> </span>user1@example.com
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>extralit<span class="w"> </span>users<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">  </span>--username<span class="w"> </span>user1<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">  </span>--password<span class="w"> </span>password123<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">  </span>--full-name<span class="w"> </span><span class="s2">&quot;User One&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="w">  </span>--email<span class="w"> </span>user1@example.com
 </span></code></pre></div></p>
 <p>Delete a user:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>extralit<span class="w"> </span>users<span class="w"> </span>delete<span class="w"> </span>--username<span class="w"> </span>user1
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>extralit<span class="w"> </span>users<span class="w"> </span>delete<span class="w"> </span>--username<span class="w"> </span>user1
 </span></code></pre></div></p>
 <h2 id="training-models">Training Models<a class="headerlink" href="#training-models" title="Permanent link">&para;</a></h2>
 <p>Train extraction models:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Basic training</span>
-</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>extralit<span class="w"> </span>training<span class="w"> </span>--name<span class="w"> </span>my-dataset<span class="w"> </span>--framework<span class="w"> </span>spacy<span class="w"> </span>--model<span class="w"> </span>en_core_web_sm
-</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>
-</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="c1"># Advanced options</span>
-</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>extralit<span class="w"> </span>training<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="w">  </span>--name<span class="w"> </span>my-dataset<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="w">  </span>--framework<span class="w"> </span>transformers<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="w">  </span>--model<span class="w"> </span>bert-base-uncased<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-31-10"><a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="w">  </span>--train-size<span class="w"> </span><span class="m">0</span>.8<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-31-11"><a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a><span class="w">  </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-31-12"><a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="w">  </span>--device<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-31-13"><a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a><span class="w">  </span>--output-dir<span class="w"> </span>models/my-model
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># Basic training</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>extralit<span class="w"> </span>training<span class="w"> </span>--name<span class="w"> </span>my-dataset<span class="w"> </span>--framework<span class="w"> </span>spacy<span class="w"> </span>--model<span class="w"> </span>en_core_web_sm
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="c1"># Advanced options</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>extralit<span class="w"> </span>training<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="w">  </span>--name<span class="w"> </span>my-dataset<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="w">  </span>--framework<span class="w"> </span>transformers<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="w">  </span>--model<span class="w"> </span>bert-base-uncased<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a><span class="w">  </span>--workspace<span class="w"> </span>my-workspace<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-32-10"><a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="w">  </span>--train-size<span class="w"> </span><span class="m">0</span>.8<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-32-11"><a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a><span class="w">  </span>--seed<span class="w"> </span><span class="m">42</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-32-12"><a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a><span class="w">  </span>--device<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-32-13"><a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a><span class="w">  </span>--output-dir<span class="w"> </span>models/my-model
 </span></code></pre></div>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="authentication-issues">Authentication Issues<a class="headerlink" href="#authentication-issues" title="Permanent link">&para;</a></h3>
@@ -3916,10 +3952,10 @@
 4. Add <code>--debug</code> flag for detailed error information</p>
 <h3 id="getting-help">Getting Help<a class="headerlink" href="#getting-help" title="Permanent link">&para;</a></h3>
 <p>For any command, add <code>--help</code> to see detailed usage information:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>extralit<span class="w"> </span>&lt;command&gt;<span class="w"> </span>--help
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>extralit<span class="w"> </span>&lt;command&gt;<span class="w"> </span>--help
 </span></code></pre></div></p>
 <p>For server information:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>extralit<span class="w"> </span>info
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>extralit<span class="w"> </span>info
 </span></code></pre></div></p>
 <!-- General -->
 <!-- Extralit specific -->
