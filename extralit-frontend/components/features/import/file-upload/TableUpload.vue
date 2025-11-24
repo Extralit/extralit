@@ -1,9 +1,9 @@
 <template>
   <div class="table-upload">
     <div class="table-upload__section-header">
-      <h3 class="table-upload__section-title">Step 1: Upload Your Bibliography File</h3>
+      <h3 class="table-upload__section-title">Step 2: Upload Your Bibliography File (Optional)</h3>
       <p class="table-upload__section-description">
-        Import your reference list to begin.<br />
+        Optionally import your reference list to match with uploaded PDFs and enhance metadata.<br />
         We support .bib files exported from reference managers like Zotero, EndNote, or Mendeley, and .csv files with tabular data.
       </p>
     </div>
