@@ -19,6 +19,12 @@ These are the section headers that we use:
 
 - Loading indicator on sign-in form button to provide visual feedback during authentication requests.
 
+### Changed
+
+- Reversed import file upload order: PDF upload is now Step 1, bibliography file upload is now Step 2 (optional) ([#165](https://github.com/extralit/extralit/issues/165))
+- Updated ImportFileUpload component to render PdfUpload before TableUpload
+- Made bibliography file upload optional to support PDF-only imports
+
 ## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 ### Added
 - Incremental Dataset Import: new `DatasetUpdateDialog` and update workflow in `DatasetConfigurationForm` to update existing datasets with imported data
