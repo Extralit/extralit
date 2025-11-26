@@ -26,10 +26,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
 
   // Computed properties
   const isValid = computed(() => {
-    return (
-      bibData.value.dataframeData && bibData.value.dataframeData.data.length > 0 &&
-      pdfData.value.matchedFiles.length > 0
-    );
+    return pdfData.value.totalFiles > 0;
   });
 
   // Event handlers
@@ -58,7 +55,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
   // Event emitters
   const emitBibUpdate = () => {
     emit("bib-update", {
-      isValid: bibData.value.dataframeData && bibData.value.dataframeData.data.length > 0,
+      isValid: true, // table optional, always valid
       fileName: bibData.value.fileName,
       dataframeData: bibData.value.dataframeData,
       rawContent: bibData.value.rawContent,
@@ -67,7 +64,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
 
   const emitPdfUpdate = () => {
     emit("pdf-update", {
-      isValid: pdfData.value.matchedFiles.length > 0,
+      isValid: pdfData.value.totalFiles > 0,
       matchedFiles: pdfData.value.matchedFiles,
       unmatchedFiles: pdfData.value.unmatchedFiles,
       totalFiles: pdfData.value.totalFiles,

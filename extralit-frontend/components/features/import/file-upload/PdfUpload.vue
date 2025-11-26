@@ -1,10 +1,10 @@
 <template>
   <div class="pdf-upload">
     <div class="pdf-upload__section-header">
-      <h3 class="pdf-upload__section-title">Step 2: Upload Full-Text PDFs</h3>
+      <h3 class="pdf-upload__section-title">Step 1: Upload Your PDF Files</h3>
       <p class="pdf-upload__section-description">
-        Upload the PDF files that correspond to the references in your .bib file.<br />
-        Extralit will match them automatically for extraction.
+        Upload your PDF files.<br />
+        If you upload a BibTeX/CSV file later, Extralit will automatically match the PDFs to your references.
       </p>
     </div>
 

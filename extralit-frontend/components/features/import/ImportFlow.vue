@@ -5,7 +5,7 @@
     @step-change="handleStepChange" @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose"
     @cancel="handleCancel">
     <template #default="{ currentStep: stepIndex }">
-      <!-- Step 1: Combined File Upload -->
+      <!-- Step 1: PDF First, then Optional Table Upload -->
       <ImportFileUpload v-if="stepIndex === 0" ref="fileUploadComponent" :initial-bib-data="bibData"
         :initial-pdf-data="pdfData" @bib-update="handleBibUpdate" @pdf-update="handlePdfUpdate" />
 
@@ -131,13 +131,9 @@ export default {
     canGoNext() {
       switch (this.currentStep) {
         case 0:
-          // Allow flexible upload order - can proceed if either:
-          // 1. Both bibliography and PDFs are uploaded, OR
-          // 2. Only bibliography is uploaded (can import references without PDFs)
           return (
-            this.bibData.dataframeData &&
-            this.bibData.dataframeData.data &&
-            this.bibData.dataframeData.data.length > 0 &&
+            this.pdfData &&
+            this.pdfData.totalFiles > 0 &&
             !this.hasError &&
             !!this.workspace
           );
@@ -201,15 +197,13 @@ export default {
 
       switch (step) {
         case 0:
-          // Allow flexible upload order - can proceed if bibliography is uploaded
-          // PDFs are optional for proceeding to analysis step
           isValid =
-            this.bibData.dataframeData &&
-            this.bibData.dataframeData.data &&
-            this.bibData.dataframeData.data.length > 0 &&
+            this.pdfData &&
+            this.pdfData.totalFiles > 0 &&
             !this.hasError &&
             !!this.workspace;
           break;
+
         case 1:
           isValid = Object.keys(this.uploadData.confirmedDocuments).length > 0 && !this.hasError && !!this.workspace;
 
