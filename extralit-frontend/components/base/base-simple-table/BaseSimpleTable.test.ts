@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils";
+import { mount, shallowMount } from "@vue/test-utils";
 import BaseSimpleTable from "./BaseSimpleTable.vue";
 
 // Mock Tabulator
@@ -31,7 +31,17 @@ jest.mock("tabulator-tables", () => ({
     toggleColumn: jest.fn(),
     blockRedraw: jest.fn(),
     restoreRedraw: jest.fn(),
+    validate: jest.fn(() => true),
+    on: jest.fn(),
+    extendModule: jest.fn(),
   })),
+}));
+
+// Mock RenderTable component
+jest.mock("~/components/base/base-render-table/RenderTable.vue", () => ({
+  name: "RenderTable",
+  template: '<div class="mock-render-table"></div>',
+  props: ["tableJSON", "editable", "hasValidValues", "questions"],
 }));
 
 describe("BaseSimpleTable", () => {
@@ -60,147 +70,372 @@ describe("BaseSimpleTable", () => {
     { name: "Jane Smith", age: 25, email: "jane@example.com" },
   ];
 
-  it("renders without crashing", () => {
-    const wrapper = mount(BaseSimpleTable, {
-      propsData: {
-        columns: mockColumns,
-        data: mockData,
-      },
+  const mockTableJSON = {
+    schema: {
+      fields: [
+        { name: "name", type: "string" },
+        { name: "age", type: "integer" },
+      ],
+      schemaName: "test-schema",
+      primaryKey: [],
+    },
+    data: mockData,
+  };
+
+  describe("read-only mode (default)", () => {
+    it("renders without crashing", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+        },
+      });
+
+      expect(wrapper.exists()).toBe(true);
+      expect(wrapper.find(".tabulator-container").exists()).toBe(true);
     });
 
-    expect(wrapper.exists()).toBe(true);
-    expect(wrapper.find(".tabulator-container").exists()).toBe(true);
+    it("accepts columns and data props", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+        },
+      });
+
+      expect(wrapper.props("columns")).toEqual(mockColumns);
+      expect(wrapper.props("data")).toEqual(mockData);
+    });
+
+    it("accepts options prop", () => {
+      const options = {
+        height: 400,
+        pagination: true,
+        paginationSize: 10,
+      };
+
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          options,
+        },
+      });
+
+      expect(wrapper.props("options")).toEqual(options);
+    });
+
+    it("accepts loading prop", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          loading: true,
+        },
+      });
+
+      expect(wrapper.props("loading")).toBe(true);
+    });
+
+    it("processes columns correctly", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+        },
+      });
+
+      const processedColumns = (wrapper.vm as any).processedColumns;
+
+      expect(processedColumns).toHaveLength(3);
+      expect(processedColumns[0]).toMatchObject({
+        field: "name",
+        title: "Name",
+        headerSort: true,
+        headerFilter: "input",
+      });
+      expect(processedColumns[1]).toMatchObject({
+        field: "age",
+        title: "Age",
+        width: 100,
+        headerSort: true,
+      });
+      expect(processedColumns[2]).toMatchObject({
+        field: "email",
+        title: "Email",
+        headerFilter: "input",
+      });
+    });
+
+    it("provides public API methods", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+        },
+      });
+
+      const vm = wrapper.vm as any;
+
+      // Test that all public methods exist
+      expect(typeof vm.getData).toBe("function");
+      expect(typeof vm.getSelectedData).toBe("function");
+      expect(typeof vm.getSelectedRows).toBe("function");
+      expect(typeof vm.selectRow).toBe("function");
+      expect(typeof vm.deselectRow).toBe("function");
+      expect(typeof vm.addRow).toBe("function");
+      expect(typeof vm.updateRow).toBe("function");
+      expect(typeof vm.deleteRow).toBe("function");
+      expect(typeof vm.clearData).toBe("function");
+      expect(typeof vm.setData).toBe("function");
+      expect(typeof vm.setFilter).toBe("function");
+      expect(typeof vm.clearFilter).toBe("function");
+      expect(typeof vm.setSort).toBe("function");
+      expect(typeof vm.clearSort).toBe("function");
+      expect(typeof vm.redraw).toBe("function");
+      expect(typeof vm.scrollToRow).toBe("function");
+      expect(typeof vm.scrollToColumn).toBe("function");
+      expect(typeof vm.download).toBe("function");
+      expect(typeof vm.getRowCount).toBe("function");
+      expect(typeof vm.getColumns).toBe("function");
+      expect(typeof vm.hideColumn).toBe("function");
+      expect(typeof vm.showColumn).toBe("function");
+      expect(typeof vm.toggleColumn).toBe("function");
+    });
+
+    it("emits events correctly", async () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+        },
+      });
+
+      // Simulate table built event
+      const vm = wrapper.vm as any;
+      vm.isInitialized = true;
+
+      // Test that events can be emitted
+      wrapper.vm.$emit("table-built");
+      wrapper.vm.$emit("data-loaded", mockData);
+      wrapper.vm.$emit("data-changed", mockData);
+
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.emitted("table-built")).toBeTruthy();
+      expect(wrapper.emitted("data-loaded")).toBeTruthy();
+      expect(wrapper.emitted("data-changed")).toBeTruthy();
+    });
+
+    it("does not use RenderTable when editable is false", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          editable: false,
+        },
+      });
+
+      const vm = wrapper.vm as any;
+      expect(vm.useRenderTable).toBe(false);
+    });
   });
 
-  it("accepts columns and data props", () => {
-    const wrapper = mount(BaseSimpleTable, {
-      propsData: {
-        columns: mockColumns,
-        data: mockData,
-      },
+  describe("new props", () => {
+    it("accepts editable prop with default false", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+        },
+      });
+
+      expect(wrapper.props("editable")).toBe(false);
     });
 
-    expect(wrapper.props("columns")).toEqual(mockColumns);
-    expect(wrapper.props("data")).toEqual(mockData);
+    it("accepts editable prop set to true", () => {
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          editable: true,
+        },
+      });
+
+      expect(wrapper.props("editable")).toBe(true);
+    });
+
+    it("accepts validation prop", () => {
+      const validation = { columns: {}, index: [], checks: {} };
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          validation,
+        },
+      });
+
+      expect(wrapper.props("validation")).toEqual(validation);
+    });
+
+    it("accepts tableJSON prop", () => {
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          tableJSON: mockTableJSON,
+        },
+      });
+
+      expect(wrapper.props("tableJSON")).toEqual(mockTableJSON);
+    });
+
+    it("accepts hasValidValues prop", () => {
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          hasValidValues: true,
+        },
+      });
+
+      expect(wrapper.props("hasValidValues")).toBe(true);
+    });
+
+    it("accepts questions prop", () => {
+      const questions = [{ id: "q1", name: "Question 1" }];
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          questions,
+        },
+      });
+
+      expect(wrapper.props("questions")).toEqual(questions);
+    });
   });
 
-  it("accepts options prop", () => {
-    const options = {
-      height: 400,
-      pagination: true,
-      paginationSize: 10,
-    };
+  describe("useRenderTable computed", () => {
+    it("returns false when editable is false and tableJSON is null", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          editable: false,
+        },
+      });
 
-    const wrapper = mount(BaseSimpleTable, {
-      propsData: {
-        columns: mockColumns,
-        data: mockData,
-        options,
-      },
+      const vm = wrapper.vm as any;
+      expect(vm.useRenderTable).toBe(false);
     });
 
-    expect(wrapper.props("options")).toEqual(options);
-  });
+    it("returns true when editable is true", () => {
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          editable: true,
+        },
+      });
 
-  it("accepts loading prop", () => {
-    const wrapper = mount(BaseSimpleTable, {
-      propsData: {
-        columns: mockColumns,
-        data: mockData,
-        loading: true,
-      },
+      const vm = wrapper.vm as any;
+      expect(vm.useRenderTable).toBe(true);
     });
 
-    expect(wrapper.props("loading")).toBe(true);
-  });
+    it("returns true when tableJSON is provided", () => {
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          tableJSON: mockTableJSON,
+        },
+      });
 
-  it("processes columns correctly", () => {
-    const wrapper = mount(BaseSimpleTable, {
-      propsData: {
-        columns: mockColumns,
-        data: mockData,
-      },
-    });
-
-    const processedColumns = (wrapper.vm as any).processedColumns;
-
-    expect(processedColumns).toHaveLength(3);
-    expect(processedColumns[0]).toMatchObject({
-      field: "name",
-      title: "Name",
-      headerSort: true,
-      headerFilter: "input",
-    });
-    expect(processedColumns[1]).toMatchObject({
-      field: "age",
-      title: "Age",
-      width: 100,
-      headerSort: true,
-    });
-    expect(processedColumns[2]).toMatchObject({
-      field: "email",
-      title: "Email",
-      headerFilter: "input",
+      const vm = wrapper.vm as any;
+      expect(vm.useRenderTable).toBe(true);
     });
   });
 
-  it("provides public API methods", () => {
-    const wrapper = mount(BaseSimpleTable, {
-      propsData: {
-        columns: mockColumns,
-        data: mockData,
-      },
+  describe("computedTableJSON", () => {
+    it("returns tableJSON directly when provided", () => {
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          tableJSON: mockTableJSON,
+        },
+      });
+
+      const vm = wrapper.vm as any;
+      expect(vm.computedTableJSON).toEqual(mockTableJSON);
     });
 
-    const vm = wrapper.vm as any;
+    it("converts data/columns to TableData format when editable", () => {
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          editable: true,
+        },
+      });
 
-    // Test that all public methods exist
-    expect(typeof vm.getData).toBe("function");
-    expect(typeof vm.getSelectedData).toBe("function");
-    expect(typeof vm.getSelectedRows).toBe("function");
-    expect(typeof vm.selectRow).toBe("function");
-    expect(typeof vm.deselectRow).toBe("function");
-    expect(typeof vm.addRow).toBe("function");
-    expect(typeof vm.updateRow).toBe("function");
-    expect(typeof vm.deleteRow).toBe("function");
-    expect(typeof vm.clearData).toBe("function");
-    expect(typeof vm.setData).toBe("function");
-    expect(typeof vm.setFilter).toBe("function");
-    expect(typeof vm.clearFilter).toBe("function");
-    expect(typeof vm.setSort).toBe("function");
-    expect(typeof vm.clearSort).toBe("function");
-    expect(typeof vm.redraw).toBe("function");
-    expect(typeof vm.scrollToRow).toBe("function");
-    expect(typeof vm.scrollToColumn).toBe("function");
-    expect(typeof vm.download).toBe("function");
-    expect(typeof vm.getRowCount).toBe("function");
-    expect(typeof vm.getColumns).toBe("function");
-    expect(typeof vm.hideColumn).toBe("function");
-    expect(typeof vm.showColumn).toBe("function");
-    expect(typeof vm.toggleColumn).toBe("function");
+      const vm = wrapper.vm as any;
+      const computed = vm.computedTableJSON;
+
+      expect(computed.schema).toBeDefined();
+      expect(computed.schema.fields).toHaveLength(3);
+      expect(computed.data).toEqual(mockData);
+    });
+
+    it("returns null when not using RenderTable", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+          editable: false,
+        },
+      });
+
+      const vm = wrapper.vm as any;
+      expect(vm.computedTableJSON).toBeNull();
+    });
+
+    it("merges validation into tableJSON when both provided", () => {
+      const validation = { columns: { name: { dtype: "str" } }, index: [], checks: {} };
+      const wrapper = shallowMount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          tableJSON: mockTableJSON,
+          validation,
+        },
+      });
+
+      const vm = wrapper.vm as any;
+      expect(vm.computedTableJSON.validation).toEqual(validation);
+    });
   });
 
-  it("emits events correctly", async () => {
-    const wrapper = mount(BaseSimpleTable, {
-      propsData: {
-        columns: mockColumns,
-        data: mockData,
-      },
+  describe("validateTable method", () => {
+    it("provides validateTable method", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+        },
+      });
+
+      const vm = wrapper.vm as any;
+      expect(typeof vm.validateTable).toBe("function");
     });
 
-    // Simulate table built event
-    const vm = wrapper.vm as any;
-    vm.isInitialized = true;
+    it("returns true in simple mode", () => {
+      const wrapper = mount(BaseSimpleTable, {
+        propsData: {
+          columns: mockColumns,
+          data: mockData,
+        },
+      });
 
-    // Test that events can be emitted
-    wrapper.vm.$emit("table-built");
-    wrapper.vm.$emit("data-loaded", mockData);
-    wrapper.vm.$emit("data-changed", mockData);
-
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.emitted("table-built")).toBeTruthy();
-    expect(wrapper.emitted("data-loaded")).toBeTruthy();
-    expect(wrapper.emitted("data-changed")).toBeTruthy();
+      const vm = wrapper.vm as any;
+      expect(vm.validateTable()).toBe(true);
+    });
   });
 });

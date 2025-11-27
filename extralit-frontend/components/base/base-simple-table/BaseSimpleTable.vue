@@ -1,13 +1,48 @@
 <template>
-  <div ref="tabulator" class="tabulator-container" />
+  <!-- Use RenderTable when editable or tableJSON is provided -->
+  <div v-if="useRenderTable" :class="['tabulator-container', 'tabulator-container--simple', { 'tabulator-container--editable': editable }]">
+    <RenderTable
+      ref="renderTable"
+      :tableJSON="computedTableJSON"
+      :editable="editable"
+      :hasValidValues="hasValidValues"
+      :questions="questions"
+      @table-built="$emit('table-built')"
+      @data-loaded="handleDataLoaded"
+      @data-changed="handleDataChanged"
+      @row-click="(e, row) => $emit('row-click', e, row)"
+      @row-dblclick="(e, row) => $emit('row-dblclick', e, row)"
+      @row-selected="(row) => $emit('row-selected', row)"
+      @row-deselected="(row) => $emit('row-deselected', row)"
+      @cell-edited="(cell) => $emit('cell-edited', cell)"
+      @column-moved="(column, columns) => $emit('column-moved', column, columns)"
+      @column-resized="(column) => $emit('column-resized', column)"
+      @header-click="(e, column) => $emit('header-click', e, column)"
+      @header-dblclick="(e, column) => $emit('header-dblclick', e, column)"
+      @change-text="(text) => $emit('change-text', text)"
+      @updateValidValues="(value) => $emit('updateValidValues', value)"
+      @on-change-focus="(value) => $emit('on-change-focus', value)"
+      @on-exit-edition-mode="$emit('on-exit-edition-mode')"
+      @error="(error) => $emit('error', error)"
+    />
+  </div>
+  <!-- Use simple Tabulator directly for read-only mode without tableJSON -->
+  <div v-else ref="tabulator" class="tabulator-container" />
 </template>
 
 <script lang="ts">
 import { TabulatorFull as Tabulator, ColumnDefinition, CellComponent, RowComponent } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
+import RenderTable from "~/components/base/base-render-table/RenderTable.vue";
+import { TableData, DataFrameSchema } from "@/v1/domain/entities/table/TableData";
+import { Question } from "@/v1/domain/entities/question/Question";
 
 export default {
   name: "BaseSimpleTable",
+
+  components: {
+    RenderTable,
+  },
 
   props: {
     data: {
@@ -25,6 +60,27 @@ export default {
     loading: {
       type: Boolean,
       default: false,
+    },
+    // New optional props for RenderTable compatibility
+    editable: {
+      type: Boolean,
+      default: false,
+    },
+    validation: {
+      type: Object,
+      default: null,
+    },
+    tableJSON: {
+      type: Object as () => TableData,
+      default: null,
+    },
+    hasValidValues: {
+      type: Boolean,
+      default: false,
+    },
+    questions: {
+      type: Array as () => Question[],
+      default: () => [],
     },
   },
 
@@ -129,12 +185,57 @@ export default {
         return column;
       });
     },
+
+    // Determine whether to use RenderTable internally
+    useRenderTable(): boolean {
+      return this.editable || this.tableJSON !== null;
+    },
+
+    // Convert simple data/columns to TableData format for RenderTable
+    computedTableJSON(): TableData | null {
+      // If tableJSON is explicitly provided, use it directly
+      if (this.tableJSON) {
+        // If validation is provided, merge it into the tableJSON
+        if (this.validation && this.tableJSON) {
+          return {
+            ...this.tableJSON,
+            validation: this.validation,
+          };
+        }
+        return this.tableJSON;
+      }
+
+      // If not using RenderTable, no tableJSON needed
+      if (!this.useRenderTable) {
+        return null;
+      }
+
+      // Convert data/columns format to TableData format for RenderTable
+      const fields = this.columns.map((col: any) => ({
+        name: col.field,
+        type: col.type || "string",
+      }));
+
+      const schema: DataFrameSchema = {
+        fields,
+        schemaName: "simple-table",
+        primaryKey: [],
+      };
+
+      const tableData: TableData = {
+        schema,
+        data: [...this.data] as any[],
+        validation: this.validation,
+      };
+
+      return tableData;
+    },
   },
 
   watch: {
     data: {
       handler(newData) {
-        if (this.tabulator && this.isInitialized) {
+        if (!this.useRenderTable && this.tabulator && this.isInitialized) {
           this.tabulator.setData(newData);
         }
       },
@@ -143,7 +244,7 @@ export default {
 
     columns: {
       handler() {
-        if (this.tabulator && this.isInitialized) {
+        if (!this.useRenderTable && this.tabulator && this.isInitialized) {
           this.tabulator.setColumns(this.processedColumns);
         }
       },
@@ -151,7 +252,7 @@ export default {
     },
 
     loading(newLoading) {
-      if (this.tabulator && this.isInitialized) {
+      if (!this.useRenderTable && this.tabulator && this.isInitialized) {
         if (newLoading) {
           this.tabulator.blockRedraw();
         } else {
@@ -162,17 +263,28 @@ export default {
   },
 
   mounted() {
-    this.initializeTable();
+    if (!this.useRenderTable) {
+      this.initializeTable();
+    }
   },
 
   beforeDestroy() {
-    if (this.tabulator) {
+    if (!this.useRenderTable && this.tabulator) {
       this.tabulator.destroy();
       this.tabulator = null;
     }
   },
 
   methods: {
+    // Event handlers for RenderTable
+    handleDataLoaded(data: any) {
+      this.$emit("data-loaded", data);
+    },
+
+    handleDataChanged(data: any) {
+      this.$emit("data-changed", data);
+    },
+
     initializeTable() {
       try {
         this.tabulator = new Tabulator(this.$refs.tabulator, {
@@ -222,139 +334,177 @@ export default {
       }
     },
 
-    // Public API methods
+    // Public API methods - delegate to internal tabulator instance
+    getInternalTabulator() {
+      if (this.useRenderTable) {
+        return this.$refs.renderTable?.tabulator;
+      }
+      return this.tabulator;
+    },
+
     getData() {
-      return this.tabulator ? this.tabulator.getData() : [];
+      const tabulator = this.getInternalTabulator();
+      return tabulator ? tabulator.getData() : [];
     },
 
     getSelectedData() {
-      return this.tabulator ? this.tabulator.getSelectedData() : [];
+      const tabulator = this.getInternalTabulator();
+      return tabulator ? tabulator.getSelectedData() : [];
     },
 
     getSelectedRows() {
-      return this.tabulator ? this.tabulator.getSelectedRows() : [];
+      const tabulator = this.getInternalTabulator();
+      return tabulator ? tabulator.getSelectedRows() : [];
     },
 
     selectRow(rows) {
-      if (this.tabulator) {
-        this.tabulator.selectRow(rows);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.selectRow(rows);
       }
     },
 
     deselectRow(rows) {
-      if (this.tabulator) {
-        this.tabulator.deselectRow(rows);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.deselectRow(rows);
       }
     },
 
     addRow(data, pos, index) {
-      if (this.tabulator) {
-        return this.tabulator.addRow(data, pos, index);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        return tabulator.addRow(data, pos, index);
       }
       return Promise.reject(new Error("Table not initialized"));
     },
 
     updateRow(row, data) {
-      if (this.tabulator) {
-        return this.tabulator.updateRow(row, data);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        return tabulator.updateRow(row, data);
       }
       return false;
     },
 
     deleteRow(rows) {
-      if (this.tabulator) {
-        this.tabulator.deleteRow(rows);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.deleteRow(rows);
       }
     },
 
     clearData() {
-      if (this.tabulator) {
-        this.tabulator.clearData();
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.clearData();
       }
     },
 
     setData(data) {
-      if (this.tabulator) {
-        return this.tabulator.setData(data);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        return tabulator.setData(data);
       }
       return Promise.resolve();
     },
 
     setFilter(field, type, value) {
-      if (this.tabulator) {
-        this.tabulator.setFilter(field, type, value);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.setFilter(field, type, value);
       }
     },
 
     clearFilter(includeHeaderFilters) {
-      if (this.tabulator) {
-        this.tabulator.clearFilter(includeHeaderFilters);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.clearFilter(includeHeaderFilters);
       }
     },
 
     setSort(sortList) {
-      if (this.tabulator) {
-        this.tabulator.setSort(sortList);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.setSort(sortList);
       }
     },
 
     clearSort() {
-      if (this.tabulator) {
-        this.tabulator.clearSort();
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.clearSort();
       }
     },
 
     redraw(force) {
-      if (this.tabulator) {
-        this.tabulator.redraw(force);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.redraw(force);
       }
     },
 
     scrollToRow(row, position, ifVisible) {
-      if (this.tabulator) {
-        return this.tabulator.scrollToRow(row, position, ifVisible);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        return tabulator.scrollToRow(row, position, ifVisible);
       }
       return Promise.resolve();
     },
 
     scrollToColumn(column, position, ifVisible) {
-      if (this.tabulator) {
-        return this.tabulator.scrollToColumn(column, position, ifVisible);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        return tabulator.scrollToColumn(column, position, ifVisible);
       }
       return Promise.resolve();
     },
 
     download(downloadType, filename, options) {
-      if (this.tabulator) {
-        this.tabulator.download(downloadType, filename, options);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.download(downloadType, filename, options);
       }
     },
 
     // Utility methods
     getRowCount() {
-      return this.tabulator ? this.tabulator.getDataCount() : 0;
+      const tabulator = this.getInternalTabulator();
+      return tabulator ? tabulator.getDataCount() : 0;
     },
 
     getColumns() {
-      return this.tabulator ? this.tabulator.getColumns() : [];
+      const tabulator = this.getInternalTabulator();
+      return tabulator ? tabulator.getColumns() : [];
     },
 
     hideColumn(column) {
-      if (this.tabulator) {
-        this.tabulator.hideColumn(column);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.hideColumn(column);
       }
     },
 
     showColumn(column) {
-      if (this.tabulator) {
-        this.tabulator.showColumn(column);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.showColumn(column);
       }
     },
 
     toggleColumn(column) {
-      if (this.tabulator) {
-        this.tabulator.toggleColumn(column);
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.toggleColumn(column);
       }
+    },
+
+    // Additional methods for RenderTable mode
+    validateTable(options?: { scrollToError?: boolean; saveData?: boolean }) {
+      if (this.useRenderTable && this.$refs.renderTable?.validateTable) {
+        return this.$refs.renderTable.validateTable(options);
+      }
+      return true;
     },
   },
 };
@@ -546,6 +696,98 @@ export default {
           border-color: var(--bg-action);
           outline: none;
         }
+      }
+    }
+  }
+}
+
+// Styles for when wrapping RenderTable (--simple modifier)
+.tabulator-container--simple {
+  // Hide RenderTable's edit buttons when not editable
+  :deep(.table-container) {
+    .__table-buttons {
+      display: none;
+    }
+  }
+
+  // Apply clean simple styling to the wrapped RenderTable
+  :deep(.table-container) {
+    max-height: inherit;
+    margin-bottom: 0;
+  }
+
+  // Apply same design system styling to RenderTable's tabulator
+  :deep(.tabulator) {
+    background: var(--bg-accent-grey-1);
+    border: none;
+    font-family: $primary-font-family;
+    font-size: $base-font-size;
+
+    .tabulator-header {
+      background: var(--bg-solid-grey-2);
+      border-bottom: 1px solid var(--border-field);
+
+      .tabulator-col {
+        background: var(--bg-solid-grey-2);
+        border-right: 1px solid var(--border-field);
+
+        .tabulator-col-content {
+          color: var(--fg-primary);
+          font-weight: 600;
+          padding: $base-space;
+        }
+
+        &:hover {
+          background: var(--bg-solid-grey-3);
+        }
+      }
+    }
+
+    .tabulator-tableHolder {
+      background: var(--bg-accent-grey-1);
+
+      .tabulator-table {
+        background: var(--bg-accent-grey-1);
+
+        .tabulator-row {
+          background: var(--bg-accent-grey-1);
+          border-bottom: 1px solid var(--bg-solid-grey-2);
+
+          &:hover {
+            background: var(--bg-solid-grey-2);
+          }
+
+          .tabulator-cell {
+            color: var(--fg-primary);
+            border-right: 1px solid var(--bg-solid-grey-2);
+            padding: $base-space;
+          }
+        }
+
+        .tabulator-row-odd {
+          background: var(--bg-accent-grey-1);
+
+          &:hover {
+            background: var(--bg-solid-grey-2);
+          }
+        }
+
+        .tabulator-row-even {
+          background: var(--bg-accent-grey-2);
+
+          &:hover {
+            background: var(--bg-solid-grey-3);
+          }
+        }
+      }
+    }
+  }
+
+  // When editable, show the buttons
+  &.tabulator-container--editable {
+    :deep(.table-container) {
+      .__table-buttons {
+        display: flex;
       }
     }
   }
