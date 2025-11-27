@@ -52,8 +52,8 @@ export const usePdfUploadLogic = (
 
   const getDropzoneText = computed(() => {
     if (hasError.value) return "Error processing PDF files";
-    if (uploaded.value) return "Upload PDF Files";
-    return "Upload PDF Files";
+    if (uploaded.value) return "Drop files here";
+    return "Drop files here";
   });
 
   // Drag and drop handlers

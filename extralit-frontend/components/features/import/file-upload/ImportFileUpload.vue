@@ -1,8 +1,8 @@
   <template>
     <div class="import-file-upload">
       <div class="import-file-upload__header">
-        <h1 class="import-file-upload__title">Upload Your PDFs</h1>
-        <p class="import-file-upload__description">Upload your PDF files first. You can optionally upload a BibTeX/CSV file afterward.</p>
+        <h1 class="import-file-upload__title">Import Documents</h1>
+        <!-- <p class="import-file-upload__description">Upload your PDF files first. You can optionally upload a BibTeX/CSV file afterward.</p> -->
       </div>
 
       <div class="import-file-upload__content">

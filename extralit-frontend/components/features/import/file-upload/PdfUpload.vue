@@ -1,10 +1,9 @@
 <template>
   <div class="pdf-upload">
     <div class="pdf-upload__section-header">
-      <h3 class="pdf-upload__section-title">Step 1: Upload Your PDF Files</h3>
+      <h3 class="pdf-upload__section-title">PDF Documents</h3>
       <p class="pdf-upload__section-description">
-        Upload your PDF files.<br />
-        If you upload a BibTeX/CSV file later, Extralit will automatically match the PDFs to your references.
+        We will attempt to automatically link these PDFs to the metadata file below.
       </p>
     </div>
 
@@ -22,7 +21,7 @@
         <p class="pdf-upload__dropzone-text">
           {{ getDropzoneText }}
         </p>
-        <p class="pdf-upload__dropzone-subtext">Upload a folder containing your PDF files.<br /></p>
+        <p class="pdf-upload__dropzone-subtext">Supports individual files or folder uploads.<br /></p>
       </div>
     </div>
 
