@@ -1,10 +1,9 @@
 <template>
   <div class="table-upload">
     <div class="table-upload__section-header">
-      <h3 class="table-upload__section-title">Step 1: Upload Your Bibliography File</h3>
+      <h3 class="table-upload__section-title">Bibliography / Metadata (Optional)</h3>
       <p class="table-upload__section-description">
-        Import your reference list to begin.<br />
-        We support .bib files exported from reference managers like Zotero, EndNote, or Mendeley, and .csv files with tabular data.
+        Have a reference file from Zotero, EndNote, or Mendeley? Upload it to auto-match metadata. If not, you can edit the table in the next step.
       </p>
     </div>
 
@@ -22,7 +21,7 @@
         <p class="table-upload__dropzone-text">
           {{ getDropzoneText }}
         </p>
-        <p class="table-upload__dropzone-subtext">Supported formats: .bib, .bibtex, .csv</p>
+        <p class="table-upload__dropzone-subtext">Supports .bib, .bibtex, .csv</p>
       </div>
     </div>
 

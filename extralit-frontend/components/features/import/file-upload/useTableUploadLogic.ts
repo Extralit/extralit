@@ -20,7 +20,7 @@ export const useTableUploadLogic = (
   const uploaded = ref(false);
   const hasError = ref(false);
   const errorMessage = ref("");
-  
+
   const data = ref<BibliographyData>({
     fileName: "",
     dataframeData: null,
@@ -43,13 +43,13 @@ export const useTableUploadLogic = (
   const getDropzoneIcon = computed(() => {
     if (hasError.value) return "danger";
     if (uploaded.value) return "check";
-    return "document";
+    return "import";
   });
 
   const getDropzoneText = computed(() => {
     if (hasError.value) return "Error parsing bibliography file";
-    if (uploaded.value) return "Upload BibTeX File";
-    return "Upload BibTeX File";
+    if (uploaded.value) return "Drop file here";
+    return "Drop file here";
   });
 
   // Drag and drop handlers
@@ -65,7 +65,7 @@ export const useTableUploadLogic = (
   const handleDrop = (event: DragEvent) => {
     event.preventDefault();
     dragOver.value = false;
-    
+
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
       processFile(files[0]);
