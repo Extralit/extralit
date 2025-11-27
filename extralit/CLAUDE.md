@@ -33,7 +33,6 @@ This SDK package allows researchers to:
 pdm run test             # Run pytest with warnings disabled
 pdm run test-cov         # Run tests with coverage reporting
 pdm run lint             # Run ruff linting
-pdm run format           # Format code with black
 pdm run all              # Format, lint, and test in sequence
 ```
 
@@ -68,7 +67,6 @@ The package provides an `extralit` CLI command that registers multiple subcomman
 
 ### Configuration
 - **Ruff Linting**: Line length 120, comprehensive rule set including FastAPI-specific rules
-- **Black Formatting**: Line length 120
 - **pytest**: Async support, custom fixtures, environment variable handling
 
 ### Testing Structure
