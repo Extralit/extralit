@@ -34,7 +34,8 @@
 import { TabulatorFull as Tabulator, ColumnDefinition, CellComponent, RowComponent } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import RenderTable from "~/components/base/base-render-table/RenderTable.vue";
-import { TableData, DataFrameSchema } from "@/v1/domain/entities/table/TableData";
+import { TableData } from "@/v1/domain/entities/table/TableData";
+import { DataFrameSchema } from "@/v1/domain/entities/table/Schema";
 import { Question } from "@/v1/domain/entities/question/Question";
 
 export default {
@@ -197,10 +198,13 @@ export default {
       if (this.tableJSON) {
         // If validation is provided, merge it into the tableJSON
         if (this.validation && this.tableJSON) {
-          return {
-            ...this.tableJSON,
-            validation: this.validation,
-          };
+          const merged = new TableData(
+            this.tableJSON.data,
+            this.tableJSON.schema,
+            this.tableJSON.reference
+          );
+          merged.validation = this.validation;
+          return merged;
         }
         return this.tableJSON;
       }
@@ -216,17 +220,13 @@ export default {
         type: col.type || "string",
       }));
 
-      const schema: DataFrameSchema = {
-        fields,
-        schemaName: "simple-table",
-        primaryKey: [],
-      };
+      const schema = new DataFrameSchema(fields, [], undefined, "simple-table");
 
-      const tableData: TableData = {
-        schema,
-        data: [...this.data] as any[],
-        validation: this.validation,
-      };
+      const tableData = new TableData(
+        [...this.data] as any[],
+        schema
+      );
+      tableData.validation = this.validation;
 
       return tableData;
     },
