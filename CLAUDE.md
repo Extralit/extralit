@@ -49,7 +49,6 @@ cd extralit/
 pdm run test             # Run tests
 pdm run test-cov         # Run tests with coverage
 pdm run lint             # Run ruff linting
-pdm run format           # Format with black
 pdm run all              # Format, lint, and test
 ```
 

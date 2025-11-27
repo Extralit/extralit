@@ -245,7 +245,6 @@ The package provides an `extralit` CLI command that registers multiple subcomman
 
 ### Configuration
 - **Ruff Linting**: Line length 120, comprehensive rule set including FastAPI-specific rules
-- **Black Formatting**: Line length 120
 - **pytest**: Async support, custom fixtures, environment variable handling
 
 ### Testing Structure
