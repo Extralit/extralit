@@ -8,6 +8,9 @@
       :hasValidValues="hasValidValues"
       :questions="questions"
       @table-built="$emit('table-built')"
+      @column-title-changed="(col) => $emit('column-title-changed', col)"
+      @update-table-json="() => $emit('update-table-json')"
+      @validate-table="(result) => $emit('validate-table', result)"
       @data-loaded="handleDataLoaded"
       @data-changed="handleDataChanged"
       @row-click="(e, row) => $emit('row-click', e, row)"
@@ -199,11 +202,11 @@ export default {
         // If validation is provided, merge it into the tableJSON
         if (this.validation && this.tableJSON) {
           const merged = new TableData(
-            this.tableJSON.data,
+            [...this.tableJSON.data],
             this.tableJSON.schema,
             this.tableJSON.reference
           );
-          merged.validation = this.validation;
+          merged.validation = this.validation || this.tableJSON.validation || null;
           return merged;
         }
         return this.tableJSON;
@@ -215,19 +218,24 @@ export default {
       }
 
       // Convert data/columns format to TableData format for RenderTable
-      const fields = this.columns.map((col: any) => ({
+      const fields = this.columns.map((col) => ({
         name: col.field,
         type: col.type || "string",
       }));
 
-      const schema = new DataFrameSchema(fields, [], undefined, "simple-table");
+      const schema = new DataFrameSchema(
+        fields,       // fields
+        [],           // no index columns
+        null,         // no reference
+        "simple-table"
+      );
 
       const tableData = new TableData(
-        [...this.data] as any[],
-        schema
+        [...this.data],
+        schema,
+        null          // no reference table
       );
-      tableData.validation = this.validation;
-
+      tableData.validation = this.validation || null;
       return tableData;
     },
   },
@@ -260,6 +268,30 @@ export default {
         }
       }
     },
+
+    editable: {
+      immediate: true,
+      handler(newVal, oldVal) {
+        // Skip initial run to avoid double initialization
+        if (oldVal === undefined) return;
+        this.$nextTick(() => {
+          if (this.useRenderTable) {
+            if (this.tabulator) {
+              this.tabulator.destroy();
+              this.tabulator = null;
+            }
+            return;
+          }
+
+          // Rebuild simple Tabulator
+          if (!this.useRenderTable) {
+            this.$nextTick(() => {
+              this.initializeTable();
+            });
+          }
+        });
+      }
+    }
   },
 
   mounted() {
@@ -511,23 +543,6 @@ export default {
 </script>
 
 <style lang="scss">
-.tabulator-container {
-  display: flex;
-  flex-flow: column;
-  position: relative;
-  max-height: 80vh;
-  border: 1px solid var(--border-field);
-  border-radius: $border-radius;
-  background: var(--bg-accent-grey-1);
-  overflow: auto;
-
-  .__table {
-    white-space: normal;
-    position: relative;
-    resize: vertical;
-    overflow: auto;
-  }
-}
 
 .tabulator-container {
   display: flex;
