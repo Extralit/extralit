@@ -389,7 +389,6 @@ export default {
       }
 
       this.tableJSON.data = this.tabulator.getData().map(({ _id, ...rest }) => rest);
-      this.$emit("update-table-json");
     },
     isIndexRefColumn(field: string) {
       return this.indexColumns?.includes(field) || this.refColumns?.includes(field);
@@ -461,7 +460,6 @@ export default {
       if (options?.saveData == true) {
         this.updateTableJsonData();
       }
-      this.$emit("validate-table", isValid);
       return isValid;
     },
     toggleShowRefColumns() {
@@ -579,7 +577,6 @@ export default {
       }
 
       this.updateTableJsonData(false, false, true, newFieldName, oldFieldName);
-      this.$emit("column-title-changed", column);
       // this.tabulator?.setColumns(this.columnsConfig);
     },
     clearTable() {
