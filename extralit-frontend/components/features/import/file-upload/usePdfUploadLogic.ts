@@ -162,7 +162,7 @@ export const usePdfUploadLogic = (
   const emitUpdate = () => {
     if (emit) {
       emit("update", {
-        isValid: uploaded.value && !hasError.value && data.value.matchedFiles.length > 0,
+        isValid: uploaded.value && !hasError.value && data.value.totalFiles > 0,
         matchedFiles: data.value.matchedFiles,
         unmatchedFiles: data.value.unmatchedFiles,
         totalFiles: data.value.totalFiles,
@@ -260,6 +260,22 @@ export const usePdfUploadLogic = (
       }
     },
     { deep: true, immediate: true }
+  );
+
+  // Watch for bibliography entries being added later (when bib file is uploaded after PDFs)
+  watch(
+    () => props.bibliographyEntries,
+    (newBibEntries, oldBibEntries) => {
+      const hadNoBibBefore = !oldBibEntries || !oldBibEntries.data || oldBibEntries.data.length === 0;
+      const hasValidBibNow = newBibEntries && newBibEntries.data && newBibEntries.data.length > 0;
+
+      if (hasValidBibNow && hadNoBibBefore && data.value.totalFiles > 0) {
+        const allFiles = [...data.value.matchedFiles.map(mf => mf.file), ...data.value.unmatchedFiles];
+        performFileMatching(allFiles);
+        emitUpdate();
+      }
+    },
+    { deep: true }
   );
 
   // Initialize on mount

@@ -28,8 +28,11 @@ DEFAULT_API_KEY = "extralit.apikey"
 DEFAULT_DATABASE_SQLITE_TIMEOUT = 5
 
 DEFAULT_DATABASE_POSTGRESQL_SCHEME = "postgresql+asyncpg"
-DEFAULT_DATABASE_POSTGRESQL_POOL_SIZE = 10
-DEFAULT_DATABASE_POSTGRESQL_MAX_OVERFLOW = 10
+# Lower defaults for compatibility with connection poolers like Supabase/PgBouncer
+# Supabase Nano: ~15 connections, Small: ~60 connections in Session mode
+# With multiple workers, keep individual pool sizes small
+DEFAULT_DATABASE_POSTGRESQL_POOL_SIZE = 3
+DEFAULT_DATABASE_POSTGRESQL_MAX_OVERFLOW = 2
 
 DEFAULT_MAX_KEYWORD_LENGTH = 128
 DEFAULT_TELEMETRY_KEY = "WyZq54dI9Ar1BWCr7JxOk80DpboFnVFk"

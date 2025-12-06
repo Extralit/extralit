@@ -115,6 +115,10 @@ class Settings(BaseSettings):
         default=300,
         description="Number of seconds to recycle connections in PostgreSQL pool",
     )
+    database_postgresql_pool_timeout: int = Field(
+        default=30,
+        description="Number of seconds to wait for a connection from the pool",
+    )
     database_postgresql_connect_timeout: int = Field(
         default=30,
         description="PostgreSQL connection establishment timeout in seconds",
@@ -122,6 +126,11 @@ class Settings(BaseSettings):
     database_postgresql_command_timeout: int = Field(
         default=30,
         description="PostgreSQL query execution timeout in seconds",
+    )
+    # Connection pooler compatibility mode (for Supabase, PgBouncer, etc.)
+    database_postgresql_pooler_mode: bool = Field(
+        default=False,
+        description="Enable compatibility mode for external connection poolers (disables prepared statements)",
     )
 
     s3_endpoint: str | None = Field(default=None, description="The S3 endpoint for data storage")
@@ -289,18 +298,28 @@ class Settings(BaseSettings):
             }
 
         if self.database_is_postgresql:
+            connect_args = {
+                "server_settings": {
+                    "application_name": "extralit-server",
+                },
+                "command_timeout": self.database_postgresql_command_timeout,
+            }
+
+            # For external connection poolers (Supabase, PgBouncer), disable prepared statements
+            # This is required for Transaction mode pooling
+            if self.database_postgresql_pooler_mode:
+                connect_args["prepared_statement_cache_size"] = 0
+                connect_args["statement_cache_size"] = 0
+
             return {
                 "pool_size": self.database_postgresql_pool_size,
                 "max_overflow": self.database_postgresql_max_overflow,
                 "pool_pre_ping": self.database_postgresql_pool_pre_ping,
                 "pool_recycle": self.database_postgresql_pool_recycle,
-                "pool_timeout": 30,
-                "connect_args": {
-                    "server_settings": {
-                        "application_name": "extralit-server",
-                    },
-                    "command_timeout": self.database_postgresql_command_timeout,
-                },
+                "pool_timeout": self.database_postgresql_pool_timeout,
+                # Use LIFO to reuse recently-used connections (better for connection poolers)
+                "pool_use_lifo": True,
+                "connect_args": connect_args,
             }
 
         return {}
