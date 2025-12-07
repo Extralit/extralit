@@ -303,7 +303,7 @@ export default {
     notFound: "Document not found",
   },
   import: {
-    title: "Import Documents to {workspaceName} Workspace",
+    title: "Import documents to {workspaceName}",
     historyTitle: "Import History",
   },
   importConfiguration: {

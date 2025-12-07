@@ -1,13 +1,33 @@
 <template>
-  <div ref="tabulator" class="tabulator-container" />
+  <div :class="['tabulator-container', 'tabulator-container--simple', { 'tabulator-container--editable': editable }]">
+    <RenderTable
+      ref="renderTable"
+      :tableJSON="computedTableJSON"
+      :editable="editable"
+      :hasValidValues="hasValidValues"
+      :questions="questions"
+      @table-built="$emit('table-built')"
+      @row-click="(e, row) => $emit('row-click', e, row)"
+      @cell-edited="(cell) => $emit('cell-edited', cell)"
+      @updateValidValues="(value) => $emit('updateValidValues', value)"
+    />
+  </div>
 </template>
 
 <script lang="ts">
-import { TabulatorFull as Tabulator, ColumnDefinition, CellComponent, RowComponent } from "tabulator-tables";
+import RenderTable from "~/components/base/base-render-table/RenderTable.vue";
 import "tabulator-tables/dist/css/tabulator.min.css";
+import { TableData } from "@/v1/domain/entities/table/TableData";
+import { DataFrameSchema } from "@/v1/domain/entities/table/Schema";
+import { Question } from "@/v1/domain/entities/question/Question";
+import { Validators } from "@/v1/domain/entities/table/Validation";
 
 export default {
   name: "BaseSimpleTable",
+
+  components: {
+    RenderTable,
+  },
 
   props: {
     data: {
@@ -26,334 +46,97 @@ export default {
       type: Boolean,
       default: false,
     },
-  },
-
-  data() {
-    return {
-      tabulator: null,
-      isInitialized: false,
-    };
+    editable: {
+      type: Boolean,
+      default: false,
+    },
+    validation: {
+      type: Object,
+      default: null,
+    },
+    validators: {
+      type: Object as () => Validators,
+      default: null,
+    },
+    hasValidValues: {
+      type: Boolean,
+      default: false,
+    },
+    questions: {
+      type: Array as () => Question[],
+      default: () => [],
+    },
   },
 
   computed: {
-    tabulatorOptions() {
-      const defaultOptions = {
-        data: this.data,
-        layout: "fitDataFill",
-        maxHeight: "100%",
-        renderHorizontal: "virtual",
-        resizableColumns: true,
-        movableColumns: false,
-        movableRows: false,
-        selectable: false,
-        pagination: false,
-        paginationSize: 20,
-        paginationSizeSelector: [10, 20, 50, 100],
-        sortMode: "local",
-        filterMode: "local",
-        placeholder: "No data available",
-        tooltipsHeader: true,
-        tooltips: true,
-        columnDefaults: {
-          resizable: true,
-          tooltip: true,
-        },
-      };
+    // Convert simple data/columns to TableData format for RenderTable
+    computedTableJSON(): TableData {
+      const fields = this.columns.map((col: any) => ({
+        name: col.field,
+        type: col.type || "string",
+      }));
 
-      return {
-        ...defaultOptions,
-        ...this.options,
-        columns: this.processedColumns,
-      };
-    },
+      const schema = new DataFrameSchema(
+        fields,
+        [],
+        null,
+        "simple-table"
+      );
 
-    processedColumns(): ColumnDefinition[] {
-      return this.columns.map((col) => {
-        const column: any = {
-          field: col.field,
-          title: col.title,
-          headerSort: col.sortable !== false,
-          resizable: col.resizable !== false,
-          visible: col.visible !== false,
-        };
+      const tableData = new TableData(
+        [...this.data] as any[],
+        schema,
+        null
+      );
 
-        // Set width properties
-        if (col.width) column.width = col.width;
-        if (col.minWidth) column.minWidth = col.minWidth;
-        if (col.maxWidth) column.maxWidth = col.maxWidth;
-
-        // Set formatter
-        if (col.formatter) {
-          column.formatter = col.formatter;
-        }
-
-        // Set editor
-        if (col.editor !== undefined) {
-          column.editor = col.editor;
-          if (col.editorParams) {
-            column.editorParams = col.editorParams;
-          }
-        }
-
-        // Set validator
-        if (col.validator) {
-          column.validator = col.validator;
-        }
-
-        // Set header filter
-        if (col.filterable || col.headerFilter) {
-          column.headerFilter = col.headerFilter || "input";
-          if (col.headerFilterParams) {
-            column.headerFilterParams = col.headerFilterParams;
-          }
-        }
-
-        // Set cell click handlers
-        if (col.cellClick) {
-          column.cellClick = col.cellClick;
-        }
-        if (col.cellDblClick) {
-          column.cellDblClick = col.cellDblClick;
-        }
-
-        // Set CSS class
-        if (col.cssClass) {
-          column.cssClass = col.cssClass;
-        }
-
-        // Set frozen column
-        if (col.frozen) {
-          column.frozen = col.frozen;
-        }
-
-        return column;
-      });
-    },
-  },
-
-  watch: {
-    data: {
-      handler(newData) {
-        if (this.tabulator && this.isInitialized) {
-          this.tabulator.setData(newData);
-        }
-      },
-      deep: true,
-    },
-
-    columns: {
-      handler() {
-        if (this.tabulator && this.isInitialized) {
-          this.tabulator.setColumns(this.processedColumns);
-        }
-      },
-      deep: true,
-    },
-
-    loading(newLoading) {
-      if (this.tabulator && this.isInitialized) {
-        if (newLoading) {
-          this.tabulator.blockRedraw();
-        } else {
-          this.tabulator.restoreRedraw();
-        }
+      if (this.validation) {
+        tableData.validation = this.validation;
       }
+
+      return tableData;
     },
-  },
-
-  mounted() {
-    this.initializeTable();
-  },
-
-  beforeDestroy() {
-    if (this.tabulator) {
-      this.tabulator.destroy();
-      this.tabulator = null;
-    }
   },
 
   methods: {
-    initializeTable() {
-      try {
-        this.tabulator = new Tabulator(this.$refs.tabulator, {
-          ...this.tabulatorOptions,
-          // Event handlers
-          tableBuilt: () => {
-            this.isInitialized = true;
-            this.$emit("table-built");
-          },
-          dataLoaded: (data) => {
-            this.$emit("data-loaded", data);
-          },
-          dataChanged: (data) => {
-            this.$emit("data-changed", data);
-          },
-          rowClick: (e, row) => {
-            this.$emit("row-click", e, row);
-          },
-          rowDblClick: (e, row) => {
-            this.$emit("row-dblclick", e, row);
-          },
-          rowSelected: (row) => {
-            this.$emit("row-selected", row);
-          },
-          rowDeselected: (row) => {
-            this.$emit("row-deselected", row);
-          },
-          cellEdited: (cell) => {
-            this.$emit("cell-edited", cell);
-          },
-          columnMoved: (column, columns) => {
-            this.$emit("column-moved", column, columns);
-          },
-          columnResized: (column) => {
-            this.$emit("column-resized", column);
-          },
-          headerClick: (e, column) => {
-            this.$emit("header-click", e, column);
-          },
-          headerDblClick: (e, column) => {
-            this.$emit("header-dblclick", e, column);
-          },
-        });
-      } catch (error) {
-        console.error("Failed to initialize Tabulator:", error);
-        this.$emit("error", error);
-      }
+    // Public API methods - delegate to internal RenderTable's tabulator
+    getInternalTabulator() {
+      return this.$refs.renderTable?.tabulator;
     },
 
-    // Public API methods
     getData() {
-      return this.tabulator ? this.tabulator.getData() : [];
+      const tabulator = this.getInternalTabulator();
+      return tabulator ? tabulator.getData() : [];
     },
 
-    getSelectedData() {
-      return this.tabulator ? this.tabulator.getSelectedData() : [];
-    },
-
-    getSelectedRows() {
-      return this.tabulator ? this.tabulator.getSelectedRows() : [];
-    },
-
-    selectRow(rows) {
-      if (this.tabulator) {
-        this.tabulator.selectRow(rows);
-      }
-    },
-
-    deselectRow(rows) {
-      if (this.tabulator) {
-        this.tabulator.deselectRow(rows);
-      }
-    },
-
-    addRow(data, pos, index) {
-      if (this.tabulator) {
-        return this.tabulator.addRow(data, pos, index);
-      }
-      return Promise.reject(new Error("Table not initialized"));
-    },
-
-    updateRow(row, data) {
-      if (this.tabulator) {
-        return this.tabulator.updateRow(row, data);
-      }
-      return false;
-    },
-
-    deleteRow(rows) {
-      if (this.tabulator) {
-        this.tabulator.deleteRow(rows);
-      }
-    },
-
-    clearData() {
-      if (this.tabulator) {
-        this.tabulator.clearData();
-      }
-    },
-
-    setData(data) {
-      if (this.tabulator) {
-        return this.tabulator.setData(data);
+    setData(data: any[]) {
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        return tabulator.setData(data);
       }
       return Promise.resolve();
     },
 
-    setFilter(field, type, value) {
-      if (this.tabulator) {
-        this.tabulator.setFilter(field, type, value);
-      }
-    },
-
-    clearFilter(includeHeaderFilters) {
-      if (this.tabulator) {
-        this.tabulator.clearFilter(includeHeaderFilters);
-      }
-    },
-
-    setSort(sortList) {
-      if (this.tabulator) {
-        this.tabulator.setSort(sortList);
-      }
-    },
-
-    clearSort() {
-      if (this.tabulator) {
-        this.tabulator.clearSort();
-      }
-    },
-
-    redraw(force) {
-      if (this.tabulator) {
-        this.tabulator.redraw(force);
-      }
-    },
-
-    scrollToRow(row, position, ifVisible) {
-      if (this.tabulator) {
-        return this.tabulator.scrollToRow(row, position, ifVisible);
-      }
-      return Promise.resolve();
-    },
-
-    scrollToColumn(column, position, ifVisible) {
-      if (this.tabulator) {
-        return this.tabulator.scrollToColumn(column, position, ifVisible);
-      }
-      return Promise.resolve();
-    },
-
-    download(downloadType, filename, options) {
-      if (this.tabulator) {
-        this.tabulator.download(downloadType, filename, options);
-      }
-    },
-
-    // Utility methods
     getRowCount() {
-      return this.tabulator ? this.tabulator.getDataCount() : 0;
+      const tabulator = this.getInternalTabulator();
+      return tabulator ? tabulator.getDataCount() : 0;
     },
 
     getColumns() {
-      return this.tabulator ? this.tabulator.getColumns() : [];
+      const tabulator = this.getInternalTabulator();
+      return tabulator ? tabulator.getColumns() : [];
     },
 
-    hideColumn(column) {
-      if (this.tabulator) {
-        this.tabulator.hideColumn(column);
+    validateTable(options?: { scrollToError?: boolean; saveData?: boolean }) {
+      if (this.$refs.renderTable?.validateTable) {
+        return this.$refs.renderTable.validateTable(options);
       }
+      return true;
     },
 
-    showColumn(column) {
-      if (this.tabulator) {
-        this.tabulator.showColumn(column);
-      }
-    },
-
-    toggleColumn(column) {
-      if (this.tabulator) {
-        this.tabulator.toggleColumn(column);
+    redraw(force?: boolean) {
+      const tabulator = this.getInternalTabulator();
+      if (tabulator) {
+        tabulator.redraw(force);
       }
     },
   },
@@ -361,7 +144,8 @@ export default {
 </script>
 
 <style lang="scss">
-.tabulator-container {
+// Styles for BaseSimpleTable wrapping RenderTable
+.tabulator-container--simple {
   display: flex;
   flex-flow: column;
   position: relative;
@@ -371,32 +155,16 @@ export default {
   background: var(--bg-accent-grey-1);
   overflow: auto;
 
-  .__table {
-    white-space: normal;
-    position: relative;
-    resize: vertical;
-    overflow: auto;
-  }
-}
-
-.tabulator-container {
-  display: flex;
-  flex-flow: column;
-  position: relative;
-  max-height: 80vh;
-  border: 1px solid var(--border-field);
-  border-radius: $border-radius;
-  background: var(--bg-accent-grey-1);
-  overflow: auto;
-
-  .__table {
-    white-space: normal;
-    position: relative;
-    resize: vertical;
-    overflow: auto;
+  // Hide RenderTable's edit buttons when not editable
+  :deep(.table-container) {
+    .__table-buttons {
+      display: none;
+    }
+    max-height: inherit;
+    margin-bottom: 0;
   }
 
-  // Override Tabulator Semantic UI theme colors to match our design system
+  // Apply design system styling to RenderTable's tabulator
   :deep(.tabulator) {
     background: var(--bg-accent-grey-1);
     border: none;
@@ -420,16 +188,6 @@ export default {
         &:hover {
           background: var(--bg-solid-grey-3);
         }
-
-        &.tabulator-sortable {
-          .tabulator-col-title {
-            cursor: pointer;
-          }
-        }
-      }
-
-      .tabulator-col-resize-handle {
-        background: var(--border-field);
       }
     }
 
@@ -447,23 +205,10 @@ export default {
             background: var(--bg-solid-grey-2);
           }
 
-          &.tabulator-selected {
-            background: var(--bg-status-submitted);
-
-            .tabulator-cell {
-              color: var(--fg-status-submitted);
-            }
-          }
-
           .tabulator-cell {
             color: var(--fg-primary);
             border-right: 1px solid var(--bg-solid-grey-2);
             padding: $base-space;
-
-            &.tabulator-editing {
-              background: var(--bg-accent-grey-2);
-              border: 2px solid var(--bg-action);
-            }
           }
         }
 
@@ -484,68 +229,13 @@ export default {
         }
       }
     }
+  }
 
-    .tabulator-footer {
-      background: var(--bg-solid-grey-2);
-      border-top: 1px solid var(--border-field);
-      color: var(--fg-secondary);
-
-      .tabulator-page {
-        background: var(--bg-accent-grey-1);
-        border: 1px solid var(--border-field);
-        color: var(--fg-primary);
-        margin: 0 2px;
-
-        &:hover {
-          background: var(--bg-solid-grey-3);
-        }
-
-        &.tabulator-page-active {
-          background: var(--bg-action);
-          color: var(--fg-lighter);
-        }
-      }
-
-      .tabulator-paginator {
-        color: var(--fg-secondary);
-      }
-    }
-
-    .tabulator-placeholder {
-      background: var(--bg-accent-grey-1);
-      color: var(--fg-secondary);
-      text-align: center;
-      padding: $base-space * 4;
-      font-style: italic;
-    }
-
-    // Loading overlay
-    .tabulator-loader {
-      background: rgba(var(--bg-accent-grey-1), 0.8);
-
-      .tabulator-loader-msg {
-        background: var(--bg-accent-grey-1);
-        border: 1px solid var(--border-field);
-        color: var(--fg-primary);
-        border-radius: $border-radius;
-        padding: $base-space * 2;
-      }
-    }
-
-    // Header filters
-    .tabulator-header-filter {
-      input {
-        background: var(--bg-accent-grey-1);
-        border: 1px solid var(--border-field);
-        color: var(--fg-primary);
-        border-radius: $border-radius-s;
-        padding: 4px 8px;
-        font-size: 12px;
-
-        &:focus {
-          border-color: var(--bg-action);
-          outline: none;
-        }
+  // When editable, show the buttons
+  &.tabulator-container--editable {
+    :deep(.table-container) {
+      .__table-buttons {
+        display: flex;
       }
     }
   }

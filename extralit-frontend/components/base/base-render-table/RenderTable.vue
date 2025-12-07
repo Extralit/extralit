@@ -335,9 +335,11 @@ export default {
           this.tableJSON.data.forEach((row) => {
             removeColumns.forEach((field) => {
               this.$delete(row, field);
+
             });
           });
         }
+
       }
 
       if (add) {
@@ -458,7 +460,6 @@ export default {
       if (options?.saveData == true) {
         this.updateTableJsonData();
       }
-
       return isValid;
     },
     toggleShowRefColumns() {
@@ -836,6 +837,7 @@ export default {
             button.addEventListener('click', this.addEmptyReferenceRows);
             div.appendChild(button);
           }
+
           return div;
         },
 
@@ -942,6 +944,7 @@ export default {
         this.isLoaded = true;
         this.tabulator?.setColumns(this.columnsConfig);
         this.validateTable();
+        this.$emit("table-built");
       });
 
     } catch (error) {

@@ -20,6 +20,7 @@ export const useTableUploadLogic = (
   const uploaded = ref(false);
   const hasError = ref(false);
   const errorMessage = ref("");
+  const fileInput = ref<HTMLInputElement | null>(null);
 
   const data = ref<BibliographyData>({
     fileName: "",
@@ -74,10 +75,7 @@ export const useTableUploadLogic = (
 
   // File input handling
   const triggerFileInput = () => {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-    }
+    fileInput.value?.click();
   };
 
   const handleFileSelect = (event: Event) => {
@@ -319,6 +317,7 @@ export const useTableUploadLogic = (
     handleDrop,
     triggerFileInput,
     handleFileSelect,
+    fileInput,
     processFile,
     processCsvWithConfig,
     emitUpdate,
