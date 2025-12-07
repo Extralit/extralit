@@ -16,6 +16,7 @@
 
 <script lang="ts">
 import RenderTable from "~/components/base/base-render-table/RenderTable.vue";
+import "tabulator-tables/dist/css/tabulator.min.css";
 import { TableData } from "@/v1/domain/entities/table/TableData";
 import { DataFrameSchema } from "@/v1/domain/entities/table/Schema";
 import { Question } from "@/v1/domain/entities/question/Question";
