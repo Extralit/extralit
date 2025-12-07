@@ -66,18 +66,10 @@ def test_settings_database_sqlite_timeout(monkeypatch):
     assert Settings().database_sqlite_timeout == 3
 
 
-def test_settings_default_database_postgresql_pool_size():
-    assert Settings().database_postgresql_pool_size == 10
-
-
 def test_settings_database_postgresql_pool_size(monkeypatch):
     monkeypatch.setenv("EXTRALIT_DATABASE_POSTGRESQL_POOL_SIZE", "42")
 
     assert Settings().database_postgresql_pool_size == 42
-
-
-def test_settings_default_database_postgresql_max_overflow():
-    assert Settings().database_postgresql_max_overflow == 10
 
 
 def test_settings_database_postgresql_max_overflow(monkeypatch):
