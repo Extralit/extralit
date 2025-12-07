@@ -5,6 +5,9 @@
 
 import { ref, computed, watch, nextTick } from "@nuxtjs/composition-api";
 import type { BibliographyData, PdfData } from "./types";
+import { TableData } from "~/v1/domain/entities/table/TableData";
+import { DataFrameSchema, DataFrameField } from "~/v1/domain/entities/table/Schema";
+import { Validators } from "~/v1/domain/entities/table/Validation";
 
 export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
   // Internal flag to prevent recursive updates during initialization
@@ -24,9 +27,127 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
     totalFiles: 0,
   });
 
+  // Editable table data for PDF-only uploads
+  const editableTableData = ref<any[]>([]);
+  const editableTable = ref<any>(null);
+
   // Computed properties
   const isValid = computed(() => {
     return pdfData.value.totalFiles > 0;
+  });
+
+  // Check if we should show the editable table (PDFs uploaded but no bibliography)
+  const shouldShowEditableTable = computed(() => {
+    const hasPdfs = pdfData.value.totalFiles > 0;
+    const noBibliography = !bibData.value.dataframeData || bibData.value.dataframeData.data.length === 0;
+    return hasPdfs && noBibliography;
+  });
+
+  // Get all PDF file names
+  const allPdfFileNames = computed(() => {
+    const matched = pdfData.value.matchedFiles.map((mf: any) => mf.file.name);
+    const unmatched = pdfData.value.unmatchedFiles.map((f: File) => f.name);
+    return [...matched, ...unmatched];
+  });
+
+  // Get unmapped PDF files (PDFs not assigned to any reference)
+  const unmappedPdfFiles = computed(() => {
+    const assignedFiles = new Set<string>();
+    
+    // Collect all files assigned to references
+    editableTableData.value.forEach((row: any) => {
+      if (row.files && Array.isArray(row.files)) {
+        row.files.forEach((file: string) => assignedFiles.add(file));
+      }
+    });
+
+    // Return PDFs not in the assigned set
+    return allPdfFileNames.value.filter(fileName => !assignedFiles.has(fileName));
+  });
+
+  // Configure editable table columns with validators
+  const editableTableColumns = computed(() => {
+    const pdfFileOptions = allPdfFileNames.value.map(name => ({
+      label: name,
+      value: name,
+    }));
+
+    return [
+      {
+        field: "reference",
+        title: "Reference *",
+        frozen: true,
+        width: 200,
+        editor: "input",
+        validator: ["required", "unique"],
+      },
+      {
+        field: "title",
+        title: "Title",
+        width: 300,
+        editor: "input",
+      },
+      {
+        field: "authors",
+        title: "Authors",
+        width: 200,
+        editor: "input",
+      },
+      {
+        field: "year",
+        title: "Year",
+        width: 100,
+        editor: "input",
+      },
+      {
+        field: "journal",
+        title: "Journal",
+        width: 200,
+        editor: "input",
+      },
+      {
+        field: "doi",
+        title: "DOI",
+        width: 150,
+        editor: "input",
+      },
+      {
+        field: "files",
+        title: "Files *",
+        frozen: true,
+        frozenRight: true,
+        width: 200,
+        editor: "list",
+        editorParams: {
+          values: pdfFileOptions,
+          multiselect: true,
+          autocomplete: true,
+          listOnEmpty: true,
+          clearable: true,
+        },
+        validator: ["required"],
+        formatter: (cell: any) => {
+          const value = cell.getValue();
+          if (!value || (Array.isArray(value) && value.length === 0)) {
+            return '<span style="color: var(--fg-tertiary);">No files</span>';
+          }
+          const files = Array.isArray(value) ? value : [value];
+          const count = files.length;
+          return `<span title="${files.join(', ')}">${count} file${count !== 1 ? 's' : ''}</span>`;
+        },
+      },
+    ];
+  });
+
+  // Validators for the editable table
+  const editableTableValidators = computed<Validators>(() => {
+    return {
+      reference: [
+        { type: "unique", parameters: { column: "reference" } },
+        "required",
+      ],
+      files: ["required"],
+    };
   });
 
   // Event handlers
@@ -46,10 +167,34 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       totalFiles: data.totalFiles || 0,
     };
 
+    // Initialize editable table if needed (PDFs but no bib)
+    if (shouldShowEditableTable.value && editableTableData.value.length === 0) {
+      initializeEditableTable();
+    }
+
     // Update dataframe data with matched file paths
     updateDataframeWithFilePaths(data.matchedFiles || []);
 
     emitPdfUpdate();
+  };
+
+  const handleTableCellEdit = (cell: any) => {
+    // When a cell is edited, update our data and sync to bibData
+    const updatedData = editableTable.value?.getData() || [];
+    editableTableData.value = updatedData;
+    
+    // Convert editable table data to dataframe format
+    syncEditableTableToBibData();
+  };
+
+  const handleTableBuilt = () => {
+    // Table is ready, ensure data is in sync
+    if (editableTable.value) {
+      const tableData = editableTable.value.getData();
+      if (tableData && tableData.length > 0) {
+        editableTableData.value = tableData;
+      }
+    }
   };
 
   // Event emitters
@@ -115,6 +260,74 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
     };
 
     // Re-emit the bib update with the updated dataframe
+    emitBibUpdate();
+  };
+
+  // Initialize editable table with empty rows
+  const initializeEditableTable = () => {
+    // Start with a few empty rows
+    const initialRows = Array.from({ length: 3 }, (_, i) => ({
+      reference: "",
+      title: "",
+      authors: "",
+      year: "",
+      journal: "",
+      doi: "",
+      files: [],
+    }));
+    
+    editableTableData.value = initialRows;
+  };
+
+  // Sync editable table data to bibData format
+  const syncEditableTableToBibData = () => {
+    if (editableTableData.value.length === 0) {
+      return;
+    }
+
+    // Filter out empty rows (rows without reference)
+    const validRows = editableTableData.value.filter((row: any) => 
+      row.reference && row.reference.trim().length > 0
+    );
+
+    if (validRows.length === 0) {
+      return;
+    }
+
+    // Convert to TableData format
+    const fields: DataFrameField[] = [
+      { name: "reference", type: "string" },
+      { name: "title", type: "string" },
+      { name: "authors", type: "string" },
+      { name: "year", type: "string" },
+      { name: "journal", type: "string" },
+      { name: "doi", type: "string" },
+      { name: "files", type: "string" },
+    ];
+
+    const schema = new DataFrameSchema(
+      fields,
+      ["reference"],
+      null,
+      "manual-entry"
+    );
+
+    // Process rows to add filePaths
+    const processedRows = validRows.map((row: any) => ({
+      ...row,
+      filePaths: Array.isArray(row.files) ? row.files : (row.files ? [row.files] : []),
+    }));
+
+    const tableData = new TableData(
+      processedRows,
+      schema,
+      null
+    );
+
+    bibData.value.dataframeData = tableData;
+    bibData.value.fileName = "manual-entry.csv";
+
+    // Re-emit the bib update with the generated dataframe
     emitBibUpdate();
   };
 
@@ -220,16 +433,27 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
     isInitializing,
     bibData,
     pdfData,
+    editableTableData,
+    editableTable,
 
     // Computed
     isValid,
+    shouldShowEditableTable,
+    allPdfFileNames,
+    unmappedPdfFiles,
+    editableTableColumns,
+    editableTableValidators,
 
     // Methods
     handleBibUpdate,
     handlePdfUpdate,
+    handleTableCellEdit,
+    handleTableBuilt,
     emitBibUpdate,
     emitPdfUpdate,
     updateDataframeWithFilePaths,
+    initializeEditableTable,
+    syncEditableTableToBibData,
     initializeWithExistingData,
     reset,
   };
