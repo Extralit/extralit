@@ -19,6 +19,16 @@ These are the section headers that we use:
 - Added `wait` parameter to the `extralit workflows start` CLI to waiting for the workflow to complete and return the final status.
 - Added dynamic mimetypes support for document uploads based on file extension or UploadFile types.
 
+### Changed
+- **Documentation**: Completed rebranding from Argilla to Extralit across all documentation files
+  - Updated 18 documentation files with Extralit branding
+  - Renamed 3 files: `how-to-configure-argilla-on-huggingface.md` → `how-to-configure-extralit-on-huggingface.md`, `how-to-deploy-argilla-with-docker.md` → `how-to-deploy-extralit-with-docker.md`, `repo-visualizer-argilla.svg` → `repo-visualizer-extralit.svg`
+  - Updated all tutorial notebooks to reference `docs.extralit.ai` instead of `docs.argilla.io`
+  - Updated HuggingFace Space URLs from `argilla/*` to `extralit/*`
+  - Updated example code assets from `argilla.io` to `extralit.ai`
+  - Updated function references from `get_argilla_themed_panel` to `get_extralit_themed_panel`
+  - Preserved appropriate attribution to Argilla as the foundation project
+
 ### Fixed
 - Fixed single document uploads via CLI (`extralit documents add`) to start PDF workflow.
 
