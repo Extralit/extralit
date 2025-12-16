@@ -14,9 +14,9 @@ pip install extralit
 
 If you have already deployed Extralit server, you can skip this step. Otherwise, you can quickly deploy it in two different ways:
 
-* [Using a HF Space](./how-to-configure-argilla-on-huggingface.md).
+* [Using a HF Space](./how-to-configure-extralit-on-huggingface.md).
 
-* [Locally with Docker](./how-to-deploy-argilla-with-docker.md).
+* [Locally with Docker](./how-to-deploy-extralit-with-docker.md).
 
 
 ## Connect to the Extralit server

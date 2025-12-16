@@ -51,5 +51,5 @@ Scientific papers come in a variety of formats and layouts, often with complex t
 Literature review and meta-analysis projects often require team effort. Extralit builds upon Extralit's platform to facilitate **collaborative extraction**, allowing multiple researchers to work together efficiently, share insights, and maintain a consistent approach across large volumes of literature.
 
 
-## Relationship to Extralit
+## Relationship to Argilla
 Extralit builds upon [Argilla's](https://argilla.io) foundation, adding specialized features for scientific data extraction.

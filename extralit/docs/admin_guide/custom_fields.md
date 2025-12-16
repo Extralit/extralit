@@ -87,8 +87,8 @@ dataset.records.log([
     ex.Record(
         fields={
             "image": {
-                "original": "https://argilla.io/brand-assets/argilla/argilla-logo-color-black.png",
-                "revision": "https://argilla.io/brand-assets/argilla/argilla-logo-black.png",
+                "original": "https://extralit.ai/brand-assets/extralit/extralit-logo-color-black.png",
+                "revision": "https://extralit.ai/brand-assets/extralit/extralit-logo-black.png",
             }
         }
     )]

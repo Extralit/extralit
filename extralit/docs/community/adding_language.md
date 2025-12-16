@@ -31,7 +31,7 @@ export default {
 
 ### How to test it
 
-1. Start a local instance of Extralit, easiest by just using the docker recipe [here](../getting_started/how-to-deploy-argilla-with-docker.md). It will give you a backend API for the frontend.
+1. Start a local instance of Extralit, easiest by just using the docker recipe [here](../getting_started/how-to-deploy-extralit-with-docker.md). It will give you a backend API for the frontend.
 2. Compile a new version of the frontend. Check [this guide](https://github.com/extralit/extralit/tree/develop/extralit-frontend). This is basically:
     - `git clone https://github.com/extralit/extralit`
     - `cd extralit-frontend`

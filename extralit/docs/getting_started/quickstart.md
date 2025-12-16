@@ -66,10 +66,10 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
 !!! warning "Persistent storage `SMALL`"
     Not setting persistent storage to `SMALL` means that **you will loose your data when the Space restarts**. Spaces get restarted due to maintenance, inactivity, and every time you change your Spaces settings. If you want to **use the Space just for testing** you can use `FREE` temporarily.
 
-If you want to deploy Extralit within a Hugging Face organization, setup a more stable Space, or understand the settings, [check out the HF Spaces settings guide](how-to-configure-argilla-on-huggingface.md).
+If you want to deploy Extralit within a Hugging Face organization, setup a more stable Space, or understand the settings, [check out the HF Spaces settings guide](how-to-configure-extralit-on-huggingface.md).
 
 !!! docker "Deploy with Docker"
-     If you want to **run Extralit locally on your machine or a server**, or tune the server configuration, choose this option. To use this option, [check this guide](how-to-deploy-argilla-with-docker.md).
+     If you want to **run Extralit locally on your machine or a server**, or tune the server configuration, choose this option. To use this option, [check this guide](how-to-deploy-extralit-with-docker.md).
 
 ## Sign in into the Extralit UI
 If everything went well, you should see the Extralit sign in page that looks like this:
@@ -77,7 +77,7 @@ If everything went well, you should see the Extralit sign in page that looks lik
 ![Focus view](../assets/images/getting_started/signin-hf-page.png){ width=100% height=100% }
 
 !!! info "Building errors"
-    If you get a build error, sometimes restarting the Space from the Settings page works, otherwise [check the HF Spaces settings guide](how-to-configure-argilla-on-huggingface.md).
+    If you get a build error, sometimes restarting the Space from the Settings page works, otherwise [check the HF Spaces settings guide](how-to-configure-extralit-on-huggingface.md).
 
 In the sign in page:
 
@@ -185,4 +185,4 @@ For more info on exporting datasets to the Hub, read our guide on [exporting dat
 
 - To learn Extralit with hands-on examples, check the [Tutorials section](../tutorials/index.md).
 
-- To further configure your Extralit Space, check the [Hugging Face Spaces settings guide](how-to-configure-argilla-on-huggingface.md).
+- To further configure your Extralit Space, check the [Hugging Face Spaces settings guide](how-to-configure-extralit-on-huggingface.md).

@@ -81,7 +81,7 @@ be `http://localhost:8000/oauth/huggingface/callback`.
 ###  Hugging Face OAuth2 configuration
 
 Extralit supports Hugging Face OAuth2 authentication out of the box, and is already configured when running Extralit
-on Hugging Face Spaces (See the [Hugging Face Spaces settings](../../getting_started/how-to-configure-argilla-on-huggingface.md) for more information).
+on Hugging Face Spaces (See the [Hugging Face Spaces settings](../../getting_started/how-to-configure-extralit-on-huggingface.md) for more information).
 
 But, if you want to manually configure the Hugging Face OAuth2 provider, you should define the following
 fields in the `.oauth.yml` file:

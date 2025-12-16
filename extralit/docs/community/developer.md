@@ -54,7 +54,7 @@ The Extralit repository has a monorepo structure, which means that all the compo
     Before starting to develop, we recommend reading our [contribution guide](contributor.md) to understand the contribution process and the guidelines to follow. Once you have [cloned the Extralit repository](contributor.md#fork-the-extralit-repository) and [checked out to the correct branch](contributor.md#create-a-new-branch), you can start setting up your development environment.
 
 ??? example "Extralit Directory Structure"
-    ![Extralit Repository Structure](../assets/images/community/developer/repo-visualizer-argilla.svg)
+    ![Extralit Repository Structure](../assets/images/community/developer/repo-visualizer-extralit.svg)
 
 ??? example "Extralit Server Directory Structure"
     ![Extralit Server Repository Structure](../assets/images/community/developer/repo-visualizer-extralit-server.svg)
@@ -252,7 +252,7 @@ The CLI uses [Typer](https://typer.tiangolo.com/) for creating the command-line 
 # src/extralit/cli/mycommand/__main__.py
 import typer
 from extralit.cli.callback import init_callback
-from extralit.cli.rich import get_argilla_themed_panel
+from extralit.cli.rich import get_extralit_themed_panel
 from rich.console import Console
 
 app = typer.Typer(help="My command description")

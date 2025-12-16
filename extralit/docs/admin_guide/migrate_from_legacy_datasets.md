@@ -46,9 +46,9 @@ Extralit v2 introduces several important changes to the API that affect how you 
 
 To follow this guide, you will need to have the following prerequisites:
 
-- An argilla 1.* server instance running with legacy datasets.
-- An argilla >=1.29 server instance running. If you don't have one, you can create one by following this [Extralit guide](../getting_started/quickstart.md).
-- The `argilla` sdk package installed in your environment.
+- An Argilla 1.* server instance running with legacy datasets (or Extralit <1.29 with legacy datasets).
+- An Extralit >=1.29 server instance running. If you don't have one, you can create one by following this [Extralit guide](../getting_started/quickstart.md).
+- The `argilla` or `extralit` SDK package installed in your environment for migration.
 
 !!! warning
     This guide will recreate all `User`'s' and `Workspace`'s' on a new server. Hence, they will be created with new passwords and IDs. If you want to keep the same passwords and IDs, you can can copy the datasets to a temporary v2 instance, then upgrade your current instance to v2.0 and copy the datasets back to your original instance after.

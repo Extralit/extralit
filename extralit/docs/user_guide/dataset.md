@@ -406,7 +406,7 @@ guidelines = "In this dataset, you will find a collection of records that show a
 It is good practice to use at least the dataset guidelines if not both methods. Question descriptions should be short and provide context to a specific question. They can be a summary of the guidelines to that question, but often that is not sufficient to align the whole annotation team. In the guidelines, you can include a description of the project, details on how to answer each question with examples, instructions on when to discard a record, etc.
 
 !!! tip
-    If you want further guidance on good practices for guidelines during the project development, check our [blog post](https://argilla.io/blog/annotation-guidelines-practices/).
+    If you want further guidance on good practices for guidelines during the project development, check the Argilla [blog post](https://argilla.io/blog/annotation-guidelines-practices/) on annotation guidelines.
 
 ### Distribution
 
