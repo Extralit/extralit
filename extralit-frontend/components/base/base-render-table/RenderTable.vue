@@ -923,6 +923,7 @@ export default {
 
         this.tabulator.on("cellEdited", (cell: CellComponent) => {
           this.updateTableJsonData();
+          this.$emit("cell-edited", cell);
           // const rowPos: number | boolean = cell.getRow().getPosition();
           // if (typeof rowPos != 'number' || rowPos < 0 || rowPos > this.tableJSON.data.length) return;
           // this.$set(this.tableJSON.data[rowPos-1], cell.getColumn().getField(), cell.getValue());
