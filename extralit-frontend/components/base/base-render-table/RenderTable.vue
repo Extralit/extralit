@@ -150,6 +150,16 @@ export default {
     //     }
     //   },
     // },
+    columnsConfig: {
+      deep: true,
+      handler(newConfig) {
+        // If the columns change (e.g., new PDF added to the dropdown list),
+        // update Tabulator immediately.
+        if (this.tabulator && this.isLoaded) {
+          this.tabulator.setColumns(newConfig);
+        }
+      },
+    },
     validation: {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
@@ -196,7 +206,7 @@ export default {
       var configs = this.tableJSON.schema.fields.map((column: DataFrameField) => {
         const commonConfig = this.generateColumnConfig(column.name);
         const editableConfig = this.generateColumnEditableConfig(column.name);
-        return { ...commonConfig, ...editableConfig };
+        return { ...commonConfig, ...editableConfig, ...column };
       });
 
       if (!this.editable) {

@@ -6,6 +6,7 @@
       :editable="editable"
       :hasValidValues="hasValidValues"
       :questions="questions"
+      :validation="validation || validators"
       @table-built="$emit('table-built')"
       @row-click="(e, row) => $emit('row-click', e, row)"
       @cell-edited="(cell) => $emit('cell-edited', cell)"
@@ -71,9 +72,11 @@ export default {
   computed: {
     // Convert simple data/columns to TableData format for RenderTable
     computedTableJSON(): TableData {
+      // FIX 1: Use "...col" to preserve editor config (dropdowns), validators, and freezing
       const fields = this.columns.map((col: any) => ({
         name: col.field,
         type: col.type || "string",
+        ...col // <--- THIS IS THE MAGIC FIX
       }));
 
       const schema = new DataFrameSchema(
@@ -89,7 +92,14 @@ export default {
         null
       );
 
-      if (this.validation) {
+      // FIX 2: Handle both 'validation' and 'validators' props
+      // ImportFileUpload passes :validators, so we must prioritize that.
+      if (this.validators) {
+        // We wrap it in a structure RenderTable understands
+        tableData.validation = { columns: {}, ...this.validation };
+        // We might need to pass this directly to the RenderTable prop instead,
+        // but attaching it to tableData is the safest way for the Schema to know about it.
+      } else if (this.validation) {
         tableData.validation = this.validation;
       }
 
