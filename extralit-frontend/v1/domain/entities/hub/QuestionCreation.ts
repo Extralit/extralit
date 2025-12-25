@@ -7,6 +7,7 @@ import {
   RatingLabelQuestionAnswer,
   SingleLabelQuestionAnswer,
   SpanQuestionAnswer,
+  TableQuestionAnswer,
   TextQuestionAnswer,
 } from "../question/QuestionAnswer";
 import { QuestionSetting, QuestionPrototype } from "../question/QuestionSetting";
@@ -20,6 +21,7 @@ export const availableQuestionTypes = [
   QuestionType.from("text"),
   QuestionType.from("span"),
   QuestionType.from("rating"),
+  QuestionType.from("table"),
 ];
 
 export class QuestionCreation {
@@ -91,6 +93,10 @@ export class QuestionCreation {
     return this.type.isRankingType;
   }
 
+  get isTableType(): boolean {
+    return this.type.isTableType;
+  }
+
   get answer(): QuestionAnswer {
     return this.createInitialAnswers();
   }
@@ -126,6 +132,13 @@ export class QuestionCreation {
     if (this.isRatingType) {
       if (this.options.length < 2) {
         validation.options.push("datasetCreation.questions.rating.atLeastTwoOptions");
+      }
+    }
+
+    if (this.isTableType) {
+      // Table questions require at least one column definition in options
+      if (!this.options || this.options.length === 0) {
+        validation.options.push("datasetCreation.questions.table.atLeastOneColumn");
       }
     }
 
@@ -173,6 +186,10 @@ export class QuestionCreation {
 
     if (this.isRankingType) {
       return new RankingQuestionAnswer(this.type, this.name, this.settings.options);
+    }
+
+    if (this.isTableType) {
+      return new TableQuestionAnswer(this.type);
     }
 
     Guard.throw(`Question answer for type ${this.type} is not implemented yet.`);

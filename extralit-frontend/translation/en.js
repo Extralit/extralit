@@ -328,6 +328,14 @@ export default {
       span: {
         fieldRelated: "One text field is required",
       },
+      table: {
+        atLeastOneColumn: "At least one column is required",
+        columns: "Columns",
+        addColumn: "Add Column",
+        columnName: "Column name (e.g., column1)",
+        columnTitle: "Column title (e.g., Column 1)",
+        helpText: "Define columns for the table annotation",
+      },
     },
     atLeastOneQuestion: "At least one question is required.",
     atLeastOneRequired: "At least one required question is needed.",
@@ -387,6 +395,7 @@ export default {
       text: "Text field",
       chat: "Chat field",
       image: "Image field",
+      table: "Table field",
       "no mapping": "No mapping",
     },
     question: {

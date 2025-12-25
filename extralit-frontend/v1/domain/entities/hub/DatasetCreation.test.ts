@@ -284,5 +284,106 @@ describe("DatasetCreation", () => {
         },
       ]);
     });
+
+    it("add table question", () => {
+      const datasetInfoWithNoQuestions = {
+        default: {
+          ...datasetInfo.default,
+          features: {},
+        },
+      };
+      const builder = new DatasetCreationBuilder("FAKE", datasetInfoWithNoQuestions);
+
+      const datasetCreation = builder.build();
+
+      datasetCreation.selectedSubset.addQuestion("Table1", {
+        type: "table",
+      });
+
+      const firstQuestion = datasetCreation.questions[0];
+      expect(firstQuestion.name).toBe("Table1");
+      expect(firstQuestion.type.isTableType).toBeTruthy();
+      expect(firstQuestion.settings.use_table).toBeTruthy();
+      expect(firstQuestion.options).toEqual([
+        {
+          name: "column1",
+          title: "Column 1",
+          description: "",
+        },
+        {
+          name: "column2",
+          title: "Column 2",
+          description: "",
+        },
+      ]);
+    });
+  });
+
+  describe("Table field and question validation", () => {
+    it("should validate table question with at least one column", () => {
+      const datasetInfoWithNoQuestions = {
+        default: {
+          ...datasetInfo.default,
+          features: {},
+        },
+      };
+      const builder = new DatasetCreationBuilder("FAKE", datasetInfoWithNoQuestions);
+
+      const datasetCreation = builder.build();
+
+      datasetCreation.selectedSubset.addQuestion("Table1", {
+        type: "table",
+      });
+
+      const firstQuestion = datasetCreation.questions[0];
+      const validation = firstQuestion.validate();
+
+      expect(validation.options).toEqual([]);
+      expect(validation.field).toEqual([]);
+    });
+
+    it("should fail validation when table question has no columns", () => {
+      const datasetInfoWithNoQuestions = {
+        default: {
+          ...datasetInfo.default,
+          features: {},
+        },
+      };
+      const builder = new DatasetCreationBuilder("FAKE", datasetInfoWithNoQuestions);
+
+      const datasetCreation = builder.build();
+
+      datasetCreation.selectedSubset.addQuestion("Table1", {
+        type: "table",
+        options: [],
+      });
+
+      const firstQuestion = datasetCreation.questions[0];
+      const validation = firstQuestion.validate();
+
+      expect(validation.options).toContain("datasetCreation.questions.table.atLeastOneColumn");
+    });
+
+    it("should create table field type", () => {
+      const datasetInfoWithTableField = {
+        default: {
+          ...datasetInfo.default,
+          features: {
+            table_field: {
+              dtype: "table",
+              _type: "table",
+            },
+          },
+        },
+      };
+
+      const builder = new DatasetCreationBuilder("FAKE", datasetInfoWithTableField);
+      const datasetCreation = builder.build();
+
+      // Table fields should be created as "no mapping" since we don't have auto-detection yet
+      // But the type should be available for manual selection
+      const field = datasetCreation.fields[0];
+      expect(field.name).toBe("table_field");
+    });
   });
 });

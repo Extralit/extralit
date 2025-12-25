@@ -2,9 +2,9 @@ import { FieldType } from "../field/FieldType";
 
 export const noMapping = FieldType.from("no mapping");
 
-export const availableFieldTypes = [noMapping, FieldType.from("text"), FieldType.from("image"), FieldType.from("chat")];
+export const availableFieldTypes = [noMapping, FieldType.from("text"), FieldType.from("image"), FieldType.from("chat"), FieldType.from("table")];
 
-export type FieldCreationTypes = "no mapping" | "text" | "image" | "chat";
+export type FieldCreationTypes = "no mapping" | "text" | "image" | "chat" | "table";
 
 export class FieldCreation {
   public required = false;
@@ -45,6 +45,10 @@ export class FieldCreation {
 
   get isCustomType() {
     return this.type.isCustomType;
+  }
+
+  get isTableType() {
+    return this.type.isTableType;
   }
 
   public static from(name: string, type: FieldCreationTypes, primitiveType: string): FieldCreation | null {

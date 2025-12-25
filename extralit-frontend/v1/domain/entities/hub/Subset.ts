@@ -278,6 +278,14 @@ export class Subset {
       settings.options = [];
     }
 
+    if (type === "table") {
+      settings.options = [
+        { name: "column1", title: "Column 1", description: "" },
+        { name: "column2", title: "Column 2", description: "" },
+      ];
+      settings.use_table = true;
+    }
+
     const currentQuestion = this.questions.find((q) => q.name === name);
 
     if (currentQuestion) {

@@ -31,6 +31,11 @@
         v-model="question.settings.options"
         @is-focused="$emit('is-focused', $event)"
       />
+      <DatasetConfigurationTableQuestion
+        v-else-if="question.settings.type.isTableType"
+        :question="question"
+        @is-focused="$emit('is-focused', $event)"
+      />
     </template>
     <span class="separator"></span>
     <DatasetConfigurationColumnSelector
