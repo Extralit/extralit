@@ -150,16 +150,7 @@ export default {
     //     }
     //   },
     // },
-    columnsConfig: {
-      deep: true,
-      handler(newConfig) {
-        // If the columns change (e.g., new PDF added to the dropdown list),
-        // update Tabulator immediately.
-        if (this.tabulator && this.isLoaded) {
-          this.tabulator.setColumns(newConfig);
-        }
-      },
-    },
+
     validation: {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {

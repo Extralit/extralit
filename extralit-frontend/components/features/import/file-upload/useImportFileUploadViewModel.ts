@@ -89,7 +89,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       {
         field: "reference",
         title: "Reference *",
-        // frozen: true,
+        frozen: true,
         width: 200,
         editor: "input",
         validator: ["required", "unique"],
@@ -127,7 +127,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       {
         field: "files",
         title: "Files *",
-        // frozen: true,
+        frozen: true,
         frozenRight: true,
         width: 200,
         editor: "list",
