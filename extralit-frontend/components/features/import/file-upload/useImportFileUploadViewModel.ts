@@ -26,6 +26,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
     unmatchedFiles: [],
     totalFiles: 0,
   });
+  const hasAutoSubmitted = ref(false);
 
   // Editable table data for PDF-only uploads
   const editableTableData = ref<any[]>([]);
@@ -53,17 +54,29 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
   // Get unmapped PDF files (PDFs not assigned to any reference)
   const unmappedPdfFiles = computed(() => {
     const assignedFiles = new Set<string>();
-    
-    // Collect all files assigned to references
-    editableTableData.value.forEach((row: any) => {
-      if (row.files && Array.isArray(row.files)) {
-        row.files.forEach((file: string) => assignedFiles.add(file));
-      }
+
+    // 🔑 Prefer Tabulator ONLY when ready
+    const rows = editableTable.value
+      ? editableTable.value.getData()
+      : editableTableData.value;
+
+    rows.forEach((row: any) => {
+      // 🔑 Ignore empty rows
+      if (!row.reference || !row.reference.trim()) return;
+
+      if (!row.files) return;
+      (Array.isArray(row.files) ? row.files : [row.files]).forEach(
+        (file: string) => assignedFiles.add(file)
+      );
     });
 
-    // Return PDFs not in the assigned set
-    return allPdfFileNames.value.filter(fileName => !assignedFiles.has(fileName));
+
+    return allPdfFileNames.value.filter(
+      fileName => !assignedFiles.has(fileName)
+    );
   });
+
+
 
   // Configure editable table columns with validators
   const editableTableColumns = computed(() => {
@@ -76,7 +89,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       {
         field: "reference",
         title: "Reference *",
-        frozen: true,
+        // frozen: true,
         width: 200,
         editor: "input",
         validator: ["required", "unique"],
@@ -114,18 +127,53 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       {
         field: "files",
         title: "Files *",
-        frozen: true,
+        // frozen: true,
         frozenRight: true,
         width: 200,
         editor: "list",
-        editorParams: {
-          values: pdfFileOptions,
-          multiselect: true,
-          autocomplete: true,
-          listOnEmpty: true,
-          clearable: true,
+
+        editorParams: function (cell: any) {
+          const table = cell.getTable();
+          const row = cell.getRow();
+          const field = cell.getField();
+
+          // ✅ Source of truth: uploaded PDFs
+          const allFiles = new Set<string>(allPdfFileNames.value);
+
+          // ✅ Files already used in other rows
+          const usedFiles = new Set<string>();
+
+          table.getRows().forEach((r: any) => {
+            if (r === row) return;
+            const v = r.getData()[field];
+            if (!v) return;
+            (Array.isArray(v) ? v : [v]).forEach((f: string) =>
+              usedFiles.add(f)
+            );
+          });
+
+          // ✅ Allow current row selections
+          const current = cell.getValue() || [];
+          const currentSet = new Set(
+            Array.isArray(current) ? current : [current]
+          );
+
+          // ✅ Compute final list AT CLICK TIME
+          const values = [...allFiles]
+            .filter(f => !usedFiles.has(f) || currentSet.has(f))
+            .map(f => ({ label: f, value: f }));
+
+          return {
+            values,
+            multiselect: true,
+            autocomplete: false,
+            listOnEmpty: true,
+            clearable: true,
+          };
         },
+
         validator: ["required"],
+
         formatter: (cell: any) => {
           const value = cell.getValue();
           if (!value || (Array.isArray(value) && value.length === 0)) {
@@ -135,7 +183,8 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
           const count = files.length;
           return `<span title="${files.join(', ')}">${count} file${count !== 1 ? 's' : ''}</span>`;
         },
-      },
+      }
+
     ];
   });
 
@@ -157,16 +206,17 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       dataframeData: data.dataframeData || null,
       rawContent: data.rawContent || "",
     };
-    
+
     // If a bibliography is uploaded, clear the editable table data
     if (data.dataframeData && data.dataframeData.data && data.dataframeData.data.length > 0) {
       editableTableData.value = [];
     }
-    
+
     emitBibUpdate();
   };
 
   const handlePdfUpdate = (data: any) => {
+    hasAutoSubmitted.value = false;
     pdfData.value = {
       matchedFiles: data.matchedFiles || [],
       unmatchedFiles: data.unmatchedFiles || [],
@@ -185,12 +235,8 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
   };
 
   const handleTableCellEdit = (cell: any) => {
-    // When a cell is edited, update our data and sync to bibData
-    const updatedData = editableTable.value?.getData() || [];
-    editableTableData.value = updatedData;
-    
-    // Convert editable table data to dataframe format
-    syncEditableTableToBibData();
+    // Keep Vue mirror in sync ONLY
+    editableTableData.value = editableTable.value?.getData() || [];
   };
 
   const handleTableBuilt = () => {
@@ -281,18 +327,19 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       doi: "",
       files: [],
     }));
-    
+
     editableTableData.value = initialRows;
   };
 
+  // Sync editable table data to bibData format
   // Sync editable table data to bibData format
   const syncEditableTableToBibData = () => {
     if (editableTableData.value.length === 0) {
       return;
     }
 
-    // Filter out empty rows (rows without reference)
-    const validRows = editableTableData.value.filter((row: any) => 
+    // Filter out empty rows
+    const validRows = editableTableData.value.filter((row: any) =>
       row.reference && row.reference.trim().length > 0
     );
 
@@ -300,7 +347,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       return;
     }
 
-    // Convert to TableData format
+    // Define schema
     const fields: DataFrameField[] = [
       { name: "reference", type: "string" },
       { name: "title", type: "string" },
@@ -318,11 +365,22 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       "manual-entry"
     );
 
-    // Process rows to add filePaths
-    const processedRows = validRows.map((row: any) => ({
-      ...row,
-      filePaths: Array.isArray(row.files) ? row.files : (row.files ? [row.files] : []),
-    }));
+    // Process rows: Format 'files' for compatibility
+    const processedRows = validRows.map((row: any) => {
+      // 1. Normalize files to an Array (Safe handling)
+      const filesArray = Array.isArray(row.files) ? row.files : (row.files ? [row.files] : []);
+
+      return {
+        ...row,
+        // 2. THE FIX: Convert Array back to String for Step 2 display
+        // Step 2 expects "file1.pdf, file2.pdf" and tries to .split() it.
+        // We give it exactly what it wants.
+        files: filesArray.join(', '),
+
+        // 3. Keep the real Array for the backend logic
+        filePaths: filesArray,
+      };
+    });
 
     const tableData = new TableData(
       processedRows,
@@ -373,13 +431,14 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
   const reset = () => {
     // Set flag to prevent recursive updates during reset
     isInitializing.value = true;
-
+    hasAutoSubmitted.value = false;
     // Reset bibliography data
     bibData.value = {
       fileName: "",
       dataframeData: null,
       rawContent: "",
     };
+
 
     // Reset PDF data
     pdfData.value = {
@@ -433,6 +492,26 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
     },
     { deep: true, immediate: true }
   );
+
+  watch(
+    unmappedPdfFiles,
+    (newUnmapped) => {
+      // Only auto-submit when:
+      // 1. Table exists
+      // 2. No unmapped PDFs remain
+      // 3. We haven't already submitted
+      if (
+        editableTable.value &&
+        newUnmapped.length === 0 &&
+        !hasAutoSubmitted.value
+      ) {
+        hasAutoSubmitted.value = true;
+        syncEditableTableToBibData();
+      }
+    },
+    { immediate: false }
+  );
+
 
   return {
     // Reactive state
