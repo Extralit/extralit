@@ -166,3 +166,4 @@ extralit/site
 **/*.pdf
 .claude/
 output/
+.specstory/
