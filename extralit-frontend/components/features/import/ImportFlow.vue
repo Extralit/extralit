@@ -36,6 +36,7 @@
         :pdf-data="pdfData"
         :workspace="workspace"
         :loading="isAnalyzing"
+        :initial-document-actions="uploadData.documentActions"
         @update="handleAnalysisUpdate"
         @analysis-complete="handleAnalysisComplete"
       />

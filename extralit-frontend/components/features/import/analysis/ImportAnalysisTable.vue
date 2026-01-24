@@ -107,13 +107,17 @@ export default {
       type: Boolean,
       default: false,
     },
+    initialDocumentActions: {
+      type: Object as () => Record<string, ImportStatus>,
+      default: () => ({}),
+    },
   },
 
   emits: ["update", "analysis-complete"],
 
   data() {
     return {
-      localDocumentActions: {} as Record<string, ImportStatus>,
+      localDocumentActions: { ...this.initialDocumentActions } as Record<string, ImportStatus>,
       editableTableData: [] as any[],
     };
   },
@@ -439,8 +443,10 @@ export default {
     analysisResult: {
       handler(newData: ImportAnalysisResponse) {
         if (newData) {
-          // Reset local document actions when new analysis data arrives
-          this.localDocumentActions = {};
+          // Preserve status overrides when this step is remounted.
+          if (!this.initialDocumentActions || Object.keys(this.initialDocumentActions).length === 0) {
+            this.localDocumentActions = {};
+          }
           // Emit the analysis complete event
           this.$emit("analysis-complete", newData);
           // Emit initial update
