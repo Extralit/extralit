@@ -111,9 +111,7 @@ describe("useDocumentViewModel", () => {
 
       // Get the computed function that was passed to mockComputed
       const computedCalls = mockComputed.mock.calls;
-      const hasDocumentLoadedCall = computedCalls.find(
-        (call) => call[0].toString().includes("document.id")
-      );
+      const hasDocumentLoadedCall = computedCalls.find((call) => call[0].toString().includes("document.id"));
 
       expect(hasDocumentLoadedCall).toBeDefined();
       const hasDocumentLoaded = hasDocumentLoadedCall[0]();
@@ -127,9 +125,7 @@ describe("useDocumentViewModel", () => {
 
       // Get the computed function that was passed to mockComputed
       const computedCalls = mockComputed.mock.calls;
-      const hasDocumentLoadedCall = computedCalls.find(
-        (call) => call[0].toString().includes("document.id")
-      );
+      const hasDocumentLoadedCall = computedCalls.find((call) => call[0].toString().includes("document.id"));
 
       expect(hasDocumentLoadedCall).toBeDefined();
       const hasDocumentLoaded = hasDocumentLoadedCall[0]();
@@ -144,7 +140,7 @@ describe("useDocumentViewModel", () => {
 
       mockGetDocumentUseCase.createParams.mockReturnValue({
         workspace_id: workspaceId,
-        pmid: "12345"
+        pmid: "12345",
       });
 
       useDocumentViewModel({ record: { metadata } });
