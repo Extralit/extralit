@@ -1,0 +1,824 @@
+diff --git a/extralit-frontend/components/base/base-render-table/RenderTable.vue b/extralit-frontend/components/base/base-render-table/RenderTable.vue
+index ff6874489..ab73e5afb 100644
+--- a/extralit-frontend/components/base/base-render-table/RenderTable.vue
++++ b/extralit-frontend/components/base/base-render-table/RenderTable.vue
+@@ -150,6 +150,7 @@ export default {
+     //     }
+     //   },
+     // },
++
+     validation: {
+       handler(newValidation, oldValidation) {
+         if (this.isLoaded) {
+@@ -196,7 +197,7 @@ export default {
+       var configs = this.tableJSON.schema.fields.map((column: DataFrameField) => {
+         const commonConfig = this.generateColumnConfig(column.name);
+         const editableConfig = this.generateColumnEditableConfig(column.name);
+-        return { ...commonConfig, ...editableConfig };
++        return { ...commonConfig, ...editableConfig, ...column };
+       });
+
+       if (!this.editable) {
+@@ -913,6 +914,7 @@ export default {
+
+         this.tabulator.on("cellEdited", (cell: CellComponent) => {
+           this.updateTableJsonData();
++          this.$emit("cell-edited", cell);
+           // const rowPos: number | boolean = cell.getRow().getPosition();
+           // if (typeof rowPos != 'number' || rowPos < 0 || rowPos > this.tableJSON.data.length) return;
+           // this.$set(this.tableJSON.data[rowPos-1], cell.getColumn().getField(), cell.getValue());
+diff --git a/extralit-frontend/components/base/base-simple-table/BaseSimpleTable.vue b/extralit-frontend/components/base/base-simple-table/BaseSimpleTable.vue
+index 15a62bbc4..3a7e5435a 100644
+--- a/extralit-frontend/components/base/base-simple-table/BaseSimpleTable.vue
++++ b/extralit-frontend/components/base/base-simple-table/BaseSimpleTable.vue
+@@ -6,6 +6,7 @@
+       :editable="editable"
+       :hasValidValues="hasValidValues"
+       :questions="questions"
++      :validation="validation || validators"
+       @table-built="$emit('table-built')"
+       @row-click="(e, row) => $emit('row-click', e, row)"
+       @cell-edited="(cell) => $emit('cell-edited', cell)"
+@@ -71,9 +72,11 @@ export default {
+   computed: {
+     // Convert simple data/columns to TableData format for RenderTable
+     computedTableJSON(): TableData {
++      // FIX 1: Use "...col" to preserve editor config (dropdowns), validators, and freezing
+       const fields = this.columns.map((col: any) => ({
+         name: col.field,
+         type: col.type || "string",
++        ...col // <--- THIS IS THE MAGIC FIX
+       }));
+
+       const schema = new DataFrameSchema(
+@@ -89,7 +92,14 @@ export default {
+         null
+       );
+
+-      if (this.validation) {
++      // FIX 2: Handle both 'validation' and 'validators' props
++      // ImportFileUpload passes :validators, so we must prioritize that.
++      if (this.validators) {
++        // We wrap it in a structure RenderTable understands
++        tableData.validation = { columns: {}, ...this.validation };
++        // We might need to pass this directly to the RenderTable prop instead,
++        // but attaching it to tableData is the safest way for the Schema to know about it.
++      } else if (this.validation) {
+         tableData.validation = this.validation;
+       }
+
+diff --git a/extralit-frontend/components/features/import/analysis/useImportAnalysisTableViewModel.ts b/extralit-frontend/components/features/import/analysis/useImportAnalysisTableViewModel.ts
+index 99eb2e8eb..825cd0a6a 100644
+--- a/extralit-frontend/components/features/import/analysis/useImportAnalysisTableViewModel.ts
++++ b/extralit-frontend/components/features/import/analysis/useImportAnalysisTableViewModel.ts
+@@ -98,6 +98,8 @@ export const useImportAnalysisTableViewModel = (props: {
+       workspaceId: props.workspace?.id,
+       dataframeLength: props.dataframeData?.data?.length,
+       matchedFilesLength: props.pdfData?.matchedFiles?.length,
++      // Add deep watch on dataframe data to catch cell edits
++      dataframeDataHash: props.dataframeData ? JSON.stringify(props.dataframeData.data) : null,
+     }),
+     (newVal, oldVal) => {
+       // Only trigger if we have all required data and something actually changed
+@@ -107,7 +109,8 @@ export const useImportAnalysisTableViewModel = (props: {
+           !oldVal ||
+           newVal.workspaceId !== oldVal.workspaceId ||
+           newVal.dataframeLength !== oldVal.dataframeLength ||
+-          newVal.matchedFilesLength !== oldVal.matchedFilesLength
++          newVal.matchedFilesLength !== oldVal.matchedFilesLength ||
++          newVal.dataframeDataHash !== oldVal.dataframeDataHash
+         ) {
+           analyzeImport(props.workspace!, props.dataframeData!, props.pdfData!.matchedFiles);
+         }
+diff --git a/extralit-frontend/components/features/import/file-upload/ImportFileUpload.vue b/extralit-frontend/components/features/import/file-upload/ImportFileUpload.vue
+index 381d641e3..e594d8e90 100644
+--- a/extralit-frontend/components/features/import/file-upload/ImportFileUpload.vue
++++ b/extralit-frontend/components/features/import/file-upload/ImportFileUpload.vue
+@@ -12,6 +12,34 @@
+
+           <!-- Table Upload Section -->
+           <TableUpload :initial-data="bibData" @update="handleBibUpdate"  />
++
++          <!-- Editable Table for PDF-Only Upload -->
++          <div v-if="shouldShowEditableTable" class="import-file-upload__editable-table">
++            <div class="import-file-upload__editable-table-header">
++              <h3 class="import-file-upload__section-title">Reference Metadata</h3>
++              <p class="import-file-upload__section-description">
++                Create reference entries for your PDFs. The <strong>reference</strong> column must be unique, and you can select which PDFs to associate with each entry in the <strong>files</strong> column.
++              </p>
++            </div>
++
++            <BaseSimpleTable
++              ref="editableTable"
++              :data="editableTableData"
++              :columns="editableTableColumns"
++              :editable="true"
++              :validators="editableTableValidators"
++              @cell-edited="handleTableCellEdit"
++              @table-built="handleTableBuilt"
++            />
++
++            <!-- Unmapped PDFs Section -->
++            <div v-if="unmappedPdfFiles.length > 0" class="import-file-upload__unmapped-pdfs">
++              <h4>Unmapped PDF Files ({{ unmappedPdfFiles.length }})</h4>
++              <ul class="unmapped-files-list">
++                <li v-for="file in unmappedPdfFiles" :key="file">{{ file }}</li>
++              </ul>
++            </div>
++          </div>
+         </div>
+
+         <!-- Summary Sidebar -->
+@@ -24,6 +52,7 @@
+   import TableUpload from "./TableUpload.vue";
+   import PdfUpload from "./PdfUpload.vue";
+   import ImportSummarySidebar from "./ImportSummarySidebar.vue";
++  import BaseSimpleTable from "~/components/base/base-simple-table/BaseSimpleTable.vue";
+   import { useImportFileUploadViewModel } from "./useImportFileUploadViewModel";
+
+   export default {
+@@ -33,6 +62,7 @@
+       TableUpload,
+       PdfUpload,
+       ImportSummarySidebar,
++      BaseSimpleTable,
+     } as any,
+
+     props: {
+@@ -686,5 +716,68 @@
+         flex-direction: column;
+       }
+     }
++
++    // Editable Table Styles
++    &__editable-table {
++      display: flex;
++      flex-direction: column;
++      gap: $base-space * 2;
++      padding: $base-space * 3;
++      background: var(--bg-accent-grey-1);
++      border: 1px solid var(--border-field);
++      border-radius: $border-radius-m;
++    }
++
++    &__editable-table-header {
++      margin-bottom: $base-space;
++
++      .import-file-upload__section-title {
++        font-size: 1.2rem;
++        font-weight: 600;
++        margin-bottom: $base-space;
++        color: var(--fg-primary);
++      }
++
++      .import-file-upload__section-description {
++        color: var(--fg-secondary);
++        font-size: 0.9rem;
++        margin-bottom: 0;
++        line-height: 1.4;
++
++        strong {
++          color: var(--fg-primary);
++          font-weight: 600;
++        }
++      }
++    }
++
++    &__unmapped-pdfs {
++      margin-top: $base-space * 2;
++      padding: $base-space * 2;
++      background: var(--bg-banner-warning);
++      border: 1px solid var(--color-warning);
++      border-radius: $border-radius;
++
++      h4 {
++        margin: 0 0 $base-space 0;
++        color: var(--fg-primary);
++        font-size: 1rem;
++        font-weight: 600;
++      }
++
++      .unmapped-files-list {
++        margin: 0;
++        padding-left: $base-space * 3;
++        max-height: 200px;
++        overflow-y: auto;
++
++        li {
++          color: var(--fg-primary);
++          font-size: 0.9rem;
++          margin-bottom: calc($base-space / 2);
++          font-family: $quaternary-font-family;
++        }
++      }
++    }
+   }
+   </style>
+diff --git a/extralit-frontend/components/features/import/file-upload/useImportFileUploadViewModel.spec.ts b/extralit-frontend/components/features/import/file-upload/useImportFileUploadViewModel.spec.ts
+new file mode 100644
+index 000000000..9cefe37c8
+--- /dev/null
++++ b/extralit-frontend/components/features/import/file-upload/useImportFileUploadViewModel.spec.ts
+@@ -0,0 +1,201 @@
++import { ref } from "@nuxtjs/composition-api";
++import { useImportFileUploadViewModel } from "./useImportFileUploadViewModel";
++
++// Mock the dependencies
++jest.mock("ts-injecty", () => ({
++  useResolve: jest.fn(),
++}));
++
++jest.mock("~/v1/domain/entities/table/TableData", () => ({
++  TableData: jest.fn().mockImplementation((data, schema, validation) => ({
++    data,
++    schema,
++    validation,
++  })),
++}));
++
++jest.mock("~/v1/domain/entities/table/Schema", () => ({
++  DataFrameSchema: jest.fn().mockImplementation((fields, primaryKey, foreignKeys, name) => ({
++    fields,
++    primaryKey,
++    foreignKeys,
++    name,
++  })),
++  DataFrameField: jest.fn(),
++}));
++
++jest.mock("~/v1/domain/entities/table/Validation", () => ({
++  Validators: jest.fn(),
++}));
++
++describe("useImportFileUploadViewModel", () => {
++  let emit: jest.Mock;
++  let props: any;
++
++  beforeEach(() => {
++    emit = jest.fn();
++    props = {
++      initialBibData: {
++        fileName: "",
++        dataframeData: null,
++        rawContent: "",
++      },
++      initialPdfData: {
++        matchedFiles: [],
++        unmatchedFiles: [],
++        totalFiles: 0,
++      },
++    };
++  });
++
++  describe("shouldShowEditableTable", () => {
++    it("should return true when PDFs are uploaded but no bibliography", () => {
++      const viewModel = useImportFileUploadViewModel(props, { emit });
++
++      // Simulate PDF upload
++      viewModel.handlePdfUpdate({
++        matchedFiles: [],
++        unmatchedFiles: [{ name: "test.pdf" }],
++        totalFiles: 1,
++      });
++
++      expect(viewModel.shouldShowEditableTable.value).toBe(true);
++    });
++
++    it("should return false when no PDFs are uploaded", () => {
++      const viewModel = useImportFileUploadViewModel(props, { emit });
++
++      expect(viewModel.shouldShowEditableTable.value).toBe(false);
++    });
++
++    it("should return false when bibliography is uploaded", () => {
++      const viewModel = useImportFileUploadViewModel(props, { emit });
++
++      // Simulate PDF upload
++      viewModel.handlePdfUpdate({
++        matchedFiles: [],
++        unmatchedFiles: [{ name: "test.pdf" }],
++        totalFiles: 1,
++      });
++
++      // Simulate bibliography upload
++      viewModel.handleBibUpdate({
++        fileName: "test.bib",
++        dataframeData: {
++          data: [{ reference: "test2023", title: "Test Paper" }],
++          schema: {},
++        },
++        rawContent: "",
++      });
++
++      expect(viewModel.shouldShowEditableTable.value).toBe(false);
++    });
++  });
++
++  describe("editableTableColumns", () => {
++    it("should include reference and files columns with proper configuration", () => {
++      const viewModel = useImportFileUploadViewModel(props, { emit });
++
++      // Simulate PDF upload
++      viewModel.handlePdfUpdate({
++        matchedFiles: [],
++        unmatchedFiles: [{ name: "test1.pdf" }, { name: "test2.pdf" }],
++        totalFiles: 2,
++      });
++
++      const columns = viewModel.editableTableColumns.value;
++      const referenceCol = columns.find((col: any) => col.field === "reference");
++      const filesCol = columns.find((col: any) => col.field === "files");
++
++      expect(referenceCol).toBeDefined();
++      expect(referenceCol?.frozen).toBe(true);
++      expect(referenceCol?.validator).toContain("required");
++      expect(referenceCol?.validator).toContain("unique");
++
++      expect(filesCol).toBeDefined();
++      expect(filesCol?.editor).toBe("list");
++      expect(filesCol?.editorParams?.multiselect).toBe(true);
++      expect(filesCol?.editorParams?.values).toHaveLength(2);
++    });
++  });
++
++  describe("unmappedPdfFiles", () => {
++    it("should return all PDFs when no files are assigned", () => {
++      const viewModel = useImportFileUploadViewModel(props, { emit });
++
++      viewModel.handlePdfUpdate({
++        matchedFiles: [],
++        unmatchedFiles: [{ name: "test1.pdf" }, { name: "test2.pdf" }],
++        totalFiles: 2,
++      });
++
++      expect(viewModel.unmappedPdfFiles.value).toEqual(["test1.pdf", "test2.pdf"]);
++    });
++
++    it("should exclude assigned PDFs from unmapped list", () => {
++      const viewModel = useImportFileUploadViewModel(props, { emit });
++
++      viewModel.handlePdfUpdate({
++        matchedFiles: [],
++        unmatchedFiles: [{ name: "test1.pdf" }, { name: "test2.pdf" }],
++        totalFiles: 2,
++      });
++
++      // Manually set table data with one assigned file
++      viewModel.editableTableData.value = [
++        {
++          reference: "test2023",
++          files: ["test1.pdf"],
++        },
++      ];
++
++      expect(viewModel.unmappedPdfFiles.value).toEqual(["test2.pdf"]);
++    });
++  });
++
++  describe("syncEditableTableToBibData", () => {
++    it("should convert editable table data to bibData format", () => {
++      const viewModel = useImportFileUploadViewModel(props, { emit });
++
++      viewModel.editableTableData.value = [
++        {
++          reference: "test2023",
++          title: "Test Paper",
++          authors: "John Doe",
++          year: "2023",
++          files: ["test.pdf"],
++        },
++      ];
++
++      viewModel.syncEditableTableToBibData();
++
++      expect(viewModel.bibData.value.dataframeData).toBeDefined();
++      expect(viewModel.bibData.value.dataframeData?.data).toHaveLength(1);
++      expect(viewModel.bibData.value.dataframeData?.data[0]).toHaveProperty("reference", "test2023");
++      expect(viewModel.bibData.value.dataframeData?.data[0]).toHaveProperty("filePaths");
++      expect(viewModel.bibData.value.dataframeData?.data[0].filePaths).toEqual(["test.pdf"]);
++    });
++
++    it("should filter out empty rows", () => {
++      const viewModel = useImportFileUploadViewModel(props, { emit });
++
++      viewModel.editableTableData.value = [
++        {
++          reference: "test2023",
++          title: "Test Paper",
++          files: ["test.pdf"],
++        },
++        {
++          reference: "",
++          title: "",
++          files: [],
++        },
++      ];
++
++      viewModel.syncEditableTableToBibData();
++
++      expect(viewModel.bibData.value.dataframeData).toBeDefined();
++      expect(viewModel.bibData.value.dataframeData?.data).toHaveLength(1);
++    });
++  });
++});
+diff --git a/extralit-frontend/components/features/import/file-upload/useImportFileUploadViewModel.ts b/extralit-frontend/components/features/import/file-upload/useImportFileUploadViewModel.ts
+index 1ebb8a8ca..e3833ca1f 100644
+--- a/extralit-frontend/components/features/import/file-upload/useImportFileUploadViewModel.ts
++++ b/extralit-frontend/components/features/import/file-upload/useImportFileUploadViewModel.ts
+@@ -5,6 +5,9 @@
+
+ import { ref, computed, watch, nextTick } from "@nuxtjs/composition-api";
+ import type { BibliographyData, PdfData } from "./types";
++import { TableData } from "~/v1/domain/entities/table/TableData";
++import { DataFrameSchema, DataFrameField } from "~/v1/domain/entities/table/Schema";
++import { Validators } from "~/v1/domain/entities/table/Validation";
+
+ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
+   // Internal flag to prevent recursive updates during initialization
+@@ -23,12 +26,179 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
+     unmatchedFiles: [],
+     totalFiles: 0,
+   });
++  const hasAutoSubmitted = ref(false);
++
++  // Editable table data for PDF-only uploads
++  const editableTableData = ref<any[]>([]);
++  const editableTable = ref<any>(null);
+
+   // Computed properties
+   const isValid = computed(() => {
+     return pdfData.value.totalFiles > 0;
+   });
+
++  // Check if we should show the editable table (PDFs uploaded but no bibliography)
++  const shouldShowEditableTable = computed(() => {
++    const hasPdfs = pdfData.value.totalFiles > 0;
++    const noBibliography = !bibData.value.dataframeData || bibData.value.dataframeData.data.length === 0;
++    return hasPdfs && noBibliography;
++  });
++
++  // Get all PDF file names
++  const allPdfFileNames = computed(() => {
++    const matched = pdfData.value.matchedFiles.map((mf: any) => mf.file.name);
++    const unmatched = pdfData.value.unmatchedFiles.map((f: File) => f.name);
++    return [...matched, ...unmatched];
++  });
++
++  // Get unmapped PDF files (PDFs not assigned to any reference)
++  const unmappedPdfFiles = computed(() => {
++    const assignedFiles = new Set<string>();
++
++    // 🔑 Prefer Tabulator ONLY when ready
++    const rows = editableTable.value
++      ? editableTable.value.getData()
++      : editableTableData.value;
++
++    rows.forEach((row: any) => {
++      // 🔑 Ignore empty rows
++      if (!row.reference || !row.reference.trim()) return;
++
++      if (!row.files) return;
++      (Array.isArray(row.files) ? row.files : [row.files]).forEach(
++        (file: string) => assignedFiles.add(file)
++      );
++    });
++
++
++    return allPdfFileNames.value.filter(
++      fileName => !assignedFiles.has(fileName)
++    );
++  });
++
++
++
++  // Configure editable table columns with validators
++  const editableTableColumns = computed(() => {
++    const pdfFileOptions = allPdfFileNames.value.map(name => ({
++      label: name,
++      value: name,
++    }));
++
++    return [
++      {
++        field: "reference",
++        title: "Reference *",
++        frozen: true,
++        width: 200,
++        editor: "input",
++        validator: ["required", "unique"],
++      },
++      {
++        field: "title",
++        title: "Title",
++        width: 300,
++        editor: "input",
++      },
++      {
++        field: "authors",
++        title: "Authors",
++        width: 200,
++        editor: "input",
++      },
++      {
++        field: "year",
++        title: "Year",
++        width: 100,
++        editor: "input",
++      },
++      {
++        field: "journal",
++        title: "Journal",
++        width: 200,
++        editor: "input",
++      },
++      {
++        field: "doi",
++        title: "DOI",
++        width: 150,
++        editor: "input",
++      },
++      {
++        field: "files",
++        title: "Files *",
++        frozen: true,
++        frozenRight: true,
++        width: 200,
++        editor: "list",
++
++        editorParams: function (cell: any) {
++          const table = cell.getTable();
++          const row = cell.getRow();
++          const field = cell.getField();
++
++          // ✅ Source of truth: uploaded PDFs
++          const allFiles = new Set<string>(allPdfFileNames.value);
++
++          // ✅ Files already used in other rows
++          const usedFiles = new Set<string>();
++
++          table.getRows().forEach((r: any) => {
++            if (r === row) return;
++            const v = r.getData()[field];
++            if (!v) return;
++            (Array.isArray(v) ? v : [v]).forEach((f: string) =>
++              usedFiles.add(f)
++            );
++          });
++
++          // ✅ Allow current row selections
++          const current = cell.getValue() || [];
++          const currentSet = new Set(
++            Array.isArray(current) ? current : [current]
++          );
++
++          // ✅ Compute final list AT CLICK TIME
++          const values = [...allFiles]
++            .filter(f => !usedFiles.has(f) || currentSet.has(f))
++            .map(f => ({ label: f, value: f }));
++
++          return {
++            values,
++            multiselect: true,
++            autocomplete: false,
++            listOnEmpty: true,
++            clearable: true,
++          };
++        },
++
++        validator: ["required"],
++
++        formatter: (cell: any) => {
++          const value = cell.getValue();
++          if (!value || (Array.isArray(value) && value.length === 0)) {
++            return '<span style="color: var(--fg-tertiary);">No files</span>';
++          }
++          const files = Array.isArray(value) ? value : [value];
++          const count = files.length;
++          return `<span title="${files.join(', ')}">${count} file${count !== 1 ? 's' : ''}</span>`;
++        },
++      }
++
++    ];
++  });
++
++  // Validators for the editable table
++  const editableTableValidators = computed<Validators>(() => {
++    return {
++      reference: [
++        { type: "unique", parameters: { column: "reference" } },
++        "required",
++      ],
++      files: ["required"],
++    };
++  });
++
+   // Event handlers
+   const handleBibUpdate = (data: any) => {
+     bibData.value = {
+@@ -36,22 +206,49 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
+       dataframeData: data.dataframeData || null,
+       rawContent: data.rawContent || "",
+     };
++
++    // If a bibliography is uploaded, clear the editable table data
++    if (data.dataframeData && data.dataframeData.data && data.dataframeData.data.length > 0) {
++      editableTableData.value = [];
++    }
++
+     emitBibUpdate();
+   };
+
+   const handlePdfUpdate = (data: any) => {
++    hasAutoSubmitted.value = false;
+     pdfData.value = {
+       matchedFiles: data.matchedFiles || [],
+       unmatchedFiles: data.unmatchedFiles || [],
+       totalFiles: data.totalFiles || 0,
+     };
+
++    // Initialize editable table if needed (PDFs but no bib)
++    if (shouldShowEditableTable.value && editableTableData.value.length === 0) {
++      initializeEditableTable();
++    }
++
+     // Update dataframe data with matched file paths
+     updateDataframeWithFilePaths(data.matchedFiles || []);
+
+     emitPdfUpdate();
+   };
+
++  const handleTableCellEdit = (cell: any) => {
++    // Keep Vue mirror in sync ONLY
++    editableTableData.value = editableTable.value?.getData() || [];
++  };
++
++  const handleTableBuilt = () => {
++    // Table is ready, ensure data is in sync
++    if (editableTable.value) {
++      const tableData = editableTable.value.getData();
++      if (tableData && tableData.length > 0) {
++        editableTableData.value = tableData;
++      }
++    }
++  };
++
+   // Event emitters
+   const emitBibUpdate = () => {
+     emit("bib-update", {
+@@ -118,6 +315,86 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
+     emitBibUpdate();
+   };
+
++  // Initialize editable table with empty rows
++  const initializeEditableTable = () => {
++    // Start with a few empty rows
++    const initialRows = Array.from({ length: 3 }, (_, i) => ({
++      reference: "",
++      title: "",
++      authors: "",
++      year: "",
++      journal: "",
++      doi: "",
++      files: [],
++    }));
++
++    editableTableData.value = initialRows;
++  };
++
++  // Sync editable table data to bibData format
++  // Sync editable table data to bibData format
++  const syncEditableTableToBibData = () => {
++    if (editableTableData.value.length === 0) {
++      return;
++    }
++
++    // Filter out empty rows
++    const validRows = editableTableData.value.filter((row: any) =>
++      row.reference && row.reference.trim().length > 0
++    );
++
++    if (validRows.length === 0) {
++      return;
++    }
++
++    // Define schema
++    const fields: DataFrameField[] = [
++      { name: "reference", type: "string" },
++      { name: "title", type: "string" },
++      { name: "authors", type: "string" },
++      { name: "year", type: "string" },
++      { name: "journal", type: "string" },
++      { name: "doi", type: "string" },
++      { name: "files", type: "string" },
++    ];
++
++    const schema = new DataFrameSchema(
++      fields,
++      ["reference"],
++      null,
++      "manual-entry"
++    );
++
++    // Process rows: Format 'files' for compatibility
++    const processedRows = validRows.map((row: any) => {
++      // 1. Normalize files to an Array (Safe handling)
++      const filesArray = Array.isArray(row.files) ? row.files : (row.files ? [row.files] : []);
++
++      return {
++        ...row,
++        // 2. THE FIX: Convert Array back to String for Step 2 display
++        // Step 2 expects "file1.pdf, file2.pdf" and tries to .split() it.
++        // We give it exactly what it wants.
++        files: filesArray.join(', '),
++
++        // 3. Keep the real Array for the backend logic
++        filePaths: filesArray,
++      };
++    });
++
++    const tableData = new TableData(
++      processedRows,
++      schema,
++      null
++    );
++
++    bibData.value.dataframeData = tableData;
++    bibData.value.fileName = "manual-entry.csv";
++
++    // Re-emit the bib update with the generated dataframe
++    emitBibUpdate();
++  };
++
+   // Initialize component with existing data when navigating back
+   const initializeWithExistingData = () => {
+     // Set flag to prevent recursive updates
+@@ -154,7 +431,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
+   const reset = () => {
+     // Set flag to prevent recursive updates during reset
+     isInitializing.value = true;
+-
++    hasAutoSubmitted.value = false;
+     // Reset bibliography data
+     bibData.value = {
+       fileName: "",
+@@ -162,6 +439,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
+       rawContent: "",
+     };
+
++
+     // Reset PDF data
+     pdfData.value = {
+       matchedFiles: [],
+@@ -215,21 +493,52 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
+     { deep: true, immediate: true }
+   );
+
++  watch(
++    unmappedPdfFiles,
++    (newUnmapped) => {
++      // Only auto-submit when:
++      // 1. Table exists
++      // 2. No unmapped PDFs remain
++      // 3. We haven't already submitted
++      if (
++        editableTable.value &&
++        newUnmapped.length === 0 &&
++        !hasAutoSubmitted.value
++      ) {
++        hasAutoSubmitted.value = true;
++        syncEditableTableToBibData();
++      }
++    },
++    { immediate: false }
++  );
++
++
+   return {
+     // Reactive state
+     isInitializing,
+     bibData,
+     pdfData,
++    editableTableData,
++    editableTable,
+
+     // Computed
+     isValid,
++    shouldShowEditableTable,
++    allPdfFileNames,
++    unmappedPdfFiles,
++    editableTableColumns,
++    editableTableValidators,
+
+     // Methods
+     handleBibUpdate,
+     handlePdfUpdate,
++    handleTableCellEdit,
++    handleTableBuilt,
+     emitBibUpdate,
+     emitPdfUpdate,
+     updateDataframeWithFilePaths,
++    initializeEditableTable,
++    syncEditableTableToBibData,
+     initializeWithExistingData,
+     reset,
+   };

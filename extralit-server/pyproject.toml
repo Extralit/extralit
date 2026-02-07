@@ -13,12 +13,8 @@ keywords = [
     "human-in-the-loop",
     "mlops",
 ]
-authors = [
-    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
-]
-maintainers = [
-    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
-]
+authors = [{ name = "Extralit Labs", email = "extralit.contact@gmail.com" }]
+maintainers = [{ name = "Extralit Labs", email = "extralit.contact@gmail.com" }]
 dependencies = [
     # Basic dependencies
     "fastapi ~= 0.115.0",
@@ -47,6 +43,8 @@ dependencies = [
     "httpx ~= 0.27.0",
     "oauthlib ~= 3.2.0",
     "social-auth-core ~= 4.5.0",
+    # LiteLLM for chat integration
+    "litellm >= 1.60.0",
     # Background processing
     "rq~=2.4.1",
     "lazy-loader>=0.4",
@@ -55,8 +53,8 @@ dependencies = [
     # For logging, tracebacks, printing, progressbars
     "rich != 13.1.0",
     # For CLI
-    "typer>=0.19.1", # spaCy only supports typer<0.10.0
-    "click >= 8.2.0", # click >=8.2.0 has TypeError: Parameter.make_metavar() missing 1 required positional argument: 'ctx'
+    "typer>=0.19.1",   # spaCy only supports typer<0.10.0
+    "click >= 8.2.0",  # click >=8.2.0 has TypeError: Parameter.make_metavar() missing 1 required positional argument: 'ctx'
     "packaging>=23.2",
     # For Webhooks
     "standardwebhooks>=1.0.0",
@@ -121,7 +119,7 @@ test = [
     "pytest-randomly>=3.16.0",
     # For mocking httpx requests and responses
     "respx>=0.21.1",
-    "ruff>=0.12.11"
+    "ruff>=0.12.11",
 ]
 
 [tool.pytest.ini_options]
@@ -174,15 +172,15 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = [
-    "F",    # Pyflakes (undefined names, logical issues)
-    "E7",   # Syntax/indentation errors
-    "E9",   # Runtime-like errors
-    "E4",   # Import-related errors (E401, E402, etc.)
-    "B012", # return in finally (can suppress real exceptions)
-    "B",    # flake8-bugbear (broader than just B012)
-    "C4",   # flake8-comprehensions
-    "I",    # isort (import sorting)
-    "UP",   # pyupgrade (modern Python syntax)
+    "F",     # Pyflakes (undefined names, logical issues)
+    "E7",    # Syntax/indentation errors
+    "E9",    # Runtime-like errors
+    "E4",    # Import-related errors (E401, E402, etc.)
+    "B012",  # return in finally (can suppress real exceptions)
+    "B",     # flake8-bugbear (broader than just B012)
+    "C4",    # flake8-comprehensions
+    "I",     # isort (import sorting)
+    "UP",    # pyupgrade (modern Python syntax)
     "ASYNC", # flake8-async - async/await specific rules
     "PLE",   # pylint errors (includes await-outside-async)
     "FAST",  # FastAPI-specific rules (valuable for your backend)
@@ -190,23 +188,33 @@ select = [
 ]
 
 ignore = [
-    "E402",   # imports not at top (lazy / optional import patterns)
-    "B904",   # exception chaining (will phase in later)
-    "UP007",  # | union syntax modernization
-    "UP045",  # Optional[...] -> X | None modernization
+    "E402",    # imports not at top (lazy / optional import patterns)
+    "B904",    # exception chaining (will phase in later)
+    "UP007",   # | union syntax modernization
+    "UP045",   # Optional[...] -> X | None modernization
     "UP038",
-    "B027",   # empty abstract method not marked abstract
-    "B024",   # abstract base class without abstract methods
-    "B017",   # broad exception asserts in tests
-    "RUF012", # mutable class var typing inference
-    "B008",   # FastAPI Depends pattern
+    "B027",    # empty abstract method not marked abstract
+    "B024",    # abstract base class without abstract methods
+    "B017",    # broad exception asserts in tests
+    "RUF012",  # mutable class var typing inference
+    "B008",    # FastAPI Depends pattern
     "FAST002", # FastAPI Depends suggestion
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401", "F403", "I001"]  # Ignore unused imports and wildcard imports in __init__.py
-"tests/**/*.py" = ["ASYNC", "F821"]  # More lenient async rules in tests (ignore undefined names like forward refs/fixtures)
-"src/extralit_server/cli/**/*.py" = ["UP007", "UP045"]  # Typer doesn't support new union syntax
+"__init__.py" = [
+    "F401",
+    "F403",
+    "I001",
+] # Ignore unused imports and wildcard imports in __init__.py
+"tests/**/*.py" = [
+    "ASYNC",
+    "F821",
+] # More lenient async rules in tests (ignore undefined names like forward refs/fixtures)
+"src/extralit_server/cli/**/*.py" = [
+    "UP007",
+    "UP045",
+] # Typer doesn't support new union syntax
 
 [tool.pdm.scripts]
 _.env_file = ".env.dev"

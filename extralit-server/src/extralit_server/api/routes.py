@@ -23,6 +23,9 @@ from extralit_server._version import __version__ as extralit_version
 from extralit_server.api.errors.v1.exception_handlers import add_exception_handlers as add_exception_handlers_v1
 from extralit_server.api.handlers.v1 import authentication as authentication_v1
 from extralit_server.api.handlers.v1 import (
+    chat as chat_v1,
+)
+from extralit_server.api.handlers.v1 import (
     datasets as datasets_v1,
 )
 from extralit_server.api.handlers.v1 import (
@@ -33,6 +36,9 @@ from extralit_server.api.handlers.v1 import (
 )
 from extralit_server.api.handlers.v1 import (
     files as files_v1,
+)
+from extralit_server.api.handlers.v1 import (
+    github_auth as github_auth_v1,
 )
 from extralit_server.api.handlers.v1 import (
     imports as imports_v1,
@@ -117,6 +123,8 @@ def create_api_v1():
         files_v1.router,
         models_v1.router,
         imports_v1.router,
+        github_auth_v1.router,
+        chat_v1.router,
     ]:
         api_v1.include_router(router)
 
