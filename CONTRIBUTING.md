@@ -37,6 +37,6 @@ The contributor guide covers:
 
 ## Development setup
 
-Refer to our [development setup documentation](https://docs.extralit.ai/latest/getting_started/development_setup.md) for instructions on setting up your local environment.
+Refer to our [development setup documentation](https://docs.extralit.ai/latest/getting_started/development_setup/) for instructions on setting up your local environment.
 
 Thank you for contributing to Extralit! 🚀
