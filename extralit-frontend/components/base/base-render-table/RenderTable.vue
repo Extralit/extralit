@@ -581,7 +581,9 @@ export default {
     },
     clearTable() {
       if (this.tabulator?.getDataCount() == 0) {
-        this.tableJSON = undefined;
+        this.$emit("change-text", "");
+        this.exitEditionMode();
+        this.dropdownEditTableVisible = false;
         return;
       }
       this.tabulator?.clearData()
@@ -590,6 +592,7 @@ export default {
           this.tabulator?.deleteColumn(column);
         }
       });
+      this.updateTableJsonData();
     },
     addEmptyReferenceRows() {
       const combinations = this.generateCombinations(this.referenceValues);
