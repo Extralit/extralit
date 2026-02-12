@@ -26,6 +26,7 @@ These are the section headers that we use:
 - Added `wait` parameter to the POST /workflows/start endpoint to waiting for the workflow to complete and return the final status.
 - Migrated minio_client to aioboto3 for async file handling
 - Added dynamic mimetypes support for document uploads based on file extension or UploadFile types.
+- Removed ARM-specific JVM options (`-XX:UseSVE=0`) from Elasticsearch configuration in docker-compose.yaml, fixing container startup failures on Windows and x86 systems.
 
 ### Changed
 - Deduplicating document is based on any matching of id, pmid, doi, url, file_name within the same `workspace` and `reference`.
