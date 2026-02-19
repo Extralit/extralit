@@ -18,7 +18,6 @@ Chat endpoint using LiteLLM with GitHub Copilot and RAG support.
 """
 
 import logging
-import os
 from typing import Annotated, Any
 from uuid import UUID
 
@@ -124,23 +123,16 @@ async def retrieve_context(
             _LOGGER.warning(f"No vector settings found for dataset {dataset_id}")
             return None
 
-        # Generate query embedding using LiteLLM
         _LOGGER.info(f"Generating embedding for query: {query_text[:50]}...")
 
-        # Use the GitHub token for embedding generation
-        os.environ["GITHUB_TOKEN"] = github_token
-        os.environ["OPENAI_API_KEY"] = github_token
-
-        try:
-            embedding_response = await litellm.aembedding(
-                model="text-embedding-3-small",
-                input=query_text,
-                custom_llm_provider="github",
-            )
-            query_embedding = embedding_response["data"][0]["embedding"]
-        finally:
-            os.environ.pop("GITHUB_TOKEN", None)
-            os.environ.pop("OPENAI_API_KEY", None)
+        # Inject token directly — no os.environ mutation (async-safe)
+        embedding_response = await litellm.aembedding(
+            model="text-embedding-3-small",
+            input=query_text,
+            custom_llm_provider="github",
+            api_key=github_token,
+        )
+        query_embedding = embedding_response["data"][0]["embedding"]
 
         _LOGGER.info(f"Generated embedding with {len(query_embedding)} dimensions")
 
@@ -286,41 +278,33 @@ async def chat(
     async def stream_response():
         """Stream the chat completion response."""
         try:
-            # Use context manager for environment isolation
+            # LiteLLMContext handles XDG_CONFIG_HOME isolation (not token injection)
             with LiteLLMContext(username=current_user.username):
-                # Set GitHub token in environment for LiteLLM
-                os.environ["GITHUB_TOKEN"] = token_data["access_token"]
-                os.environ["OPENAI_API_KEY"] = token_data["access_token"]  # Backup
+                # Inject token explicitly — no os.environ mutation (async-safe)
+                response = await litellm.acompletion(
+                    model=litellm_model,
+                    messages=messages,
+                    stream=request.stream,
+                    extra_headers=COPILOT_HEADERS,
+                    custom_llm_provider="github",
+                    api_key=token_data["access_token"],
+                )
 
-                try:
-                    # Call LiteLLM with streaming
-                    response = await litellm.acompletion(
-                        model=litellm_model,
-                        messages=messages,
-                        stream=request.stream,
-                        extra_headers=COPILOT_HEADERS,
-                        custom_llm_provider="github",
-                    )
-
-                    if request.stream:
-                        # Stream the response chunks
-                        async for chunk in response:
-                            if chunk.choices and len(chunk.choices) > 0:
-                                delta = chunk.choices[0].delta
-                                if hasattr(delta, "content") and delta.content:
-                                    # Send as SSE format (Standard Extralit/ChatGPT format)
-                                    yield f"data: {delta.content}\n\n"
-                        yield "data: [DONE]\n\n"
-                    else:
-                        # Non-streaming response
-                        if response.choices and len(response.choices) > 0:
-                            content = response.choices[0].message.content
-                            yield f"data: {content}\n\n"
-                            yield "data: [DONE]\n\n"
-                finally:
-                    # Clean up token from environment
-                    os.environ.pop("GITHUB_TOKEN", None)
-                    os.environ.pop("OPENAI_API_KEY", None)
+            if request.stream:
+                # Stream the response chunks
+                async for chunk in response:
+                    if chunk.choices and len(chunk.choices) > 0:
+                        delta = chunk.choices[0].delta
+                        if hasattr(delta, "content") and delta.content:
+                            # Send as SSE format (Standard Extralit/ChatGPT format)
+                            yield f"data: {delta.content}\n\n"
+                yield "data: [DONE]\n\n"
+            else:
+                # Non-streaming response
+                if response.choices and len(response.choices) > 0:
+                    content = response.choices[0].message.content
+                    yield f"data: {content}\n\n"
+                yield "data: [DONE]\n\n"
 
         except Exception as e:
             _LOGGER.error(f"Error in chat completion for {current_user.username}: {e}")
