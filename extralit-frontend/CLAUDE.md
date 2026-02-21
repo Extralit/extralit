@@ -16,6 +16,12 @@ npm run dev              # Development server
 npm run build            # Production build
 ```
 
+## Running with existing server API
+
+```bash
+API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
+```
+
 ## Testing
 
 ```bash
