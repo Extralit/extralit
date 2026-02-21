@@ -114,8 +114,20 @@ describe("useImportFileUploadViewModel", () => {
 
       expect(filesCol).toBeDefined();
       expect(filesCol?.editor).toBe("list");
-      expect(filesCol?.editorParams?.multiselect).toBe(true);
-      expect(filesCol?.editorParams?.values).toHaveLength(2);
+
+      // editorParams is a function for dynamic Tabulator params; call it with a mock cell
+      const mockCell = {
+        getTable: () => ({ getRows: () => [] }),
+        getRow: () => ({ getData: () => ({}) }),
+        getField: () => "files",
+        getValue: () => [],
+      };
+      const editorParams = typeof filesCol?.editorParams === "function"
+        ? filesCol.editorParams(mockCell)
+        : filesCol?.editorParams;
+
+      expect(editorParams?.multiselect).toBe(true);
+      expect(editorParams?.values).toHaveLength(2);
     });
   });
 
