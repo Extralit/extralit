@@ -1,4 +1,3 @@
-import { ref } from "@nuxtjs/composition-api";
 import { useImportFileUploadViewModel } from "./useImportFileUploadViewModel";
 
 // Mock the dependencies
@@ -104,8 +103,8 @@ describe("useImportFileUploadViewModel", () => {
       });
 
       const columns = viewModel.editableTableColumns.value;
-      const referenceCol = columns.find((col: any) => col.field === "reference");
-      const filesCol = columns.find((col: any) => col.field === "files");
+      const referenceCol = columns.find((col: any) => col.field === "reference") as any;
+      const filesCol = columns.find((col: any) => col.field === "files") as any;
 
       expect(referenceCol).toBeDefined();
       expect(referenceCol?.frozen).toBe(true);

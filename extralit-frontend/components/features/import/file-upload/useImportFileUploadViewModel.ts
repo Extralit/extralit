@@ -80,11 +80,6 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
 
   // Configure editable table columns with validators
   const editableTableColumns = computed(() => {
-    const pdfFileOptions = allPdfFileNames.value.map(name => ({
-      label: name,
-      value: name,
-    }));
-
     return [
       {
         field: "reference",
@@ -191,10 +186,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
   // Validators for the editable table
   const editableTableValidators = computed<Validators>(() => {
     return {
-      reference: [
-        { type: "unique", parameters: { column: "reference" } },
-        "required",
-      ],
+      reference: ["unique", "required"],
       files: ["required"],
     };
   });
@@ -234,7 +226,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
     emitPdfUpdate();
   };
 
-  const handleTableCellEdit = (cell: any) => {
+  const handleTableCellEdit = (_cell: any) => {
     // Keep Vue mirror in sync ONLY
     editableTableData.value = editableTable.value?.getData() || [];
   };
@@ -318,7 +310,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
   // Initialize editable table with empty rows
   const initializeEditableTable = () => {
     // Start with a few empty rows
-    const initialRows = Array.from({ length: 3 }, (_, i) => ({
+    const initialRows = Array.from({ length: 3 }, () => ({
       reference: "",
       title: "",
       authors: "",
