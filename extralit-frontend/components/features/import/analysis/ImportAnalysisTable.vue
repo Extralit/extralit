@@ -21,11 +21,7 @@
     <!-- Editable table mode: PDFs without bibliography -->
     <div v-else-if="shouldShowEditableTable" class="editable-table-section">
       <div class="editable-table-header">
-        <h3>Reference Metadata</h3>
-        <p>
-          Create reference entries for your PDFs. The <strong>reference</strong> column must be unique;
-          use the <strong>files</strong> column to assign PDFs to each entry.
-        </p>
+        <h3>Document Metadata</h3>
       </div>
 
       <BaseSimpleTable
@@ -367,7 +363,6 @@ export default {
     unmappedPdfFiles() {
       const assigned = new Set<string>();
       this.editableTableData.forEach((row: any) => {
-        if (!row.reference?.trim()) return;
         (Array.isArray(row.files) ? row.files : row.files ? [row.files] : [])
           .forEach((f: string) => assigned.add(f));
       });
@@ -379,7 +374,7 @@ export default {
       return [
         {
           field: "reference",
-          title: "Reference *",
+          title: "Reference",
           frozen: true,
           width: 200,
           editor: "input",
@@ -392,36 +387,13 @@ export default {
           editor: "input",
         },
         {
-          field: "authors",
-          title: "Authors",
-          width: 200,
-          editor: "input",
-        },
-        {
-          field: "year",
-          title: "Year",
-          width: 100,
-          editor: "input",
-        },
-        {
-          field: "journal",
-          title: "Journal",
-          width: 200,
-          editor: "input",
-        },
-        {
-          field: "doi",
-          title: "DOI",
-          width: 150,
-          editor: "input",
-        },
-        {
           field: "files",
-          title: "Files *",
+          title: "Files",
           frozen: true,
           frozenRight: true,
           width: 200,
           editor: "list",
+          validator: ["required"],
           editorParams: function (cell: any) {
             const table = cell.getTable();
             const row = cell.getRow();
@@ -447,15 +419,15 @@ export default {
               clearable: true,
             };
           },
-          validator: ["required"],
           formatter: (cell: any) => {
             const value = cell.getValue();
             if (!value || (Array.isArray(value) && value.length === 0)) {
               return '<span style="color: var(--fg-tertiary);">No files</span>';
             }
             const files = Array.isArray(value) ? value : [value];
-            const count = files.length;
-            return `<span title="${files.join(', ')}">${count} file${count !== 1 ? 's' : ''}</span>`;
+            const [first, ...rest] = files;
+            const suffix = rest.length > 0 ? ` <span style="color:var(--fg-secondary);white-space:nowrap">+${rest.length}</span>` : '';
+            return `<span title="${files.join(', ')}" style="display:flex;align-items:center;gap:4px;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${first}</span>${suffix}</span>`;
           },
         },
       ];
@@ -736,15 +708,18 @@ export default {
     },
 
     initializeEditableTable() {
-      this.editableTableData = Array.from({ length: 3 }, () => ({
-        reference: "",
-        title: "",
-        authors: "",
-        year: "",
-        journal: "",
-        doi: "",
-        files: [],
-      }));
+      const pdfFiles = this.allPdfFileNames as string[];
+      this.editableTableData = pdfFiles.length > 0
+        ? pdfFiles.map((filename: string) => ({
+            reference: null,
+            title: null,
+            files: [filename],
+          }))
+        : Array.from({ length: 3 }, () => ({
+            reference: null,
+            title: null,
+            files: [],
+          }));
       this.emitUpdate();
     },
 
