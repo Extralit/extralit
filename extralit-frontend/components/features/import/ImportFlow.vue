@@ -381,10 +381,12 @@ export default {
 
     hasDataToLose() {
       // Check if user has uploaded any data that would be lost on close
+      const analysisTable = this.$refs.analysisTableComponent;
       return (
         (this.bibData.dataframeData && this.bibData.dataframeData.data && this.bibData.dataframeData.data.length > 0) ||
         this.pdfData.totalFiles > 0 ||
-        Object.keys(this.uploadData.confirmedDocuments).length > 0
+        Object.keys(this.uploadData.confirmedDocuments).length > 0 ||
+        (analysisTable && analysisTable.editableTableData && analysisTable.editableTableData.length > 0)
       );
     },
 
