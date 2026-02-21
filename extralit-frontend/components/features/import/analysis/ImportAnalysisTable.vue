@@ -18,6 +18,33 @@
       </div>
     </div>
 
+    <!-- Editable table mode: PDFs without bibliography -->
+    <div v-else-if="shouldShowEditableTable" class="editable-table-section">
+      <div class="editable-table-header">
+        <h3>Reference Metadata</h3>
+        <p>
+          Create reference entries for your PDFs. The <strong>reference</strong> column must be unique;
+          use the <strong>files</strong> column to assign PDFs to each entry.
+        </p>
+      </div>
+
+      <BaseSimpleTable
+        ref="editableTable"
+        :data="editableTableData"
+        :columns="editableTableColumns"
+        :editable="true"
+        @cell-edited="(cell) => handleTableCellEdit(cell)"
+        @table-built="() => handleTableBuilt()"
+      />
+
+      <div v-if="unmappedPdfFiles.length > 0" class="unmapped-pdfs-warning">
+        <h4>Unmapped PDF Files ({{ unmappedPdfFiles.length }})</h4>
+        <ul>
+          <li v-for="file in unmappedPdfFiles" :key="file">{{ file }}</li>
+        </ul>
+      </div>
+    </div>
+
     <!-- Main content -->
     <div v-else class="analysis-content">
       <!-- Summary header -->
@@ -82,8 +109,8 @@ export default {
       default: null,
     },
     pdfData: {
-      type: Object as () => { matchedFiles: any[] } | null,
-      default: () => ({ matchedFiles: [] }),
+      type: Object as () => { matchedFiles: any[]; unmatchedFiles?: any[] } | null,
+      default: () => ({ matchedFiles: [], unmatchedFiles: [] }),
     },
     workspace: {
       type: Workspace,
@@ -100,6 +127,7 @@ export default {
   data() {
     return {
       localDocumentActions: {} as Record<string, ImportStatus>,
+      editableTableData: [] as any[],
     };
   },
 
@@ -324,9 +352,126 @@ export default {
     canConfirmImport() {
       return this.confirmedCount > 0;
     },
+
+    shouldShowEditableTable() {
+      return (!this.dataframeData || this.dataframeData.data.length === 0)
+        && this.allPdfFileNames.length > 0;
+    },
+
+    allPdfFileNames() {
+      const matched = (this.pdfData?.matchedFiles || []).map((mf: any) => mf.file?.name ?? mf.filename);
+      const unmatched = (this.pdfData?.unmatchedFiles || []).map((f: any) => f.name ?? f);
+      return [...matched, ...unmatched];
+    },
+
+    unmappedPdfFiles() {
+      const assigned = new Set<string>();
+      this.editableTableData.forEach((row: any) => {
+        if (!row.reference?.trim()) return;
+        (Array.isArray(row.files) ? row.files : row.files ? [row.files] : [])
+          .forEach((f: string) => assigned.add(f));
+      });
+      return (this.allPdfFileNames as string[]).filter((n: string) => !assigned.has(n));
+    },
+
+    editableTableColumns() {
+      const vm = this as any;
+      return [
+        {
+          field: "reference",
+          title: "Reference *",
+          frozen: true,
+          width: 200,
+          editor: "input",
+          validator: ["required", "unique"],
+        },
+        {
+          field: "title",
+          title: "Title",
+          width: 300,
+          editor: "input",
+        },
+        {
+          field: "authors",
+          title: "Authors",
+          width: 200,
+          editor: "input",
+        },
+        {
+          field: "year",
+          title: "Year",
+          width: 100,
+          editor: "input",
+        },
+        {
+          field: "journal",
+          title: "Journal",
+          width: 200,
+          editor: "input",
+        },
+        {
+          field: "doi",
+          title: "DOI",
+          width: 150,
+          editor: "input",
+        },
+        {
+          field: "files",
+          title: "Files *",
+          frozen: true,
+          frozenRight: true,
+          width: 200,
+          editor: "list",
+          editorParams: function (cell: any) {
+            const table = cell.getTable();
+            const row = cell.getRow();
+            const field = cell.getField();
+            const allFiles = new Set<string>(vm.allPdfFileNames);
+            const usedFiles = new Set<string>();
+            table.getRows().forEach((r: any) => {
+              if (r === row) return;
+              const v = r.getData()[field];
+              if (!v) return;
+              (Array.isArray(v) ? v : [v]).forEach((f: string) => usedFiles.add(f));
+            });
+            const current = cell.getValue() || [];
+            const currentSet = new Set(Array.isArray(current) ? current : [current]);
+            const values = [...allFiles]
+              .filter(f => !usedFiles.has(f) || currentSet.has(f))
+              .map(f => ({ label: f, value: f }));
+            return {
+              values,
+              multiselect: true,
+              autocomplete: false,
+              listOnEmpty: true,
+              clearable: true,
+            };
+          },
+          validator: ["required"],
+          formatter: (cell: any) => {
+            const value = cell.getValue();
+            if (!value || (Array.isArray(value) && value.length === 0)) {
+              return '<span style="color: var(--fg-tertiary);">No files</span>';
+            }
+            const files = Array.isArray(value) ? value : [value];
+            const count = files.length;
+            return `<span title="${files.join(', ')}">${count} file${count !== 1 ? 's' : ''}</span>`;
+          },
+        },
+      ];
+    },
   },
 
   watch: {
+    shouldShowEditableTable: {
+      handler(show: boolean) {
+        if (show && this.editableTableData.length === 0) {
+          this.initializeEditableTable();
+        }
+      },
+      immediate: true,
+    },
+
     analysisResult: {
       handler(newData: ImportAnalysisResponse) {
         if (newData) {
@@ -459,8 +604,34 @@ export default {
       const confirmedDocuments: Record<string, any> = {};
       const documentActions = { ...this.documentActions, ...this.localDocumentActions };
 
+      // Handle editable table case: PDFs uploaded without bibliography
+      if (this.shouldShowEditableTable) {
+        this.editableTableData.forEach((row: any) => {
+          const reference = row.reference?.trim();
+          const filesArray = Array.isArray(row.files) ? row.files : (row.files ? [row.files] : []);
+          if (!reference || filesArray.length === 0) return;
+          confirmedDocuments[reference] = {
+            document_create: {
+              reference,
+              title: row.title || undefined,
+              authors: row.authors ? [row.authors] : undefined,
+              year: row.year ? String(row.year) : undefined,
+              journal: row.journal || undefined,
+              doi: row.doi || undefined,
+              workspace_id: this.workspace?.id,
+              metadata: {
+                source: "pdf_import",
+                collections: [this.workspace?.name || "default"],
+              },
+            },
+            associated_files: filesArray.map((filename: string) => ({
+              filename,
+              size: this.getFileSize(filename) || 0,
+            })),
+          };
+        });
       // Handle analysis data case (preferred)
-      if (this.analysisResult && this.analysisResult.documents && Object.keys(this.analysisResult.documents).length > 0) {
+      } else if (this.analysisResult && this.analysisResult.documents && Object.keys(this.analysisResult.documents).length > 0) {
         Object.entries(this.analysisResult.documents).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
           const finalAction = documentActions[reference] || docInfo.status;
           const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
@@ -540,14 +711,41 @@ export default {
     },
 
     getFileSize(filename: string): number {
-      // Try to find the file size from matched files
       if (this.pdfData?.matchedFiles) {
-        const matchedFile = this.pdfData.matchedFiles.find((mf: any) => mf.file.name === filename);
+        const matchedFile = this.pdfData.matchedFiles.find((mf: any) => (mf.file?.name ?? mf.filename) === filename);
         if (matchedFile) {
-          return matchedFile.file.size || 0;
+          return matchedFile.file?.size || matchedFile.size || 0;
+        }
+      }
+      if (this.pdfData?.unmatchedFiles) {
+        const unmatchedFile = this.pdfData.unmatchedFiles.find((f: any) => (f.name ?? f) === filename);
+        if (unmatchedFile) {
+          return unmatchedFile.size || 0;
         }
       }
       return 0;
+    },
+
+    handleTableCellEdit(cell: any) {
+      this.editableTableData = cell.getTable().getData();
+      this.emitUpdate();
+    },
+
+    handleTableBuilt() {
+      // no-op: data is managed via cell-edited events
+    },
+
+    initializeEditableTable() {
+      this.editableTableData = Array.from({ length: 3 }, () => ({
+        reference: "",
+        title: "",
+        authors: "",
+        year: "",
+        journal: "",
+        doi: "",
+        files: [],
+      }));
+      this.emitUpdate();
     },
 
     resetLocalState() {
@@ -870,6 +1068,70 @@ export default {
 
   .tabulator-row:hover .tabulator-cell.tabulator-frozen {
     background: var(--bg-solid-grey-2);
+  }
+}
+
+// Editable table section styles
+.editable-table-section {
+  display: flex;
+  flex-direction: column;
+  gap: $base-space * 2;
+  padding: $base-space * 3;
+  background: var(--bg-accent-grey-1);
+  border: 1px solid var(--border-field);
+  border-radius: $border-radius-m;
+  min-height: 300px;
+}
+
+.editable-table-header {
+  margin-bottom: $base-space;
+
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: $base-space;
+    color: var(--fg-primary);
+  }
+
+  p {
+    color: var(--fg-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+    line-height: 1.4;
+
+    strong {
+      color: var(--fg-primary);
+      font-weight: 600;
+    }
+  }
+}
+
+.unmapped-pdfs-warning {
+  margin-top: $base-space * 2;
+  padding: $base-space * 2;
+  background: var(--bg-banner-warning);
+  border: 1px solid var(--color-warning);
+  border-radius: $border-radius;
+
+  h4 {
+    margin: 0 0 $base-space 0;
+    color: var(--fg-primary);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: $base-space * 3;
+    max-height: 200px;
+    overflow-y: auto;
+
+    li {
+      color: var(--fg-primary);
+      font-size: 0.9rem;
+      margin-bottom: calc($base-space / 2);
+      font-family: $quaternary-font-family;
+    }
   }
 }
 </style>
