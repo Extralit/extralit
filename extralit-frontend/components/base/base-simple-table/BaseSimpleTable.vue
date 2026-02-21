@@ -6,6 +6,7 @@
       :editable="editable"
       :hasValidValues="hasValidValues"
       :questions="questions"
+      :validation="validation || validators"
       @table-built="$emit('table-built')"
       @row-click="(e, row) => $emit('row-click', e, row)"
       @cell-edited="(cell) => $emit('cell-edited', cell)"
@@ -71,9 +72,11 @@ export default {
   computed: {
     // Convert simple data/columns to TableData format for RenderTable
     computedTableJSON(): TableData {
+      // FIX 1: Use "...col" to preserve editor config (dropdowns), validators, and freezing
       const fields = this.columns.map((col: any) => ({
         name: col.field,
         type: col.type || "string",
+        ...col // <--- THIS IS THE MAGIC FIX
       }));
 
       const schema = new DataFrameSchema(
@@ -89,7 +92,14 @@ export default {
         null
       );
 
-      if (this.validation) {
+      // FIX 2: Handle both 'validation' and 'validators' props
+      // ImportFileUpload passes :validators, so we must prioritize that.
+      if (this.validators) {
+        // We wrap it in a structure RenderTable understands
+        tableData.validation = { columns: {}, ...this.validation };
+        // We might need to pass this directly to the RenderTable prop instead,
+        // but attaching it to tableData is the safest way for the Schema to know about it.
+      } else if (this.validation) {
         tableData.validation = this.validation;
       }
 
@@ -154,6 +164,22 @@ export default {
   border-radius: $border-radius;
   background: var(--bg-accent-grey-1);
   overflow: auto;
+
+  // Force light-mode colors regardless of [data-theme]
+  --bg-solid-grey-1: hsl(0, 0%, 98%);
+  --bg-solid-grey-2: hsl(0, 0%, 96%);
+  --bg-solid-grey-3: hsl(0, 0%, 90%);
+  --bg-solid-grey-4: hsl(0, 0%, 90%);
+  --bg-accent-grey-1: hsl(0, 0%, 100%);
+  --bg-accent-grey-2: hsl(0, 0%, 100%);
+  --bg-accent-grey-3: hsl(0, 0%, 98%);
+  --bg-accent-grey-4: hsl(0, 0%, 98%);
+  --bg-accent-grey-5: hsl(0, 0%, 100%);
+  --fg-primary: hsla(0, 0%, 0%, 0.87);
+  --fg-secondary: hsla(0, 0%, 0%, 0.54);
+  --fg-tertiary: hsla(0, 0%, 0%, 0.37);
+  --border-field: hsl(0, 0%, 94%);
+  --bg-opacity-4: hsla(0, 0%, 0%, 0.04);
 
   // Hide RenderTable's edit buttons when not editable
   :deep(.table-container) {
@@ -228,6 +254,24 @@ export default {
           }
         }
       }
+    }
+
+    // Frozen column header — override Tabulator's hardcoded bg
+    .tabulator-col.tabulator-frozen {
+      background-color: var(--bg-solid-grey-2) !important;
+      will-change: transform;
+    }
+
+    // Frozen body cells — prevent dark-bg inheritance
+    .tabulator-row .tabulator-cell.tabulator-frozen,
+    .tabulator-row-odd .tabulator-cell.tabulator-frozen {
+      background-color: var(--bg-accent-grey-1) !important;
+      will-change: transform;
+    }
+
+    .tabulator-row-even .tabulator-cell.tabulator-frozen {
+      background-color: var(--bg-accent-grey-2) !important;
+      will-change: transform;
     }
   }
 

@@ -35,7 +35,7 @@ export const useSettingsQuestionsViewModel = () => {
 
     question.settings.options.push({
       value: text.toLowerCase().replace(/\s+/g, '_'),
-      text: text
+      text
     });
 
     newLabelText.value[question.id] = '';

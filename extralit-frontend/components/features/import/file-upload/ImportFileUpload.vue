@@ -12,6 +12,7 @@
 
           <!-- Table Upload Section -->
           <TableUpload :initial-data="bibData" @update="handleBibUpdate"  />
+
         </div>
 
         <!-- Summary Sidebar -->
@@ -686,5 +687,6 @@
         flex-direction: column;
       }
     }
+
   }
   </style>

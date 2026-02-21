@@ -36,6 +36,7 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       dataframeData: data.dataframeData || null,
       rawContent: data.rawContent || "",
     };
+
     emitBibUpdate();
   };
 
