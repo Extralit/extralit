@@ -1,6 +1,6 @@
-import { mount } from '@vue/test-utils';
-import DocumentsList from './DocumentsList.vue';
-import { Document } from '~/v1/domain/entities/document/Document';
+import { mount } from "@vue/test-utils";
+import DocumentsList from "./DocumentsList.vue";
+import { Document } from "~/v1/domain/entities/document/Document";
 
 // Mock the view model
 const mockShowDocumentMetadata = jest.fn();
@@ -13,36 +13,36 @@ const mockViewModel = {
   totalFiles: 0,
   showMetadataModal: false,
   selectedDocumentMetadata: null,
-  selectedDocumentName: '',
+  selectedDocumentName: "",
   loadDocuments: jest.fn(),
   openDocument: jest.fn(),
   showDocumentMetadata: mockShowDocumentMetadata,
   closeMetadataModal: mockCloseMetadataModal,
 };
 
-jest.mock('./useDocumentsListViewModel', () => ({
+jest.mock("./useDocumentsListViewModel", () => ({
   useDocumentsListViewModel: () => mockViewModel,
 }));
 
 // Mock base components
-jest.mock('~/components/base/base-modal/BaseModal.vue', () => ({
-  name: 'BaseModal',
+jest.mock("~/components/base/base-modal/BaseModal.vue", () => ({
+  name: "BaseModal",
   template: '<div class="base-modal"><slot /></div>',
-  props: ['modalVisible', 'modalTitle', 'modalClass'],
+  props: ["modalVisible", "modalTitle", "modalClass"],
 }));
 
-jest.mock('~/components/base/base-button/BaseButton.vue', () => ({
-  name: 'BaseButton',
+jest.mock("~/components/base/base-button/BaseButton.vue", () => ({
+  name: "BaseButton",
   template: '<button class="base-button" @click="$emit(\'click\')"><slot /></button>',
 }));
 
-describe('DocumentsList', () => {
+describe("DocumentsList", () => {
   let wrapper;
 
   const createWrapper = (props = {}) => {
     return mount(DocumentsList, {
       propsData: {
-        workspaceId: 'test-workspace',
+        workspaceId: "test-workspace",
         ...props,
       },
       stubs: {
@@ -67,7 +67,7 @@ describe('DocumentsList', () => {
     mockViewModel.documents = [];
     mockViewModel.showMetadataModal = false;
     mockViewModel.selectedDocumentMetadata = null;
-    mockViewModel.selectedDocumentName = '';
+    mockViewModel.selectedDocumentName = "";
     mockViewModel.groupedDocuments = [];
 
     wrapper = createWrapper();
@@ -77,27 +77,29 @@ describe('DocumentsList', () => {
     wrapper.destroy();
   });
 
-  describe('metadata modal functionality', () => {
-    it('should show metadata button when document has metadata', async () => {
+  describe("metadata modal functionality", () => {
+    it("should show metadata button when document has metadata", async () => {
       const documentWithMetadata = new Document(
-        'doc-1',
-        'http://example.com/doc.pdf',
-        'test.pdf',
-        'pmid123',
-        'doi123',
+        "doc-1",
+        "http://example.com/doc.pdf",
+        "test.pdf",
+        "pmid123",
+        "doi123",
         1,
-        'Test Reference',
+        "Test Reference",
         [],
-        { workflow_status: 'completed', analysis_metadata: { ocr_quality: { total_chars: 1000 } } }
+        { workflow_status: "completed", analysis_metadata: { ocr_quality: { total_chars: 1000 } } }
       );
 
       // Update the mock view model data instead of using setData
       mockViewModel.documents = [documentWithMetadata];
-      mockViewModel.groupedDocuments = [{
-        reference: 'Test Reference',
-        documents: [documentWithMetadata],
-        metadata: documentWithMetadata.metadata
-      }];
+      mockViewModel.groupedDocuments = [
+        {
+          reference: "Test Reference",
+          documents: [documentWithMetadata],
+          metadata: documentWithMetadata.metadata,
+        },
+      ];
 
       await wrapper.vm.$nextTick();
 
@@ -106,33 +108,35 @@ describe('DocumentsList', () => {
       expect(mockViewModel.documents[0].metadata).toBeDefined();
     });
 
-    it('should open metadata modal when metadata button is clicked', async () => {
+    it("should open metadata modal when metadata button is clicked", async () => {
       const testMetadata = {
-        workflow_status: 'completed',
+        workflow_status: "completed",
         analysis_metadata: {
-          ocr_quality: { total_chars: 1000, ocr_quality_score: 0.95 }
-        }
+          ocr_quality: { total_chars: 1000, ocr_quality_score: 0.95 },
+        },
       };
 
       const documentWithMetadata = new Document(
-        'doc-1',
-        'http://example.com/doc.pdf',
-        'test-document.pdf',
-        'pmid123',
-        'doi123',
+        "doc-1",
+        "http://example.com/doc.pdf",
+        "test-document.pdf",
+        "pmid123",
+        "doi123",
         1,
-        'Test Reference',
+        "Test Reference",
         [],
         testMetadata
       );
 
       // Update the mock view model data
       mockViewModel.documents = [documentWithMetadata];
-      mockViewModel.groupedDocuments = [{
-        reference: 'Test Reference',
-        documents: [documentWithMetadata],
-        metadata: documentWithMetadata.metadata
-      }];
+      mockViewModel.groupedDocuments = [
+        {
+          reference: "Test Reference",
+          documents: [documentWithMetadata],
+          metadata: documentWithMetadata.metadata,
+        },
+      ];
 
       await wrapper.vm.$nextTick();
 
@@ -144,11 +148,11 @@ describe('DocumentsList', () => {
       expect(mockShowDocumentMetadata).toHaveBeenCalledTimes(1);
     });
 
-    it('should close metadata modal when closeMetadataModal is called', () => {
+    it("should close metadata modal when closeMetadataModal is called", () => {
       // Set up initial modal state
       mockViewModel.showMetadataModal = true;
-      mockViewModel.selectedDocumentMetadata = { some: 'data' };
-      mockViewModel.selectedDocumentName = 'test.pdf';
+      mockViewModel.selectedDocumentMetadata = { some: "data" };
+      mockViewModel.selectedDocumentName = "test.pdf";
 
       // Call the method through the mock
       mockCloseMetadataModal();
