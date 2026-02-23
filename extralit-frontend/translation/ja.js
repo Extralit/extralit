@@ -300,6 +300,11 @@ export default {
     createdAt: "作成日",
   },
   datasetCreation: {
+    fields: {
+      table: {
+        helpText: "テーブルデータはアップロードされたレコードから自動的に入力されます",
+      },
+    },
     questions: {
       labelSelection: {
         atLeastTwoOptions: "少なくとも2つのオプションが必要です",

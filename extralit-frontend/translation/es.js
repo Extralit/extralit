@@ -295,6 +295,11 @@ export default {
     createdAt: "Creado",
   },
   datasetCreation: {
+    fields: {
+      table: {
+        helpText: "Los datos de la tabla se poblarán desde tus registros subidos",
+      },
+    },
     questions: {
       labelSelection: {
         atLeastTwoOptions: "Se requieren al menos dos opciones",

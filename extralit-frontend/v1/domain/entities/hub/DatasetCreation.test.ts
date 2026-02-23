@@ -355,10 +355,11 @@ describe("DatasetCreation", () => {
 
       datasetCreation.selectedSubset.addQuestion("Table1", {
         type: "table",
-        options: [],
       });
 
       const firstQuestion = datasetCreation.questions[0];
+      // Manually clear options to simulate a table question with no columns
+      firstQuestion.settings.options = [];
       const validation = firstQuestion.validate();
 
       expect(validation.options).toContain("datasetCreation.questions.table.atLeastOneColumn");
