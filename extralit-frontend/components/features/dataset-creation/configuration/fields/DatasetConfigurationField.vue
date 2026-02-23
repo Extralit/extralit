@@ -5,6 +5,11 @@
     :available-types="availableTypes"
     @is-focused="$emit('is-focused', $event)"
   >
+    <DatasetConfigurationTableField
+      v-if="field.type.isTableType"
+      :field="field"
+      @is-focused="$emit('is-focused', $event)"
+    />
   </DatasetConfigurationCard>
 </template>
 

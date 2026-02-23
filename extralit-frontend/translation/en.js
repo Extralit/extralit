@@ -316,6 +316,11 @@ export default {
     retryAttempt: "Retry attempt {current} of {max}",
   },
   datasetCreation: {
+    fields: {
+      table: {
+        helpText: "Table data will be populated from your uploaded records",
+      },
+    },
     questions: {
       labelSelection: {
         atLeastTwoOptions: "At least two options are required",

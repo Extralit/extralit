@@ -291,6 +291,11 @@ export default {
       "Melden Sie sich bei dieser <a href='https://huggingface.co/spaces/extralit/public-demo' target='_blank'>Demo</a> an, um Extralit auszuprobieren",
   },
   datasetCreation: {
+    fields: {
+      table: {
+        helpText: "Tabellendaten werden aus Ihren hochgeladenen Datensätzen befüllt",
+      },
+    },
     questions: {
       labelSelection: {
         atLeastTwoOptions: "Mindestens zwei Optionen müssen vorhanden sein",
