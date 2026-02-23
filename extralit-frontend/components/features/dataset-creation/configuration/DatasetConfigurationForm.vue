@@ -21,7 +21,7 @@
               <transition-group class="config-form__draggable-area-wrapper" type="transition" :css="false">
                 <DatasetConfigurationField
                   v-for="field in dataset.selectedSubset.fields.filter((f) => f.name !== dataset.mappings.external_id)"
-                  :key="field.name" :field="field" :available-types="availableFieldTypes.filter((a) => a.value === 'no mapping' || a.value === field.originalType.value)
+                  :key="field.name" :field="field" :available-types="availableFieldTypes.filter((a) => a.value === 'no mapping' || a.value === field.originalType.value || a.value === 'table')
                     " @is-focused="isFocused = $event" />
               </transition-group>
             </draggable>
