@@ -64,7 +64,7 @@ The development environment uses Docker Compose to run all required services. Ke
 docker-compose up -d
 
 # Run server in dev mode
-pdm run dev
+pdm run server-dev
 
 # Run tests
 pdm test
