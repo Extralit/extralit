@@ -151,3 +151,11 @@
     transform-origin: left top;
   }
 }
+
+/* Fix: Add word-wrap support for code snippets in documentation - GSoC 2026 */
+pre,
+code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
