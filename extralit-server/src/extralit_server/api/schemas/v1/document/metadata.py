@@ -58,11 +58,21 @@ class PreprocessingMetadata(BaseModel):
     processed_s3_url: Optional[str] = Field(None, description="S3 URL of processed PDF")
 
 
+class ChunkMetadata(BaseModel):
+    """A single text chunk produced by the chunker."""
+
+    text: str = Field(..., description="Chunk text content")
+    start_index: int = Field(..., description="Character start offset in source text")
+    end_index: int = Field(..., description="Character end offset in source text")
+    token_count: int = Field(..., description="Number of tokens in the chunk")
+
+
 class TextExtractionMetadata(BaseModel):
     """Text extraction job results."""
 
     markdown: str = Field(None, description="Extracted text")
     extraction_method: str = Field(..., description="Method used for extraction")
+    chunks: Optional[list[ChunkMetadata]] = Field(None, description="Text chunks for embedding / retrieval")
 
 
 class DocumentProcessingMetadata(BaseModel):
@@ -109,6 +119,16 @@ class DocumentProcessingMetadata(BaseModel):
             processing_time=preprocess_result["processing_time"],
             ocr_applied=preprocess_result.get("ocr_applied", False),
             processed_s3_url=preprocess_result.get("processed_s3_url"),
+        )
+
+    def update_text_extraction_results(
+        self, text: str, chunks: list[dict], extraction_method: str = "external_ocr"
+    ) -> None:
+        """Update text extraction metadata including chunks."""
+        self.text_extraction_metadata = TextExtractionMetadata(
+            markdown=text,
+            extraction_method=extraction_method,
+            chunks=[ChunkMetadata(**c) for c in chunks],
         )
 
     def is_workflow_complete(self) -> bool:

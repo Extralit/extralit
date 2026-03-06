@@ -23,9 +23,12 @@ from uuid import UUID
 from rq import Retry, get_current_job
 from rq.decorators import job
 
+import re
+
 from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingMetadata
 from extralit_server.contexts import files
 from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
+from extralit_server.contexts.document.chunker import chunk_text
 from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
 from extralit_server.database import AsyncSessionLocal
@@ -189,3 +192,101 @@ async def analysis_and_preprocess_job(
         current_job.meta["error"] = str(e)
         current_job.save_meta()
         raise
+
+
+@job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=600, retry=Retry(max=3, interval=[10, 30, 60]))
+async def process_text_extraction_result_job(document_id: UUID, extraction_result: dict) -> dict[str, Any]:
+    """Process text-extraction JSON, chunk text with chonkie, and persist to DB.
+
+    Accepts the JSON result produced by an external OCR / text-extraction
+    worker (e.g. ``extralit_ocr.jobs.pymupdf_to_markdown_job``).  The
+    ``extraction_result`` dict may have one of these shapes:
+
+    * ``{"markdown": "..."}``
+    * ``{"text": "..."}``
+    * Marker-style ``{"pages": [{"blocks": [{"text"|"content"|"markdown": ...}]}]}``
+
+    Steps
+    -----
+    1. Extract plain text from whichever JSON shape is provided.
+    2. Create text chunks using **chonkie** ``RecursiveChunker``
+       (via :func:`~extralit_server.contexts.document.chunker.chunk_text`).
+    3. Persist the extracted text **and** chunks into
+       ``documents.metadata_`` → ``text_extraction_metadata`` in the DB.
+    """
+    current_job = get_current_job()
+    if current_job is None:
+        raise Exception("No current job found")
+
+    current_job.meta.update({"document_id": str(document_id), "workflow_step": "process_text_extraction"})
+    current_job.save_meta()
+
+    try:
+        text = _extract_text_from_result(extraction_result)
+
+        # Chunk the text using chonkie RecursiveChunker
+        chunks = chunk_text(text or "")
+
+        # Persist text + chunks into document metadata in the database
+        async with AsyncSessionLocal() as db:
+            document = await db.get(Document, document_id)
+            if document:
+                if document.metadata_ is None:
+                    document.metadata_ = DocumentProcessingMetadata().model_dump()
+
+                metadata = DocumentProcessingMetadata(**document.metadata_)
+                metadata.update_text_extraction_results(
+                    text=text or "",
+                    chunks=chunks,
+                    extraction_method="external_ocr",
+                )
+                document.metadata_ = metadata.model_dump()
+                await db.commit()
+
+        current_job.meta["chunks_count"] = len(chunks)
+        current_job.save_meta()
+
+        return {"document_id": str(document_id), "chunks_count": len(chunks)}
+
+    except Exception as e:
+        _LOGGER.error(f"Error processing text extraction for document {document_id}: {e}")
+        current_job.meta["error"] = str(e)
+        current_job.save_meta()
+        raise
+
+
+def _extract_text_from_result(extraction_result: dict) -> str:
+    """Pull plain text out of the various JSON shapes produced by OCR workers."""
+    if not extraction_result:
+        return ""
+
+    # Direct string fields
+    for key in ("markdown", "text", "content", "value"):
+        val = extraction_result.get(key)
+        if isinstance(val, str):
+            return val
+
+    # Marker-style pages → blocks
+    if "pages" in extraction_result and isinstance(extraction_result["pages"], list):
+        parts: list[str] = []
+        for page in extraction_result["pages"]:
+            blocks = page.get("blocks", []) if isinstance(page, dict) else []
+            for block in blocks:
+                if not isinstance(block, dict):
+                    continue
+                content = (
+                    block.get("markdown")
+                    or block.get("text")
+                    or block.get("content")
+                    or block.get("html")
+                    or ""
+                )
+                # Strip basic HTML tags if present
+                if content and "<" in content and ">" in content:
+                    content = re.sub(r"<[^>]+>", "", content)
+                if content:
+                    parts.append(content)
+        return "\n\n".join(parts)
+
+    # Absolute fallback
+    return str(extraction_result)

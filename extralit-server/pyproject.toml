@@ -72,6 +72,7 @@ dependencies = [
     "aioboto3>=13.1.1",
     "types-aiobotocore-s3==2.24.2",
     # For document processing
+    "chonkie>=1.0.2",
     "ocrmypdf>=16.11.0",
     "pdf2image>=1.17.0",
     "opencv-python-headless>=4.11.0.86",
