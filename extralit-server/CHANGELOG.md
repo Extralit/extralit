@@ -1277,6 +1277,7 @@ These are the section headers that we use:
 
 ### Added
 
+- Added recursive text chunking via Chonkie and persisted chunks to database metadata
 - Add the fields to retrieve when loading the data from argilla. `rg.load` takes too long because of the vector field, even when users don't need it. Closes [#2398](https://github.com/argilla-io/argilla/issues/2398)
 - Add new page and components for dataset settings. Closes [#2442](https://github.com/argilla-io/argilla/issues/2003)
 - Add ability to show image in records (for TokenClassification and TextClassification) if an URL is passed in metadata with the key \_image_url
