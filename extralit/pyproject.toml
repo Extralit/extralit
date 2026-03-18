@@ -1,13 +1,10 @@
 [project]
 name = "extralit"
 description = "Open-source tool for accurate & fast scientific literature data extraction with LLM and human-in-the-loop."
-authors = [
-    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
-]
-maintainers = [
-    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
-]
-requires-python = ">=3.9.2, <3.14"
+authors = [{ name = "Extralit Labs", email = "extralit.contact@gmail.com" }]
+maintainers = [{ name = "Extralit Labs", email = "extralit.contact@gmail.com" }]
+# requires-python = ">=3.9.2, <3.14"
+requires-python = ">=3.11,<3.14"
 readme = "README.md"
 license = { text = "Apache 2.0" }
 
@@ -19,7 +16,7 @@ dependencies = [
     "huggingface_hub>=0.22.0",
     "tqdm>=4.60.0",
     "rich>=10.0.0",
-    "datasets~=3.6.0",
+    "datasets~=3.0.2",
     "pillow>=9.5.0",
     "standardwebhooks>=1.0.0",
     "typer>=0.9.0",
@@ -29,12 +26,9 @@ dependencies = [
     "pandera[io]>=0.26.1, < 0.27.0",
     "pandas>=2.3.2",
 
-    "llama-index-embeddings-openai>=0.5.0"
+    "llama-index-embeddings-openai>=0.5.0",
 ]
-nlp = [
-    "textdescriptives",
-    "setfit ~= 0.7.0",
-]
+nlp = ["textdescriptives", "setfit ~= 0.7.0"]
 
 [build-system]
 requires = ["pdm-backend>=2.0.0", "setuptools>=68.0.0"]
@@ -45,15 +39,15 @@ line-length = 120
 
 [tool.ruff.lint]
 select = [
-    "F",    # Pyflakes (undefined names, logical issues)
-    "E7",   # Syntax/indentation errors
-    "E9",   # Runtime-like errors
-    "E4",   # Import-related errors (E401, E402, etc.)
-    "B012", # return in finally (can suppress real exceptions)
-    "B",    # flake8-bugbear (broader than just B012)
-    "C4",   # flake8-comprehensions
-    "I",    # isort (import sorting)
-    "UP",   # pyupgrade (modern Python syntax)
+    "F",     # Pyflakes (undefined names, logical issues)
+    "E7",    # Syntax/indentation errors
+    "E9",    # Runtime-like errors
+    "E4",    # Import-related errors (E401, E402, etc.)
+    "B012",  # return in finally (can suppress real exceptions)
+    "B",     # flake8-bugbear (broader than just B012)
+    "C4",    # flake8-comprehensions
+    "I",     # isort (import sorting)
+    "UP",    # pyupgrade (modern Python syntax)
     "ASYNC", # flake8-async - async/await specific rules
     "PLE",   # pylint errors (includes await-outside-async)
     "FAST",  # FastAPI-specific rules (valuable for your backend)
@@ -70,7 +64,7 @@ ignore = [
     "RUF012",
     "B008",
     "FAST002",
-    "B023"
+    "B023",
 ]
 
 [tool.ruff.lint.per-file-ignores]
