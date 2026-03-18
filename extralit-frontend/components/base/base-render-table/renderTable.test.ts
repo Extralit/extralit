@@ -122,7 +122,7 @@ describe('RenderTable', () => {
       const menu = wrapper.vm.columnContextMenu();
 
       expect(menu).toContainEqual(expect.objectContaining({
-        label: 'Add column ➡️',
+        label: 'Add column',
         disabled: false
       }));
     });

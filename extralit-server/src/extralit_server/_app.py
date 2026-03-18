@@ -264,7 +264,7 @@ def configure_app_statics(app: FastAPI):
         BASE_URL_VAR_NAME = "@@baseUrl@@"
         temp_dir = tempfile.mkdtemp()
         new_folder = shutil.copytree(path_from, temp_dir + "/statics")
-        base_url = helpers.remove_suffix(settings.base_url or "", suffix="/")
+        base_url = (settings.base_url or "").removesuffix("/")
         for extension in ["*.js", "*.html"]:
             for file in glob.glob(
                 f"{new_folder}/**/{extension}",

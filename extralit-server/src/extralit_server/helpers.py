@@ -544,12 +544,7 @@ async def create_s3_client() -> "S3Client":
     return s3_client
 
 
-def remove_suffix(text: str, suffix: str):
-    # TODO Move where is used
-    """Give a text, removes suffix substring from it"""
-    if text.endswith(suffix):
-        return text[: -len(suffix)]
-    return text
+
 
 
 def replace_string_in_file(filename: str, string: str, replace_by: str, encoding: str = "utf-8"):

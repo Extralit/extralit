@@ -207,11 +207,6 @@ export const useImportFileUploadViewModel = (props: any, { emit }: any) => {
       rawContent: data.rawContent || "",
     };
 
-    // If a bibliography is uploaded, clear the editable table data
-    if (data.dataframeData && data.dataframeData.data && data.dataframeData.data.length > 0) {
-      editableTableData.value = [];
-    }
-
     emitBibUpdate();
   };
 

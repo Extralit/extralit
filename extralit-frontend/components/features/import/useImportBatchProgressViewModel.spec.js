@@ -27,7 +27,7 @@ describe("useImportBatchProgressViewModel", () => {
       workspace: { id: "workspace-1" },
       uploadData: {
         confirmedDocuments: {},
-        documentActions: {}
+        documentActions: {},
       },
       bibFileName: "test.bib",
     };

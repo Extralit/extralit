@@ -10,6 +10,7 @@ export const useImportAnalysisTableViewModel = (props: {
   dataframeData: TableData | null;
   pdfData: {
     matchedFiles: any[];
+    unmatchedFiles?: any[];
   } | null;
 }) => {
   const importAnalysisUseCase = useResolve(GetImportAnalysisUseCase);
