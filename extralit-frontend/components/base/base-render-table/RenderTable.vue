@@ -582,7 +582,9 @@ export default {
     },
     clearTable() {
       if (this.tabulator?.getDataCount() == 0) {
-        this.tableJSON = undefined;
+        this.$emit("change-text", "");
+        this.exitEditionMode();
+        this.dropdownEditTableVisible = false;
         return;
       }
       this.tabulator?.clearData()
@@ -591,6 +593,7 @@ export default {
           this.tabulator?.deleteColumn(column);
         }
       });
+      this.updateTableJsonData();
     },
     addEmptyReferenceRows() {
       const combinations = this.generateCombinations(this.referenceValues);
@@ -685,7 +688,7 @@ export default {
           separator: true,
         },
         {
-          label: "Add column ➡️",
+          label: "Add column",
           disabled: !this.editable,
           action: (e, column) => {
             this.addColumn(column);
@@ -1022,6 +1025,65 @@ export default {
         width: 100%;
       }
     }
+  }
+
+  // Frozen column header — hardcoded light bg to defeat Tabulator's !important
+  .tabulator-col.tabulator-frozen {
+    background-color: hsl(0, 0%, 96%) !important;
+    will-change: transform;
+  }
+
+  // Frozen body cells — hardcoded light bg; will-change avoids sticky repaints
+  .tabulator-cell.tabulator-frozen {
+    background-color: #fff !important;
+    will-change: transform;
+  }
+
+  .tabulator-row-even .tabulator-cell.tabulator-frozen {
+    background-color: hsl(0, 0%, 100%) !important;
+  }
+}
+
+// List-editor popup is appended to <body> — must be global with hardcoded light colors
+.tabulator-popup-container,
+.tabulator-edit-list {
+  background-color: #fff !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+  border: 1px solid hsl(0, 0%, 94%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  .tabulator-edit-list-item {
+    background-color: #fff !important;
+    color: rgba(0, 0, 0, 0.87) !important;
+
+    &:hover,
+    &.focused {
+      background-color: hsl(227, 56%, 92%) !important;
+      color: hsl(227, 56%, 30%) !important;
+    }
+
+    // Selected item — prominent brand-color highlight
+    &.active {
+      background-color: hsl(227, 56%, 52%) !important;
+      color: #fff !important;
+      font-weight: 600;
+
+      &:hover,
+      &.focused {
+        background-color: hsl(227, 50%, 44%) !important;
+        color: #fff !important;
+      }
+    }
+  }
+
+  .tabulator-edit-list-group {
+    background-color: hsl(0, 0%, 96%) !important;
+    color: rgba(0, 0, 0, 0.54) !important;
+  }
+
+  .tabulator-edit-list-notice {
+    background-color: #fff !important;
+    color: rgba(0, 0, 0, 0.54) !important;
   }
 }
 

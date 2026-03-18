@@ -103,6 +103,72 @@ Then, select from three different development environments through devcontainers
     API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
     ```
 
+=== "Setup with Supabase database"
+
+For a persistent **PostgreSQL database**, Supabase can be used as the backend service. Supabase Storage (S3-compatible) can also be used if the workflow requires file storage.
+
+1. Create a Supabase Project
+    - Go to https://supabase.com
+    - Create a new project.
+    - After the project is created, open Project Settings -> Database
+    - Copy the **Session pooler connection string**.
+
+2. Configure the Database Environment Variable
+
+    Update the backend environment variables before starting `server-dev`:
+
+    ```bash
+    # Use Supabase PostgreSQL (Session pooler)
+    unset EXTRALIT_DATABASE_URL
+    export EXTRALIT_DATABASE_URL="postgresql+asyncpg://<user>:<password>@<session-pooler-host>:6543/<database>?ssl=require"
+    ```
+    You can find the values in Supabase Dashboard -> Settings -> Database -> Connection String
+
+3. Install Backend Dependencies
+
+    If installation fails on PostgreSQL-related dependencies in Github Codespaces, install server dependencies without the PostgreSQL optional group and then add `asyncpg` explicitly:
+
+    ```bash
+    cd extralit-server
+    pdm install --without postgresql
+    pdm add asyncpg
+    ```
+
+4. Initialize Python Environment
+
+    Install the development dependencies for the Python SDK.
+
+    ```bash
+    cd extralit
+    pdm install -G dev
+    ```
+    Verify the package loads correctly:
+    ```
+    pdm run python -c "import extralit; print('ok')"
+    ```
+5. Start the backend and frontend in separate terminals:
+
+    ```bash
+    # Terminal 1: backend
+    cd extralit-server
+    pdm run server-dev
+    ```
+
+    ```bash
+    # Terminal 2: frontend
+    cd extralit-frontend
+    npm install
+    API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
+    ```
+6. Optional: Initialize Database Tables
+
+    If the required tables do not yet exist in Supabase when starting the extralit server, you can initialize them by running the script:
+    ```
+    pdm run migrate
+    ```
+    This will trigger table creation with alembic schema migrations.
+
+
 ### 3. Development workflow*
 
     - **Backend Development**: Changes to `extralit-server/src/extralit_server/` or `extralit/src/extralit/` are automatically updated if Tilt is running

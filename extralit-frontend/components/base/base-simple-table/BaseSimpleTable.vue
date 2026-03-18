@@ -165,6 +165,22 @@ export default {
   background: var(--bg-accent-grey-1);
   overflow: auto;
 
+  // Force light-mode colors regardless of [data-theme]
+  --bg-solid-grey-1: hsl(0, 0%, 98%);
+  --bg-solid-grey-2: hsl(0, 0%, 96%);
+  --bg-solid-grey-3: hsl(0, 0%, 90%);
+  --bg-solid-grey-4: hsl(0, 0%, 90%);
+  --bg-accent-grey-1: hsl(0, 0%, 100%);
+  --bg-accent-grey-2: hsl(0, 0%, 100%);
+  --bg-accent-grey-3: hsl(0, 0%, 98%);
+  --bg-accent-grey-4: hsl(0, 0%, 98%);
+  --bg-accent-grey-5: hsl(0, 0%, 100%);
+  --fg-primary: hsla(0, 0%, 0%, 0.87);
+  --fg-secondary: hsla(0, 0%, 0%, 0.54);
+  --fg-tertiary: hsla(0, 0%, 0%, 0.37);
+  --border-field: hsl(0, 0%, 94%);
+  --bg-opacity-4: hsla(0, 0%, 0%, 0.04);
+
   // Hide RenderTable's edit buttons when not editable
   :deep(.table-container) {
     .__table-buttons {
@@ -238,6 +254,24 @@ export default {
           }
         }
       }
+    }
+
+    // Frozen column header — override Tabulator's hardcoded bg
+    .tabulator-col.tabulator-frozen {
+      background-color: var(--bg-solid-grey-2) !important;
+      will-change: transform;
+    }
+
+    // Frozen body cells — prevent dark-bg inheritance
+    .tabulator-row .tabulator-cell.tabulator-frozen,
+    .tabulator-row-odd .tabulator-cell.tabulator-frozen {
+      background-color: var(--bg-accent-grey-1) !important;
+      will-change: transform;
+    }
+
+    .tabulator-row-even .tabulator-cell.tabulator-frozen {
+      background-color: var(--bg-accent-grey-2) !important;
+      will-change: transform;
     }
   }
 

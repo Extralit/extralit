@@ -13,33 +13,6 @@
           <!-- Table Upload Section -->
           <TableUpload :initial-data="bibData" @update="handleBibUpdate"  />
 
-          <!-- Editable Table for PDF-Only Upload -->
-          <div v-if="shouldShowEditableTable" class="import-file-upload__editable-table">
-            <div class="import-file-upload__editable-table-header">
-              <h3 class="import-file-upload__section-title">Reference Metadata</h3>
-              <p class="import-file-upload__section-description">
-                Create reference entries for your PDFs. The <strong>reference</strong> column must be unique, and you can select which PDFs to associate with each entry in the <strong>files</strong> column.
-              </p>
-            </div>
-            
-            <BaseSimpleTable
-              ref="editableTable"
-              :data="editableTableData"
-              :columns="editableTableColumns"
-              :editable="true"
-              :validators="editableTableValidators"
-              @cell-edited="handleTableCellEdit"
-              @table-built="handleTableBuilt"
-            />
-
-            <!-- Unmapped PDFs Section -->
-            <div v-if="unmappedPdfFiles.length > 0" class="import-file-upload__unmapped-pdfs">
-              <h4>Unmapped PDF Files ({{ unmappedPdfFiles.length }})</h4>
-              <ul class="unmapped-files-list">
-                <li v-for="file in unmappedPdfFiles" :key="file">{{ file }}</li>
-              </ul>
-            </div>
-          </div>
         </div>
 
         <!-- Summary Sidebar -->
@@ -717,67 +690,5 @@
       }
     }
 
-    // Editable Table Styles
-    &__editable-table {
-      display: flex;
-      flex-direction: column;
-      gap: $base-space * 2;
-      padding: $base-space * 3;
-      background: var(--bg-accent-grey-1);
-      border: 1px solid var(--border-field);
-      border-radius: $border-radius-m;
-    }
-
-    &__editable-table-header {
-      margin-bottom: $base-space;
-
-      .import-file-upload__section-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        margin-bottom: $base-space;
-        color: var(--fg-primary);
-      }
-
-      .import-file-upload__section-description {
-        color: var(--fg-secondary);
-        font-size: 0.9rem;
-        margin-bottom: 0;
-        line-height: 1.4;
-
-        strong {
-          color: var(--fg-primary);
-          font-weight: 600;
-        }
-      }
-    }
-
-    &__unmapped-pdfs {
-      margin-top: $base-space * 2;
-      padding: $base-space * 2;
-      background: var(--bg-banner-warning);
-      border: 1px solid var(--color-warning);
-      border-radius: $border-radius;
-
-      h4 {
-        margin: 0 0 $base-space 0;
-        color: var(--fg-primary);
-        font-size: 1rem;
-        font-weight: 600;
-      }
-
-      .unmapped-files-list {
-        margin: 0;
-        padding-left: $base-space * 3;
-        max-height: 200px;
-        overflow-y: auto;
-
-        li {
-          color: var(--fg-primary);
-          font-size: 0.9rem;
-          margin-bottom: calc($base-space / 2);
-          font-family: $quaternary-font-family;
-        }
-      }
-    }
   }
   </style>
