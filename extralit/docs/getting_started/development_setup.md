@@ -162,44 +162,12 @@ For a persistent **PostgreSQL database**, Supabase can be used as the backend se
     ```
 6. Optional: Initialize Database Tables
 
-    If the required tables do not yet exist in Supabase, you can initialize them by uploading a small test record.
-
-    Create a script such as init_supabase.py
-
+    If the required tables do not yet exist in Supabase when starting the extralit server, you can initialize them by running the script:
     ```
-    import extralit as ex
-
-    client = ex.Extralit(
-        api_url="http://localhost:6900",
-        api_key="extralit.apikey",
-    )
-
-    dataset = client.datasets("testing")
-    dataset.records.log([
-        {"text": "The shoes are comfortable", "label": "pos"}
-    ])
-
-
-    print("Done: records uploaded")
+    pdm run migrate
     ```
+    This will trigger table creation with alembic schema migrations.
 
-    Run the script:
-    ```
-    pdm run python init_supabase.py
-    ```
-    This will trigger table creation and insert a sample record.
-
-    Then, verify tables in Supabase by running the following script in Supabase SQL Editor:
-    ```SQL
-    select table_name
-    from information_schema.tables
-    where table_schema = 'public'
-    order by table_name;
-
-    select count(*) from users;
-    select count(*) from datasets;
-    select count(*) from records;
-    ```
 
 ### 3. Development workflow*
 
