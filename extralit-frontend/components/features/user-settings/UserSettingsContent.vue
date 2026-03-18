@@ -46,6 +46,10 @@
     <div class="form-group">
       <UserTokenComponent :userToken="user.apiKey" />
     </div>
+    <div class="form-group">
+      <h2 class="--heading5 --medium description__title">GitHub Copilot</h2>
+      <CopilotConnect />
+    </div>
   </div>
 </template>
 

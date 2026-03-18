@@ -25,6 +25,7 @@ import {
   UserRepository,
   HubRepository,
   JobRepository,
+  GitHubAuthRepository,
 } from "@/v1/infrastructure/repositories";
 
 import { useLocalStorage, useRole, useRoutes } from "@/v1/infrastructure/services";
@@ -35,6 +36,7 @@ import { useDatasets } from "@/v1/infrastructure/storage/DatasetsStorage";
 import { useMetrics } from "@/v1/infrastructure/storage/MetricsStorage";
 import { useDatasetSetting } from "@/v1/infrastructure/storage/DatasetSettingStorage";
 import { useWorkspaces } from "@/v1/infrastructure/storage/WorkspaceStorage";
+import { useGitHubAuth } from "@/v1/infrastructure/storage/GitHubAuthStorage";
 
 import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
@@ -81,6 +83,7 @@ import { UpdateDatasetUseCase } from "@/v1/domain/usecases/update-dataset-use-ca
 import { GetFirstRecordFromHub } from "@/v1/domain/usecases/get-first-record-from-hub";
 import { ExportDatasetToHubUseCase } from "@/v1/domain/usecases/export-dataset-to-hub-use-case";
 import { AuthLoginUseCase } from "@/v1/domain/usecases/auth-login-use-case";
+import { GitHubAuthUseCase } from "@/v1/domain/usecases/github-auth-use-case";
 import { FileParsingService } from "~/v1/domain/services/FileParsingService";
 import { PdfMatchingService } from "@/v1/domain/services/FileMatchingService";
 
@@ -216,6 +219,9 @@ export const loadDependencyContainer = (context: Context) => {
     register(GetFirstRecordFromHub).withDependency(HubRepository).build(),
 
     register(ExportDatasetToHubUseCase).withDependencies(DatasetRepository, useLocalStorage).build(),
+
+    register(GitHubAuthRepository).withDependency(useAxios).build(),
+    register(GitHubAuthUseCase).withDependencies(GitHubAuthRepository, useGitHubAuth).build(),
 
     register(FileParsingService).build(),
     register(PdfMatchingService).build(),
