@@ -312,6 +312,14 @@ export default {
       span: {
         fieldRelated: "Se requiere un campo de texto",
       },
+      table: {
+        atLeastOneColumn: "Se requiere al menos una columna",
+        columns: "Columnas",
+        addColumn: "Agregar columna",
+        columnName: "Nombre de columna (ej. columna1)",
+        columnTitle: "Título de columna (ej. Columna 1)",
+        helpText: "Define columnas para la anotación de tabla",
+      },
     },
     atLeastOneQuestion: "Se requiere al menos una pregunta.",
     atLeastOneRequired: "Se requiere al menos una pregunta obligatoria.",

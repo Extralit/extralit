@@ -166,3 +166,6 @@ extralit/site
 **/*.pdf
 output/
 .specstory/
+
+# Docker local overrides
+docker-compose.override.yml

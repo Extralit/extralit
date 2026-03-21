@@ -317,6 +317,14 @@ export default {
       span: {
         fieldRelated: "テキストフィールドが必要です",
       },
+      table: {
+        atLeastOneColumn: "少なくとも1つの列が必要です",
+        columns: "列",
+        addColumn: "列を追加",
+        columnName: "列名（例：column1）",
+        columnTitle: "列タイトル（例：Column 1）",
+        helpText: "テーブルアノテーション用の列を定義してください",
+      },
     },
     atLeastOneQuestion: "少なくとも1つの質問が必要です",
     atLeastOneRequired: "少なくとも1つ回答必須の質問が必要です",

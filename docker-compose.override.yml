@@ -1,5 +1,0 @@
-services:
-  elasticsearch:
-    environment:
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - CLI_JAVA_OPTS=

@@ -308,6 +308,14 @@ export default {
       span: {
         fieldRelated: "One text field is required",
       },
+      table: {
+        atLeastOneColumn: "Mindestens eine Spalte ist erforderlich",
+        columns: "Spalten",
+        addColumn: "Spalte hinzufügen",
+        columnName: "Spaltenname (z.B. spalte1)",
+        columnTitle: "Spaltentitel (z.B. Spalte 1)",
+        helpText: "Definieren Sie Spalten für die Tabellenannotation",
+      },
     },
     atLeastOneQuestion: "Mindestens eine Frage wird benötigt",
     atLeastOneRequired: "Mindestens eine erforderliche Frage wird benötigt",

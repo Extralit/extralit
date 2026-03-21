@@ -65,6 +65,7 @@ export default {
     return {
       errors: {},
       isDirty: false,
+      columnCounter: this.question?.settings?.options?.length || 0,
     };
   },
   props: {
@@ -118,12 +119,12 @@ export default {
       }
     },
     addColumn() {
-      const columnNumber = this.columns.length + 1;
+      this.columnCounter++;
       const columns = [
         ...this.columns,
         {
-          name: `column${columnNumber}`,
-          title: `Column ${columnNumber}`,
+          name: `column${this.columnCounter}`,
+          title: `Column ${this.columnCounter}`,
           description: '',
         },
       ];
@@ -226,7 +227,7 @@ $error-color: hsl(3, 100%, 69%);
   }
 
   &__remove-btn.button {
-    padding: $base-space / 2;
+    padding: calc($base-space / 2);
     background: transparent;
     color: var(--fg-tertiary);
 
