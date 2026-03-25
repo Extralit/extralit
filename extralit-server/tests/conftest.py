@@ -36,9 +36,7 @@ if TYPE_CHECKING:
 
 @pytest.fixture(scope="session")
 def event_loop() -> Generator["asyncio.AbstractEventLoop", None, None]:
-    policy = asyncio.get_event_loop_policy()
-    loop = policy.new_event_loop()
-    policy.set_event_loop(loop)
+    loop = asyncio.get_event_loop_policy().get_event_loop()
     yield loop
     loop.close()
 
@@ -48,7 +46,7 @@ def mock_httpx_client(mocker) -> Generator[httpx.Client, None, None]:
     return mocker.Mock(httpx.Client)
 
 
-@pytest_asyncio.fixture(scope="session", loop_scope="session")
+@pytest_asyncio.fixture(scope="session")
 async def connection() -> AsyncGenerator["AsyncConnection", None]:
     set_task(asyncio.current_task())
     database_url = settings.database_url
