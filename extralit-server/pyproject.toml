@@ -44,7 +44,7 @@ dependencies = [
     "oauthlib ~= 3.2.0",
     "social-auth-core ~= 4.5.0",
     # LiteLLM for chat integration
-    "litellm >= 1.60.0",
+    "litellm >= 1.82.0,<=1.82.6",
     # Background processing
     "rq~=2.4.1",
     "lazy-loader>=0.4",
