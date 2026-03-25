@@ -129,6 +129,7 @@ log_date_format = "%Y-%m-%d %H:%M:%S"
 testpaths = ["tests"]
 env = ["HF_HUB_DISABLE_TELEMETRY=1"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 
 [tool.coverage.run]
 concurrency = ["greenlet", "thread", "multiprocessing"]
