@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from extralit_server.api.schemas.v1.oauth2 import Provider, Providers, Token
 from extralit_server.contexts import accounts
 from extralit_server.database import get_async_db
-from extralit_server.errors.future import NotFoundError
+from extralit_server.errors.future import AuthenticationError, NotFoundError
 from extralit_server.models import Workspace, WorkspaceUser
 from extralit_server.security.authentication.oauth2 import OAuth2ClientProvider
 from extralit_server.security.authentication.userinfo import UserInfo
@@ -61,7 +61,7 @@ async def get_access_token(
     userinfo = UserInfo(user_data)
 
     if not userinfo.username:
-        raise RuntimeError("OAuth error: Missing username")
+        raise AuthenticationError("OAuth error: Missing username")
 
     default_available_workspaces = [workspace.name for workspace in settings.oauth.allowed_workspaces]
     available_workspaces = userinfo.available_workspaces or default_available_workspaces
