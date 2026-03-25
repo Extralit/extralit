@@ -99,7 +99,7 @@ jobs:
           cache-dependency-glob: "extralit-server/uv.lock"
 
       - name: Install dependencies
-        run: uv sync --group test
+        run: uv sync --group test --extra postgresql
 
       - name: Run tests 📈
         id: run-tests
