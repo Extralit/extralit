@@ -36,9 +36,24 @@ if TYPE_CHECKING:
 
 @pytest.fixture(scope="session")
 def event_loop() -> Generator["asyncio.AbstractEventLoop", None, None]:
-    loop = asyncio.get_event_loop_policy().get_event_loop()
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    policy.set_event_loop(loop)
     yield loop
     loop.close()
+
+
+@pytest.fixture(autouse=True)
+def _restore_event_loop(event_loop: asyncio.AbstractEventLoop):
+    """Restore the session event loop after tests that call asyncio.run()
+    (e.g. CLI commands), which closes and unsets the current event loop."""
+    yield
+    try:
+        current = asyncio.get_event_loop()
+        if current.is_closed():
+            asyncio.get_event_loop_policy().set_event_loop(event_loop)
+    except RuntimeError:
+        asyncio.get_event_loop_policy().set_event_loop(event_loop)
 
 
 @pytest.fixture(scope="function")
