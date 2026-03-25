@@ -63,23 +63,15 @@ jobs:
           python-version: "3.11"
           enable-cache: true
           cache-local-path: ~/.cache/uv
-          cache-dependency-glob: "extralit-server/pdm.lock"
+          cache-dependency-glob: "extralit-server/uv.lock"
 
-      - name: Setup Python env and Install extralit-server editable package
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
-        run: |
-          uv tool install pdm
-          pdm config use_uv true
-          pdm config python.install_root "$(uv python dir)"
-
-          cd extralit-server/
-          pdm install -G test
+      - name: Setup Python env and Install extralit-server
+        working-directory: extralit-server
+        run: uv sync
 
       - name: Install extralit editable package with dependencies
         working-directory: extralit
-        run: |
-          uv pip install -e ".[dev]"
+        run: uv sync
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -101,8 +93,8 @@ jobs:
           HOME: /home/runner
         run: |
           mkdir -p /home/runner/.extralit
-          pdm run alembic -c src/extralit_server/alembic.ini upgrade head
+          uv run alembic -c src/extralit_server/alembic.ini upgrade head
 
     #   - name: Verify critical dependencies
     #     run: |
-    #       cd extralit-server && pdm run python -c "import pandera; print('✓ Pandera available')" || echo "⚠ Pandera not available"
+    #       cd extralit-server && uv run python -c "import pandera; print('✓ Pandera available')" || echo "⚠ Pandera not available"
