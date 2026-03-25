@@ -34,6 +34,15 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncConnection
 
 
+@pytest.fixture(scope="session")
+def event_loop() -> Generator["asyncio.AbstractEventLoop", None, None]:
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    policy.set_event_loop(loop)
+    yield loop
+    loop.close()
+
+
 @pytest.fixture(scope="function")
 def mock_httpx_client(mocker) -> Generator[httpx.Client, None, None]:
     return mocker.Mock(httpx.Client)
