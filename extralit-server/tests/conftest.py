@@ -34,26 +34,28 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncConnection
 
 
-@pytest.fixture(scope="session")
-def event_loop() -> Generator["asyncio.AbstractEventLoop", None, None]:
-    policy = asyncio.get_event_loop_policy()
-    loop = policy.new_event_loop()
-    policy.set_event_loop(loop)
-    yield loop
-    loop.close()
-
-
 @pytest.fixture(autouse=True)
-def _restore_event_loop(event_loop: asyncio.AbstractEventLoop):
-    """Restore the session event loop after tests that call asyncio.run()
-    (e.g. CLI commands), which closes and unsets the current event loop."""
-    yield
+def _ensure_event_loop():
+    """Ensure an event loop is set on the main thread for tests.
+
+    CLI commands use asyncio.run() which closes/unsets the event loop.
+    pytest-asyncio 1.x with session loop scope also may not set it.
+    This fixture ensures get_event_loop() works from the main thread."""
     try:
-        current = asyncio.get_event_loop()
-        if current.is_closed():
-            asyncio.get_event_loop_policy().set_event_loop(event_loop)
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            raise RuntimeError("closed")
     except RuntimeError:
-        asyncio.get_event_loop_policy().set_event_loop(event_loop)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    yield
+    # Restore after test in case asyncio.run() destroyed the loop
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_closed():
+            raise RuntimeError("closed")
+    except RuntimeError:
+        asyncio.set_event_loop(asyncio.new_event_loop())
 
 
 @pytest.fixture(scope="function")
@@ -61,7 +63,7 @@ def mock_httpx_client(mocker) -> Generator[httpx.Client, None, None]:
     return mocker.Mock(httpx.Client)
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
 async def connection() -> AsyncGenerator["AsyncConnection", None]:
     set_task(asyncio.current_task())
     database_url = settings.database_url
