@@ -82,6 +82,9 @@ jobs:
       - name: Run unit tests
         id: tests-unit
         continue-on-error: true
+        env:
+          EXTRALIT_API_URL: http://localhost:6900
+          EXTRALIT_API_KEY: extralit.apikey
         run: |
             uv run pytest tests/unit --disable-warnings --cov=extralit --cov-report=term --cov-report=xml
 
@@ -92,6 +95,9 @@ jobs:
       - name: Run integration tests
         id: tests-integration
         continue-on-error: true
+        env:
+          EXTRALIT_API_URL: http://localhost:6900
+          EXTRALIT_API_KEY: extralit.apikey
         run: |
             uv run pytest tests/integration --disable-warnings --cov=extralit --cov-report=term --cov-report=xml --cov-append
 

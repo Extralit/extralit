@@ -67,7 +67,7 @@ jobs:
 
       - name: Setup Python env and Install extralit-server
         working-directory: extralit-server
-        run: uv sync
+        run: uv sync --group test
 
       - name: Install extralit editable package with dependencies
         working-directory: extralit

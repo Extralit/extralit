@@ -99,17 +99,17 @@ jobs:
           cache-dependency-glob: "extralit-server/uv.lock"
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --group test
 
       - name: Run tests 📈
         id: run-tests
         continue-on-error: true
         env:
           HF_TOKEN_EXTRALIT_INTERNAL_TESTING: ${{ secrets.HF_TOKEN_EXTRALIT_INTERNAL_TESTING }}
+          EXTRALIT_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/extralit
+          EXTRALIT_ELASTICSEARCH: http://localhost:9200
+          EXTRALIT_SEARCH_ENGINE: elasticsearch
         run: |
-          EXTRALIT_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/extralit
-          EXTRALIT_ELASTICSEARCH=http://localhost:9200
-          EXTRALIT_SEARCH_ENGINE=elasticsearch
           uv run pytest tests/unit --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings
 
       - name: Upload test coverage
