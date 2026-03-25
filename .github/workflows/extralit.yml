@@ -50,24 +50,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit/pyproject.toml"
           python-version: ${{ matrix.python-version }}
           enable-cache: true
           cache-local-path: ~/.cache/uv
           ignore-nothing-to-cache: true
-          cache-dependency-glob: "extralit/pdm.lock"
-      - name: Install PDM
-        run: uv tool install pdm
+          cache-dependency-glob: "extralit/uv.lock"
       - name: Install dependencies
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
         run: |
-          pdm config use_uv true
-          pdm config python.install_root "$(uv python dir)"
-
-          pdm install
+          uv sync
           uv cache prune --ci
       - name: Wait for extralit-container to start
         timeout-minutes: 3
@@ -89,8 +82,11 @@ jobs:
       - name: Run unit tests
         id: tests-unit
         continue-on-error: true
+        env:
+          EXTRALIT_API_URL: http://localhost:6900
+          EXTRALIT_API_KEY: extralit.apikey
         run: |
-            pdm run test-cov tests/unit
+          uv run pytest tests/unit --disable-warnings --cov=extralit --cov-report=term --cov-report=xml
 
       - name: Check test status
         if: steps.tests-unit.outcome == 'failure'
@@ -99,15 +95,18 @@ jobs:
       - name: Run integration tests
         id: tests-integration
         continue-on-error: true
+        env:
+          EXTRALIT_API_URL: http://localhost:6900
+          EXTRALIT_API_KEY: extralit.apikey
         run: |
-            pdm run test-cov tests/integration
+          uv run pytest tests/integration --disable-warnings --cov=extralit --cov-report=term --cov-report=xml --cov-append
 
       - name: Generate coverage report
         if: always()
         continue-on-error: true
         run: |
-          pdm run coverage xml -o coverage.xml
-          pdm run coverage report
+          uv run coverage xml -o coverage.xml
+          uv run coverage report
 
       - name: Upload test coverage
         if: always()
@@ -124,7 +123,7 @@ jobs:
 
       - name: Build package
         run: |
-          pdm build
+          uv build
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         # Upload the package to be used in the next jobs only once
@@ -161,7 +160,7 @@ jobs:
         uses: githubocto/repo-visualizer@0.7.1
         with:
           root_path: "extralit/"
-          excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,pdm.lock"
+          excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,uv.lock"
           excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
           output_file: "repo-visualizer.svg"
           should_push: false
@@ -180,28 +179,23 @@ jobs:
           path: extralit/dist
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit/pyproject.toml"
           python-version: "3.9"
-          enable-cache: true
-          cache-local-path: ~/.cache/uv
-          ignore-nothing-to-cache: true
-          cache-dependency-glob: "extralit/pdm.lock"
-      - name: Install PDM
-        run: uv tool install pdm
 
       - name: Read package info
         run: |
-          PACKAGE_VERSION=$(pdm show --version)
-          PACKAGE_NAME=$(pdm show --name)
+          PACKAGE_VERSION=$(grep '__version__' src/extralit/_version.py | cut -d'"' -f2)
+          PACKAGE_NAME="extralit"
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
           echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
           echo "$PACKAGE_NAME==$PACKAGE_VERSION"
 
       - name: Publish Package to PyPI test environment 🥪
-        run: pdm publish --no-build --repository testpypi --username __token__ --password ${{ secrets.AR_TEST_PYPI_API_TOKEN }}
         continue-on-error: true
+        run: |
+          uv publish --index-url https://test.pypi.org/legacy/ --token ${{ secrets.AR_TEST_PYPI_API_TOKEN }} dist/*
 
       - name: Test Installing 🍿
         continue-on-error: true
@@ -210,4 +204,5 @@ jobs:
 
       - name: Publish Package to PyPI 🥩
         if: github.ref == 'refs/heads/main'
-        run: pdm publish --no-build --username __token__ --password ${{ secrets.AR_PYPI_API_TOKEN }}
+        run: |
+          uv publish --token ${{ secrets.AR_PYPI_API_TOKEN }} dist/*
