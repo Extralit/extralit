@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit/pyproject.toml"
           python-version: ${{ matrix.python-version }}
@@ -86,7 +86,7 @@ jobs:
           EXTRALIT_API_URL: http://localhost:6900
           EXTRALIT_API_KEY: extralit.apikey
         run: |
-            uv run pytest tests/unit --disable-warnings --cov=extralit --cov-report=term --cov-report=xml
+          uv run pytest tests/unit --disable-warnings --cov=extralit --cov-report=term --cov-report=xml
 
       - name: Check test status
         if: steps.tests-unit.outcome == 'failure'
@@ -99,7 +99,7 @@ jobs:
           EXTRALIT_API_URL: http://localhost:6900
           EXTRALIT_API_KEY: extralit.apikey
         run: |
-            uv run pytest tests/integration --disable-warnings --cov=extralit --cov-report=term --cov-report=xml --cov-append
+          uv run pytest tests/integration --disable-warnings --cov=extralit --cov-report=term --cov-report=xml --cov-append
 
       - name: Generate coverage report
         if: always()
@@ -179,7 +179,7 @@ jobs:
           path: extralit/dist
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit/pyproject.toml"
           python-version: "3.9"
