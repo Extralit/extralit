@@ -35,27 +35,27 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture(autouse=True)
-def _ensure_event_loop():
-    """Ensure an event loop is set on the main thread for tests.
+def _protect_event_loop():
+    """Save and restore the event loop around each test.
 
-    CLI commands use asyncio.run() which closes/unsets the event loop.
-    pytest-asyncio 1.x with session loop scope also may not set it.
-    This fixture ensures get_event_loop() works from the main thread."""
+    CLI commands use asyncio.run() which calls set_event_loop(None),
+    breaking subsequent tests. This fixture captures the loop before
+    the test and restores it after if it was replaced or unset."""
+    policy = asyncio.get_event_loop_policy()
     try:
-        loop = asyncio.get_event_loop()
-        if loop.is_closed():
-            raise RuntimeError("closed")
+        loop_before = policy.get_event_loop()
+        if loop_before.is_closed():
+            loop_before = None
     except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        loop_before = None
     yield
-    # Restore after test in case asyncio.run() destroyed the loop
-    try:
-        loop = asyncio.get_event_loop()
-        if loop.is_closed():
-            raise RuntimeError("closed")
-    except RuntimeError:
-        asyncio.set_event_loop(asyncio.new_event_loop())
+    if loop_before is not None and not loop_before.is_closed():
+        try:
+            current = policy.get_event_loop()
+            if current is not loop_before or current.is_closed():
+                policy.set_event_loop(loop_before)
+        except RuntimeError:
+            policy.set_event_loop(loop_before)
 
 
 @pytest.fixture(scope="function")
