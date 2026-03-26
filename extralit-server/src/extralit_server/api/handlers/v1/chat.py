@@ -17,6 +17,7 @@
 Chat endpoint using LiteLLM with GitHub Copilot and RAG support.
 """
 
+import json
 import logging
 from typing import Annotated, Any
 from uuid import UUID
@@ -32,8 +33,7 @@ from extralit_server.database import get_async_db
 from extralit_server.models import Dataset, User, VectorSettings
 from extralit_server.search_engine import SearchEngine, get_search_engine
 from extralit_server.security import auth
-from extralit_server.utils.auth_helpers import GitHubDeviceFlowAuth
-from extralit_server.utils.litellm_context import LiteLLMContext
+from extralit_server.utils.auth_helpers import load_token
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -57,35 +57,17 @@ class ChatRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=20, description="Number of documents to retrieve for RAG")
 
 
-# VS Code headers to mimic for GitHub Copilot compatibility
-COPILOT_HEADERS = {
-    "Editor-Version": "vscode/1.96.2",
-    "Editor-Plugin-Version": "copilot/1.256.0",
-    "User-Agent": "GithubCopilot/1.256.0",
-    "Copilot-Integration-Id": "vscode-chat",
-}
-
-
 def resolve_model_string(model: str) -> str:
-    """
-    Resolve user-friendly model names to LiteLLM model strings.
-
-    Args:
-        model: User-provided model name (e.g., "copilot", "gpt-4")
-
-    Returns:
-        LiteLLM-compatible model string
-    """
-
+    """Resolve user-friendly model names to LiteLLM ``github_copilot/`` model strings."""
     model_mapping = {
-        "copilot": "gpt-4o",  # Updated to gpt-4o which is supported
-        "github-copilot": "gpt-4o",
+        "copilot": "github_copilot/gpt-4o",
+        "github-copilot": "github_copilot/gpt-4o",
     }
-
-    # If it's not in the map, use it as is, but strip github/ if present
-    # to avoid duplication when we pass the provider explicitly
     resolved = model_mapping.get(model.lower(), model)
-    return resolved.replace("github/", "")
+    # Ensure the github_copilot/ prefix is present
+    if not resolved.startswith("github_copilot/"):
+        resolved = f"github_copilot/{resolved}"
+    return resolved
 
 
 async def retrieve_context(
@@ -125,9 +107,8 @@ async def retrieve_context(
 
         _LOGGER.info(f"Generating embedding for query: {query_text[:50]}...")
 
-        # Inject token directly — no os.environ mutation (async-safe)
         embedding_response = await litellm.aembedding(
-            model="text-embedding-3-small",
+            model="github_copilot/text-embedding-3-small",
             input=query_text,
             custom_llm_provider="github",
             api_key=github_token,
@@ -217,20 +198,12 @@ async def chat(
     Raises:
         HTTPException: If user is not authenticated with GitHub
     """
-    # Check if user has GitHub token
-    github_auth = GitHubDeviceFlowAuth(username=current_user.username)
-    if not github_auth.is_authenticated():
+    # Check if user has a valid GitHub token
+    token_data = load_token(current_user.username)
+    if not token_data:
         raise HTTPException(
             status_code=401,
             detail="Not authenticated with GitHub. Please call /auth/github/login first.",
-        )
-
-    # Load the token to set in environment
-    token_data = github_auth.load_token()
-    if not token_data or "access_token" not in token_data:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid GitHub token. Please re-authenticate.",
         )
 
     # Resolve model string
@@ -278,39 +251,29 @@ async def chat(
     async def stream_response():
         """Stream the chat completion response."""
         try:
-            # LiteLLMContext handles XDG_CONFIG_HOME isolation (not token injection)
-            with LiteLLMContext(username=current_user.username):
-                # Inject token explicitly — no os.environ mutation (async-safe)
-                response = await litellm.acompletion(
-                    model=litellm_model,
-                    messages=messages,
-                    stream=request.stream,
-                    extra_headers=COPILOT_HEADERS,
-                    custom_llm_provider="github",
-                    api_key=token_data["access_token"],
-                )
+            response = await litellm.acompletion(
+                model=litellm_model,
+                messages=messages,
+                stream=request.stream,
+                api_key=token_data["access_token"],
+            )
 
             if request.stream:
-                # Stream the response chunks
                 async for chunk in response:
                     if chunk.choices and len(chunk.choices) > 0:
                         delta = chunk.choices[0].delta
                         if hasattr(delta, "content") and delta.content:
-                            # Send as SSE format (Standard Extralit/ChatGPT format)
                             yield f"data: {delta.content}\n\n"
                 yield "data: [DONE]\n\n"
             else:
-                # Non-streaming response
                 if response.choices and len(response.choices) > 0:
                     content = response.choices[0].message.content
                     yield f"data: {content}\n\n"
                 yield "data: [DONE]\n\n"
 
         except Exception as e:
-            _LOGGER.error(f"Error in chat completion for {current_user.username}: {e}")
-            # Ensure the error is returned in a format the frontend can handle
-            error_msg = str(e).replace('"', '\\"')
-            yield f'data: {{"error": "{error_msg}"}}\n\n'
+            _LOGGER.error("Chat completion error for %s: %s", current_user.username, e)
+            yield f"data: {json.dumps({'error': 'Chat completion failed. Please try again.'})}\n\n"
 
     return StreamingResponse(
         stream_response(),

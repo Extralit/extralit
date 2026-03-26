@@ -13,12 +13,15 @@
 # limitations under the License.
 
 """
-GitHub Device Flow authentication utilities for GitHub Copilot integration.
+GitHub Device Flow authentication helpers for GitHub Copilot integration.
+
+Handles per-user OAuth device flow, token persistence, and server-side
+device code storage so that the device_code secret never leaves the server.
 """
 
-import asyncio
 import json
 import logging
+import re
 import time
 from pathlib import Path
 from typing import Any
@@ -29,191 +32,185 @@ from extralit_server.settings import settings
 
 _LOGGER = logging.getLogger(__name__)
 
+# ── Username validation ──────────────────────────────────────────────
+_USERNAME_RE = re.compile(r"^[a-zA-Z0-9_.\-@]+$")
+_MAX_USERNAME_LEN = 128
 
-class GitHubDeviceFlowAuth:
+
+def _validate_username(username: str) -> str:
+    """Validate username to prevent path-traversal attacks.
+
+    Raises:
+        ValueError: If the username contains illegal characters.
     """
-    Helper class for GitHub Device Flow authentication.
+    if not username or len(username) > _MAX_USERNAME_LEN or not _USERNAME_RE.match(username) or ".." in username:
+        raise ValueError(f"Invalid username: {username!r}")
+    return username
 
-    This implements the OAuth Device Flow for authenticating with GitHub
-    to obtain tokens for GitHub Copilot access.
 
-    Uses the official VS Code OAuth app credentials to ensure compatibility
-    with GitHub Copilot.
+# ── In-memory device-code store (keyed by username) ──────────────────
+# Keeps the device_code secret server-side so it is never sent to the client.
+_pending_device_flows: dict[str, dict[str, Any]] = {}
+
+
+def store_pending_flow(username: str, flow_data: dict[str, Any]) -> None:
+    """Store the device flow data server-side for later polling."""
+    _pending_device_flows[username] = {
+        **flow_data,
+        "started_at": time.time(),
+    }
+
+
+def get_pending_flow(username: str) -> dict[str, Any] | None:
+    """Retrieve (and validate expiry of) a pending device flow."""
+    flow = _pending_device_flows.get(username)
+    if flow is None:
+        return None
+    elapsed = time.time() - flow["started_at"]
+    if elapsed > flow.get("expires_in", 900):
+        # Expired - clean up
+        _pending_device_flows.pop(username, None)
+        return None
+    return flow
+
+
+def clear_pending_flow(username: str) -> None:
+    _pending_device_flows.pop(username, None)
+
+
+# ── Token persistence ────────────────────────────────────────────────
+
+# Official VS Code OAuth App Client ID (public, required by Copilot)
+VSCODE_CLIENT_ID = "01ab8ac9400c4e429b23"
+
+DEVICE_CODE_URL = "https://github.com/login/device/code"
+ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
+SCOPE = "read:user copilot"
+
+# GitHub Copilot OAuth tokens don't carry an explicit TTL, but the
+# access-token returned by the device-flow can be revoked at any time.
+# We treat tokens older than 90 days as stale and force re-auth.
+_TOKEN_MAX_AGE_SECONDS = 90 * 24 * 3600
+
+
+def _get_token_dir(username: str) -> Path:
+    """Return the per-user config directory, creating it if needed."""
+    _validate_username(username)
+    token_dir = Path(settings.home_path) / "data" / "users" / username / "config"
+    token_dir.mkdir(parents=True, exist_ok=True)
+    return token_dir
+
+
+def _get_token_path(username: str) -> Path:
+    return _get_token_dir(username) / "github_token.json"
+
+
+def save_token(username: str, token_data: dict[str, str]) -> None:
+    """Persist token to disk with a ``saved_at`` timestamp."""
+    _validate_username(username)
+    payload = {**token_data, "saved_at": time.time()}
+    token_path = _get_token_path(username)
+    token_path.write_text(json.dumps(payload))
+    token_path.chmod(0o600)
+    _LOGGER.info("Saved GitHub token for user %s", username)
+
+
+def load_token(username: str) -> dict[str, str] | None:
+    """Load a token from disk, returning ``None`` when missing or stale."""
+    _validate_username(username)
+    token_path = _get_token_path(username)
+    if not token_path.exists():
+        return None
+    try:
+        token_data: dict = json.loads(token_path.read_text())
+    except (json.JSONDecodeError, OSError) as exc:
+        _LOGGER.error("Failed to load token for %s: %s", username, exc)
+        return None
+
+    # Expiry check
+    saved_at = token_data.get("saved_at", 0)
+    if time.time() - saved_at > _TOKEN_MAX_AGE_SECONDS:
+        _LOGGER.info("Token for %s has expired (age > 90 days), clearing", username)
+        clear_token(username)
+        return None
+
+    if "access_token" not in token_data:
+        return None
+    return token_data
+
+
+def is_authenticated(username: str) -> bool:
+    return load_token(username) is not None
+
+
+def clear_token(username: str) -> None:
+    _validate_username(username)
+    token_path = _get_token_path(username)
+    if token_path.exists():
+        token_path.unlink()
+        _LOGGER.info("Cleared GitHub token for user %s", username)
+
+
+# ── GitHub Device Flow HTTP helpers ──────────────────────────────────
+
+
+async def initiate_device_flow() -> dict[str, Any]:
+    """Start the GitHub device-code flow. Returns the full GitHub response."""
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            DEVICE_CODE_URL,
+            data={"client_id": VSCODE_CLIENT_ID, "scope": SCOPE},
+            headers={"Accept": "application/json"},
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+
+async def poll_for_token(device_code: str, interval: int = 5, timeout: int = 10) -> dict[str, str]:
+    """Poll GitHub once (or a few times within *timeout* seconds).
+
+    Returns token data on success.
+
+    Raises:
+        TimeoutError: user hasn't authorised yet (still pending).
+        ValueError:   authorisation denied / expired / unexpected error.
     """
+    start = time.time()
+    async with httpx.AsyncClient() as client:
+        while True:
+            if time.time() - start > timeout:
+                raise TimeoutError("Authorization still pending")
 
-    # Official VS Code OAuth App Client ID (public, safe to hardcode)
-    # This is the ONLY client ID that GitHub Copilot accepts
-    VSCODE_CLIENT_ID = "01ab8ac9400c4e429b23"
-
-    DEVICE_CODE_URL = "https://github.com/login/device/code"
-    ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token"
-
-    # Scopes required for GitHub Copilot access
-    SCOPE = "read:user copilot"
-
-    def __init__(self, username: str):
-        """
-        Initialize the GitHub Device Flow helper.
-
-        Args:
-            username: The Extralit username (used for token storage path)
-        """
-        self.username = username
-
-    def _get_config_dir(self) -> Path:
-        """Get the user-specific config directory for token storage."""
-        config_path = Path(settings.home_path) / "data" / "users" / self.username / "config"
-        config_path.mkdir(parents=True, exist_ok=True)
-        return config_path
-
-    def _get_token_path(self) -> Path:
-        """Get the full path to the token file."""
-        return self._get_config_dir() / "github_token.json"
-
-    async def initiate_flow(self) -> dict[str, Any]:
-        """
-        Initiate the GitHub Device Flow.
-
-        Returns:
-            dict containing:
-                - device_code: Code for polling
-                - user_code: Code for user to enter
-                - verification_uri: URL for user to visit
-                - expires_in: Seconds until codes expire
-                - interval: Recommended polling interval in seconds
-
-        Raises:
-            httpx.HTTPError: If the request to GitHub fails
-        """
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                self.DEVICE_CODE_URL,
+            resp = await client.post(
+                ACCESS_TOKEN_URL,
                 data={
-                    "client_id": self.VSCODE_CLIENT_ID,
-                    "scope": self.SCOPE,
+                    "client_id": VSCODE_CLIENT_ID,
+                    "device_code": device_code,
+                    "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
                 },
                 headers={"Accept": "application/json"},
             )
-            response.raise_for_status()
-            data = response.json()
+            data = resp.json()
 
-        _LOGGER.info(f"Initiated GitHub Device Flow for user {self.username}")
-        return {
-            "device_code": data["device_code"],
-            "user_code": data["user_code"],
-            "verification_uri": data["verification_uri"],
-            "expires_in": data["expires_in"],
-            "interval": data["interval"],
-        }
+            if "access_token" in data:
+                return {
+                    "access_token": data["access_token"],
+                    "token_type": data.get("token_type", "bearer"),
+                    "scope": data.get("scope", ""),
+                }
 
-    async def poll_for_token(self, device_code: str, interval: int = 5, timeout: int = 900) -> dict[str, str]:
-        """
-        Poll GitHub for the access token after user authorization.
+            error = data.get("error", "")
+            if error == "authorization_pending":
+                import asyncio
 
-        Args:
-            device_code: The device code from initiate_flow()
-            interval: Seconds to wait between polling attempts
-            timeout: Maximum seconds to wait for authorization
+                await asyncio.sleep(interval)
+                continue
+            if error == "slow_down":
+                import asyncio
 
-        Returns:
-            dict containing:
-                - access_token: The GitHub access token
-                - token_type: Type of token (usually "bearer")
-                - scope: Granted scopes
-
-        Raises:
-            TimeoutError: If user doesn't authorize within timeout
-            ValueError: If authorization is denied or expires
-            httpx.HTTPError: If the request to GitHub fails
-        """
-        start_time = time.time()
-        async with httpx.AsyncClient() as client:
-            while True:
-                if time.time() - start_time > timeout:
-                    raise TimeoutError("GitHub Device Flow timed out waiting for user authorization")
-
-                response = await client.post(
-                    self.ACCESS_TOKEN_URL,
-                    data={
-                        "client_id": self.VSCODE_CLIENT_ID,
-                        "device_code": device_code,
-                        "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
-                    },
-                    headers={"Accept": "application/json"},
-                )
-
-                data = response.json()
-
-                if "access_token" in data:
-                    _LOGGER.info(f"Successfully obtained GitHub token for user {self.username}")
-                    return {
-                        "access_token": data["access_token"],
-                        "token_type": data.get("token_type", "bearer"),
-                        "scope": data.get("scope", ""),
-                    }
-                elif data.get("error") == "authorization_pending":
-                    # User hasn't authorized yet, keep polling
-                    await asyncio.sleep(interval)
-                elif data.get("error") == "slow_down":
-                    # We're polling too fast, increase interval
-                    interval += 5
-                    await asyncio.sleep(interval)
-                elif data.get("error") in ("expired_token", "access_denied"):
-                    raise ValueError(f"GitHub authorization {data['error']}: {data.get('error_description', '')}")
-                else:
-                    raise ValueError(f"Unexpected error from GitHub: {data}")
-
-    def save_token(self, token_data: dict[str, str]) -> None:
-        """
-        Save the GitHub token to disk.
-
-        Args:
-            token_data: Token data containing access_token, token_type, scope
-        """
-        token_path = self._get_token_path()
-        with open(token_path, "w") as f:
-            json.dump(token_data, f)
-
-        # Set restrictive permissions (read/write for owner only)
-        token_path.chmod(0o600)
-
-        _LOGGER.info(f"Saved GitHub token for user {self.username} to {token_path}")
-
-    def load_token(self) -> dict[str, str] | None:
-        """
-        Load the GitHub token from disk.
-
-        Returns:
-            Token data dict if exists, None otherwise
-        """
-        token_path = self._get_token_path()
-        if not token_path.exists():
-            return None
-
-        try:
-            with open(token_path) as f:
-                token_data = json.load(f)
-            _LOGGER.debug(f"Loaded GitHub token for user {self.username}")
-            return token_data
-        except (json.JSONDecodeError, OSError) as e:
-            _LOGGER.error(f"Failed to load token for user {self.username}: {e}")
-            return None
-
-    def is_authenticated(self) -> bool:
-        """
-        Check if a valid GitHub token exists for this user.
-
-        Returns:
-            True if token file exists and is readable, False otherwise
-        """
-        token_data = self.load_token()
-        return token_data is not None and "access_token" in token_data
-
-    def clear_token(self) -> None:
-        """
-        Remove the stored GitHub token.
-        """
-        token_path = self._get_token_path()
-        if token_path.exists():
-            token_path.unlink()
-            _LOGGER.info(f"Cleared GitHub token for user {self.username}")
+                interval += 5
+                await asyncio.sleep(interval)
+                continue
+            if error in ("expired_token", "access_denied"):
+                raise ValueError(f"GitHub authorization {error}: {data.get('error_description', '')}")
+            raise ValueError(f"Unexpected GitHub error: {error}")
