@@ -209,6 +209,8 @@ ignore = [
 "tests/**/*.py" = ["ASYNC", "F821"]  # More lenient async rules in tests (ignore undefined names like forward refs/fixtures)
 "src/extralit_server/cli/**/*.py" = ["UP007", "UP045"]  # Typer doesn't support new union syntax
 
+# Legacy PDM scripts retained for backward compatibility with pdm run commands.
+# Preferred: use uv run directly, e.g. `uv run pytest tests`, `uv run ruff check`
 [tool.pdm.scripts]
 _.env_file = ".env.dev"
 cli = { cmd = "python -m extralit_server.cli" }
@@ -228,4 +230,4 @@ test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test"
 test-cov = { cmd = "pytest tests --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings", env_file = ".env.test" }
 lint = "ruff check"
 
-docker-build-extralit-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }
+docker-build-extralit-server = { shell = "uv build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }

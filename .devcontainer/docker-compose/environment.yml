@@ -7,7 +7,7 @@ channels:
 dependencies:
   - python~=3.12
   - pip>=2.22.0
-  - pdm
+  - uv
   # pyparsing 3.0.5 seems to be buggy
   - pyparsing!=3.0.5
   # tests
@@ -22,7 +22,6 @@ dependencies:
   - ipython<8.0.0
   - nodejs=18.16.1
   - pandoc==2.12
-  - uv
   - pip:
       - spacy~=3.7.2
       - https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1.tar.gz

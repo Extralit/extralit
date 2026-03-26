@@ -63,18 +63,18 @@ The development environment uses Docker Compose to run all required services. Ke
 # Start all services
 docker-compose up -d
 
+# Install dependencies
+uv sync
+
 # Run server in dev mode
-pdm run server-dev
+uv run uvicorn extralit_server:app --host 0.0.0.0 --port 6900 --reload
 
 # Run tests
-pdm test
+uv run pytest tests
 
 # Format and lint
-pdm format
-pdm lint
-
-# Run all checks
-pdm all
+uv run ruff format
+uv run ruff check
 ```
 
 ## Key Components
