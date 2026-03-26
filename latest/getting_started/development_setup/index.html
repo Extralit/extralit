@@ -4544,10 +4544,10 @@
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Install server dependencies</span>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nb">cd</span><span class="w"> </span>extralit-server
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>pdm<span class="w"> </span>install
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>uv<span class="w"> </span>sync
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
 </span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="c1"># Start the server in development mode</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>pdm<span class="w"> </span>run<span class="w"> </span>server-dev
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>extralit_server<span class="w"> </span>server-dev
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -4588,25 +4588,25 @@ You can find the values in Supabase Dashboard -&gt; Settings -&gt; Database -&gt
 </li>
 <li>
 <p>Install Backend Dependencies</p>
-<p>If installation fails on PostgreSQL-related dependencies in Github Codespaces, install server dependencies without the PostgreSQL optional group and then add <code>asyncpg</code> explicitly:</p>
+<p>If installation fails on PostgreSQL-related dependencies in Github Codespaces, install server dependencies without the PostgreSQL extra and then add <code>asyncpg</code> explicitly:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>extralit-server
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>pdm<span class="w"> </span>install<span class="w"> </span>--without<span class="w"> </span>postgresql
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>pdm<span class="w"> </span>add<span class="w"> </span>asyncpg
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>uv<span class="w"> </span>sync
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>asyncpg
 </span></code></pre></div>
 </li>
 <li>
 <p>Initialize Python Environment</p>
 <p>Install the development dependencies for the Python <abbr title="Software Development Kit.">SDK</abbr>.</p>
 <p><div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nb">cd</span><span class="w"> </span>extralit
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>pdm<span class="w"> </span>install<span class="w"> </span>-G<span class="w"> </span>dev
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>uv<span class="w"> </span>sync
 </span></code></pre></div>
 Verify the package loads correctly:
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>pdm run python -c &quot;import extralit; print(&#39;ok&#39;)&quot;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>uv run python -c &quot;import extralit; print(&#39;ok&#39;)&quot;
 </span></code></pre></div>
 5. Start the backend and frontend in separate terminals:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Terminal 1: backend</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nb">cd</span><span class="w"> </span>extralit-server
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>pdm<span class="w"> </span>run<span class="w"> </span>server-dev
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>extralit_server<span class="w"> </span>server-dev
 </span></code></pre></div>
 <p><div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Terminal 2: frontend</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">cd</span><span class="w"> </span>extralit-frontend
@@ -4615,7 +4615,7 @@ Verify the package loads correctly:
 </span></code></pre></div>
 6. Optional: Initialize Database Tables</p>
 <p>If the required tables do not yet exist in Supabase when starting the extralit server, you can initialize them by running the script:
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>pdm run migrate
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>uv run alembic -c src/extralit_server/alembic.ini upgrade head
 </span></code></pre></div>
 This will trigger table creation with alembic schema migrations.</p>
 </li>
@@ -4625,7 +4625,7 @@ This will trigger table creation with alembic schema migrations.</p>
 - **Python SDK packages**
   ```bash
   cd extralit
-  pdm install
+  uv sync
   ```
 - **Frontend Development**: For frontend live-reloading:
   ```bash
@@ -4656,17 +4656,17 @@ This will trigger table creation with alembic schema migrations.</p>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nb">cd</span><span class="w"> </span>extralit
 </span></code></pre></div>
 <h3 id="2-set-up-python-environment">2. Set Up Python Environment<a class="headerlink" href="#2-set-up-python-environment" title="Permanent link">&para;</a></h3>
-<p>We recommend using PDM for package management:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Install PDM if not already installed</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>pip<span class="w"> </span>install<span class="w"> </span>pdm<span class="w"> </span>uv
+<p>We recommend using uv for package management:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Install uv if not already installed</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>pip<span class="w"> </span>install<span class="w"> </span>uv
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
 </span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Install server dependencies</span>
 </span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="nb">cd</span><span class="w"> </span>extralit-server
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>pdm<span class="w"> </span>install
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>uv<span class="w"> </span>sync
 </span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>
 </span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="c1"># Install client dependencies</span>
 </span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="nb">cd</span><span class="w"> </span>../extralit
-</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>pdm<span class="w"> </span>install
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>uv<span class="w"> </span>sync
 </span></code></pre></div>
 <h3 id="3-build-the-frontend">3. Build the Frontend<a class="headerlink" href="#3-build-the-frontend" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nb">cd</span><span class="w"> </span>extralit-frontend
@@ -4701,9 +4701,9 @@ This will trigger table creation with alembic schema migrations.</p>
 </span></code></pre></div>
 <h3 id="6-run-database-migrations-and-start-the-server">6. Run Database Migrations and Start the Server<a class="headerlink" href="#6-run-database-migrations-and-start-the-server" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nb">cd</span><span class="w"> </span>extralit-server
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>pdm<span class="w"> </span>run<span class="w"> </span>migrate
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>pdm<span class="w"> </span>run<span class="w"> </span>cli<span class="w"> </span>database<span class="w"> </span>users<span class="w"> </span>create_default
-</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>pdm<span class="w"> </span>run<span class="w"> </span>server
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>uv<span class="w"> </span>run<span class="w"> </span>alembic<span class="w"> </span>-c<span class="w"> </span>src/extralit_server/alembic.ini<span class="w"> </span>upgrade<span class="w"> </span>head
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>extralit_server<span class="w"> </span>cli<span class="w"> </span>database<span class="w"> </span>users<span class="w"> </span>create_default
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>extralit_server<span class="w"> </span>server
 </span></code></pre></div>
 <h3 id="7-access-the-web-interface">7. Access the Web Interface<a class="headerlink" href="#7-access-the-web-interface" title="Permanent link">&para;</a></h3>
 <p>Open your browser and navigate to http://localhost:6900</p>
@@ -4741,7 +4741,7 @@ This will trigger table creation with alembic schema migrations.</p>
 <h3 id="0-building-the-extralit-server-and-extralit-hf-space-docker-images">0. Building the <code>extralit-server</code> and <code>extralit-hf-space</code> docker images<a class="headerlink" href="#0-building-the-extralit-server-and-extralit-hf-space-docker-images" title="Permanent link">&para;</a></h3>
 <p>To build and run the Extralit Server using Docker, follow these steps:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="nb">cd</span><span class="w"> </span>extralit-server
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>pdm<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>cp<span class="w"> </span>-r<span class="w"> </span>dist/<span class="w"> </span>docker/server/
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>uv<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>cp<span class="w"> </span>-r<span class="w"> </span>dist/<span class="w"> </span>docker/server/
 </span></code></pre></div>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>extralit-server:latest<span class="w"> </span>-f<span class="w"> </span>docker/server/Dockerfile<span class="w"> </span>docker/server/
 </span></code></pre></div>
@@ -4768,13 +4768,13 @@ This will trigger table creation with alembic schema migrations.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>pre-commit<span class="w"> </span>install
 </span></code></pre></div>
 <p>In addition, run the following scripts to check the code formatting and linting:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>pdm<span class="w"> </span>run<span class="w"> </span>format
-</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>pdm<span class="w"> </span>run<span class="w"> </span>lint
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check
 </span></code></pre></div>
 <details class="tip">
 <summary>Running linting, formatting, and tests</summary>
 <p>You can run all the checks at once by using the following command:</p>
-<div class="language-sh highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>pdm<span class="w"> </span>run<span class="w"> </span>all
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests<span class="w"> </span>--disable-warnings
 </span></code></pre></div>
 </details>
 <h2 id="documentation-development">Documentation Development<a class="headerlink" href="#documentation-development" title="Permanent link">&para;</a></h2>
@@ -4795,7 +4795,7 @@ This will trigger table creation with alembic schema migrations.</p>
 <p>If database migrations fail:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="c1"># Reset the database</span>
 </span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>~/.extralit/extralit-dev.db
-</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>pdm<span class="w"> </span>run<span class="w"> </span>migrate
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>uv<span class="w"> </span>run<span class="w"> </span>alembic<span class="w"> </span>-c<span class="w"> </span>src/extralit_server/alembic.ini<span class="w"> </span>upgrade<span class="w"> </span>head
 </span></code></pre></div>
 <h3 id="frontend-build-issues">Frontend Build Issues<a class="headerlink" href="#frontend-build-issues" title="Permanent link">&para;</a></h3>
 <p>If you encounter issues with the frontend build:</p>
