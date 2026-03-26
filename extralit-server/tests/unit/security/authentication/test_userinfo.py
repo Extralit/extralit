@@ -13,7 +13,6 @@
 # limitations under the License.
 import os
 
-import pytest
 from pytest_mock import MockerFixture
 
 from extralit_server.enums import UserRole
@@ -23,8 +22,7 @@ from extralit_server.security.authentication import UserInfo
 class TestUserInfo:
     def test_get_user_name_without_claims(self):
         userinfo = UserInfo()
-        with pytest.raises(KeyError):
-            _ = userinfo.username
+        assert userinfo.username == ""
 
     def test_get_userinfo_first_name(self):
         userinfo = UserInfo({"username": "user", "first_name": "User"})

@@ -142,7 +142,6 @@ sw.*
 yarn.lock
 
 # pdm and uv
-uv.lock
 pyproject.toml.*
 
 # App generated files

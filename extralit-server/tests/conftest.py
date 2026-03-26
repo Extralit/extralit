@@ -34,11 +34,28 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncConnection
 
 
-@pytest.fixture(scope="session")
-def event_loop() -> Generator["asyncio.AbstractEventLoop", None, None]:
-    loop = asyncio.get_event_loop_policy().get_event_loop()
-    yield loop
-    loop.close()
+@pytest.fixture(autouse=True)
+def _protect_event_loop():
+    """Save and restore the event loop around each test.
+
+    CLI commands use asyncio.run() which calls set_event_loop(None),
+    breaking subsequent tests. This fixture captures the loop before
+    the test and restores it after if it was replaced or unset."""
+    policy = asyncio.get_event_loop_policy()
+    try:
+        loop_before = policy.get_event_loop()
+        if loop_before.is_closed():
+            loop_before = None
+    except RuntimeError:
+        loop_before = None
+    yield
+    if loop_before is not None and not loop_before.is_closed():
+        try:
+            current = policy.get_event_loop()
+            if current is not loop_before or current.is_closed():
+                policy.set_event_loop(loop_before)
+        except RuntimeError:
+            policy.set_event_loop(loop_before)
 
 
 @pytest.fixture(scope="function")
@@ -46,7 +63,7 @@ def mock_httpx_client(mocker) -> Generator[httpx.Client, None, None]:
     return mocker.Mock(httpx.Client)
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
 async def connection() -> AsyncGenerator["AsyncConnection", None]:
     set_task(asyncio.current_task())
     database_url = settings.database_url

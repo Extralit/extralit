@@ -21,19 +21,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
-        with:
-          python-version-file: extralit-server/pyproject.toml
-          cache-dependency-path: extralit-server/pdm.lock
-          cache: true
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
 
       - name: Read package info
         id: package-info
         working-directory: extralit-server
         run: |
-          PACKAGE_VERSION=$(pdm show --version)
-          PACKAGE_NAME=$(pdm show --name)
+          PACKAGE_VERSION=$(grep '__version__' src/extralit_server/_version.py | cut -d'"' -f2)
+          PACKAGE_NAME="extralit-server"
           echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_OUTPUT
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
           echo "$PACKAGE_NAME==$PACKAGE_VERSION"
@@ -130,4 +126,3 @@ jobs:
           password: ${{ env.DOCKER_PASSWORD }}
           repository: ${{ env.SERVER_DOCKER_IMAGE }}
           readme-filepath: extralit-server/docker/server/README.md
-
