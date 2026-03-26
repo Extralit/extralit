@@ -40,7 +40,7 @@ class AuthStatusResponse(BaseModel):
 class DeviceFlowResponse(BaseModel):
     """Response model for device flow initiation."""
 
-    device_code: str  # <--- ADDED THIS FIELD
+    device_code: str
     user_code: str
     verification_uri: str
     expires_in: int
@@ -88,7 +88,7 @@ async def initiate_github_login(current_user: User = Depends(auth.get_current_us
 
         # Return device_code so the client can use it to poll for the token
         return DeviceFlowResponse(
-            device_code=flow_data["device_code"],  # <--- ADDED THIS ASSIGNMENT
+            device_code=flow_data["device_code"],
             user_code=flow_data["user_code"],
             verification_uri=flow_data["verification_uri"],
             expires_in=flow_data["expires_in"],
