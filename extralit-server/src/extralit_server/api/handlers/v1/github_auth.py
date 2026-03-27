@@ -60,7 +60,7 @@ class DeviceFlowResponse(BaseModel):
 
 
 class PollTokenResponse(BaseModel):
-    status: str  # "pending" | "authorized" | "error"
+    status: str  # "pending" | "slow_down" | "authorized" | "error"
     message: str | None = None
 
 
@@ -122,18 +122,16 @@ async def poll_github_token(
         )
 
     try:
-        token_data = await poll_for_token(
-            device_code=flow["device_code"],
-            interval=flow.get("interval", 5),
-            timeout=10,
-        )
+        token_data = await poll_for_token(device_code=flow["device_code"])
         save_token(current_user.username, token_data)
         clear_pending_flow(current_user.username)
         _LOGGER.info("GitHub token saved for %s", current_user.username)
         return PollTokenResponse(status="authorized", message="Successfully authenticated with GitHub")
 
-    except TimeoutError:
-        return PollTokenResponse(status="pending", message="Authorization pending")
+    except TimeoutError as exc:
+        # "slow_down" tells the frontend to increase its polling interval
+        status = "slow_down" if str(exc) == "slow_down" else "pending"
+        return PollTokenResponse(status=status, message="Authorization pending")
 
     except ValueError as exc:
         _LOGGER.warning("Token polling failed for %s: %s", current_user.username, exc)

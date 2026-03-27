@@ -361,6 +361,18 @@ wheels = [
 ]
 
 [[package]]
+name = "authlib"
+version = "1.6.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/af/98/00d3dd826d46959ad8e32af2dbb2398868fd9fd0683c26e56d0789bd0e68/authlib-1.6.9.tar.gz", hash = "sha256:d8f2421e7e5980cc1ddb4e32d3f5fa659cfaf60d8eaf3281ebed192e4ab74f04", size = 165134, upload-time = "2026-03-02T07:44:01.998Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/53/23/b65f568ed0c22f1efacb744d2db1a33c8068f384b8c9b482b52ebdbc3ef6/authlib-1.6.9-py2.py3-none-any.whl", hash = "sha256:f08b4c14e08f0861dc18a32357b33fbcfd2ea86cfe3fe149484b4d764c4a0ac3", size = 244197, upload-time = "2026-03-02T07:44:00.307Z" },
+]
+
+[[package]]
 name = "backports-asyncio-runner"
 version = "1.2.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1148,12 +1160,14 @@ dependencies = [
     { name = "aiofiles" },
     { name = "aiosqlite" },
     { name = "alembic" },
+    { name = "authlib" },
     { name = "bcrypt" },
     { name = "brotli-asgi" },
     { name = "click" },
     { name = "datasets" },
     { name = "elasticsearch8", extra = ["async"] },
     { name = "fastapi" },
+    { name = "filelock" },
     { name = "greenlet" },
     { name = "httpx" },
     { name = "huggingface-hub" },
@@ -1219,12 +1233,14 @@ requires-dist = [
     { name = "aiosqlite", specifier = "==0.20.0" },
     { name = "alembic", specifier = "~=1.13.0" },
     { name = "asyncpg", marker = "extra == 'postgresql'", specifier = "~=0.30.0" },
+    { name = "authlib", specifier = ">=1.6.9" },
     { name = "bcrypt", specifier = "~=4.2.0" },
     { name = "brotli-asgi", specifier = "~=1.4.0" },
     { name = "click", specifier = ">=8.2.0" },
     { name = "datasets", specifier = "~=3.0.2" },
     { name = "elasticsearch8", extras = ["async"], specifier = "~=8.7.0" },
     { name = "fastapi", specifier = "~=0.115.0" },
+    { name = "filelock", specifier = ">=3.25.2" },
     { name = "greenlet", specifier = "~=3.1.0" },
     { name = "httpx", specifier = "~=0.27.0" },
     { name = "huggingface-hub", specifier = "~=0.34.0" },
