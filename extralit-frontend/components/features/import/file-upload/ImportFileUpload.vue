@@ -25,7 +25,6 @@
   import TableUpload from "./TableUpload.vue";
   import PdfUpload from "./PdfUpload.vue";
   import ImportSummarySidebar from "./ImportSummarySidebar.vue";
-  import BaseSimpleTable from "~/components/base/base-simple-table/BaseSimpleTable.vue";
   import { useImportFileUploadViewModel } from "./useImportFileUploadViewModel";
 
   export default {
@@ -35,7 +34,6 @@
       TableUpload,
       PdfUpload,
       ImportSummarySidebar,
-      BaseSimpleTable,
     } as any,
 
     props: {

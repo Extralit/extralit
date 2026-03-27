@@ -13,169 +13,138 @@
 # limitations under the License.
 
 """
-GitHub authentication endpoints for Copilot integration.
+GitHub Device Flow authentication endpoints for Copilot integration.
+
+The device_code secret is kept server-side; only the user_code and
+verification_uri are returned to the browser.
 """
 
 import logging
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from extralit_server.models import User
 from extralit_server.security import auth
-from extralit_server.utils.auth_helpers import GitHubDeviceFlowAuth
+from extralit_server.utils.auth_helpers import (
+    clear_pending_flow,
+    clear_token,
+    get_pending_flow,
+    initiate_device_flow,
+    is_authenticated,
+    poll_for_token,
+    save_token,
+    store_pending_flow,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(tags=["auth"])
 
 
-class AuthStatusResponse(BaseModel):
-    """Response model for auth status check."""
+# ── Response models ──────────────────────────────────────────────────
 
+
+class AuthStatusResponse(BaseModel):
     authenticated: bool
     username: str
 
 
 class DeviceFlowResponse(BaseModel):
-    """Response model for device flow initiation."""
+    """Returned to the browser - no device_code."""
 
-    device_code: str  # <--- ADDED THIS FIELD
     user_code: str
     verification_uri: str
     expires_in: int
     interval: int
 
 
+class PollTokenResponse(BaseModel):
+    status: str  # "pending" | "slow_down" | "authorized" | "error"
+    message: str | None = None
+
+
+# ── Endpoints ────────────────────────────────────────────────────────
+
+
 @router.get("/auth/github/status")
-async def get_auth_status(current_user: User = Depends(auth.get_current_user)) -> AuthStatusResponse:
-    """
-    Check if the current user has authenticated with GitHub for Copilot access.
-
-    Returns:
-        AuthStatusResponse with authentication status and username
-    """
-    github_auth = GitHubDeviceFlowAuth(username=current_user.username)
-    is_authenticated = github_auth.is_authenticated()
-
-    _LOGGER.info(f"Auth status check for {current_user.username}: {is_authenticated}")
-
+async def get_auth_status(
+    current_user: User = Depends(auth.get_current_user),
+) -> AuthStatusResponse:
+    """Check whether the current user has a valid GitHub Copilot token."""
     return AuthStatusResponse(
-        authenticated=is_authenticated,
+        authenticated=is_authenticated(current_user.username),
         username=current_user.username,
     )
 
 
 @router.post("/auth/github/login")
-async def initiate_github_login(current_user: User = Depends(auth.get_current_user)) -> DeviceFlowResponse:
+async def initiate_github_login(
+    current_user: User = Depends(auth.get_current_user),
+) -> DeviceFlowResponse:
+    """Start the GitHub OAuth device flow.
+
+    Returns only the user_code and verification_uri.  The device_code
+    is stored server-side and used automatically by the /poll endpoint.
     """
-    Initiate GitHub Device Flow authentication.
-
-    This endpoint starts the OAuth Device Flow and returns the user code
-    and verification URI that the user should visit to authorize the application.
-
-    Returns:
-        DeviceFlowResponse with device_code, user_code, verification_uri, expires_in, and interval
-
-    Raises:
-        ValueError: If GitHub client ID is not configured
-    """
-    github_auth = GitHubDeviceFlowAuth(username=current_user.username)
-
     try:
-        flow_data = await github_auth.initiate_flow()
-        _LOGGER.info(f"Initiated GitHub Device Flow for {current_user.username}")
+        flow_data = await initiate_device_flow()
+    except Exception:
+        _LOGGER.exception("Failed to initiate GitHub Device Flow for %s", current_user.username)
+        raise HTTPException(status_code=502, detail="Failed to contact GitHub for device-code flow")
 
-        # Return device_code so the client can use it to poll for the token
-        return DeviceFlowResponse(
-            device_code=flow_data["device_code"],  # <--- ADDED THIS ASSIGNMENT
-            user_code=flow_data["user_code"],
-            verification_uri=flow_data["verification_uri"],
-            expires_in=flow_data["expires_in"],
-            interval=flow_data["interval"],
-        )
-    except ValueError as e:
-        _LOGGER.error(f"Failed to initiate GitHub Device Flow: {e}")
-        raise
+    # Keep the device_code on the server
+    store_pending_flow(current_user.username, flow_data)
+    _LOGGER.info("Initiated GitHub Device Flow for %s", current_user.username)
 
-
-class PollTokenRequest(BaseModel):
-    """Request model for polling token."""
-
-    device_code: str
-
-
-class PollTokenResponse(BaseModel):
-    """Response model for polling token."""
-
-    status: str  # "pending", "authorized", "error"
-    message: str | None = None
+    return DeviceFlowResponse(
+        user_code=flow_data["user_code"],
+        verification_uri=flow_data["verification_uri"],
+        expires_in=flow_data["expires_in"],
+        interval=flow_data["interval"],
+    )
 
 
 @router.post("/auth/github/poll")
 async def poll_github_token(
-    request: PollTokenRequest,
     current_user: User = Depends(auth.get_current_user),
 ) -> PollTokenResponse:
+    """Poll for the access token after the user authorises on GitHub.
+
+    The client does not need to send a device_code — it is stored
+    server-side from the /login step.
     """
-    Poll for GitHub access token after user authorization.
-
-    This endpoint should be called by the client after the user has visited
-    the verification URI and entered their code.
-
-    Args:
-        request: Contains the device_code from the login initiation
-
-    Returns:
-        PollTokenResponse indicating status of authorization
-
-    Raises:
-        ValueError: If authorization fails or expires
-    """
-    github_auth = GitHubDeviceFlowAuth(username=current_user.username)
+    flow = get_pending_flow(current_user.username)
+    if flow is None:
+        raise HTTPException(
+            status_code=400,
+            detail="No pending device flow. Call /auth/github/login first.",
+        )
 
     try:
-        # Poll with a short timeout (single attempt)
-        token_data = await github_auth.poll_for_token(
-            device_code=request.device_code,
-            interval=5,
-            timeout=10,  # Just one quick check
-        )
+        token_data = await poll_for_token(device_code=flow["device_code"])
+        save_token(current_user.username, token_data)
+        clear_pending_flow(current_user.username)
+        _LOGGER.info("GitHub token saved for %s", current_user.username)
+        return PollTokenResponse(status="authorized", message="Successfully authenticated with GitHub")
 
-        # Save the token
-        github_auth.save_token(token_data)
+    except TimeoutError as exc:
+        # "slow_down" tells the frontend to increase its polling interval
+        status = "slow_down" if str(exc) == "slow_down" else "pending"
+        return PollTokenResponse(status=status, message="Authorization pending")
 
-        _LOGGER.info(f"Successfully authorized and saved token for {current_user.username}")
-
-        return PollTokenResponse(
-            status="authorized",
-            message="Successfully authenticated with GitHub",
-        )
-    except TimeoutError:
-        # User hasn't authorized yet
-        return PollTokenResponse(
-            status="pending",
-            message="Authorization pending",
-        )
-    except ValueError as e:
-        _LOGGER.error(f"Token polling error for {current_user.username}: {e}")
-        return PollTokenResponse(
-            status="error",
-            message=str(e),
-        )
+    except ValueError as exc:
+        _LOGGER.warning("Token polling failed for %s: %s", current_user.username, exc)
+        clear_pending_flow(current_user.username)
+        return PollTokenResponse(status="error", message="Authorization failed or expired. Please try again.")
 
 
 @router.delete("/auth/github/logout")
-async def logout_github(current_user: User = Depends(auth.get_current_user)) -> dict[str, str]:
-    """
-    Clear the stored GitHub token for the current user.
-
-    Returns:
-        Success message
-    """
-    github_auth = GitHubDeviceFlowAuth(username=current_user.username)
-    github_auth.clear_token()
-
-    _LOGGER.info(f"Logged out GitHub for {current_user.username}")
-
+async def logout_github(
+    current_user: User = Depends(auth.get_current_user),
+) -> dict[str, str]:
+    """Clear the stored GitHub token."""
+    clear_token(current_user.username)
+    clear_pending_flow(current_user.username)
+    _LOGGER.info("Logged out GitHub for %s", current_user.username)
     return {"message": "Successfully logged out from GitHub"}
