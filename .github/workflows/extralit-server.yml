@@ -91,32 +91,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit-server/pyproject.toml"
           enable-cache: true
           cache-local-path: ~/.cache/uv
-          cache-dependency-glob: "extralit-server/pdm.lock"
-
-      - name: Install PDM
-        run: uv tool install pdm
+          cache-dependency-glob: "extralit-server/uv.lock"
 
       - name: Install dependencies
-        run: |
-          pdm config use_uv true
-          pdm config python.install_root "$(uv python dir)"
-          pdm install --dev
+        run: uv sync --group test --extra postgresql
 
       - name: Run tests 📈
         id: run-tests
         continue-on-error: true
         env:
           HF_TOKEN_EXTRALIT_INTERNAL_TESTING: ${{ secrets.HF_TOKEN_EXTRALIT_INTERNAL_TESTING }}
+          EXTRALIT_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/extralit
+          EXTRALIT_ELASTICSEARCH: http://localhost:9200
+          EXTRALIT_SEARCH_ENGINE: elasticsearch
         run: |
-          EXTRALIT_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/extralit
-          EXTRALIT_ELASTICSEARCH=http://localhost:9200
-          EXTRALIT_SEARCH_ENGINE=elasticsearch
-          pdm test-cov tests/unit
+          uv run pytest tests/unit --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings
 
       - name: Upload test coverage
         if: always()
@@ -156,7 +150,7 @@ jobs:
       - name: Build package
         run: |
           cp -r ../extralit-frontend/dist src/extralit_server/static
-          pdm build
+          uv build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -209,7 +203,7 @@ jobs:
         uses: githubocto/repo-visualizer@0.7.1
         with:
           root_path: "extralit-server/"
-          excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,pdm.lock"
+          excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,uv.lock"
           excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
           output_file: "repo-visualizer.svg"
           should_push: false
@@ -227,17 +221,15 @@ jobs:
           name: extralit-server
           path: extralit-server/dist
 
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
-          python-version-file: extralit-server/pyproject.toml
-          cache-dependency-path: extralit-server/pdm.lock
-          cache: true
+          pyproject-file: "extralit-server/pyproject.toml"
 
       - name: Read package info
         run: |
-          PACKAGE_VERSION=$(pdm show --version)
-          PACKAGE_NAME=$(pdm show --name)
+          PACKAGE_VERSION=$(grep '__version__' src/extralit_server/_version.py | cut -d'"' -f2)
+          PACKAGE_NAME="extralit-server"
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
           echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
           echo "$PACKAGE_NAME==$PACKAGE_VERSION"
@@ -245,7 +237,7 @@ jobs:
       - name: Publish Package to PyPI test environment 🥪
         continue-on-error: true
         run: |
-          pdm publish --no-build --repository testpypi --username __token__ --password ${{ secrets.AR_TEST_PYPI_API_TOKEN }}
+          uv publish --index-url https://test.pypi.org/legacy/ --token ${{ secrets.AR_TEST_PYPI_API_TOKEN }} dist/*
 
       - name: Test Installing 🍿
         continue-on-error: true
@@ -255,4 +247,4 @@ jobs:
       - name: Publish Package to PyPI 🥩
         if: github.ref == 'refs/heads/main'
         run: |
-          pdm publish --no-build --username __token__ --password ${{ secrets.AR_PYPI_API_TOKEN }}
+          uv publish --token ${{ secrets.AR_PYPI_API_TOKEN }} dist/*

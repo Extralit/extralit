@@ -82,10 +82,10 @@ Then, select from three different development environments through devcontainers
 
     # Install server dependencies
     cd extralit-server
-    pdm install
+    uv sync
 
     # Start the server in development mode
-    pdm run server-dev
+    uv run python -m extralit_server server-dev
     ```
 
 === "UI/UX Design"
@@ -126,12 +126,12 @@ For a persistent **PostgreSQL database**, Supabase can be used as the backend se
 
 3. Install Backend Dependencies
 
-    If installation fails on PostgreSQL-related dependencies in Github Codespaces, install server dependencies without the PostgreSQL optional group and then add `asyncpg` explicitly:
+    If installation fails on PostgreSQL-related dependencies in Github Codespaces, install server dependencies without the PostgreSQL extra and then add `asyncpg` explicitly:
 
     ```bash
     cd extralit-server
-    pdm install --without postgresql
-    pdm add asyncpg
+    uv sync
+    uv pip install asyncpg
     ```
 
 4. Initialize Python Environment
@@ -140,18 +140,18 @@ For a persistent **PostgreSQL database**, Supabase can be used as the backend se
 
     ```bash
     cd extralit
-    pdm install -G dev
+    uv sync
     ```
     Verify the package loads correctly:
     ```
-    pdm run python -c "import extralit; print('ok')"
+    uv run python -c "import extralit; print('ok')"
     ```
 5. Start the backend and frontend in separate terminals:
 
     ```bash
     # Terminal 1: backend
     cd extralit-server
-    pdm run server-dev
+    uv run python -m extralit_server server-dev
     ```
 
     ```bash
@@ -164,7 +164,7 @@ For a persistent **PostgreSQL database**, Supabase can be used as the backend se
 
     If the required tables do not yet exist in Supabase when starting the extralit server, you can initialize them by running the script:
     ```
-    pdm run migrate
+    uv run alembic -c src/extralit_server/alembic.ini upgrade head
     ```
     This will trigger table creation with alembic schema migrations.
 
@@ -175,7 +175,7 @@ For a persistent **PostgreSQL database**, Supabase can be used as the backend se
     - **Python SDK packages**
       ```bash
       cd extralit
-      pdm install
+      uv sync
       ```
     - **Frontend Development**: For frontend live-reloading:
       ```bash
@@ -213,19 +213,19 @@ cd extralit
 
 ### 2. Set Up Python Environment
 
-We recommend using PDM for package management:
+We recommend using uv for package management:
 
 ```bash
-# Install PDM if not already installed
-pip install pdm uv
+# Install uv if not already installed
+pip install uv
 
 # Install server dependencies
 cd extralit-server
-pdm install
+uv sync
 
 # Install client dependencies
 cd ../extralit
-pdm install
+uv sync
 ```
 
 ### 3. Build the Frontend
@@ -280,9 +280,9 @@ docker compose up -d
 
 ```bash
 cd extralit-server
-pdm run migrate
-pdm run cli database users create_default
-pdm run server
+uv run alembic -c src/extralit_server/alembic.ini upgrade head
+uv run python -m extralit_server cli database users create_default
+uv run python -m extralit_server server
 ```
 
 ### 7. Access the Web Interface
@@ -347,7 +347,7 @@ To build and run the Extralit Server using Docker, follow these steps:
 
 ```bash
 cd extralit-server
-pdm build && cp -r dist/ docker/server/
+uv build && cp -r dist/ docker/server/
 ```
 
 ```bash
@@ -402,15 +402,15 @@ pre-commit install
 In addition, run the following scripts to check the code formatting and linting:
 
 ```sh
-pdm run format
-pdm run lint
+uv run ruff format
+uv run ruff check
 ```
 
 ??? tip "Running linting, formatting, and tests"
     You can run all the checks at once by using the following command:
 
     ```sh
-    pdm run all
+    uv run ruff format && uv run ruff check && uv run pytest tests --disable-warnings
     ```
 
 ## Documentation Development
@@ -444,7 +444,7 @@ If database migrations fail:
 ```bash
 # Reset the database
 rm -rf ~/.extralit/extralit-dev.db
-pdm run migrate
+uv run alembic -c src/extralit_server/alembic.ini upgrade head
 ```
 
 ### Frontend Build Issues

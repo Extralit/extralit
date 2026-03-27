@@ -31,8 +31,14 @@ dependencies = [
 nlp = ["textdescriptives", "setfit ~= 0.7.0"]
 
 [build-system]
-requires = ["pdm-backend>=2.0.0", "setuptools>=68.0.0"]
-build-backend = "pdm.backend"
+requires = ["hatchling>=1.18.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/extralit/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/extralit"]
 
 [tool.ruff]
 line-length = 120
@@ -73,15 +79,7 @@ ignore = [
 "src/extralit/cli/**/*.py" = ["UP007", "UP045"]
 
 
-[tool.pdm]
-distribution = true
-use-venv = true
-
-[tool.pdm.version]
-source = "file"
-path = "src/extralit/_version.py"
-
-[tool.pdm.dev-dependencies]
+[dependency-groups]
 dev = [
     "ipython>=8.12.3",
     "pytest>=7.4.4",
@@ -106,13 +104,6 @@ dev = [
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
 ]
-
-[tool.pdm.scripts]
-test = { cmd = "pytest tests --disable-warnings", env_file = ".env.test" }
-test-cov = { cmd = "pytest tests --disable-warnings --cov=extralit --cov-report=term --cov-report=xml", env_file = ".env.test" }
-lint = "ruff check"
-format = "ruff format"
-all = { composite = ["format", "lint", "test"] }
 
 [project.scripts]
 extralit = "extralit.cli.app:app"

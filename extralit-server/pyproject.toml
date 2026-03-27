@@ -97,20 +97,19 @@ documentation = "https://docs.extralit.ai"
 repository = "https://github.com/extralit/extralit"
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["hatchling>=1.18.0"]
+build-backend = "hatchling.build"
 
-[tool.pdm]
-distribution = true
-
-[tool.pdm.build]
-excludes = [".env.dev", ".env.test"]
-
-[tool.pdm.version]
-source = "file"
+[tool.hatch.version]
 path = "src/extralit_server/_version.py"
 
-[tool.pdm.dev-dependencies]
+[tool.hatch.build.targets.wheel]
+packages = ["src/extralit_server"]
+
+[tool.hatch.build]
+exclude = [".env.dev", ".env.test"]
+
+[dependency-groups]
 test = [
     "pytest>=7.4.4",
     "pytest-cov>=4.1.0",
@@ -131,6 +130,8 @@ log_date_format = "%Y-%m-%d %H:%M:%S"
 testpaths = ["tests"]
 env = ["HF_HUB_DISABLE_TELEMETRY=1"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 
 [tool.coverage.run]
 concurrency = ["greenlet", "thread", "multiprocessing"]
@@ -219,6 +220,8 @@ ignore = [
     "UP045",
 ] # Typer doesn't support new union syntax
 
+# Legacy PDM scripts retained for backward compatibility with pdm run commands.
+# Preferred: use uv run directly, e.g. `uv run pytest tests`, `uv run ruff check`
 [tool.pdm.scripts]
 _.env_file = ".env.dev"
 cli = { cmd = "python -m extralit_server.cli" }
@@ -238,4 +241,4 @@ test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test"
 test-cov = { cmd = "pytest tests --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings", env_file = ".env.test" }
 lint = "ruff check"
 
-docker-build-extralit-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }
+docker-build-extralit-server = { shell = "uv build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }

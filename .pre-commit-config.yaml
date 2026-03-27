@@ -8,6 +8,18 @@ repos:
         exclude_types: [text, jupyter]
       - id: trailing-whitespace
 
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.9.30
+    hooks:
+      - id: uv-lock
+        name: "Lock extralit dependencies"
+        files: '^extralit/pyproject\.toml$'
+        args: [--directory, extralit]
+      - id: uv-lock
+        name: "Lock extralit-server dependencies"
+        files: '^extralit-server/pyproject\.toml$'
+        args: [--directory, extralit-server]
+
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.12.9
     hooks:

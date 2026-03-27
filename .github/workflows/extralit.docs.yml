@@ -43,30 +43,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit/pyproject.toml"
           python-version: "3.10"
           enable-cache: true
           cache-local-path: ~/.cache/uv
           ignore-nothing-to-cache: true
-          cache-dependency-glob: "extralit/pdm.lock"
-
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
-        with:
-          python-version: "3.10"
-          cache: true
-          cache-dependency-path: |
-            extralit/pdm.lock
+          cache-dependency-glob: "extralit/uv.lock"
 
       - name: Install dependencies
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
         run: |
-          pdm config use_uv true
-          pdm config python.install_root "$(uv python dir)"
-          pdm install -q
+          uv sync
           uv cache prune --ci
 
       - name: Set git credentials
@@ -80,20 +68,20 @@ jobs:
 
       - name: Deploy Extralit docs (branch /main)
         run: |
-          pdm run mike deploy stable --push
+          uv run mike deploy stable --push
         if: github.ref == 'refs/heads/main'
 
       - name: Deploy Extralit docs (branch /develop)
         run: |
-          pdm run mike deploy latest --push
-          pdm run mike set-default --push latest
+          uv run mike deploy latest --push
+          uv run mike set-default --push latest
         if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
 
       - name: Deploy Extralit docs (release $version)
         run: |
           version=$(echo $TAG_VERSION | awk -F \. {'print $1"."$2'})
           echo "Deploying version ${version}"
-          pdm run mike deploy $version --push
+          uv run mike deploy $version --push
         if: startsWith(github.ref, 'refs/tags/')
         env:
           TAG_VERSION: ${{ github.ref_name }}
@@ -101,12 +89,12 @@ jobs:
       - name: Delete Extralit docs (versions 'docs_*')
         id: delete_deployment
         run: |
-          versions=$(pdm run mike list)
+          versions=$(uv run mike list)
           formatted_versions=$(echo "$versions" | tr ',' '\n' | tr -d '[]')
           for version in $versions; do
             if [[ $version == docs_* ]]; then
               echo "Deleting version: $version"
-              pdm run mike delete "$version" --push
+              uv run mike delete "$version" --push
             fi
           done
         if: startsWith(github.ref, 'refs/tags/')
@@ -117,7 +105,7 @@ jobs:
         run: echo "branch_name=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" | sed 's/\//_/g'  >> $GITHUB_OUTPUT
 
       - name: Deploy Extralit docs (branch /docs/*)
-        run: pdm run mike deploy ${{ steps.extract_branch_name.outputs.branch_name }} --prop-set hidden=true --push
+        run: uv run mike deploy ${{ steps.extract_branch_name.outputs.branch_name }} --prop-set hidden=true --push
         if: startsWith(github.ref, 'refs/heads/docs') || startsWith(github.head_ref, 'docs/')
 
       - name: Add deployment message in PR

@@ -176,7 +176,8 @@ class TestOauth2:
                     cookies={"huggingface_oauth2_state": "valid"},
                 )
 
-                assert response.status_code == 500
+                assert response.status_code == 401
+                assert response.json() == {"detail": "OAuth error: Missing username"}
 
     async def test_provider_huggingface_access_token_with_missing_name(
         self,

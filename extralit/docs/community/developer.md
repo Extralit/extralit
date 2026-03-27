@@ -81,11 +81,8 @@ cd extralit
 Next, activate your virtual Python environment and make the required installations:
 
 ```sh
-# Install the `pdm` package manager
-pip install pdm
-
 # Install extralit in editable mode and the development dependencies
-pdm install --dev
+uv sync
 ```
 
 To install specific sub-packages with editable mode, you can use the following command:
@@ -132,15 +129,15 @@ Running tests at the end of every development cycle is indispensable to ensure n
 
 ```sh
 cd extralit/
-pdm run test-cov tests/unit
-pdm run test-cov tests/integration
+uv run pytest tests/unit --disable-warnings --cov=extralit
+uv run pytest tests/integration --disable-warnings --cov=extralit
 ```
 
 ??? tip "Running linting, formatting, and tests"
     You can run all the checks at once by using the following command:
 
     ```sh
-        pdm run all
+        uv run ruff format && uv run ruff check && uv run pytest tests --disable-warnings
     ```
 
 ## Set up the documentation
@@ -185,7 +182,7 @@ When making changes to the database schema, you need to create database revision
 
 ```bash
 cd extralit-server
-pdm run revision -m "description of change"
+uv run alembic -c src/extralit_server/alembic.ini revision --autogenerate -m "description of change"
 ```
 
 3. Review the generated revision file in `extralit-server/migrations/versions/`
@@ -193,10 +190,10 @@ pdm run revision -m "description of change"
 
 ```bash
 # Apply the migration
-pdm run alembic upgrade head
+uv run alembic -c src/extralit_server/alembic.ini upgrade head
 
 # Rollback if needed
-pdm run alembic downgrade -1
+uv run alembic -c src/extralit_server/alembic.ini downgrade -1
 ```
 
 #### Applying Migrations
@@ -204,13 +201,13 @@ pdm run alembic downgrade -1
 To apply all pending migrations:
 
 ```bash
-pdm run alembic upgrade head
+uv run alembic -c src/extralit_server/alembic.ini upgrade head
 ```
 
 To check the current database version:
 
 ```bash
-pdm run alembic current
+uv run alembic -c src/extralit_server/alembic.ini current
 ```
 
 #### Guidelines for Database Changes

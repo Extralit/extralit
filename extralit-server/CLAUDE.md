@@ -5,31 +5,25 @@
 ```bash
 cd extralit-server/
 
-# Install PDM if needed
-pip install pdm
-
-# Configure PDM to use uv
-pdm config use_uv true
-
 # Install dependencies
-pdm install -G test
+uv sync
 ```
 
 ## Development
 
 ```bash
-pdm run server-dev    # Start server + worker with auto-reload
-pdm run server        # Server only
-pdm run worker        # Worker only
-pdm run migrate       # Run database migrations
+uv run python -m extralit_server server-dev    # Start server + worker with auto-reload
+uv run python -m extralit_server server        # Server only
+uv run python -m extralit_server worker        # Worker only
+uv run alembic -c src/extralit_server/alembic.ini upgrade head  # Run database migrations
 ```
 
 ## Testing
 
 ```bash
-pdm run test          # Run all tests
-pdm run test-cov      # Run tests with coverage
-pdm run lint          # Ruff linting
+uv run pytest tests --disable-warnings                         # Run all tests
+uv run pytest tests --disable-warnings --cov=extralit_server   # Run tests with coverage
+uv run ruff check                                              # Ruff linting
 ```
 
 **Note**: Full test suite requires CI environment (Elasticsearch, PostgreSQL, Redis, MinIO). Some tests will skip locally.
@@ -37,8 +31,8 @@ pdm run lint          # Ruff linting
 ## Database
 
 - **Migrations**: Always use Alembic
-  - `pdm run revision -m "description"` - Create migration after model changes
-  - `pdm run migrate` - Apply migrations
+  - `uv run alembic -c src/extralit_server/alembic.ini revision --autogenerate -m "description"` - Create migration after model changes
+  - `uv run alembic -c src/extralit_server/alembic.ini upgrade head` - Apply migrations
 - **PostgreSQL** required for development
 - Run migrations before starting development
 

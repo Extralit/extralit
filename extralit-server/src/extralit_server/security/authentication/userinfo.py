@@ -30,7 +30,7 @@ class UserInfo(BaseUser, dict):
 
     @property
     def username(self) -> str:
-        return self["username"]
+        return self.get("username", "")
 
     @property
     def first_name(self) -> str:
@@ -51,7 +51,7 @@ class UserInfo(BaseUser, dict):
 
     def _parse_role_from_environment(self) -> UserRole | None:
         """This is a temporal solution, and it will be replaced by a proper Sign up process"""
-        if self["username"] == os.getenv("USERNAME"):
+        if self.get("username") == os.getenv("USERNAME"):
             return UserRole.owner
         return _DEFAULT_USER_ROLE
 
