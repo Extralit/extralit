@@ -6,19 +6,16 @@
 cd extralit/
 
 # Install in development mode
-pip install -e ".[dev]"
-
-# Or use PDM
-pdm install -e ".[dev]"
+uv sync
 ```
 
 ## Development
 
 ```bash
-pdm run test          # Run all tests
-pdm run test-cov      # Run tests with coverage
-pdm run lint          # Ruff linting
-pdm run all           # Format, lint, and test
+uv run pytest tests --disable-warnings                # Run all tests
+uv run pytest tests --disable-warnings --cov=extralit  # Run tests with coverage
+uv run ruff check                                      # Ruff linting
+uv run ruff format                                     # Ruff formatting
 ```
 
 ## Requirements

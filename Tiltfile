@@ -85,7 +85,7 @@ if not os.path.exists('extralit-frontend/dist'):
 if not os.path.exists('extralit-server/src/extralit_server/static'):
     local('cp -r extralit-frontend/dist extralit-server/src/extralit_server/static', quiet=True)
 if not os.path.exists('extralit-server/dist/'):
-    local('pdm build', dir='extralit-server')
+    local('uv build', dir='extralit-server')
 docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
     context='extralit-server/',
@@ -167,7 +167,7 @@ helm_resource(
 
 # Extralit server
 if not os.path.exists('extralit/dist/'):
-    local('pdm build', dir='extralit')
+    local('uv build', dir='extralit')
 docker_build(
     "{DOCKER_REPO}/extralit-server".format(DOCKER_REPO=DOCKER_REPO),
     context='extralit/',

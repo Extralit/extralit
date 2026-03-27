@@ -12,21 +12,21 @@ Each component has its own AGENTS.md with setup details:
 - Python 3.10+ (server) / 3.9+ (SDK)
 - Node.js 18+
 - Docker & Docker Compose (for full stack)
-- PDM (Python package manager)
+- uv (Python package manager)
 
 ## Quick Setup
 
 ```bash
-# Install PDM
-pip install pdm
+# Install uv
+pip install uv
 
 # Setup all components
-cd extralit-server && pdm install -G test
-cd ../extralit && pdm install -e ".[dev]"
+cd extralit-server && uv sync
+cd ../extralit && uv sync
 cd ../extralit-frontend && npm install
 
 # Run migrations
-cd extralit-server && pdm run migrate
+cd extralit-server && uv run alembic -c src/extralit_server/alembic.ini upgrade head
 
 # Start services (requires Docker)
 docker-compose up -d
@@ -36,20 +36,20 @@ docker-compose up -d
 
 ### Running Services
 ```bash
-cd extralit-server && pdm run server-dev  # Server + worker
+cd extralit-server && uv run python -m extralit_server server-dev  # Server + worker
 cd extralit-frontend && npm run dev        # Frontend
 ```
 
 ### Testing
 ```bash
-cd extralit-server && pdm run test         # Server tests
-cd extralit && pdm run test                # SDK tests
+cd extralit-server && uv run pytest tests  # Server tests
+cd extralit && uv run pytest tests         # SDK tests
 cd extralit-frontend && npm run test       # Frontend tests
 ```
 
 ### Code Quality
 ```bash
-pdm run lint              # Python linting (ruff)
+uv run ruff check         # Python linting (ruff)
 npm run lint              # Frontend linting (ESLint)
 npm run format            # Frontend formatting (Prettier)
 ```
