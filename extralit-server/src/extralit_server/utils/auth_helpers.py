@@ -211,6 +211,7 @@ async def initiate_device_flow() -> dict[str, Any]:
             GITHUB_DEVICE_CODE_URL,
             data={"client_id": GITHUB_CLIENT_ID, "scope": GITHUB_SCOPE},
             headers={"Accept": "application/json"},
+            auth=None,
         )
         resp.raise_for_status()
         return resp.json()
@@ -237,6 +238,7 @@ async def poll_for_token(device_code: str) -> dict[str, str]:
                 "grant_type": "urn:ietf:params:oauth:grant-type:device_code",
             },
             headers={"Accept": "application/json"},
+            auth=None,
         )
         data = resp.json()
 
