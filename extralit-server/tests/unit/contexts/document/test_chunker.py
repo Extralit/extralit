@@ -83,3 +83,36 @@ class TestChunkText:
         chunks_large = chunk_text(text, chunk_size=256)
         # Smaller chunk size ⇒ more chunks
         assert len(chunks_small) > len(chunks_large)
+
+    def test_table_header_and_body_are_merged(self):
+        text = (
+            "Table 2  Evaluation of the association between different genotypes of L119F-GSTe2 and the longevity "
+            "of exposed mosquitoes\n\n"
+            "Genotypes\n\nRR vs. SS\n\nRR vs. RS\n\nRS vs. SS\n\nR vs. S\n\n"
+            "(D2-D5)\n\n(D6-D10)\n\nOR\n\n95% CI\n\nP\n\n"
+            "2.6\n\n1.01-2.83\n\n0.02*\n\n"
+            "3.04\n\n1.10-2.72\n\n0.004*\n\n"
+            "6.47\n\n1.69-5.27\n\n< 0.0001*\n"
+        )
+
+        # Force base chunking to split, then verify table-aware merge rejoins it.
+        chunks = chunk_text(text, chunk_size=160, merge_table_chunks=True)
+
+        assert len(chunks) == 1
+        assert "Table 2" in chunks[0]["text"]
+        assert "0.004*" in chunks[0]["text"]
+
+    def test_table_merge_can_be_disabled(self):
+        text = (
+            "Table 2  Evaluation of the association between different genotypes of L119F-GSTe2 and the longevity "
+            "of exposed mosquitoes\n\n"
+            "Genotypes\n\nRR vs. SS\n\nRR vs. RS\n\nRS vs. SS\n\nR vs. S\n\n"
+            "(D2-D5)\n\n(D6-D10)\n\nOR\n\n95% CI\n\nP\n\n"
+            "2.6\n\n1.01-2.83\n\n0.02*\n\n"
+            "3.04\n\n1.10-2.72\n\n0.004*\n\n"
+            "6.47\n\n1.69-5.27\n\n< 0.0001*\n"
+        )
+
+        chunks = chunk_text(text, chunk_size=160, merge_table_chunks=False)
+
+        assert len(chunks) > 1
