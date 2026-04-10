@@ -12,12 +12,14 @@ export const useCopilotConnectViewModel = () => {
   const isPending = computed(() => store.state.isPending);
   const userCode = computed(() => store.state.userCode);
   const verificationUri = computed(() => store.state.verificationUri);
+  const errorMessage = computed(() => store.state.errorMessage);
 
   useFetch(async () => {
     await gitHubAuthUseCase.checkStatus();
   });
 
   const connectCopilot = async () => {
+    if (isPending.value) return;
     await gitHubAuthUseCase.initiateLogin();
   };
 
@@ -30,6 +32,7 @@ export const useCopilotConnectViewModel = () => {
     isPending,
     userCode,
     verificationUri,
+    errorMessage,
     connectCopilot,
   };
 };

@@ -17,7 +17,6 @@
 Chat endpoint using LiteLLM with GitHub Copilot and RAG support.
 """
 
-import json
 import logging
 from typing import Annotated, Any
 from uuid import UUID
@@ -38,6 +37,14 @@ from extralit_server.utils.auth_helpers import load_token
 _LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(tags=["chat"])
+
+# Required headers for GitHub Copilot API compatibility
+COPILOT_HEADERS = {
+    "Editor-Version": "vscode/1.96.2",
+    "Editor-Plugin-Version": "copilot/1.256.0",
+    "User-Agent": "GithubCopilot/1.256.0",
+    "Copilot-Integration-Id": "vscode-chat",
+}
 
 
 class ChatMessage(BaseModel):
@@ -96,16 +103,16 @@ async def retrieve_context(
         # Fetch the dataset
         dataset = await Dataset.get_by(db, id=dataset_id)
         if not dataset:
-            _LOGGER.warning(f"Dataset {dataset_id} not found")
+            _LOGGER.warning("Dataset %s not found", dataset_id)
             return None
 
         # Get vector settings for this dataset (use first available or "default")
         vector_settings = await VectorSettings.get_by(db, dataset_id=dataset.id)
         if not vector_settings:
-            _LOGGER.warning(f"No vector settings found for dataset {dataset_id}")
+            _LOGGER.warning("No vector settings found for dataset %s", dataset_id)
             return None
 
-        _LOGGER.info(f"Generating embedding for query: {query_text[:50]}...")
+        _LOGGER.info("Generating embedding for query: %.50s...", query_text)
 
         embedding_response = await litellm.aembedding(
             model="github_copilot/text-embedding-3-small",
@@ -115,7 +122,7 @@ async def retrieve_context(
         )
         query_embedding = embedding_response["data"][0]["embedding"]
 
-        _LOGGER.info(f"Generated embedding with {len(query_embedding)} dimensions")
+        _LOGGER.info("Generated embedding with %d dimensions", len(query_embedding))
 
         # Perform similarity search
         search_results = await search_engine.similarity_search(
@@ -130,7 +137,7 @@ async def retrieve_context(
             _LOGGER.info("No relevant documents found")
             return None
 
-        _LOGGER.info(f"Found {len(search_results.items)} relevant documents")
+        _LOGGER.info("Found %d relevant documents", len(search_results.items))
 
         # Fetch the actual record data
         record_ids = [item.record_id for item in search_results.items]
@@ -159,12 +166,12 @@ async def retrieve_context(
             return None
 
         context = "\n\n".join(context_chunks[: top_k * 3])  # Limit total context
-        _LOGGER.info(f"Built context with {len(context)} characters from {len(context_chunks)} chunks")
+        _LOGGER.info("Built context with %d characters from %d chunks", len(context), len(context_chunks))
 
         return context
 
     except Exception as e:
-        _LOGGER.error(f"Error during RAG retrieval: {e}", exc_info=True)
+        _LOGGER.error("Error during RAG retrieval: %s", e, exc_info=True)
         return None
 
 
@@ -210,8 +217,10 @@ async def chat(
     litellm_model = resolve_model_string(request.model)
 
     _LOGGER.info(
-        f"Chat request from {current_user.username} using model {litellm_model}"
-        + (f" with RAG (dataset_id={request.dataset_id})" if request.dataset_id else "")
+        "Chat request from %s using model %s%s",
+        current_user.username,
+        litellm_model,
+        f" with RAG (dataset_id={request.dataset_id})" if request.dataset_id else "",
     )
 
     # Convert messages to LiteLLM format
@@ -246,7 +255,7 @@ async def chat(
         }
         # Insert system message at the beginning
         messages = [system_message, *messages]
-        _LOGGER.info(f"Injected RAG context ({len(context)} chars) into conversation")
+        _LOGGER.info("Injected RAG context (%d chars) into conversation", len(context))
 
     async def stream_response():
         """Stream the chat completion response."""
@@ -256,6 +265,8 @@ async def chat(
                 messages=messages,
                 stream=request.stream,
                 api_key=token_data["access_token"],
+                extra_headers=COPILOT_HEADERS,
+                custom_llm_provider="github",
             )
 
             if request.stream:
@@ -273,7 +284,7 @@ async def chat(
 
         except Exception as e:
             _LOGGER.error("Chat completion error for %s: %s", current_user.username, e)
-            yield f"data: {json.dumps({'error': 'Chat completion failed. Please try again.'})}\n\n"
+            yield "data: Chat completion failed. Please try again.\n\n"
 
     return StreamingResponse(
         stream_response(),

@@ -31,8 +31,10 @@
 
     <!-- Disconnected State -->
     <div v-else class="copilot-connect__status copilot-connect__status--disconnected">
+      <p v-if="errorMessage" class="copilot-connect__error">{{ errorMessage }}</p>
       <button
         class="copilot-connect__button"
+        :disabled="isPending"
         @click="connectCopilot"
       >
         Connect Copilot
@@ -149,6 +151,12 @@ export default {
 
   &__waiting-text {
     color: var(--fg-secondary);
+    font-size: 13px;
+  }
+
+  &__error {
+    margin: 0 0 $base-space 0;
+    color: #cf222e;
     font-size: 13px;
   }
 

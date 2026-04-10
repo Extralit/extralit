@@ -6,7 +6,6 @@ interface AuthStatusResponse {
 }
 
 interface DeviceFlowResponse {
-  device_code: string;
   user_code: string;
   verification_uri: string;
   expires_in: number;
@@ -14,7 +13,7 @@ interface DeviceFlowResponse {
 }
 
 interface PollTokenResponse {
-  status: "pending" | "authorized" | "error";
+  status: "pending" | "slow_down" | "authorized" | "error";
   message?: string;
 }
 
@@ -36,10 +35,9 @@ export class GitHubAuthRepository {
     return data;
   }
 
-  async pollToken(deviceCode: string): Promise<PollTokenResponse> {
+  async pollToken(): Promise<PollTokenResponse> {
     const { data } = await this.axios.post<PollTokenResponse>(
-      "v1/auth/github/poll",
-      { device_code: deviceCode }
+      "v1/auth/github/poll"
     );
     return data;
   }

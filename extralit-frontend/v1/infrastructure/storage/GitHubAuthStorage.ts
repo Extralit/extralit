@@ -6,7 +6,7 @@ class GitHubAuthState {
     public readonly isPending: boolean = false,
     public readonly userCode: string | null = null,
     public readonly verificationUri: string | null = null,
-    public readonly deviceCode: string | null = null
+    public readonly errorMessage: string | null = null
   ) {}
 }
 

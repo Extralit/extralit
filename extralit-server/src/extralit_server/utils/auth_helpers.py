@@ -238,6 +238,7 @@ async def poll_for_token(device_code: str) -> dict[str, str]:
             },
             headers={"Accept": "application/json"},
         )
+        resp.raise_for_status()
         data = resp.json()
 
     if "access_token" in data:
