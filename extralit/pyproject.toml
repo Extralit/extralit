@@ -21,12 +21,9 @@ dependencies = [
     "standardwebhooks>=1.0.0",
     "typer>=0.9.0",
     "lazy-loader>=0.4",
-
     "bibtexparser>=1.4.3",
     "pandera[io]>=0.26.1, < 0.27.0",
     "pandas>=2.3.2",
-
-    "llama-index-embeddings-openai>=0.5.0",
 ]
 nlp = ["textdescriptives", "setfit ~= 0.7.0"]
 
