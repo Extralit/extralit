@@ -61,7 +61,7 @@ dependencies = [
     # For Webhooks
     "standardwebhooks>=1.0.0",
     # For HF dataset import
-    "datasets ~= 3.0.2",
+    "datasets>=3.6.0",
     "pillow>=10.1.0",
     # NumPy 2.x compatibility
     "numpy>=2.0.0,<3.0.0",
