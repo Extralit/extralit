@@ -104,9 +104,7 @@ path = "src/extralit_server/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/extralit_server"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"src/extralit_server/static" = "extralit_server/static"
+ignore-vcs = true
 
 [tool.hatch.build]
 exclude = [".env.dev", ".env.test"]
