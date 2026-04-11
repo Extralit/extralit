@@ -15,7 +15,7 @@
 """
 GitHub Device Flow authentication helpers for GitHub Copilot integration.
 
-Handles per-user OAuth device flow via authlib, token persistence with
+Handles per-user OAuth device flow, token persistence with
 cross-process file locking (filelock + atomic rename), and Redis-backed
 ephemeral device code storage shared across workers.
 """
@@ -29,7 +29,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from authlib.integrations.httpx_client import AsyncOAuth2Client
+import httpx
 from filelock import FileLock
 
 from extralit_server.settings import settings
@@ -206,7 +206,7 @@ def clear_pending_flow(username: str) -> None:
 
 async def initiate_device_flow() -> dict[str, Any]:
     """Start the GitHub device-code flow. Returns the full GitHub response."""
-    async with AsyncOAuth2Client(client_id=GITHUB_CLIENT_ID) as client:
+    async with httpx.AsyncClient() as client:
         resp = await client.post(
             GITHUB_DEVICE_CODE_URL,
             data={"client_id": GITHUB_CLIENT_ID, "scope": GITHUB_SCOPE},
@@ -228,7 +228,7 @@ async def poll_for_token(device_code: str) -> dict[str, str]:
         TimeoutError: authorization_pending or slow_down (caller should retry).
         ValueError:   expired_token, access_denied, or unexpected error.
     """
-    async with AsyncOAuth2Client(client_id=GITHUB_CLIENT_ID) as client:
+    async with httpx.AsyncClient() as client:
         resp = await client.post(
             GITHUB_ACCESS_TOKEN_URL,
             data={
