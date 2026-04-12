@@ -107,6 +107,7 @@ path = "src/extralit_server/_version.py"
 packages = ["src/extralit_server"]
 
 [tool.hatch.build]
+ignore-vcs = true
 exclude = [".env.dev", ".env.test"]
 
 [dependency-groups]
