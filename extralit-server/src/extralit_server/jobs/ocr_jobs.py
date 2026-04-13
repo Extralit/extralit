@@ -33,13 +33,18 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+_MARKER_AVAILABLE = False
 try:
     from marker.config.parser import ConfigParser
     from marker.converters.pdf import PdfConverter
     from marker.models import create_model_dict
+
+    _MARKER_AVAILABLE = True
 except ImportError as e:
-    _LOGGER.error(f"Marker dependencies not available: {e}")
-    raise ImportError("Marker not installed. Install with: pip install marker-pdf") from e
+    _LOGGER.warning(f"Marker dependencies not available: {e}. OCR layout jobs will be disabled.")
+    ConfigParser = None  # type: ignore[assignment,misc]
+    PdfConverter = None  # type: ignore[assignment,misc]
+    create_model_dict = None  # type: ignore[assignment]
 
 
 @job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=1800, retry=Retry(max=2, interval=[30, 60]))
@@ -68,6 +73,9 @@ async def async_marker_layout_job(
         - text_blocks: List of text block bounding boxes (if extract_text=True)
         - metadata: Job execution metadata
     """
+    if not _MARKER_AVAILABLE:
+        raise ImportError("Marker not installed. Install with: pip install marker-pdf")
+
     current_job = get_current_job()
     if current_job is not None:
         current_job.meta.update(
