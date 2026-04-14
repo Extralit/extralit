@@ -46,6 +46,7 @@ dependencies = [
     # LiteLLM for chat integration
     "litellm >= 1.80.0,<=1.82.6",
     # GitHub Copilot OAuth device flow + token file locking
+    "authlib>=1.6.9",
     "filelock>=3.25.2",
     # Background processing
     "rq~=2.4.1",
