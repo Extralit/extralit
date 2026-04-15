@@ -16,3 +16,4 @@ export * from "./UserRepository";
 export * from "./VectorRepository";
 export * from "./DocumentRepository";
 export * from "./WorkspaceRepository";
+export * from "./GitHubAuthRepository";

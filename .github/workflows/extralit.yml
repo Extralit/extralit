@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
@@ -127,7 +127,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         # Upload the package to be used in the next jobs only once
-        if: ${{ matrix.python-version == '3.9' }}
+        if: ${{ matrix.python-version == '3.11' }}
         with:
           name: extralit
           path: extralit/dist
@@ -182,7 +182,7 @@ jobs:
         uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit/pyproject.toml"
-          python-version: "3.9"
+          python-version: "3.11"
 
       - name: Read package info
         run: |

@@ -39,6 +39,13 @@ _LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(tags=["chat"])
 
+COPILOT_HEADERS = {
+    "Editor-Version": "vscode/1.96.2",
+    "Editor-Plugin-Version": "copilot/1.256.0",
+    "User-Agent": "GithubCopilot/1.256.0",
+    "Copilot-Integration-Id": "vscode-chat",
+}
+
 
 class ChatMessage(BaseModel):
     """A single chat message."""
@@ -256,6 +263,8 @@ async def chat(
                 messages=messages,
                 stream=request.stream,
                 api_key=token_data["access_token"],
+                extra_headers=COPILOT_HEADERS,
+                custom_llm_provider="github",
             )
 
             if request.stream:
