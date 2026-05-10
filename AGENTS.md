@@ -2,10 +2,10 @@
 
 ## Component-Specific Setup
 
-Each component has its own AGENTS.md with setup details:
-- **extralit-server/AGENTS.md** - Backend server setup
-- **extralit-frontend/AGENTS.md** - Frontend UI setup
-- **extralit/AGENTS.md** - Python SDK setup
+Each component has its own `CLAUDE.md` with setup details:
+- **extralit-server/CLAUDE.md** - Backend server setup
+- **extralit-frontend/CLAUDE.md** - Frontend UI setup
+- **extralit/CLAUDE.md** - Python SDK setup
 
 ## Prerequisites
 

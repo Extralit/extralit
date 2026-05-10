@@ -47,7 +47,7 @@ pip install extralit
 
 If you already have a server deployed and login credentials, obtain your API key in the User Settings. You can manage your extraction workspace through the CLI with:
 
-```base
+```bash
 extralit login --api-url http://<extralit_server_instance>
 # You will be prompted an API key to login to your account
 ```

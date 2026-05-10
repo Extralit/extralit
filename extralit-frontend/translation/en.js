@@ -276,7 +276,7 @@ export default {
   },
   home: {
     zeroDatasetsFound: "0 datasets found",
-    argillaDatasets: "Your datasets",
+    extralitDatasets: "Your datasets",
     none: "None yet",
     importTitle: "Import documents and references",
     importText: "Start with a CSV or BibTeX file and a collection of documents",

@@ -1,6 +1,6 @@
 export class Environment {
   constructor(
-    private readonly argilla: {
+    private readonly extralit: {
       showHuggingfaceSpacePersistentStorageWarning: boolean;
       shareYourProgressEnabled: boolean;
     },
@@ -16,11 +16,11 @@ export class Environment {
   ) {}
 
   get shouldShowHuggingfaceSpacePersistentStorageWarning(): boolean {
-    return this.argilla.showHuggingfaceSpacePersistentStorageWarning && !this.huggingface.spacePersistentStorageEnabled;
+    return this.extralit.showHuggingfaceSpacePersistentStorageWarning && !this.huggingface.spacePersistentStorageEnabled;
   }
 
   get shareYourProgressEnabled() {
-    return this.argilla.shareYourProgressEnabled;
+    return this.extralit.shareYourProgressEnabled;
   }
 
   get huggingFaceSpace() {
