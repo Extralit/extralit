@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "astral-sh.ty",
+        "ms-python.python",
+        "usernamehw.errorlens",
+        "charliermarsh.ruff"
+    ]
+}

@@ -111,7 +111,8 @@ ignore-vcs = true
 exclude = [".env.dev", ".env.test"]
 
 [dependency-groups]
-test = [
+dev = [
+    "ty>=0.0.46",
     "pytest>=7.4.4",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.12.0",
@@ -149,6 +150,14 @@ exclude_lines = [
     "if _TYPE_CHECKING:",
     "if typing.TYPE_CHECKING:",
 ]
+
+[tool.ty.environment]
+# Match requires-python; ty otherwise infers from the active interpreter.
+python-version = "3.10"
+python = ".venv"
+
+[tool.ty.src]
+root = "./src"
 
 [tool.ruff]
 exclude = [
