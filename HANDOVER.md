@@ -3,7 +3,9 @@
 **Date:** 2026-06-09
 **Branch:** `chore/quick-wins-203-204-211-212`
 **PR:** https://github.com/Extralit/extralit/pull/214 (targets `develop`)
-**Outcome:** Quick-win bundle for #203/#204/#211/#212 implemented and **verified** (lint/tests/build green for the PR's own changes). Also unblocked the frontend CI test step that had been red on `develop` since #200.
+**Outcome:** Quick-win bundle for #203/#204/#211/#212 implemented and **verified**. **All PR CI checks green** on `6c7c48a6e` (frontend build, server package + docker images, SDK matrix 3.9–3.13, Scorecard, Snyk). Also unblocked the frontend CI test step that had been red on `develop` since #200. **Ready to merge.**
+
+> CI note: `build (3.9)` failed once on a transient Docker-registry timeout pulling the `extralitdev/extralit-hf-space:latest` service container (network flake at "Initialize containers", before any code ran); green on re-run. "Publish Release" shows "skipping" — expected on a PR.
 
 ---
 
@@ -35,8 +37,8 @@
 
 ## Remaining / next steps
 
-1. **Watch CI on the PR** — frontend (build/test now expected green), `build (3.9–3.13)` server matrix, "Build extralit-server package" (validates #203 Dockerfile). Triage any genuine reds.
-2. **Merge when green.**
+1. ✅ **CI green** — frontend build, server package + docker images, SDK matrix 3.9–3.13, Scorecard, Snyk all pass.
+2. **Merge** — PR is ready; no blocking checks remain.
 3. **Follow-ups (not in this PR):** full-repo frontend lint cleanup (50 errors incl. `pages/index.vue` parse error); the security items flagged but unfiled in the original audit (secret rotation, wildcard CORS in `api/handlers/v1/files.py`, `v-html` sanitization); architecture sequence #206→#207→#208; backend #205; schemas/payloads #209; uv workspaces #210.
 
 ---
