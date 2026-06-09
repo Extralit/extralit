@@ -16,6 +16,15 @@
 from pydantic import BaseModel, ConfigDict
 
 
+class OAuthProvider(BaseModel):
+    """OAuth provider configuration for frontend display."""
+
+    name: str
+    display_name: str
+    enabled: bool
+    icon: str | None = None
+
+
 class HuggingfaceSettings(BaseModel):
     space_id: str | None
     space_title: str | None
@@ -36,3 +45,4 @@ class ExtralitSettings(BaseModel):
 class Settings(BaseModel):
     extralit: ExtralitSettings
     huggingface: HuggingfaceSettings | None = None
+    oauth_providers: list[OAuthProvider] = []

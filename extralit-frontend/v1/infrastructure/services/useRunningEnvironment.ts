@@ -1,6 +1,5 @@
 import { useResolve } from "ts-injecty";
 import { GetEnvironmentUseCase } from "~/v1/domain/usecases/get-environment-use-case";
-import { OAuthLoginUseCase } from "~/v1/domain/usecases/oauth-login-use-case";
 
 const HUGGING_FACE_EMBEBED_URL = "huggingface.co";
 const HUGGING_FACE_DIRECT_URL = ".hf.space";
@@ -37,11 +36,15 @@ export const useRunningEnvironment = () => {
   };
 
   const hasHuggingFaceOAuthConfigured = async (): Promise<boolean> => {
-    const oauthUseCase = useResolve(OAuthLoginUseCase);
+    const environment = await getEnvironment();
 
-    const providers = await oauthUseCase.getProviders();
+    return environment.hasOAuthProvider("huggingface");
+  };
 
-    return providers.some((p) => p.isHuggingFace);
+  const hasExtralitHubOAuthConfigured = async (): Promise<boolean> => {
+    const environment = await getEnvironment();
+
+    return environment.hasOAuthProvider("extralithub");
   };
 
   const getShareYourProgressEnabled = async () => {
@@ -57,6 +60,7 @@ export const useRunningEnvironment = () => {
     getHuggingFaceSpace,
     hasPersistentStorageWarning,
     hasHuggingFaceOAuthConfigured,
+    hasExtralitHubOAuthConfigured,
     getShareYourProgressEnabled,
   };
 };

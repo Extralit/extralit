@@ -139,6 +139,7 @@ export default {
     logging_in: "サインイン中...",
     signin_with_provider: "{provider}でサインイン",
     "hf-login": "Hugging Faceでサインイン",
+    "extralithub-login": "Extralit Hubでサインイン",
     sign_in_with_username: "ユーザー名でサインイン",
     cancel: "キャンセル",
     continue: "続ける",

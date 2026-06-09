@@ -132,6 +132,7 @@ export default {
     logging_in: "Signing in...",
     signin_with_provider: "Sign in with {provider}",
     "hf-login": "Sign in with Hugging Face",
+    "extralithub-login": "Sign in with Extralit Hub",
     sign_in_with_username: "Sign in with username",
     cancel: "Cancel",
     confirmCancel: "Are you sure you want to cancel? Any unsaved changes will be lost.",

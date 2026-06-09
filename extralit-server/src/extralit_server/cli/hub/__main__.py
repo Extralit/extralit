@@ -12,21 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import typer
+from typer import Typer
 
-from .database import app as database_app
-from .search_engine import app as search_engine_app
-from .hub import app as hub_auth_app
-from .start import start
-from .worker import worker
+from .auth import check_status, clear_credentials, register_instance, test_oidc_flow
 
-app = typer.Typer(help="Commands for Extralit server management", no_args_is_help=True)
+# Create hub-auth subcommand group
+app = Typer(help="Extralit Hub authentication management commands", no_args_is_help=True)
+app.command(name="register", help="Register this instance with the Extralit Hub")(register_instance)
+app.command(name="status", help="Check Hub authentication status")(check_status)
+app.command(name="test", help="Test OIDC configuration and endpoints")(test_oidc_flow)
+app.command(name="deregister", help="Clear stored Hub credentials")(clear_credentials)
 
-app.add_typer(database_app, name="database")
-app.add_typer(search_engine_app, name="search-engine")
-app.add_typer(hub_auth_app, name="hub-auth")
-app.command(name="worker", help="Starts rq workers")(worker)
-app.command(name="start", help="Starts the Extralit server")(start)
 
 if __name__ == "__main__":
     app()

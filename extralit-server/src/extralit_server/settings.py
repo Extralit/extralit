@@ -76,8 +76,8 @@ class Settings(BaseSettings):
     __DATASETS_INDEX_NAME__ = "ar.datasets"
     __DATASETS_RECORDS_INDEX_NAME__ = "ar.dataset.{}"
 
-    home_path: str | None = Field(
-        None,
+    home_path: str = Field(
+        default="",
         validate_default=True,
         description="The home path where extralit related files will be stored",
     )
@@ -138,7 +138,7 @@ class Settings(BaseSettings):
     s3_secret_key: str | None = Field(default=None, description="The secret key for the S3 storage")
     s3_region: str | None = Field(default=None, description="The region for the S3 storage")
 
-    extralit_url: str | None = Field(default=None, description="The extralit server url for LLM serving endpoint")
+    hub_url: str = Field(default="https://hub.extralit.ai", description="The Extralit Hub endpoint")
 
     elasticsearch: str = "http://localhost:9200"
     elasticsearch_ssl_verify: bool = True
@@ -205,8 +205,8 @@ class Settings(BaseSettings):
 
     @field_validator("home_path", mode="before")
     @classmethod
-    def set_home_path_default(cls, home_path: str):
-        return home_path or os.path.join(Path.home(), ".extralit")
+    def set_home_path_default(cls, home_path: str) -> str:
+        return home_path if home_path else os.path.join(Path.home(), ".extralit")
 
     @field_validator("base_url")
     @classmethod
