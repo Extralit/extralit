@@ -1,5 +1,17 @@
 # Extralit Monorepo Project
 
+## Architecture Notes
+- **extralit-server/**: FastAPI + PostgreSQL + Redis Queue
+- **extralit-frontend/**: Vue.js/Nuxt.js (Vuex → Pinia migration)
+- **extralit/**: Python SDK client
+- **extralit-hf-space/**: Self-contained HF Spaces deployment bundle (Docker; bundles Elasticsearch + Redis + OCR) — git submodule
+- **Vector DB**: Elasticsearch/OpenSearch (separate service)
+
+### Key Patterns
+- Backend: SQLAlchemy ORM, Alembic migrations, async pytest
+- Frontend: Domain-driven design, dependency injection
+- Database: Always use Alembic for schema changes
+
 ## Component-Specific Setup
 
 Each component has its own `CLAUDE.md` with setup details:
@@ -31,6 +43,24 @@ docker-compose up -d
 
 ## Development Workflow
 
+# Python Package Management with uv
+Use uv exclusively for Python package management in this project.
+
+## Package Management Commands
+- All Python dependencies **must be installed, synchronized, and locked** using uv
+- Never use pip, pip-tools, poetry, or conda directly for dependency management
+
+Use these commands:
+- Install dependencies: `uv add <package>`, avoid adding to pyproject.toml directly
+- Remove dependencies: `uv remove <package>`
+- Sync environment: `uv sync`
+- Lock dependencies: `uv lock`
+
+## Running Python Code
+- Run a Python script with `uv run <script-name>.py`
+- Run Python tools with `uv run <tool>` (e.g. `uv run pytest`, `uv run ruff check`, `uv run ruff format`, `uv run ty check`, `uv run pre-commit`, `npm run lint`, `npm run format`)
+- Launch a Python REPL with `uv run python`
+
 ### Running Services
 ```bash
 cd extralit-server && uv run python -m extralit_server server-dev  # Server + worker
@@ -43,26 +73,6 @@ cd extralit-server && uv run pytest tests  # Server tests
 cd extralit && uv run pytest tests         # SDK tests
 cd extralit-frontend && npm run test       # Frontend tests
 ```
-
-### Code Quality
-```bash
-uv run ruff check         # Python linting (ruff)
-uv run ruff format        # Python formatting (ruff)
-uv run ty check           # Python type checking (ty) — run per package
-npm run lint              # Frontend linting (ESLint)
-npm run format            # Frontend formatting (Prettier)
-```
-
-## Architecture Notes
-- **extralit-server/**: FastAPI + PostgreSQL + Redis Queue
-- **extralit-frontend/**: Vue.js/Nuxt.js (Vuex → Pinia migration)
-- **extralit/**: Python SDK client
-- **Vector DB**: Elasticsearch/OpenSearch (separate service)
-
-### Key Patterns
-- Backend: SQLAlchemy ORM, Alembic migrations, async pytest
-- Frontend: Domain-driven design, dependency injection
-- Database: Always use Alembic for schema changes
 
 ## Git Workgrees
 When creating a git workgree, place it at `.worktree/<branch-name>` relative to the repo root, normalizing `/` to `-` in the branch-name.

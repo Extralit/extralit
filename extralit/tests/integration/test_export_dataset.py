@@ -180,6 +180,7 @@ class TestDiskImportExportMixin:
         HTTPError,
     ],
 )  # Hub consistency CICD pipline
+@pytest.mark.slow
 @pytest.mark.skipif(
     not os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING"),
     reason="You are missing a token to write to `extralit-dev` org on the Hugging Face Hub",

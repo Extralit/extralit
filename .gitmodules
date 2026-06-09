@@ -1,0 +1,3 @@
+[submodule "extralit-hf-space"]
+	path = extralit-hf-space
+	url = https://github.com/Extralit/extralit-hf-space

@@ -77,6 +77,7 @@ def token():
     return os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING")
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(not os.getenv("HF_TOKEN_EXTRALIT_INTERNAL_TESTING"), reason="No HF token provided")
 class TestImportFeaturesFromHub:
     def test_import_records_from_datasets_with_classlabel(

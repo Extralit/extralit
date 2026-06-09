@@ -123,3 +123,6 @@ extralit = "extralit.cli.app:app"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 env = ["HF_HUB_DISABLE_TELEMETRY=1"]
+markers = [
+    "slow: marks tests as slow / network-dependent (e.g. live Hugging Face Hub). Omitted by default; run with --runslow.",
+]
