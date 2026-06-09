@@ -8,8 +8,9 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 ENV MAMBA_ROOT_PREFIX=/opt/venv
 ENV CONDA_PREFIX=/opt/venv
+ENV UV_CACHE_DIR=/home/extralit/.cache/uv
 
-RUN --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,target=/home/extralit/.cache/uv \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends libc6-dev libpq-dev gcc && \

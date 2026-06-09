@@ -272,7 +272,7 @@ export default {
     },
   },
   home: {
-    argillaDatasets: "Extralit Datensätze",
+    extralitDatasets: "Extralit Datensätze",
     none: "Bis jetzt keine",
     importTitle: "Importiere ein Datensatz aus dem Hugging Face Hub",
     importText: "Starten Sie mit einem Datensatz aus dem Hub, indem Sie einfach den Repository-Namen einfügen",

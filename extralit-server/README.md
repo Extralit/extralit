@@ -64,7 +64,7 @@ The development environment uses Docker Compose to run all required services. Ke
 docker-compose up -d
 
 # Install dependencies
-uv sync
+uv sync --dev
 
 # Run server in dev mode
 uv run uvicorn extralit_server:app --host 0.0.0.0 --port 6900 --reload

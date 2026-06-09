@@ -22,7 +22,9 @@ dmypy.json
 .idea/
 
 # Visual Studio Code
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .cursor/
 
 /coverage.xml

@@ -1,0 +1,37 @@
+{
+    "python.REPL.enableREPLSmartSend": false,
+    "python.languageServer": "None",
+    "python.terminal.activateEnvironment": true,
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.defaultInterpreterPath": "${workspaceFolder}/extralit-server/.venv/bin/python",
+    "ruff.nativeServer": "on",
+    "ruff.configurationPreference": "filesystemFirst",
+    "ruff.interpreter": [
+        "${workspaceFolder}/extralit-server/.venv/bin/python"
+    ],
+    "ruff.lint.enable": true,
+    "ruff.organizeImports": true,
+    "ty.diagnosticMode": "openFilesOnly",
+    "ty.importStrategy": "fromEnvironment",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+        }
+    },
+    "editor.rulers": [
+        120
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.cwd": "${workspaceFolder}/extralit-server/tests/unit",
+    "python.envFile": "${workspaceFolder}/extralit-server/.env.test",
+    "python.testing.pytestArgs": [
+        "--disable-warnings"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/extralit-server/src",
+        "${workspaceFolder}/extralit/src"
+    ]
+}

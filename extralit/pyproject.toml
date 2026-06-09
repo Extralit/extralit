@@ -43,6 +43,14 @@ path = "src/extralit/_version.py"
 [tool.hatch.build.targets.wheel]
 packages = ["src/extralit"]
 
+[tool.ty.environment]
+# Match requires-python; ty otherwise infers from the active interpreter.
+python-version = "3.9"
+python = ".venv"
+
+[tool.ty.src]
+root = "./src"
+
 [tool.ruff]
 line-length = 120
 
@@ -106,6 +114,7 @@ dev = [
     "CairoSVG >= 2.7.1",
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
+    "ty>=0.0.46",
 ]
 
 [project.scripts]
