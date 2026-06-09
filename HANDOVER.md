@@ -1,124 +1,50 @@
-# Session Handover — Extralit OSS Audit & Issue Filing
+# Session Handover — PR #214 (OSS audit quick wins)
 
-**Date:** 2026-05-10
-**Branch at start:** `sparshr04/github-copilot-auth-ui`
-**Outcome:** 11 GitHub issues filed (#203–#213) covering security, CI, docs, backend/frontend architecture, and a new schema-agnostic data model.
-
----
-
-## What we worked on and what got done
-
-1. **Full-repo OSS audit** across four areas, run as parallel Explore agents:
-   - Documentation (root + per-component)
-   - Backend (`extralit-server/`)
-   - Frontend (`extralit-frontend/`)
-   - CI/CD (`.github/workflows/`, Docker, Tilt, compose)
-
-2. **Deeper structural audit** focused on architecture, organization, and cross-cutting issues (layering, god modules, coexisting patterns, monorepo coordination, type drift).
-
-3. **Architecture redesign for the frontend**, with Vuex+Pinia preserved:
-   - Drafted a feature-sliced layout (`src/features/<x>/{api,store,types,components,composables}.ts`) to replace the heavy DDD pattern in `/v1`.
-   - Strangler migration policy: legacy `/v1` and `/store` frozen; new work goes in `features/`.
-
-4. **Schema-agnostic data-model design** (architecture only, not the schema language):
-   - One `payloads` table with JSONB `data`, immutable versioned `schemas` resource.
-   - `SchemaEngine` interface for pluggable validation.
-   - Validation runs once at the write boundary; queryable fields via projections.
-
-5. **Distillation + filing**: deduped all findings into 27 candidate issues presented as a checkbox list. User selected 11. All filed against `Extralit/extralit` as #203–#213.
+**Date:** 2026-06-09
+**Branch:** `chore/quick-wins-203-204-211-212`
+**PR:** https://github.com/Extralit/extralit/pull/214 (targets `develop`)
+**Outcome:** Quick-win bundle for #203/#204/#211/#212 implemented and **verified** (lint/tests/build green for the PR's own changes). Also unblocked the frontend CI test step that had been red on `develop` since #200.
 
 ---
 
-## What worked and what didn't
+## PR #214 status — verification results
 
-### Worked
-- **Parallel Explore agents** for the four audit areas — produced ~2000 words of concrete findings with file:line references in one round.
-- **User-driven prioritization** via the checkbox interview pattern — let the user pick from a deduped list rather than receiving a top-down recommendation.
-- **Direct `gh issue create`** in parallel once the label mapping was known — all 11 issues filed in one batch.
+| Item | Scope | Status |
+|---|---|---|
+| **#203** uv cache path | `extralit-server/docker/server/Dockerfile`: `UV_CACHE_DIR=/home/extralit/.cache/uv` + matching `--mount` target | ✅ Code correct & self-consistent (build-time BuildKit cache; only mount in builder stage). Docker build itself covered by CI "Build extralit-server package". |
+| **#204** onboarding docs | README fence fix, SDK README snippets, root `AGENTS.md` → per-component `CLAUDE.md`, `examples/README.md`, `CONTRIBUTING.md` dev-env section | ✅ Committed. |
+| **#211** Argilla→Extralit frontend rebrand | `BackendEnvironment.argilla`→`.extralit`, `argillaDatasets`→`extralitDatasets` i18n (4 locales + `DatasetList.vue`), `docs.argilla.io`→`docs.extralit.ai` in `ja.js`, 84 license headers | ✅ Verified: `useRunningEnvironment.test.ts` passes, no `BackendEnvironment.argilla` left in source, `extralitDatasets` consistent across all 4 locales + component, frontend build succeeds. |
+| **#212** untrack editor/cache dirs | already in `.gitignore`, not tracked | ✅ No-op (confirmed). |
+| **(extra)** empty spec from #200 | `components/features/import/file-upload/useImportFileUploadViewModel.spec.ts` was 0 bytes → Jest "must contain at least one test" → **broke frontend CI test step since #200** | ✅ Added `it.todo` placeholder; suite now green. |
 
-### Didn't work / got fixed
-- **`gh` permission prompts timed out twice** before the first issue could be filed. Fix: user retried; once approved, subsequent calls in the same session were auto-allowed.
-- **Initial `gh issue create` failed**: used invented labels (`ci`, `docker`, `bug`, `architecture`, `tooling`, `lint`, `cleanup`, `repo`) that don't exist in the repo.
-  - Fix: ran `gh label list` once, then mapped requested labels to the existing set: `infrastructure`, `deployment`, `refactor`, `documentation`, `good first issue`, `backend`, `frontend`, `epic`.
-- **Audit produced surface-level findings on first pass** (security/bugs only). Fix: user pushed for "structural, organizational, architectural" — second pass with re-scoped agents surfaced the high-leverage items (DDD overhead, type duplication, layering violations).
-
----
-
-## Key decisions made and why
-
-| Decision | Why |
-|---|---|
-| **Keep both Vuex and Pinia** | User constraint. Avoids big-bang migration risk; new code uses Pinia, legacy untouched. |
-| **Replace DDD with feature-sliced** | DDD imposes 4–6 file hops per call (DI registry → repo → use-case → view-model → component). Optimizes for human + agent ergonomics: one folder = one feature = everything you need. |
-| **Strangler migration, not rewrite** | `/v1` is too large to port at once. Rule: only migrate when feature is already being touched substantively. |
-| **Schema-agnostic via JSONB + versioned schemas** | Avoids per-shape table migrations as users define new extraction schemas. Architecture is opaque to schema language — JSON Schema today, swappable. |
-| **Validation at boundary only** | Trust internal data after write. Avoids defensive re-validation in handlers. Tradeoff: must be religious about the boundary, since Postgres can't enforce JSONB shape. |
-| **File 11 issues, not all 27** | User curated. Higher signal-to-noise; everything filed has a real owner intent behind it. |
-| **Map invented labels to existing ones** | Avoid label sprawl. Repo already has a small, coherent label set; respect it. |
+### Test plan (PR description) — results this session
+- **`npm run lint`** — PR's own changed files are clean. The 50 errors `lint` reports are all in files **not touched by this PR** (pre-existing repo-wide debt); CI's lint step is `continue-on-error: true`, so they don't gate the PR.
+- **`npm run test`** — 723 passed / 3 skipped; the one prior failure (empty `#200` spec) is fixed.
+- **`npm run build`** — Nuxt production build succeeds (exit 0) with the rebranded type/i18n key.
+- **Docker build** — Dockerfile change reviewed; defer to CI "Build extralit-server package" (heavy locally on ARM).
 
 ---
 
-## Lessons learned and gotchas
+## Key facts / gotchas for next session
 
-- **Always run `gh label list` before `gh issue create --label …`** — invented labels fail the whole call (no partial creation).
-- **First-pass audits skew toward security/bugs.** To surface architectural issues, the prompt has to explicitly exclude surface-level findings and name the structural categories you want.
-- **`gh` permission prompts can time out** in this environment. If the first call times out, the user has to actively click approve; subsequent calls in the same session reuse the grant.
-- **Heavy DDD in a JS/TS codebase is expensive for LLMs**: the `useResolve()` indirection means an agent reading a component must traverse DI registrations to find the implementation. Plain imports + colocation drastically reduce cognitive load.
-- **Three-way type drift (server / SDK / frontend) is the single biggest invisible risk.** Each side hand-codes the same types. Worth its own issue (filed concept lives inside #209/#210 follow-ups; not a standalone issue yet).
-- **Argilla→Extralit rebrand is half-done in frontend only.** SDK and server are clean. Filed as #211.
+- **`develop`'s frontend CI has been red since #200** (`2ac8134a7`) because of the empty spec — not a #214 regression. This PR fixes it as a side effect.
+- **CI lint vs pre-commit:** the pre-commit hook only lints staged files (so the PR "passed lint" locally), but CI runs full-repo `npm run lint`. Full-repo lint has 50 pre-existing errors incl. a **parse error in `pages/index.vue:157`** — worth a separate cleanup issue, out of scope here.
+- **Intentionally retained Argilla references** (do not "fix"): `how-to-configure-argilla-on-huggingface/` doc paths (renamed paths 404), `argilla-dev` localStorage key (breaks installed extensions), `argilla.imglab-cdn.net` CDN, E2E mock fixtures, `CHANGELOG.md [Argilla]` entries, NOTICE attribution.
 
 ---
 
-## Clear next steps
+## Remaining / next steps
 
-### Immediate (security — not filed but flagged in audit)
-1. **Rotate compromised secrets**: `extralit-server/.env.dev` (JWT key, MinIO creds), `docker-compose.yaml` Postgres/MinIO passwords, `constants.py` `DEFAULT_PASSWORD`/`DEFAULT_API_KEY`. Treat as leaked.
-2. **Remove wildcard CORS** in `api/handlers/v1/files.py:62,135`.
-3. **Sanitize `v-html`** sites in frontend (5+ components).
-4. Consider filing these as issues — they were in the deduped list as **S1, S2, S3** but not selected.
-
-### Filed (just need owners)
-- **Quick wins first** (low risk, high signal): #203 (uv cache), #204 (docs), #210 (uv workspaces), #211 (rebrand sweep), #212 (untrack editor dirs), #213 (bd decision).
-- **Architecture sequence**: #206 (ARCHITECTURE.md) → #207 (ESLint rules) → #208 (reference feature). These three should land in order.
-- **Backend cleanup**: #205 (route handlers through `contexts/`).
-- **Big new capability**: #209 (schemas + payloads tables). Foundation only; downstream issues will be needed for migration of existing entities, indexed projections, and frontend `<SchemaForm>`.
-
-### Not filed but worth considering
-- **OpenAPI codegen for frontend types** — kills the three-way type drift. Was R2 in the dedup list.
-- **SDK ↔ Server contract tests** — was R3.
-- **`continue-on-error` removal in CI** — was C1; concrete security hardening.
-- **Top-level `permissions:` on workflows** — was C2.
+1. **Watch CI on the PR** — frontend (build/test now expected green), `build (3.9–3.13)` server matrix, "Build extralit-server package" (validates #203 Dockerfile). Triage any genuine reds.
+2. **Merge when green.**
+3. **Follow-ups (not in this PR):** full-repo frontend lint cleanup (50 errors incl. `pages/index.vue` parse error); the security items flagged but unfiled in the original audit (secret rotation, wildcard CORS in `api/handlers/v1/files.py`, `v-html` sanitization); architecture sequence #206→#207→#208; backend #205; schemas/payloads #209; uv workspaces #210.
 
 ---
 
-## Map of important files
-
-### Audit context (read these to understand what was reviewed)
-- `extralit-server/src/extralit_server/api/handlers/v1/files.py` — wildcard CORS bug
-- `extralit-server/src/extralit_server/constants.py:24-26` — committed default credentials
-- `extralit-server/.env.dev` — committed secrets (rotate)
-- `extralit-server/src/extralit_server/models/database.py:38` — model→schema layering violation
-- `extralit-server/src/extralit_server/contexts/workflows.py` — 909 LOC god module
-- `extralit-server/src/extralit_server/search_engine/commons.py` — 1010 LOC god module
-- `extralit-frontend/v1/` — legacy DDD; frozen under new architecture
-- `extralit-frontend/components/.../RenderTable.vue` — 1207 LOC god component
-- `extralit-frontend/nuxt.config.ts:80` — `disableVuex: false` (both Vuex and Pinia loaded)
-- `extralit-frontend/tsconfig.json:11` — `strict: false`
-- `docker-compose.yaml` — hardcoded passwords, floating `latest` tags, no healthchecks
-- `.github/workflows/extralit.yml`, `extralit-server.yml` — `continue-on-error` on tests
-- `AGENTS.md` — Python version mismatch with pyproject.toml; references nonexistent per-component AGENTS.md
-
-### New files to be created (per filed issues)
-- `extralit-frontend/ARCHITECTURE.md` (#206)
-- `extralit-frontend/src/features/<reference-feature>/` (#208)
-- `extralit-frontend/src/features/<x>/{api,store,types}.ts` pattern (#206 documents, #208 exemplifies)
-- `extralit-server/src/extralit_server/.../schemas/` and `payloads/` modules (#209)
-- Root `pyproject.toml` with `[tool.uv.workspace]` (#210)
-- `examples/README.md` (#204)
-- Per-component `AGENTS.md` files or removed references (#204)
-
-### Generated this session
-- `HANDOVER.md` (this file)
-
-### Issue references
-- All filed issues: https://github.com/Extralit/extralit/issues/203 through /213
+## Map of files touched by PR #214
+- `extralit-server/docker/server/Dockerfile` — #203 uv cache path
+- `extralit/README.md`, root `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `examples/README.md` — #204 docs
+- `extralit-frontend/v1/.../environment/{Environment.ts,EnvironmentRepository.ts}`, `v1/infrastructure/types/environment.ts`, `useRunningEnvironment.test.ts` — #211 env rename
+- `extralit-frontend/translation/{en,de,es,ja}.js`, `components/features/home/dataset-list/DatasetList.vue` — #211 i18n
+- ~84 frontend source files — #211 license-header convention
+- `extralit-frontend/components/features/import/file-upload/useImportFileUploadViewModel.spec.ts` — empty-spec CI fix (this session)
