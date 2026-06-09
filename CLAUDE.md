@@ -17,9 +17,6 @@ Each component has its own `CLAUDE.md` with setup details:
 ## Quick Setup
 
 ```bash
-# Install uv
-pip install uv
-
 # Setup all components
 cd extralit-server && uv sync --dev
 cd ../extralit && uv sync
@@ -50,12 +47,13 @@ cd extralit-frontend && npm run test       # Frontend tests
 ### Code Quality
 ```bash
 uv run ruff check         # Python linting (ruff)
+uv run ruff format        # Python formatting (ruff)
+uv run ty check           # Python type checking (ty) — run per package
 npm run lint              # Frontend linting (ESLint)
 npm run format            # Frontend formatting (Prettier)
 ```
 
 ## Architecture Notes
-
 - **extralit-server/**: FastAPI + PostgreSQL + Redis Queue
 - **extralit-frontend/**: Vue.js/Nuxt.js (Vuex → Pinia migration)
 - **extralit/**: Python SDK client
@@ -65,3 +63,8 @@ npm run format            # Frontend formatting (Prettier)
 - Backend: SQLAlchemy ORM, Alembic migrations, async pytest
 - Frontend: Domain-driven design, dependency injection
 - Database: Always use Alembic for schema changes
+
+## Git Workgrees
+When creating a git workgree, place it at `.worktree/<branch-name>` relative to the repo root, normalizing `/` to `-` in the branch-name.
+
+Example: branch `feature/add-new-feature` should be placed at `.worktree/feature-add-new-feature`.
