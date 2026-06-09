@@ -34,18 +34,6 @@ repos:
   # (Removed duplicate ruff hook for extralit SDK; global ruff hook above
   # now serves as single source of truth using pyproject.toml configuration)
 
-  - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.5
-    hooks:
-      - id: insert-license
-        name: "Insert license header in Python source files"
-        files: '^extralit/.*\.py$'
-        exclude: ^extralit/docs/snippets/
-        args:
-          - --license-filepath
-          - extralit/LICENSE_HEADER
-          - --fuzzy-match-generates-todo
-
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:
@@ -66,19 +54,6 @@ repos:
   # extralit-server specific hooks
   ##############################################################################
 
-  # (Removed duplicate ruff hook for extralit-server; global ruff hook above
-  # now serves as single source of truth using pyproject.toml configuration)
-
-  - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.5
-    hooks:
-      - id: insert-license
-        name: "Insert license header in Python source files"
-        files: '^extralit-server/.*\.py$'
-        args:
-          - --license-filepath
-          - extralit-server/LICENSE_HEADER
-          - --fuzzy-match-generates-todo
 
   ##############################################################################
   # extralit-frontend specific hooks

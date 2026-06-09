@@ -1,18 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 from extralit_server.api.schemas.v1.questions import (
     LabelSelectionQuestionSettings,
     MultiLabelSelectionQuestionSettings,
@@ -87,10 +72,7 @@ class LabelSelectionQuestionResponseValueValidator:
     ) -> None:
         available_labels = [option.value for option in label_selection_question_settings.options]
 
-        if (
-            self._response_value not in available_labels
-            and label_selection_question_settings.strict
-        ):
+        if self._response_value not in available_labels and label_selection_question_settings.strict:
             raise UnprocessableEntityError(
                 f"{self._response_value!r} is not a valid label for label selection question.\nValid labels are: {available_labels!r}"
             )
@@ -128,10 +110,7 @@ class MultiLabelSelectionQuestionResponseValueValidator:
         available_labels = [option.value for option in multi_label_selection_question_settings.options]
         invalid_labels = sorted(set(self._response_value) - set(available_labels))
 
-        if (
-            invalid_labels
-            and multi_label_selection_question_settings.strict
-        ):
+        if invalid_labels and multi_label_selection_question_settings.strict:
             raise UnprocessableEntityError(
                 f"{invalid_labels!r} are not valid labels for multi label selection question.\nValid labels are: {available_labels!r}"
             )
