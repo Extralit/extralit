@@ -1,32 +1,26 @@
 <template>
   <div class="pdf-container">
-    <PDFView
-      :src="url"
-      :fileName="fileName"
-      :sidebarFeatureVisible="true"
-      v-model:scale="scale"
-      :pageNumber="currentPageNumber"
-      ref="pdfView"
-      class="PDFView"
-    >
-      <template #right-toolbox>
-        <p class="document__title">{{ fileName }}</p>
-      </template>
-      <template #left-toolbox> </template>
-      <template #error></template>
-      <template #loading></template>
-    </PDFView>
+    <!--
+      NOTE (Vue 3 migration): the previous renderer, @jonnytran/vue-pdf-viewer@0.2.5,
+      is Vue-2-only (its bundle and its deps vue-dropzone / vue-in-viewport call the
+      Vue 2 global API at module scope) and cannot run under Vue 3. It has been
+      replaced with this placeholder. Follow-up: publish a Vue-3 build of
+      @jonnytran/vue-pdf-viewer (or swap to a Vue-3 renderer such as vue-pdf-embed)
+      and restore the full toolbar/sidebar/scale/page-navigation UI here.
+    -->
+    <div class="pdf-placeholder">
+      <p class="pdf-placeholder__title">{{ fileName }}</p>
+      <p class="pdf-placeholder__message">{{ $t("document.viewerUnavailable") }}</p>
+      <a v-if="url" :href="url" target="_blank" rel="noopener" class="pdf-placeholder__link">
+        {{ $t("document.openInNewTab") }}
+      </a>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { PDFView } from "@jonnytran/vue-pdf-viewer";
-
 export default {
   name: "PDFViewer",
-  components: {
-    PDFView,
-  },
 
   props: {
     url: {
@@ -42,29 +36,6 @@ export default {
       required: false,
     },
   },
-
-  watch: {
-    pageNumber(newPageNumber: Number | String) {
-      this.currentPageNumber = newPageNumber ? Number(newPageNumber) : 1;
-    },
-  },
-
-  data() {
-    return {
-      scale: "1.50",
-      currentPageNumber: this.pageNumber,
-    };
-  },
-
-  errorCaptured(err, component, info) {
-    this.error = err;
-    console.error(`Error caught from ${component}: ${err}`);
-    return false; // stops the error from propagating further
-  },
-  beforeUnmount() {
-    this.$refs.pdfView.destroy();
-    window.removeEventListener("hashchange", this.onHashChange);
-  },
 };
 </script>
 
@@ -78,20 +49,29 @@ export default {
   height: 100%;
 }
 
-.PDFView {
-  max-height: calc(100vh - $topbarHeight); // Set maximum height to 100% of the viewport height
-  overflow-y: auto; // Enable vertical scrolling if the content exceeds the maximum height
-}
+.pdf-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $base-space;
+  height: 100%;
+  padding: $base-space * 2;
 
-.document__title {
-  flex: 1;
-  max-width: calc($sidebarWidth / 2);
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0;
-  padding-left: 18px;
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__message {
+    color: var(--color-dark-grey);
+    margin: 0;
+  }
+
+  &__link {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
 }
 </style>

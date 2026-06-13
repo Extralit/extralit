@@ -301,6 +301,8 @@ export default {
   },
   document: {
     notFound: "Document not found",
+    viewerUnavailable: "The in-app PDF viewer is being migrated to Vue 3 and is temporarily unavailable.",
+    openInNewTab: "Open document in a new tab",
   },
   import: {
     title: "Import documents to {workspaceName}",

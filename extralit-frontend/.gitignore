@@ -3,3 +3,8 @@ node_modules/
 /playwright-report/
 /playwright/.cache/
 .nuxtrc
+.nuxt/
+.output/
+.nitro/
+.cache/
+dist/
