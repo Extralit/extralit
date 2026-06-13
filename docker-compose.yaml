@@ -51,6 +51,8 @@ services:
 
   postgres:
     image: postgres:14
+    profiles:
+      - no-auto-start
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -100,6 +102,8 @@ services:
       - elasticdata:/usr/share/elasticsearch/data/
 
   kibana:
+    profiles:
+      - no-auto-start
     image: docker.elastic.co/kibana/kibana:8.5.3
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200

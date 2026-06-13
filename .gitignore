@@ -167,3 +167,7 @@ extralit/site
 **/*.pdf
 output/
 .specstory/
+
+**/.playwright-mcp/
+**/.nuxt-stale-root/
+.worktree/
