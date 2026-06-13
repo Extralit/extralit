@@ -19,6 +19,7 @@ export default {
       type: String,
     },
   },
+  emits: ["change"],
   model: {
     prop: "selectedOption",
     event: "change",

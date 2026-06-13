@@ -19,6 +19,7 @@ const checkedPosition = 70;
 const initialPosition = "-1px";
 
 export default {
+  emits: ["change", "input"],
   props: {
     name: String,
     value: Boolean,

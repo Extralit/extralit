@@ -46,6 +46,7 @@
 <script>
 export default {
   name: "BaseButton",
+  emits: ["click", "on-click", "mouseover", "mouseleave"],
   props: {
     tabIndex: {
       type: Number,

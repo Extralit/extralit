@@ -16,6 +16,7 @@
 
 <script>
 export default {
+  emits: ["change"],
   props: {
     id: String,
     min: {

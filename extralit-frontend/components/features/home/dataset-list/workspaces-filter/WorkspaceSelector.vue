@@ -29,6 +29,7 @@ export default {
       default: null,
     },
   },
+  emits: ["input"],
   model: {
     prop: "selectedWorkspace",
     event: "input",

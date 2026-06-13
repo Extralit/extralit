@@ -47,6 +47,7 @@ export default {
       default: false,
     },
   },
+  emits: ["change"],
   model: {
     prop: "recordHeight",
     event: "change",

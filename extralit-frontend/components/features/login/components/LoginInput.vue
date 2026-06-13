@@ -75,6 +75,7 @@ export default {
       isAutoFilled: false,
     };
   },
+  emits: ["input"],
   model: {
     prop: "value",
     event: "input",

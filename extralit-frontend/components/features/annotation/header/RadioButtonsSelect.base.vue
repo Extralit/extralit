@@ -54,6 +54,7 @@ export default {
       dropdownIsVisible: false,
     };
   },
+  emits: ["change"],
   model: {
     prop: "selectedOption",
     event: "change",

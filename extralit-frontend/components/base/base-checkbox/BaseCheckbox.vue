@@ -14,6 +14,7 @@
 // TODO: Improve this component.
 import _ from "lodash";
 export default {
+  emits: ["change", "input"],
   model: {
     prop: "areChecked",
     event: "change",

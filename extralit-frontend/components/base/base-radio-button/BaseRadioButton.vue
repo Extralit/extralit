@@ -32,6 +32,7 @@ export default {
       default: "var(--fg-status-submitted)",
     },
   },
+  emits: ["change"],
   model: {
     prop: "model",
     event: "change",
