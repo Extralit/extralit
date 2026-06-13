@@ -49,13 +49,16 @@ module.exports = {
   globals: {
     $nuxt: true,
   },
+  parser: "vue-eslint-parser",
   parserOptions: {
-    parser: "@babel/eslint-parser",
+    parser: "@typescript-eslint/parser",
+    ecmaVersion: 2022,
+    sourceType: "module",
   },
   overrides: [
     {
       files: ["**/*.ts"],
-      extends: ["@nuxtjs/eslint-config-typescript", "prettier"],
+      extends: ["plugin:@typescript-eslint/recommended", "prettier"],
       parser: "@typescript-eslint/parser",
       plugins: ["@typescript-eslint", "prettier"],
       parserOptions: { project: ["./tsconfig.json"] },
