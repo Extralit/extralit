@@ -167,3 +167,6 @@ extralit/site
 **/*.pdf
 output/
 .specstory/
+
+# Git worktrees (CLAUDE.md convention)
+.worktree/
