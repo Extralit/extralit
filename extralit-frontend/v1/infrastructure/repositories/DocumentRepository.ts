@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import { Document, Segment, Segments } from "@/v1/domain/entities/document/Document";
 
 const DOCUMENT_API_ERRORS = {
@@ -8,7 +8,7 @@ const DOCUMENT_API_ERRORS = {
 };
 
 export class DocumentRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) { }
+  constructor(private readonly axios: AxiosInstance) { }
 
   async getDocuments(params: {
     workspace_id: string;

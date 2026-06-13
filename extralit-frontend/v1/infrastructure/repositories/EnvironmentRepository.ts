@@ -1,6 +1,6 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import { BackendEnvironment } from "../types/environment";
-import { PublicNuxtAxiosInstance } from "../services/useAxiosExtension";
+import { PublicAxiosInstance } from "../services/useAxiosExtension";
 import { largeCache } from "./AxiosCache";
 import { Environment } from "~/v1/domain/entities/environment/Environment";
 import { IEnvironmentRepository } from "~/v1/domain/services/IEnvironmentRepository";
@@ -10,8 +10,8 @@ const enum ENVIRONMENT_API_ERRORS {
 }
 
 export class EnvironmentRepository implements IEnvironmentRepository {
-  private readonly axios: NuxtAxiosInstance;
-  constructor(axios: PublicNuxtAxiosInstance) {
+  private readonly axios: AxiosInstance;
+  constructor(axios: PublicAxiosInstance) {
     this.axios = axios.makePublic();
   }
 

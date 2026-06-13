@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import {
   BackendRecord,
   BackendAnswerCombinations,
@@ -39,7 +39,7 @@ const BACKEND_ORDER: {
 };
 
 export class RecordRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   getRecords(criteria: RecordCriteria): Promise<BackendRecords> {
     return this.getRecordsByAdvanceSearch(criteria);

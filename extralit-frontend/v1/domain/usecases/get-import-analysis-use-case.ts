@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 
 import {
   ImportAnalysisRequest,
@@ -13,7 +13,7 @@ const IMPORT_ANALYSIS_API_ERRORS = {
 };
 
 export class GetImportAnalysisUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async analyzeImport(
     workspaceId: string,

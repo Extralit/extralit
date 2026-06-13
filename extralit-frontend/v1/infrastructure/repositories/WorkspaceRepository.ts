@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import { Response } from "../types";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 
@@ -23,7 +23,7 @@ export class WorkspaceRepositoryError extends Error {
 }
 
 export class WorkspaceRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async getWorkspaces(): Promise<BackendWorkspace[]> {
     try {

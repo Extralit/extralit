@@ -1,8 +1,8 @@
-import { PublicNuxtAxiosInstance } from "../services/useAxiosExtension";
+import { PublicAxiosInstance } from "../services/useAxiosExtension";
 import { IUserRepository } from "~/v1/domain/services/IUserRepository";
 
 export class UserRepository implements IUserRepository {
-  constructor(private readonly axios: PublicNuxtAxiosInstance) {}
+  constructor(private readonly axios: PublicAxiosInstance) {}
 
   async getUser() {
     const url = "/v1/me";

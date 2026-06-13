@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import {
   BackendDataset,
   BackendDatasetFeedbackTaskResponse,
@@ -30,7 +30,7 @@ export const DATASET_API_ERRORS = {
 };
 
 export class DatasetRepository implements IDatasetRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async create(dataset: DatasetCreation): Promise<DatasetId> {
     try {

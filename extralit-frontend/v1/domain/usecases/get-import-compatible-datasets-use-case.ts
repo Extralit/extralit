@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import type { Response } from "~/v1/infrastructure/types/api";
 import type { BackendDataset } from "~/v1/infrastructure/types/dataset";
 
@@ -8,7 +8,7 @@ export interface GetImportCompatibleDatasetsParams {
 }
 
 export class GetImportCompatibleDatasetsUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) { }
+  constructor(private readonly axios: AxiosInstance) { }
 
   async execute(params: GetImportCompatibleDatasetsParams): Promise<BackendDataset[]> {
     try {

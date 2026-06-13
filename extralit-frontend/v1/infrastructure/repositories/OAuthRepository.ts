@@ -1,7 +1,7 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import { Response } from "../types";
 import { useRunningEnvironment } from "../services/useRunningEnvironment";
-import { PublicNuxtAxiosInstance } from "../services/useAxiosExtension";
+import { PublicAxiosInstance } from "../services/useAxiosExtension";
 import { largeCache } from "./AxiosCache";
 import { OAuthParams, OAuthProvider, ProviderType } from "~/v1/domain/entities/oauth/OAuthProvider";
 import { IOAuthRepository } from "~/v1/domain/services/IOAuthRepository";
@@ -17,8 +17,8 @@ interface BackendOAuthProvider {
 }
 
 export class OAuthRepository implements IOAuthRepository {
-  private readonly axios: NuxtAxiosInstance;
-  constructor(axios: PublicNuxtAxiosInstance, private readonly router: RouterService) {
+  private readonly axios: AxiosInstance;
+  constructor(axios: PublicAxiosInstance, private readonly router: RouterService) {
     this.axios = axios.makePublic();
   }
 

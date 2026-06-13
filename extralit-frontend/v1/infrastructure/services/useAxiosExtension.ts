@@ -1,45 +1,33 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { Context } from "@nuxt/types";
-import { loadCache } from "../repositories";
+import axios, { type AxiosInstance } from "axios";
+import { loadCache } from "../repositories/AxiosCache";
 import { loadErrorHandler } from "../repositories/AxiosErrorHandler";
 
 type PublicAxiosConfig = {
   enableErrors: boolean;
 };
 
-export interface PublicNuxtAxiosInstance extends NuxtAxiosInstance {
-  makePublic: (config?: PublicAxiosConfig) => NuxtAxiosInstance;
+export interface PublicAxiosInstance extends AxiosInstance {
+  makePublic: (config?: PublicAxiosConfig) => AxiosInstance;
 }
 
-export const useAxiosExtension = (context: Context) => {
-  const makePublic = (config: PublicAxiosConfig) => {
-    const $axios = context.$axios.create({
+// Reimplements the old `useAxiosExtension(context)` against a plain axios instance.
+// `makePublic()` builds an unauthenticated instance (used by OAuthRepository).
+export const useAxiosExtension = (base: AxiosInstance, t: (key: string) => string) => {
+  const makePublic = (config: PublicAxiosConfig = { enableErrors: true }) => {
+    const pub = axios.create({
+      baseURL: base.defaults.baseURL,
       withCredentials: false,
       headers: { Authorization: undefined },
     });
 
-    if (config.enableErrors) {
-      loadErrorHandler({
-        ...context,
-        $axios,
-      });
-    }
+    if (config.enableErrors) loadErrorHandler(pub, t);
 
-    loadCache($axios);
+    loadCache(pub);
 
-    return $axios;
+    return pub;
   };
 
-  const create = () => {
-    return {
-      ...context.$axios,
-      makePublic: (
-        config: PublicAxiosConfig = {
-          enableErrors: true,
-        }
-      ) => makePublic(config),
-    } as PublicNuxtAxiosInstance;
-  };
+  const create = () => Object.assign(base, { makePublic }) as PublicAxiosInstance;
 
   return create;
 };

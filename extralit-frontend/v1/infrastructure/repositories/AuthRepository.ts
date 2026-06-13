@@ -1,5 +1,5 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { PublicNuxtAxiosInstance } from "../services/useAxiosExtension";
+import type { AxiosInstance } from "axios";
+import { PublicAxiosInstance } from "../services/useAxiosExtension";
 import { IAuthRepository } from "~/v1/domain/services/IAuthRepository";
 
 interface TokenResponse {
@@ -9,10 +9,10 @@ interface TokenResponse {
 }
 
 export class AuthRepository implements IAuthRepository {
-  private readonly axios: NuxtAxiosInstance;
+  private readonly axios: AxiosInstance;
   private refreshToken: string | null = null;
 
-  constructor(axios: PublicNuxtAxiosInstance) {
+  constructor(axios: PublicAxiosInstance) {
     this.axios = axios.makePublic();
   }
 

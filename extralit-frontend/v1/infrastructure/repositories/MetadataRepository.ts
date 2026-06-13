@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import { BackendMetadata, Response } from "../types";
 import { MetadataMetricsRepository } from "./MetadataMetricsRepository";
 import { mediumCache, revalidateCache } from "./AxiosCache";
@@ -14,7 +14,7 @@ const METADATA_API_ERRORS = {
 
 export class MetadataRepository {
   private readonly metadataMetricsRepository: MetadataMetricsRepository;
-  constructor(private readonly axios: NuxtAxiosInstance) {
+  constructor(private readonly axios: AxiosInstance) {
     this.metadataMetricsRepository = new MetadataMetricsRepository(axios);
   }
 

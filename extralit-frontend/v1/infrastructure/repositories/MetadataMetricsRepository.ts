@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import { BackendMetadataMetric } from "../types";
 import { mediumCache } from "./AxiosCache";
 
@@ -7,7 +7,7 @@ const RECORD_API_ERRORS = {
 };
 
 export class MetadataMetricsRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async getMetric(metadataId: string): Promise<BackendMetadataMetric> {
     try {

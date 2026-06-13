@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import { FileMetadata } from "../entities/table/Schema";
 import { ValidationSchema } from "../entities/table/Validation";
 
@@ -7,7 +7,7 @@ const FILES_API_ERRORS = {
 };
 
 export class GetExtractionSchemaUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async fetch(
     workspaceName: string,
