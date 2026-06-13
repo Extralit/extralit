@@ -93,7 +93,7 @@ export default defineNuxtConfig({
     },
   },
 
-  build: { transpile: ["pdfjs-dist", "tabulator-tables"] },
+  build: { transpile: ["tabulator-tables"] },
 
   hooks: {
     "pages:extend"(pages) {
