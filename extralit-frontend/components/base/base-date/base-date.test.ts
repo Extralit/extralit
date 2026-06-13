@@ -13,7 +13,7 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 
   test("should format day 1 second ago", () => {
@@ -31,7 +31,7 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 
   test("should format day 2 seconds ago", () => {
@@ -49,7 +49,7 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 
   test("should format day 2 hours ago", () => {
@@ -67,7 +67,7 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 
   test("should format day as yesterday", () => {
@@ -85,7 +85,7 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 
   test("should format day 2 days ago", () => {
@@ -103,7 +103,7 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 
   test("should format day last week", () => {
@@ -121,7 +121,7 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 
   test("should format day 2 weeks ago", () => {
@@ -139,7 +139,7 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 
   test("should format day last month", () => {
@@ -157,7 +157,7 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 
   test("should format day 2 months ago", () => {
@@ -175,6 +175,6 @@ describe("Base Date should", () => {
       },
     });
 
-    expect(baseDate).toMatchSnapshot();
+    expect(baseDate.html()).toMatchSnapshot();
   });
 });
