@@ -1,7 +1,7 @@
 <template>
   <div class="pdf-container">
     <PDFView
-      v-model:src="url"
+      :src="url"
       :fileName="fileName"
       :sidebarFeatureVisible="true"
       v-model:scale="scale"

@@ -48,8 +48,8 @@
         :message="$t('spanAnnotation.shortcutHelper')"
       />
       <template>
-        <template v-for="{ id, color } in spanQuestion.answer.options">
-          <style :key="id" scoped>
+        <template v-for="{ id, color } in spanQuestion.answer.options" :key="id">
+          <style scoped>
             .span-annotation__field::highlight(hl-{{id}}), .span-annotation__field::highlight(hl-{{id}}-selection) {
               background-color: {{color}};
             }
