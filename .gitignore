@@ -168,5 +168,6 @@ extralit/site
 output/
 .specstory/
 
-# Git worktrees (CLAUDE.md convention)
+**/.playwright-mcp/
+**/.nuxt-stale-root/
 .worktree/
