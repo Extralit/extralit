@@ -1,5 +1,13 @@
-import { Context } from "@nuxt/types";
+import type { AxiosInstance } from "axios";
 import Container, { register } from "ts-injecty";
+
+import type { IAuthService } from "~/v1/domain/services/IAuthService";
+
+type NuxtAppLike = {
+  $axios: AxiosInstance;
+  $auth: IAuthService;
+  $i18n?: { t: (key: string) => unknown };
+};
 
 import { useEventDispatcher } from "@codescouts/events";
 
@@ -84,9 +92,10 @@ import { AuthLoginUseCase } from "@/v1/domain/usecases/auth-login-use-case";
 import { FileParsingService } from "~/v1/domain/services/FileParsingService";
 import { PdfMatchingService } from "@/v1/domain/services/FileMatchingService";
 
-export const loadDependencyContainer = (context: Context) => {
-  const useAxios = useAxiosExtension(context);
-  const useAuth = () => context.$auth;
+export const loadDependencyContainer = (nuxtApp: NuxtAppLike) => {
+  const t = (key: string) => String(nuxtApp.$i18n?.t(key) ?? key);
+  const useAxios = useAxiosExtension(nuxtApp.$axios, t);
+  const useAuth = () => nuxtApp.$auth;
 
   const dependencies = [
     register(UpdateMetricsEventHandler).build(),
