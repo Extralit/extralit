@@ -123,7 +123,7 @@ export default {
     },
     totalRecords() {
       // This would come from the dataset or import metadata
-      return this.dataset?.selectedSubset?.totalRecords || 0;
+      return (this.dataset?.selectedSubset as { totalRecords?: number })?.totalRecords || 0;
     },
     compatibleDatasetOptions() {
       return this.compatibleDatasets.map((dataset) => ({

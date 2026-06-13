@@ -53,12 +53,11 @@ describe("useImportConfigurationViewModel", () => {
       value: initialValue,
     }));
 
-    // Mock route (ref-like, as the viewModel reads route.value.params.id)
+    // Nuxt 4 useRoute() returns the route already unwrapped (not a Ref),
+    // so the viewModel reads route.params.id directly.
     mockRoute = {
-      value: {
-        params: {
-          id: "test-import-123",
-        },
+      params: {
+        id: "test-import-123",
       },
     };
     useRouteMock.mockReturnValue(mockRoute);
@@ -294,7 +293,7 @@ describe("useImportConfigurationViewModel", () => {
     });
 
     it("should handle missing import ID during retry", async () => {
-      mockRoute.value.params.id = null;
+      mockRoute.params.id = null;
 
       const viewModel = useImportConfigurationViewModel();
       await viewModel.retry();
@@ -395,7 +394,7 @@ describe("useImportConfigurationViewModel", () => {
     });
 
     it("should return null if no import ID in route", () => {
-      mockRoute.value.params.id = null;
+      mockRoute.params.id = null;
 
       const viewModel = useImportConfigurationViewModel();
       const importId = viewModel.getImportId();

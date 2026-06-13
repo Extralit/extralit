@@ -33,7 +33,7 @@ export const useHomeViewModel = () => {
 
   // Restore workspace selection from URL parameters
   const restoreWorkspaceFromUrl = () => {
-    const workspaceParam = route.value.query.workspace as string;
+    const workspaceParam = route.query.workspace as string;
     if (workspaceParam && workspaces.value.length > 0) {
       // Find workspace by name (as used in breadcrumb links)
       const workspace = workspaces.value.find((w) => w.name === workspaceParam);
@@ -45,7 +45,7 @@ export const useHomeViewModel = () => {
 
   // Update URL parameters when workspace selection changes
   const updateUrlForWorkspace = (workspace: Workspace | null) => {
-    const currentQuery = { ...route.value.query };
+    const currentQuery = { ...route.query };
 
     if (workspace) {
       currentQuery.workspace = workspace.name;
@@ -54,12 +54,12 @@ export const useHomeViewModel = () => {
     }
 
     // Only update URL if the query actually changed
-    const currentWorkspaceParam = route.value.query.workspace as string;
+    const currentWorkspaceParam = route.query.workspace as string;
     const newWorkspaceParam = workspace?.name;
 
     if (currentWorkspaceParam !== newWorkspaceParam) {
       router.replace({
-        path: route.value.path,
+        path: route.path,
         query: currentQuery,
       });
     }
@@ -136,7 +136,7 @@ export const useHomeViewModel = () => {
 
   // Watch for URL changes (browser back/forward navigation)
   watch(
-    () => route.value.query.workspace,
+    () => route.query.workspace,
     () => {
       restoreWorkspaceFromUrl();
     }

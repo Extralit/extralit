@@ -22,11 +22,11 @@
 export default {
   props: {
     availableFields: {
-      type: Array,
+      type: Array as () => string[],
       required: true,
     },
     selectedFields: {
-      type: Array,
+      type: Array as () => string[],
       default: () => [],
     },
     defaultMetadataFields: {

@@ -7,7 +7,8 @@
           <label class="dataset-config-dialog__label" for="datasetName" v-text="$t('datasetCreation.datasetName')" />
           <DatasetConfigurationInput
             id="datasetName"
-            v-model="dataset.name"
+            :value="dataset.name"
+            @on-value-change="dataset.name = $event"
             :placeholder="$t('datasetCreation.datasetName')"
           />
         </div>

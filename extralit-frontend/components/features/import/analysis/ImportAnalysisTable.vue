@@ -211,7 +211,7 @@ export default {
       return {
         ...this.dataframeData,
         data: filteredData,
-      };
+      } as TableData;
     },
 
     tableColumns(): TableColumn[] {
@@ -726,15 +726,17 @@ export default {
 
     // Add missing methods
     retryAnalysis() {
-      if (this.$refs.viewModel && this.$refs.viewModel.retryAnalysis) {
-        this.$refs.viewModel.retryAnalysis();
+      const vm = this.$refs.viewModel as { retryAnalysis?: () => void } | undefined;
+      if (vm && vm.retryAnalysis) {
+        vm.retryAnalysis();
       }
     },
 
     reset() {
       this.resetLocalState();
-      if (this.$refs.viewModel && this.$refs.viewModel.reset) {
-        this.$refs.viewModel.reset();
+      const vm = this.$refs.viewModel as { reset?: () => void } | undefined;
+      if (vm && vm.reset) {
+        vm.reset();
       }
     },
 

@@ -84,7 +84,7 @@
           <!-- Update Dataset Dialog -->
           <DatasetUpdateDialog
             v-if="visibleDatasetUpdateDialog"
-            :dataset="dataset"
+            :dataset="dataset as DatasetCreation"
             :is-loading="isLoading"
             @close-dialog="closeUpdateDialog"
             @update-dataset="updateDataset" />
@@ -95,6 +95,7 @@
 </template>
 
 <script lang="ts">
+import { type DatasetCreation } from "~/v1/domain/entities/hub/DatasetCreation";
 import { useDatasetConfigurationForm } from "./useDatasetConfigurationForm";
 import { MetadataCreation } from "~/v1/domain/entities/hub/MetadataCreation";
 
@@ -150,7 +151,7 @@ export default {
   },
   methods: {
     createDataset() {
-      this.create(this.dataset);
+      this.create(this.dataset as DatasetCreation);
     },
     openCreateDatasetDialog() {
       this.visibleDatasetCreationDialog = true;

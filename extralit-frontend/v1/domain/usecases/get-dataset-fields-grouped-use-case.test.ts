@@ -24,7 +24,7 @@ describe("GetDatasetFieldsGroupedUseCase should", () => {
     const backendFields = [createBackendField("chat"), createBackendField("chat"), createBackendField("text")];
 
     const fieldRepository = mock<IFieldRepository>();
-    fieldRepository.getFields.mockResolvedValue(backendFields);
+    (fieldRepository.getFields as any).mockResolvedValue(backendFields);
 
     const getDatasetFieldsGroupedUseCase = new GetDatasetFieldsGroupedUseCase(fieldRepository);
 
@@ -38,7 +38,7 @@ describe("GetDatasetFieldsGroupedUseCase should", () => {
     const backendFields = [];
 
     const fieldRepository = mock<IFieldRepository>();
-    fieldRepository.getFields.mockResolvedValue(backendFields);
+    (fieldRepository.getFields as any).mockResolvedValue(backendFields);
 
     const getDatasetFieldsGroupedUseCase = new GetDatasetFieldsGroupedUseCase(fieldRepository);
 

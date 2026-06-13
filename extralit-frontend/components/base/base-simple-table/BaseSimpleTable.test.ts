@@ -134,7 +134,7 @@ describe("BaseSimpleTable", () => {
     });
 
     it("accepts questions prop", () => {
-      const questions = [{ id: "q1", name: "Question 1" }];
+      const questions = [{ id: "q1", name: "Question 1" }] as any;
       const wrapper = shallowMount(BaseSimpleTable, {
         props: {
           columns: mockColumns,

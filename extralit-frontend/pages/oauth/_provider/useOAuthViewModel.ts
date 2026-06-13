@@ -23,7 +23,7 @@ export const useOAuthViewModel = () => {
   };
 
   const tryLogin = async () => {
-    const { params, query } = routes.value;
+    const { params, query } = routes;
 
     const provider = params.provider as ProviderType;
 

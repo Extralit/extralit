@@ -19,6 +19,7 @@ export class DataFrameSchema {
   metadata?: FileMetadata;
   schemaName?: string;
   version_id?: string;
+  version_tag?: string;
   is_latest?: boolean;
 
   constructor(

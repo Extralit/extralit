@@ -1,4 +1,4 @@
-import type { AxiosInstance } from "axios";
+import type { AxiosInstance, AxiosHeaders } from "axios";
 import { type FileMetadata } from "../entities/table/Schema";
 import { type ValidationSchema } from "../entities/table/Validation";
 
@@ -21,7 +21,7 @@ export class GetExtractionSchemaUseCase {
           version_id: versionId,
         },
       });
-      const headers = response.headers;
+      const headers = response.headers as AxiosHeaders;
       const schema = response.data;
       let isLatest = null;
       const headerValue = headers.get("is-latest");
@@ -33,11 +33,11 @@ export class GetExtractionSchemaUseCase {
 
       const SchemaMetadata: FileMetadata = {
         schemaName,
-        etag: headers.get("etag"),
-        version_id: headers.get("version-id"),
-        version_tag: headers.get("version-tag"),
+        etag: headers.get("etag") as string,
+        version_id: headers.get("version-id") as string,
+        version_tag: headers.get("version-tag") as string,
         is_latest: isLatest,
-        last_modified: new Date(headers.get("last-modified") || ""),
+        last_modified: new Date((headers.get("last-modified") as string) || ""),
       };
 
       return [schema, SchemaMetadata];

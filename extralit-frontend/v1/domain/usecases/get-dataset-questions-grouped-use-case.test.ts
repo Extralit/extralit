@@ -36,7 +36,7 @@ describe("GetDatasetQuestionsGroupedUseCase should", () => {
     ];
 
     const questionRepository = mock<IQuestionRepository>();
-    questionRepository.getQuestions.mockResolvedValue(backendQuestions);
+    (questionRepository.getQuestions as any).mockResolvedValue(backendQuestions);
 
     const getDatasetQuestionsGroupedUseCase = new GetDatasetQuestionsGroupedUseCase(questionRepository);
 
@@ -50,7 +50,7 @@ describe("GetDatasetQuestionsGroupedUseCase should", () => {
     const backendQuestions = [];
 
     const questionRepository = mock<IQuestionRepository>();
-    questionRepository.getQuestions.mockResolvedValue(backendQuestions);
+    (questionRepository.getQuestions as any).mockResolvedValue(backendQuestions);
 
     const getDatasetQuestionsGroupedUseCase = new GetDatasetQuestionsGroupedUseCase(questionRepository);
 

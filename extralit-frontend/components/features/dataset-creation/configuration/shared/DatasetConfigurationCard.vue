@@ -26,11 +26,11 @@
         <div class="config-card__row">
           <DatasetConfigurationChipsSelector
             :id="item.name"
-            v-model="item.type"
+            :value="item.type"
             :type="configType"
             class="config-card__type"
             :options="availableTypes"
-            @onValueChange="$emit('change-type', $event)"
+            @onValueChange="onTypeChange($event)"
           />
         </div>
         <slot></slot>
@@ -75,13 +75,22 @@ export default {
     event: "change",
   },
   methods: {
+    onTypeChange(type) {
+      // Vue 2's `v-model="item.type"` wrote the selection back locally (the only
+      // mechanism for field type changes — DatasetConfigurationField does not listen
+      // to change-type) AND `@onValueChange` re-emitted change-type (consumed by the
+      // question form to recreate the question). Preserve both behaviours.
+      this.item.type = type;
+      this.$emit("change-type", type);
+    },
     startEditing() {
       if (this.configType !== "question") return;
       this.isEditingName = true;
       this.editableName = this.item.name;
       this.$nextTick(() => {
-        this.$refs.nameInput.focus();
-        this.$refs.nameInput.select();
+        const nameInput = this.$refs.nameInput as HTMLInputElement;
+        nameInput.focus();
+        nameInput.select();
       });
     },
     finishEditing() {

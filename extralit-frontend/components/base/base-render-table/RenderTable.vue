@@ -80,14 +80,14 @@
 
 <script lang="ts">
 import { merge } from 'lodash';
-import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
+import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator, type Options } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns, getColumnEditorParams } from "./tableUtils";
 import { getColumnValidators } from "./validatorUtils";
 import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
-import { type Data, TableData } from '@/v1/domain/entities/table/TableData';
+import { type Data, type ReferenceValues, TableData } from '@/v1/domain/entities/table/TableData';
 import { type DataFrameField } from '@/v1/domain/entities/table/Schema';
 import { type Validators } from '@/v1/domain/entities/table/Validation';
 import { Question } from "@/v1/domain/entities/question/Question";
@@ -126,6 +126,7 @@ export default {
       dropdownEditTableVisible: false,
       visibleColumnDropdown: false,
       addColumnSearchText: null,
+      error: null,
     };
   },
 
@@ -168,8 +169,8 @@ export default {
         console.error(`Failed to fetch validation: ${error}`);
         this.$notification.notify({
           message: `${error.response}: ${error.message}`,
-          type: "error",
-          onClick() {
+          type: "danger",
+          onClick: () => {
             this.$notification.clear();
           },
         });
@@ -269,7 +270,7 @@ export default {
                 fixedValues[parentGroup.getField()] = parentGroup.getKey();
                 parentGroup = parentGroup.getParentGroup();
               }
-              const combinations = this.generateCombinations(this.referenceValues, fixedValues);
+              const combinations = this.generateCombinations(this.referenceValues as ReferenceValues, fixedValues);
 
               combinations.filter((rowData) => {
                 return !group.getSubGroups().some((subGroup: GroupComponent) => {
@@ -434,11 +435,11 @@ export default {
         // },
       };
 
-      config = merge({}, config, getColumnEditorParams(field, this.validation, this.refColumns, this.referenceValues));
+      config = merge({}, config, getColumnEditorParams(field, this.validation, this.refColumns, this.referenceValues as ReferenceValues));
 
       return config;
     },
-    validateTable(options: { scrollToError?: boolean, saveData?: boolean }): boolean {
+    validateTable(options: { scrollToError?: boolean, saveData?: boolean } = {}): boolean {
       var validErrors = this.tabulator.validate();
 
       const isValid = validErrors === true;
@@ -564,7 +565,7 @@ export default {
           this.$notification.notify({
             message: `Column name '${newFieldName}' already exists. Please choose a different name.`,
             type: "warning",
-            onClick() {
+            onClick: () => {
               this.$notification.clear();
             },
           });
@@ -596,7 +597,7 @@ export default {
       this.updateTableJsonData();
     },
     addEmptyReferenceRows() {
-      const combinations = this.generateCombinations(this.referenceValues);
+      const combinations = this.generateCombinations(this.referenceValues as ReferenceValues);
 
       combinations.forEach(rowData => {
         this.addRow(null, rowData);
@@ -605,10 +606,10 @@ export default {
     async completionRange(range: RangeComponent) {
       const rangeData = getRangeRowData(range)
       const rangeColumns = getRangeColumns(range);
-      const selectedRowData: Record<string, any> = Object.values(rangeData)
+      const selectedRowData: Data = Object.values(rangeData)
         .map(({ _id, ...rest }) => rest);
 
-      this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues)
+      this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues as ReferenceValues)
         .then((predictedRowData: Data) => {
           this.updateRangeData(predictedRowData, range);
         })
@@ -616,8 +617,8 @@ export default {
           console.error(error)
           this.$notification.notify({
             message: `${error.message}`,
-            type: "error",
-            onClick() {
+            type: "danger",
+            onClick: () => {
               this.$notification.clear();
             },
           });
@@ -818,7 +819,7 @@ export default {
     try {
       Tabulator.extendModule("keybindings", "bindings", null);
 
-      this.tabulator = new Tabulator(this.$refs.tabulator, {
+      this.tabulator = new Tabulator(this.$refs.tabulator as HTMLElement, {
         data: this.tableJSON.data,
         reactiveData: true,
         layout: this.columns.length <= 2 ? "fitData" : "fitDataTable",
@@ -908,7 +909,7 @@ export default {
 
         validationMode: "highlight",
         history: this.editable,
-      });
+      } as unknown as Options);
 
       if (this.editable) {
         this.tabulator.on("columnTitleChanged", this.columnTitleChanged.bind(this));
@@ -956,9 +957,8 @@ export default {
       const message = `Failed to load table: ${error}`;
       this.$notification.notify({
         message: message,
-        numberOfChars: message.length,
-        type: "error",
-        onClick() {
+        type: "danger",
+        onClick: () => {
           this.$notification.clear();
         },
       });

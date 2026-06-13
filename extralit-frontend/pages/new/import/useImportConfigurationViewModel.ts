@@ -97,7 +97,7 @@ export const useImportConfigurationViewModel = () => {
     retryCount.value++;
 
     // Get import ID from route params
-    const importId = route.value.params.id;
+    const importId = route.params.id as string;
     if (importId) {
       // Add exponential backoff delay
       const delay = Math.pow(2, retryCount.value - 1) * 1000; // 1s, 2s, 4s
@@ -139,7 +139,7 @@ export const useImportConfigurationViewModel = () => {
   };
 
   const getImportId = (): string | null => {
-    return route.value.params.id || null;
+    return (route.params.id as string) || null;
   };
 
   const resetError = () => {

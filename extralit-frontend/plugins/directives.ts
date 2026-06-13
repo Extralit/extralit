@@ -121,7 +121,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       const { copy } = useClipboard();
       const appContext = (binding as { instance?: { $?: { appContext?: unknown } } }).instance?.$?.appContext;
 
-      for (const pre of Array.from(el.getElementsByTagName("PRE"))) {
+      for (const pre of Array.from(el.getElementsByTagName("PRE")) as HTMLElement[]) {
         const code = (pre.children[0] as HTMLElement)?.innerText ?? pre.innerText;
 
         const container = document.createElement("div");

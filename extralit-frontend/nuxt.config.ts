@@ -17,7 +17,7 @@ export default defineNuxtConfig({
       meta: [
         { charset: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { hid: "description", name: "description", content: "" },
+        { name: "description", content: "" },
       ],
       link: [
         { rel: "icon", type: "image/x-icon", href: "favicon.ico" },
@@ -47,10 +47,9 @@ export default defineNuxtConfig({
       { code: "ja", name: "日本語", file: "ja.js" },
     ],
     detectBrowserLanguage: false,
-    lazy: true,
+    // (v10 removed the `lazy` option; lazy loading is the default with file-based locales.)
     defaultLocale: "en",
     strategy: "no_prefix",
-    bundle: { optimizeTranslationDirective: false },
     // Some translation messages intentionally contain HTML (e.g. doc links);
     // allow them instead of failing the message compiler.
     compilation: { strictMessage: false, escapeHtml: false },
@@ -81,6 +80,9 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [svgLoader()],
+    // Allow reaching the dev server by arbitrary hostnames (e.g. a containerised
+    // browser on the same Docker network). Dev-only; the prod build is a static SPA.
+    server: { allowedHosts: true },
     css: {
       preprocessorOptions: {
         scss: {

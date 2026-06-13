@@ -7,13 +7,13 @@ type TooltipApp = { app: ReturnType<typeof createApp>; mountPoint: HTMLElement }
 export default defineNuxtPlugin((nuxtApp) => {
   const instances = new WeakMap<HTMLElement, TooltipApp>();
 
-  const create = (element: HTMLElement, binding: { value: { content: unknown; open: unknown } }) => {
+  const create = (element: HTMLElement, binding: { value: { content: string; open: boolean } }) => {
     const app = createApp({
       render: () =>
         h(BaseFixedTooltip, {
           content: binding.value.content,
           open: binding.value.open,
-          triggerElement: element,
+          triggerElement: element as HTMLButtonElement,
         }),
     });
 

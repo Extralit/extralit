@@ -41,7 +41,7 @@
     <!-- Main Content -->
     <div v-else-if="importHistoryDetails" class="details-content">
       <ImportHistoryDataPreview
-        :import-history-details="importHistoryDetails"
+        :import-history-details="importHistoryDetails as ImportHistoryDetails"
         :loading="isLoading"
         :error="error"
         @retry="loadDetails"

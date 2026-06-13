@@ -15,7 +15,7 @@ describe("OAuthLoginUseCase should", () => {
     const oauthRepository = mock<IOAuthRepository>();
     const loadUserUseCase = new LoadUserUseCase(auth, mock<IUserRepository>());
 
-    oauthRepository.login.mockRejectedValue(new Error("FAKE"));
+    (oauthRepository.login as any).mockRejectedValue(new Error("FAKE"));
 
     const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 
@@ -43,7 +43,7 @@ describe("OAuthLoginUseCase should", () => {
     const oauthRepository = mock<IOAuthRepository>();
     const loadUserUseCase = new LoadUserUseCase(auth, mock<IUserRepository>());
 
-    oauthRepository.login.mockResolvedValue("FAKE_TOKEN");
+    (oauthRepository.login as any).mockResolvedValue("FAKE_TOKEN");
 
     const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 
@@ -57,7 +57,7 @@ describe("OAuthLoginUseCase should", () => {
     const oauthRepository = mock<IOAuthRepository>();
     const loadUserUseCase = new LoadUserUseCase(auth, mock<IUserRepository>());
 
-    oauthRepository.login.mockResolvedValue("");
+    (oauthRepository.login as any).mockResolvedValue("");
 
     const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 

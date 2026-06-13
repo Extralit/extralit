@@ -36,13 +36,14 @@
       v-else-if="datasetConfig"
       :dataset="datasetConfig"
       data-source="import"
-      :import-data="importHistoryData"
+      :import-data="importHistoryData as ImportHistoryDetails"
       @change-subset="handleSubsetChange"
     />
   </div>
 </template>
 
 <script lang="ts">
+import { type ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 import { useImportConfigurationViewModel } from "./useImportConfigurationViewModel";
 
 export default {

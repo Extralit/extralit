@@ -2,7 +2,7 @@ import { mount } from "@vue/test-utils";
 import BaseDateVue from "./BaseDate.vue";
 
 const dateMocked = new Date("2023-07-19 00:00:00");
-vi.useFakeTimers("modern").setSystemTime(dateMocked);
+vi.useFakeTimers().setSystemTime(dateMocked);
 vi.mock("vue-i18n");
 
 describe("Base Date should", () => {

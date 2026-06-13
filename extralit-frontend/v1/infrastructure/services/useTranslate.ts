@@ -6,7 +6,7 @@ export const useTranslate = () => {
   };
 
   const tc = (key: string, choice: number) => {
-    return $i18n.tc(key, choice) as string;
+    return $i18n.t(key, choice) as string;
   };
 
   return { t, tc };

@@ -10,7 +10,7 @@ export const useDatasetViewModel = () => {
   const route = useRoute();
   const notification = useNotifications();
   const { t } = useTranslate();
-  const datasetId = route.value.params.id;
+  const datasetId = route.params.id as string;
 
   const handleError = (response: string) => {
     let message = "";

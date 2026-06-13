@@ -15,7 +15,7 @@ export const useNewDatasetViewModel = () => {
   };
 
   const getNewHfDatasetByRepoIdFromUrl = async () => {
-    const repositoryId = useRoute().value.params.id;
+    const repositoryId = useRoute().params.id as string;
     await getNewHfDatasetByRepoId(decodeURI(repositoryId));
   };
 

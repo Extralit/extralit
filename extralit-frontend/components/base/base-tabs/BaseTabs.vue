@@ -11,7 +11,7 @@
 export default {
   props: {
     tabs: {
-      type: Array,
+      type: Array as () => { id: string; name: string }[],
       required: true,
     },
     activeTab: {
