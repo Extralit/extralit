@@ -6,12 +6,12 @@
     @visibility="onVisibility"
     v-if="options.length"
   >
-    <template slot="dropdown-header">
+    <template #dropdown-header>
       {{ useExtraText }}
       {{ selectedValue }}
       <svgicon name="chevron-down" height="8" />
     </template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <ul class="similarity-config__options">
         <li
           :class="value === getKeyProp(option) ? 'similarity-config__option--selected' : 'similarity-config__option'"

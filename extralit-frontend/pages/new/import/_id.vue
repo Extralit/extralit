@@ -1,7 +1,7 @@
 <template>
   <div class="new-dataset">
     <HeaderFeedbackTask :breadcrumbs="breadcrumbs" @breadcrumb-action="handleBreadcrumbAction">
-      <template slot="badge">
+      <template #badge>
         <p class="new-dataset__header-badge">
           {{ $t("datasetCreation.preview") }}
         </p>

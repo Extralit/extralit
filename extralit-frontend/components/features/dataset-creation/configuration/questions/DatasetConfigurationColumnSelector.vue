@@ -1,11 +1,11 @@
 <template>
   <BaseDropdown class="column-selector" :visible="dropdownIsVisible" @visibility="onVisibility" v-if="options.length">
-    <template slot="dropdown-header">
+    <template #dropdown-header>
       <svgicon name="assign" height="12" />
       {{ $t("datasetCreation.mapToColumn") }}
       <span v-if="!noMapping" class="column-selector__chip" v-text="value" />
     </template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <span class="column-selector__options__intro">Column</span>
       <ul class="column-selector__options">
         <li

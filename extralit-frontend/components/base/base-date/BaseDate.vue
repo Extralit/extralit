@@ -39,7 +39,7 @@ export default {
       reRender();
     }
   },
-  destroyed() {
+  unmounted() {
     if (this.timer) clearTimeout(this.timer);
   },
   methods: {

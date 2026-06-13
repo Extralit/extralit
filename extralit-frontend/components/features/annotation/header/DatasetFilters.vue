@@ -6,7 +6,7 @@
       <FilterButton
         v-if="isAnyAvailableFilter"
         class="filters__filter-button"
-        @click.native="toggleVisibilityOfFilters"
+        @click="toggleVisibilityOfFilters"
         :button-name="$t('filters')"
         icon-name="filter"
         :show-chevron-icon="false"

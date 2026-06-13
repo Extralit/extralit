@@ -243,7 +243,7 @@ export default {
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     this.stopTimer();
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
     document.removeEventListener("keydown", this.handleGlobalKeys);

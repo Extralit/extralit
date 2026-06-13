@@ -10,7 +10,7 @@
           :showSettingButton="true"
           :showCopyButton="true"
         >
-          <template slot="topbar-buttons" v-if="dataset && dataset.id && user.isAdminOrOwner">
+          <template #topbar-buttons v-if="dataset && dataset.id && user.isAdminOrOwner">
             <ImportData v-if="dataset.createdFromUI" :snippet="dataset.createCodeSnippetFromHub(user)" />
             <ExportToHub :dataset="dataset" />
           </template>

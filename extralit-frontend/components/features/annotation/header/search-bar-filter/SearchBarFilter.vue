@@ -25,13 +25,13 @@
       :visible="dropdownIsVisible"
       @visibility="onVisibility"
     >
-      <template slot="dropdown-header">
+      <template #dropdown-header>
         <span class="search-area__fields__header">
           <span class="search-area__fields__header__text">{{ selectedField.title }}</span>
           <svgicon name="chevron-down" height="8" aria-hidden="true" />
         </span>
       </template>
-      <template slot="dropdown-content">
+      <template #dropdown-content>
         <ul class="search-area__fields__content">
           <li v-for="field in filteredFields" :key="field.id">
             <BaseButton @on-click="selectField(field)">{{ field.title }}</BaseButton>

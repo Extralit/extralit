@@ -7,11 +7,11 @@
       @visibility="onVisibility"
       v-if="options.length"
     >
-      <template slot="dropdown-header">
+      <template #dropdown-header>
         <p class="page-size__text" v-text="selectedValue" />
         <svgicon name="chevron-down" height="8" />
       </template>
-      <template slot="dropdown-content">
+      <template #dropdown-content>
         <ul class="page-size__options">
           <li
             :class="value === option ? 'page-size__option--selected' : 'page-size__option'"

@@ -144,7 +144,7 @@ export default {
       this.setViewportPosition();
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.isViewportBoundary) {
       window.removeEventListener("resize", this.setViewportPosition);
       this.getScrollableParent(this.$refs.dropdown).removeEventListener("scroll", this.setViewportPosition);

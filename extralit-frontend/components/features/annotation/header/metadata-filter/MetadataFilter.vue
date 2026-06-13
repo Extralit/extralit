@@ -1,7 +1,7 @@
 <template>
   <div class="metadata-filter" v-if="metadataFilters.hasFilters">
     <BaseDropdown boundary="viewport" :visible="visibleDropdown" @visibility="onMetadataToggleVisibility">
-      <span slot="dropdown-header">
+      <template #dropdown-header><span>
         <FilterButtonWithBadges
           :is-active="visibleDropdown"
           :badges="appliedCategoriesFilters"
@@ -11,8 +11,8 @@
           @click-on-clear-all="clearAllCategories"
           :name="$t('metadata')"
         />
-      </span>
-      <span v-if="!!metadataFilters" slot="dropdown-content" class="metadata-filter__container">
+      </span></template>
+      <template #dropdown-content><span v-if="!!metadataFilters" class="metadata-filter__container">
         <CategoriesSelector
           v-if="!visibleCategory"
           name="metadataCategories"
@@ -32,7 +32,7 @@
             </div>
           </div>
         </template>
-      </span>
+      </span></template>
     </BaseDropdown>
   </div>
 </template>

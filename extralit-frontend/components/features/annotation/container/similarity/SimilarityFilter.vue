@@ -9,10 +9,10 @@
     @visibility="onChangeDropDownVisibility"
     class="similarity-filter"
   >
-    <template slot="dropdown-header">
+    <template #dropdown-header>
       <BaseButton class="small">{{ $t("similarity.findSimilar") }}</BaseButton>
     </template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <div class="similarity-filter__dropdown">
         <span class="similarity-filter__header">
           <SimilarityFilterOrder v-model="order" />

@@ -1,19 +1,19 @@
 <template>
   <div class="datasets-filter" v-if="workspaces.length">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
-      <span slot="dropdown-header"
+      <template #dropdown-header><span
         ><WorkspacesFilterButton
           :is-active="visibleDropdown || !!localSelectedWorkspace"
           :selected-workspace="localSelectedWorkspace"
-        /></span>
-      <span slot="dropdown-content" class="datasets-filter__container">
+        /></span></template>
+      <template #dropdown-content><span class="datasets-filter__container">
         <div class="datasets-filter__content">
           <WorkspaceSelector
             :workspaces="workspaces"
             v-model="localSelectedWorkspace"
           />
         </div>
-      </span>
+      </span></template>
     </BaseDropdown>
   </div>
 </template>

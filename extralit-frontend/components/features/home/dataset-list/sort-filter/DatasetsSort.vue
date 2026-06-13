@@ -1,10 +1,10 @@
 <template>
   <div class="sort-filter">
     <BaseDropdown :visible="visibleDropdown" @visibility="onSortToggleVisibility">
-      <span slot="dropdown-header">
+      <template #dropdown-header><span>
         <DatasetsSortButton :is-active="visibleDropdown" />
-      </span>
-      <span slot="dropdown-content" class="sort-filter__container">
+      </span></template>
+      <template #dropdown-content><span class="sort-filter__container">
         <DatasetsSortSelectorItem
           :selected-option="sortedByField"
           :selected-direction="sortedOrder"
@@ -12,7 +12,7 @@
           @change-sort-direction="$emit('on-change-direction', $event)"
           @change-sort-field="$emit('on-change-field', $event)"
         />
-      </span>
+      </span></template>
     </BaseDropdown>
   </div>
 </template>

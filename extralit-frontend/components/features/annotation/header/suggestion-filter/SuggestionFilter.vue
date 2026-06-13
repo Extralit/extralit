@@ -1,7 +1,7 @@
 <template>
   <div class="suggestion-filter" v-if="suggestionFilters.hasFilters">
     <BaseDropdown boundary="viewport" :visible="visibleDropdown" @visibility="onToggleVisibility">
-      <span slot="dropdown-header">
+      <template #dropdown-header><span>
         <FilterButtonWithBadges
           :is-active="visibleDropdown"
           :badges="appliedCategoriesFilters"
@@ -11,8 +11,8 @@
           @click-on-clear-all="clearAllSuggestionFilter"
           :name="$t('suggestion.plural')"
         />
-      </span>
-      <span slot="dropdown-content" class="suggestion-filter__container">
+      </span></template>
+      <template #dropdown-content><span class="suggestion-filter__container">
         <CategoriesSelector
           v-if="!selectedSuggestion"
           name="suggestions"
@@ -57,7 +57,7 @@
             </template>
           </div>
         </template>
-      </span>
+      </span></template>
     </BaseDropdown>
   </div>
 </template>

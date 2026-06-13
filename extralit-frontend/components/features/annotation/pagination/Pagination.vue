@@ -44,7 +44,7 @@ export default {
   mounted() {
     document.addEventListener("keydown", this.onPressKeyboardShortcuts);
   },
-  destroyed() {
+  unmounted() {
     document.removeEventListener("keydown", this.onPressKeyboardShortcuts);
   },
   computed: {

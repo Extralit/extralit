@@ -1,8 +1,8 @@
 <template>
   <div class="breadcrumb-dropdown">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
+      <template #dropdown-header>
       <span
-        slot="dropdown-header"
         class="breadcrumb-dropdown__header"
       >
         <span
@@ -17,7 +17,9 @@
           :class="{ '--rotated': visibleDropdown }"
         />
       </span>
-      <span slot="dropdown-content" class="breadcrumb-dropdown__content">
+      </template>
+      <template #dropdown-content>
+      <span class="breadcrumb-dropdown__content">
         <div class="breadcrumb-dropdown__selector">
           <BaseSearch v-model="searchText" :placeholder="$t('searchWorkspaces')" />
           <div class="breadcrumb-dropdown__items">
@@ -44,6 +46,7 @@
           </div>
         </div>
       </span>
+      </template>
     </BaseDropdown>
   </div>
 </template>

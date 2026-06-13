@@ -222,7 +222,7 @@ export default {
       }
     });
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.scroll) {
       this.scroll.removeEventListener("scroll", this.getPosition);
     }

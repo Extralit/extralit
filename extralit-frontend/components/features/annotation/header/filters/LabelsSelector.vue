@@ -24,7 +24,7 @@
         :key="option.value"
         :value="option.selected"
         v-model="option.selected"
-        @mouseover.native="preSelectionIndex = index"
+        @mouseover="preSelectionIndex = index"
       >
         {{ option.text ?? option.value }}
       </BaseCheckbox>

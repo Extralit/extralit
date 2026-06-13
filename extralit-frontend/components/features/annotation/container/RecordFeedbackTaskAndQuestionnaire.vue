@@ -134,7 +134,7 @@ export default {
 
     this.$root.$on("on-change-record-criteria-filter", this.onChangeRecordFilter);
   },
-  destroyed() {
+  unmounted() {
     this.$root.$off("on-change-record-page");
     this.$root.$off("on-change-record-criteria-filter");
     this.$notification.clear();

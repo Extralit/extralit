@@ -1,7 +1,7 @@
 <template>
   <div class="sort-selector-item">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility" class="sort-selector-item__dropdown">
-      <span slot="dropdown-header" class="sort-selector-item__dropdown__header">
+      <template #dropdown-header><span class="sort-selector-item__dropdown__header">
         <div class="sort-selector-item__dropdown__header__item">
           <span
             class="sort-selector-item__dropdown__header__text"
@@ -10,14 +10,14 @@
           />
         </div>
         <svgicon width="12" height="12" name="chevron-down" />
-      </span>
-      <ul slot="dropdown-content" class="sort-selector-item__list">
+      </span></template>
+      <template #dropdown-content><ul class="sort-selector-item__list">
         <li v-for="option in filteredOptions" :key="option.value">
           <BaseButton class="sort-selector-item__list__item" @click="changeField(option.value)">{{
             option.label
           }}</BaseButton>
         </li>
-      </ul>
+      </ul></template>
     </BaseDropdown>
     <BaseButton
       title="sort direction"

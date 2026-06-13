@@ -27,7 +27,7 @@ export default {
     };
   },
   mounted() {
-    if (this.$listeners["on-click"]) {
+    if (this.$attrs["on-click"]) {
       this.clickable = true;
     }
   },

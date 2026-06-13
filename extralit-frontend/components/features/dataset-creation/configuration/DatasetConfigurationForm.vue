@@ -9,7 +9,7 @@
               {{ $t("datasetCreation.subset") }}:
               <DatasetConfigurationSelector class="config-form__selector" :options="dataset.subsets"
                 :value="dataset.selectedSubset.name" @onValueChange="$emit('change-subset', $event)">
-                <template slot="optionsIntro">
+                <template #optionsIntro>
                   <span class="config-form__selector__intro">{{ $t("datasetCreation.selectSubset") }}</span>
                 </template>
               </DatasetConfigurationSelector>

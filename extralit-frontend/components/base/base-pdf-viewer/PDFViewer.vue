@@ -1,20 +1,20 @@
 <template>
   <div class="pdf-container">
     <PDFView
-      :src.sync="url"
+      v-model:src="url"
       :fileName="fileName"
       :sidebarFeatureVisible="true"
-      :scale.sync="scale"
+      v-model:scale="scale"
       :pageNumber="currentPageNumber"
       ref="pdfView"
       class="PDFView"
     >
-      <template slot="right-toolbox">
+      <template #right-toolbox>
         <p class="document__title">{{ fileName }}</p>
       </template>
-      <template slot="left-toolbox"> </template>
-      <template slot="error"></template>
-      <template slot="loading"></template>
+      <template #left-toolbox> </template>
+      <template #error></template>
+      <template #loading></template>
     </PDFView>
   </div>
 </template>

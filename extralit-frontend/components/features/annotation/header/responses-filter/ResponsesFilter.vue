@@ -1,7 +1,7 @@
 <template>
   <div class="responses-filter" v-if="questionFilters.hasFilters">
     <BaseDropdown boundary="viewport" :visible="visibleDropdown" @visibility="onToggleVisibility">
-      <span slot="dropdown-header">
+      <template #dropdown-header><span>
         <FilterButtonWithBadges
           :is-active="visibleDropdown"
           :badges="appliedCategoriesFilters"
@@ -11,8 +11,8 @@
           @click-on-clear-all="clearAllResponseFilter"
           :name="$t('responses')"
         />
-      </span>
-      <span slot="dropdown-content" class="responses-filter__container">
+      </span></template>
+      <template #dropdown-content><span class="responses-filter__container">
         <CategoriesSelector
           v-if="!selectedResponse"
           name="responsesCategories"
@@ -30,7 +30,7 @@
             <RangeSelector v-else :filter="selectedResponse.rangeValue" />
           </div>
         </template>
-      </span>
+      </span></template>
     </BaseDropdown>
   </div>
 </template>

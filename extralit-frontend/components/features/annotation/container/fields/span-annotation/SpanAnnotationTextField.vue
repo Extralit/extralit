@@ -203,7 +203,7 @@ export default {
     document.addEventListener("keydown", this.onKeyDown);
     document.addEventListener("keyup", this.onKeyUp);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (!this.spanQuestion.settings.allow_character_annotation) return;
 
     document.removeEventListener("keydown", this.onKeyDown);

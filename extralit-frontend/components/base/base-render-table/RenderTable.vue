@@ -5,13 +5,13 @@
   >
     <div class="__table-buttons">
       <BaseDropdown v-show="editable" :visible="dropdownEditTableVisible" >
-        <span slot="dropdown-header">
+        <template #dropdown-header><span>
           <BaseButton @click.prevent="dropdownEditTableVisible=!dropdownEditTableVisible">
             Edit table
             <svgicon name="chevron-down" width="8" height="8" />
           </BaseButton>
-        </span>
-        <span slot="dropdown-content">
+        </span></template>
+        <template #dropdown-content><span>
           <BaseButton v-show="editable && tabulator" @click.prevent="tabulator.undo();">
             Undo
           </BaseButton>
@@ -21,17 +21,17 @@
           <BaseButton v-show="editable" @click.prevent="clearTable(); dropdownEditTableVisible=false">
             {{ tabulator?.getDataCount() > 0 ? 'Clear data' : 'Delete table' }}
           </BaseButton>
-        </span>
+        </span></template>
       </BaseDropdown>
 
       <BaseDropdown v-show="editable && tabulator" :visible="visibleColumnDropdown" class="dropdown"  >
-        <span slot="dropdown-header">
+        <template #dropdown-header><span>
           <BaseButton @click.prevent="visibleColumnDropdown=!visibleColumnDropdown">
             ➕ Add Column
             <svgicon name="chevron-down" width="8" height="8" />
           </BaseButton>
-        </span>
-        <span slot="dropdown-content">
+        </span></template>
+        <template #dropdown-content><span>
           <BaseButton
             v-for="(attrs, field) in remainingSchemaColumns"
             :key="field"
@@ -40,7 +40,7 @@
           >
             {{ field }}
           </BaseButton>
-        </span>
+        </span></template>
       </BaseDropdown>
 
       <BaseButton v-show="editable && tabulator" @click.prevent="addRow()">
@@ -49,13 +49,13 @@
 
       <BaseDropdown v-show="tabulator && columnValidators && Object.keys(columnValidators).length"
         :visible="editable && visibleCheckdropdown" >
-        <span slot="dropdown-header">
+        <template #dropdown-header><span>
           <BaseButton
             @click.prevent="validateTable({ scrollToError: true, saveData: true }); visibleCheckdropdown=!visibleCheckdropdown">
             Check data <i v-if="tableJSON?.schema?.is_latest === false">!</i>
           </BaseButton>
-        </span>
-        <span slot="dropdown-content">
+        </span></template>
+        <template #dropdown-content><span>
           <BaseButton @click.prevent="$emit('updateValidValues', true);">
             Ignore errors
           </BaseButton>
@@ -65,7 +65,7 @@
           >
             Fetch latest schema
           </BaseButton>
-        </span>
+        </span></template>
       </BaseDropdown>
     </div>
 
@@ -328,14 +328,14 @@ export default {
           this.tabulator.rowManager.rows.forEach((row)=>{
             removeColumns.forEach((field) => {
               row.deleteCell(field);
-              this.$delete(row.data, field)
+              delete row.data[field]
             });
           })
 
           // Remove removeColumns from this.tableJSON.data
           this.tableJSON.data.forEach((row) => {
             removeColumns.forEach((field) => {
-              this.$delete(row, field);
+              delete row[field];
 
             });
           });
@@ -920,7 +920,7 @@ export default {
           this.$emit("cell-edited", cell);
           // const rowPos: number | boolean = cell.getRow().getPosition();
           // if (typeof rowPos != 'number' || rowPos < 0 || rowPos > this.tableJSON.data.length) return;
-          // this.$set(this.tableJSON.data[rowPos-1], cell.getColumn().getField(), cell.getValue());
+          // this.tableJSON.data[rowPos-1][cell.getColumn().getField()] = cell.getValue();
         });
 
         this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {

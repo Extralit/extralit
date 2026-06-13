@@ -1,10 +1,10 @@
 <template>
   <BaseDropdown class="selector" :visible="dropdownIsVisible" @visibility="onVisibility" v-if="options.length">
-    <template slot="dropdown-header">
+    <template #dropdown-header>
       {{ value?.name ?? value ?? $t("datasetCreation.select") }}
       <svgicon name="chevron-down" height="8" />
     </template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <slot name="optionsIntro" />
       <ul class="selector__options">
         <li

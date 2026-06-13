@@ -551,7 +551,7 @@ export default {
       const nextStatus = this.getNextStatus(currentStatus, originalStatus);
       if (nextStatus !== currentStatus) {
         // Update the local document action
-        this.$set(this.localDocumentActions, reference, nextStatus);
+        this.localDocumentActions[reference] = nextStatus;
 
         // Update the cell value
         cell.getRow().update({ status: nextStatus });

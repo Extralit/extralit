@@ -1,13 +1,13 @@
 <template>
   <div v-if="options.length">
     <BaseDropdown :visible="dropdownIsVisible" @visibility="onVisibility">
-      <span slot="dropdown-header">
+      <template #dropdown-header><span>
         <BaseButton class="selected-option" :class="currentOptionId" :data-title="$t('status')">
           {{ currentOptionName }}
           <svgicon name="chevron-down" width="8" height="8" aria-hidden="true" />
         </BaseButton>
-      </span>
-      <span slot="dropdown-content">
+      </span></template>
+      <template #dropdown-content><span>
         <ul class="options" role="radiogroup">
           <li
             v-for="{ id, name, color } in options"
@@ -33,7 +33,7 @@
             >
           </li>
         </ul>
-      </span>
+      </span></template>
     </BaseDropdown>
   </div>
 </template>

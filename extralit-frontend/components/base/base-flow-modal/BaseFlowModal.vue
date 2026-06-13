@@ -184,7 +184,7 @@ export default {
     },
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     document.body.classList.remove("flow-modal-open");
   },
 

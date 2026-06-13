@@ -30,11 +30,11 @@ export default {
     };
   },
   mounted() {
-    if (this.$listeners["on-click"]) {
+    if (this.$attrs["on-click"]) {
       this.clickable = true;
       this.renderComponent = "baseButton";
     }
-    if (this.$listeners["on-clear"]) {
+    if (this.$attrs["on-clear"]) {
       this.clearable = true;
     }
   },

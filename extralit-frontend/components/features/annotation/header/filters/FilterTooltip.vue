@@ -48,10 +48,10 @@ export default {
     },
   },
   mounted() {
-    if (this.$listeners["on-click"]) {
+    if (this.$attrs["on-click"]) {
       this.clickable = true;
     }
-    if (this.$listeners["on-clear"]) {
+    if (this.$attrs["on-clear"]) {
       this.clearable = true;
     }
     if (this.isViewportBoundary) {
@@ -59,7 +59,7 @@ export default {
       window.addEventListener("resize", this.setViewportPosition);
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.isViewportBoundary) {
       window.removeEventListener("resize", this.setViewportPosition);
     }

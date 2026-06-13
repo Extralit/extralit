@@ -46,7 +46,7 @@
           :class="{ '--preselected': preSelectionIndex === index }"
           :value="option"
           v-model="selection"
-          @mouseover.native="preSelectionIndex = index"
+          @mouseover="preSelectionIndex = index"
         >
           <EntityBadge class="span-entity__badge" :color="option.color" :text="option.text"></EntityBadge>
         </BaseCheckbox>

@@ -1,10 +1,10 @@
 <template>
   <div class="sort-filter">
     <BaseDropdown :visible="visibleDropdown" @visibility="onSortToggleVisibility">
-      <span slot="dropdown-header">
+      <template #dropdown-header><span>
         <SortButton :is-active="visibleDropdown" :active-sort-items="selectedSortingItems" />
-      </span>
-      <span slot="dropdown-content" class="sort-filter__container">
+      </span></template>
+      <template #dropdown-content><span class="sort-filter__container">
         <SortCategoriesList
           v-if="!selectedSortingItems.length"
           class="sort-filter__selector"
@@ -17,7 +17,7 @@
           @clear-category="clearSortCategory"
           @apply-sort="applySort"
         />
-      </span>
+      </span></template>
     </BaseDropdown>
   </div>
 </template>
