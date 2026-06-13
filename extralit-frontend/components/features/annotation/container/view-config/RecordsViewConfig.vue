@@ -42,23 +42,19 @@ export default {
     };
   },
   props: {
-    recordHeight: {
+    modelValue: {
       type: String,
       default: false,
     },
   },
-  emits: ["change"],
-  model: {
-    prop: "recordHeight",
-    event: "change",
-  },
+  emits: ["update:modelValue"],
   computed: {
     recordHeightValue: {
       get() {
-        return this.recordHeight;
+        return this.modelValue;
       },
       set(newValue) {
-        this.$emit("change", newValue);
+        this.$emit("update:modelValue", newValue);
       },
     },
   },

@@ -59,7 +59,7 @@ export default {
       type: Number,
       default: 1,
     },
-    sliderValues: {
+    modelValue: {
       type: Array,
       default: () => [0, 1],
     },
@@ -68,21 +68,18 @@ export default {
       default: () => this.max / 100,
     },
   },
-  model: {
-    prop: "sliderValues",
-    event: "onSliderValuesChanged",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
-      values: this.sliderValues,
+      values: this.modelValue,
     };
   },
   watch: {
-    sliderValues() {
-      this.values = this.sliderValues;
+    modelValue() {
+      this.values = this.modelValue;
     },
     values() {
-      this.$emit("onSliderValuesChanged", this.values);
+      this.$emit("update:modelValue", this.values);
     },
     sliderFrom(newValue) {
       if (newValue > this.sliderTo) {

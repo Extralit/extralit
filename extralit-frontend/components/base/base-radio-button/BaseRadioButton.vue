@@ -20,7 +20,7 @@ export default {
     name: {
       type: String,
     },
-    model: {
+    modelValue: {
       type: [String, Number, Boolean, Object],
     },
     value: {
@@ -32,14 +32,10 @@ export default {
       default: "var(--fg-status-submitted)",
     },
   },
-  emits: ["change"],
-  model: {
-    prop: "model",
-    event: "change",
-  },
+  emits: ["change", "update:modelValue"],
   computed: {
     isSelected() {
-      return isEqual(this.model, this.value);
+      return isEqual(this.modelValue, this.value);
     },
     radioClasses() {
       return {
@@ -57,6 +53,7 @@ export default {
     toggleCheck() {
       if (!this.disabled) {
         this.$emit("change", this.value);
+        this.$emit("update:modelValue", this.value);
       }
     },
   },

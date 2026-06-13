@@ -71,10 +71,6 @@ export default {
       required: true,
     },
   },
-  model: {
-    prop: "type",
-    event: "change",
-  },
   computed: {
     noMapping() {
       return this.question.column === "no mapping";

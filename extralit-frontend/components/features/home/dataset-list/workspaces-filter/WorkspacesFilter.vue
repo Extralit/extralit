@@ -31,10 +31,6 @@ export default {
       default: null,
     },
   },
-  model: {
-    prop: "selectedWorkspace",
-    event: "on-change-workspace-filter",
-  },
   data() {
     return {
       visibleDropdown: false,

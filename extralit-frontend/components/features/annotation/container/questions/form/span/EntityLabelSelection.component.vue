@@ -81,10 +81,6 @@ export default {
       default: true,
     },
   },
-  model: {
-    prop: "options",
-    event: "on-change",
-  },
   data() {
     return {
       isOutside: false,

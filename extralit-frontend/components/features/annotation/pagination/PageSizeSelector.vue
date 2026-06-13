@@ -14,7 +14,7 @@
       <template #dropdown-content>
         <ul class="page-size__options">
           <li
-            :class="value === option ? 'page-size__option--selected' : 'page-size__option'"
+            :class="modelValue === option ? 'page-size__option--selected' : 'page-size__option'"
             v-for="option in options"
             :key="option"
             @click="selectOption(option)"
@@ -30,7 +30,7 @@
 <script>
 export default {
   props: {
-    value: {
+    modelValue: {
       type: Number,
       required: true,
     },
@@ -39,14 +39,11 @@ export default {
       required: true,
     },
   },
-  model: {
-    prop: "value",
-    event: "onValueChange",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       dropdownIsVisible: false,
-      selectedValue: this.value,
+      selectedValue: this.modelValue,
     };
   },
   methods: {
@@ -56,7 +53,7 @@ export default {
     selectOption(option) {
       this.selectedValue = option;
 
-      this.$emit("onValueChange", option);
+      this.$emit("update:modelValue", option);
 
       this.dropdownIsVisible = false;
     },

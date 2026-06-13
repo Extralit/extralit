@@ -8,7 +8,7 @@
             <div v-if="dataset.subsets.length > 1" class="config-form__subset">
               {{ $t("datasetCreation.subset") }}:
               <DatasetConfigurationSelector class="config-form__selector" :options="dataset.subsets"
-                :value="dataset.selectedSubset.name" @onValueChange="$emit('change-subset', $event)">
+                :model-value="dataset.selectedSubset.name" @update:model-value="$emit('change-subset', $event)">
                 <template #optionsIntro>
                   <span class="config-form__selector__intro">{{ $t("datasetCreation.selectSubset") }}</span>
                 </template>

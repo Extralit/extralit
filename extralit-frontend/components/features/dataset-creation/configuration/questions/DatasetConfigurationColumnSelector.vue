@@ -33,10 +33,6 @@ export default {
       required: true,
     },
   },
-  model: {
-    prop: "value",
-    event: "onValueChange",
-  },
   data() {
     return {
       dropdownIsVisible: false,

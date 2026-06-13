@@ -24,7 +24,7 @@
               :id="id"
               class="option__radio"
               :color="color"
-              :model="id"
+              :model-value="id"
               :value="selectedOption"
               tabindex="-1"
               aria-hidden="true"
@@ -55,10 +55,6 @@ export default {
     };
   },
   emits: ["change"],
-  model: {
-    prop: "selectedOption",
-    event: "change",
-  },
   computed: {
     currentOption() {
       return this.options.find((opt) => opt.id === this.selectedOption);

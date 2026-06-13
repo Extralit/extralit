@@ -16,7 +16,7 @@
 
 <script>
 export default {
-  emits: ["change"],
+  emits: ["update:modelValue"],
   props: {
     id: String,
     min: {
@@ -27,27 +27,23 @@ export default {
       type: Number,
       default: 100,
     },
-    value: {
+    modelValue: {
       type: Number,
       required: true,
     },
   },
   data() {
     return {
-      range: Math.min(this.max, this.value),
+      range: Math.min(this.max, this.modelValue),
     };
-  },
-  model: {
-    prop: "value",
-    event: "change",
   },
   watch: {
     range() {
-      this.$emit("change", this.range);
+      this.$emit("update:modelValue", this.range);
       this.styleRange();
     },
-    value() {
-      this.range = this.value;
+    modelValue() {
+      this.range = this.modelValue;
     },
   },
   computed: {

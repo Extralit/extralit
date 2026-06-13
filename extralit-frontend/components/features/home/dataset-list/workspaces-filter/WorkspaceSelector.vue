@@ -24,16 +24,12 @@ export default {
       type: Array,
       required: true,
     },
-    selectedWorkspace: {
+    modelValue: {
       type: String,
       default: null,
     },
   },
-  emits: ["input"],
-  model: {
-    prop: "selectedWorkspace",
-    event: "input",
-  },
+  emits: ["update:modelValue"],
   data: () => {
     return {
       searchText: "",
@@ -42,10 +38,10 @@ export default {
   computed: {
     selectedWorkspaceValue: {
       get() {
-        return this.selectedWorkspace;
+        return this.modelValue;
       },
       set(value) {
-        this.$emit("input", value);
+        this.$emit("update:modelValue", value);
       },
     },
     workspacesFilteredBySearchText() {

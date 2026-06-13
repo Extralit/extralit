@@ -44,15 +44,12 @@ export default {
       type: Array,
       required: true,
     },
-    responseFiltered: {
+    modelValue: {
       type: Array,
       required: true,
     },
   },
-  model: {
-    prop: "responseFiltered",
-    event: "onResponseFilteredChanged",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       visibleDropdown: false,
@@ -82,7 +79,7 @@ export default {
 
       const newFilter = this.questionFilters.commit();
 
-      this.$emit("onResponseFilteredChanged", newFilter);
+      this.$emit("update:modelValue", newFilter);
 
       this.appliedCategoriesFilters = this.questionFilters.filteredCategories;
     },
@@ -106,7 +103,7 @@ export default {
     updateAppliedCategoriesFromMetadataFilter() {
       if (!this.questionFilters) return;
 
-      this.questionFilters.complete(this.responseFiltered);
+      this.questionFilters.complete(this.modelValue);
 
       this.appliedCategoriesFilters = this.questionFilters.filteredCategories;
     },
@@ -129,7 +126,7 @@ export default {
         this.filter();
       },
     },
-    responseFiltered() {
+    modelValue() {
       this.updateAppliedCategoriesFromMetadataFilter();
     },
   },

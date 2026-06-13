@@ -112,10 +112,6 @@ export default {
     },
   },
 
-  model: {
-    prop: "hasValidValues",
-    event: "updateValidValues",
-  },
 
   data() {
     return {

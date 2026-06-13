@@ -70,10 +70,6 @@ export default {
       return this.item.type.value === "no mapping";
     },
   },
-  model: {
-    prop: "type",
-    event: "change",
-  },
   methods: {
     onTypeChange(type) {
       // Vue 2's `v-model="item.type"` wrote the selection back locally (the only

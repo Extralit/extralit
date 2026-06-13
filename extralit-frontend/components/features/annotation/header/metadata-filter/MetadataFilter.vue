@@ -46,15 +46,12 @@ export default {
       type: Array,
       required: true,
     },
-    metadataFiltered: {
+    modelValue: {
       type: Array,
       required: true,
     },
   },
-  model: {
-    prop: "metadataFiltered",
-    event: "onMetadataFilteredChanged",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       visibleDropdown: false,
@@ -84,7 +81,7 @@ export default {
 
       const newFilter = this.metadataFilters.commit();
 
-      this.$emit("onMetadataFilteredChanged", newFilter);
+      this.$emit("update:modelValue", newFilter);
 
       this.appliedCategoriesFilters = this.metadataFilters.filteredCategories;
     },
@@ -108,7 +105,7 @@ export default {
     updateAppliedCategoriesFromMetadataFilter() {
       if (!this.metadataFilters) return;
 
-      this.metadataFilters.complete(this.metadataFiltered);
+      this.metadataFilters.complete(this.modelValue);
 
       this.appliedCategoriesFilters = this.metadataFilters.filteredCategories;
     },
@@ -131,7 +128,7 @@ export default {
         this.filter();
       },
     },
-    metadataFiltered() {
+    modelValue() {
       this.updateAppliedCategoriesFromMetadataFilter();
     },
   },

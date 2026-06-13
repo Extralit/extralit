@@ -56,10 +56,6 @@ export default {
       type: Object,
     },
   },
-  model: {
-    prop: "options",
-    event: "on-change",
-  },
   watch: {
     isFocused: {
       immediate: true,

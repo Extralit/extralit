@@ -34,10 +34,6 @@ export default {
       default: () => ["reference", "doi", "pmid"],
     },
   },
-  model: {
-    prop: "selectedFields",
-    event: "onSelectionChange",
-  },
   computed: {
     currentSelection() {
       return this.selectedFields.length > 0 ? this.selectedFields : this.getDefaultSelection();

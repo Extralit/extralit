@@ -1,10 +1,10 @@
 <template>
   <BaseDropdown class="option-selector" :visible="dropdownIsVisible" @visibility="onVisibility" v-if="options.length">
-    <template #dropdown-header> {{ value }}<svgicon name="chevron-down" height="8" /> </template>
+    <template #dropdown-header> {{ modelValue }}<svgicon name="chevron-down" height="8" /> </template>
     <template #dropdown-content>
       <ul class="option-selector__options">
         <li
-          :class="value === option ? 'option-selector__option--selected' : 'option-selector__option'"
+          :class="modelValue === option ? 'option-selector__option--selected' : 'option-selector__option'"
           v-for="option in options"
           :key="option"
           @click="selectOption(option)"
@@ -19,7 +19,7 @@
 <script>
 export default {
   props: {
-    value: {
+    modelValue: {
       type: [String, Number],
       required: true,
     },
@@ -28,10 +28,7 @@ export default {
       required: true,
     },
   },
-  model: {
-    prop: "value",
-    event: "onValueChange",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       dropdownIsVisible: false,
@@ -42,7 +39,7 @@ export default {
       this.dropdownIsVisible = value;
     },
     selectOption(option) {
-      this.$emit("onValueChange", option);
+      this.$emit("update:modelValue", option);
 
       this.dropdownIsVisible = false;
     },

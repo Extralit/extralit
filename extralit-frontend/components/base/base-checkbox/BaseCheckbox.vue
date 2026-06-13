@@ -14,11 +14,7 @@
 // TODO: Improve this component.
 import _ from "lodash";
 export default {
-  emits: ["change", "input"],
-  model: {
-    prop: "areChecked",
-    event: "change",
-  },
+  emits: ["change", "input", "update:modelValue"],
   props: {
     id: {
       type: String,
@@ -31,7 +27,7 @@ export default {
       type: [String, Number, Boolean, Object],
       default: false,
     },
-    areChecked: {
+    modelValue: {
       type: [Array, Boolean],
       default: false,
     },
@@ -48,10 +44,10 @@ export default {
   computed: {
     classes() {
       return {
-        checked: Array.isArray(this.areChecked)
-          ? Array.isArray(this.areChecked)
-            ? this.areChecked.includes(this.value)
-            : _.find(this.areChecked, this.value)
+        checked: Array.isArray(this.modelValue)
+          ? Array.isArray(this.modelValue)
+            ? this.modelValue.includes(this.value)
+            : _.find(this.modelValue, this.value)
           : this.checked,
         disabled: this.disabled,
         "decoration-circle": this.decorationCircle,
@@ -62,7 +58,7 @@ export default {
     value() {
       this.checked = !!this.value;
     },
-    areChecked(newValue) {
+    modelValue(newValue) {
       if (typeof newValue === "boolean") {
         this.checked = newValue;
       }
@@ -71,8 +67,8 @@ export default {
   methods: {
     toggleCheck() {
       if (!this.disabled) {
-        if (Array.isArray(this.areChecked)) {
-          const checked = this.areChecked.slice();
+        if (Array.isArray(this.modelValue)) {
+          const checked = this.modelValue.slice();
           const found = typeof this.value === "string" ? checked.indexOf(this.value) : _.findIndex(checked, this.value);
           if (found !== -1) {
             checked.splice(found, 1);
@@ -80,12 +76,14 @@ export default {
             checked.push(this.value);
           }
           this.$emit("change", checked);
+          this.$emit("update:modelValue", checked);
         } else {
           this.checked = !this.checked;
-          let checked = this.areChecked;
+          let checked = this.modelValue;
           checked = this.checked;
           this.$emit("change", checked);
           this.$emit("input", checked);
+          this.$emit("update:modelValue", checked);
         }
       }
     },

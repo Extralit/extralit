@@ -7,7 +7,7 @@ const options = {
     id: "id",
     name: "name",
     value: "1",
-    model: "1",
+    modelValue: "1",
   },
 };
 beforeEach(() => {
@@ -32,7 +32,7 @@ describe("BaseRadioButtonComponent", () => {
   });
   it("component is selected when model and value matched", async () => {
     expect(wrapper.vm.isSelected).toBe(true);
-    expect(wrapper.props().model).toBe("1");
+    expect(wrapper.props().modelValue).toBe("1");
   });
   it("input is checked when model and value matched", async () => {
     const radioInput = wrapper.find('input[type="radio"]');

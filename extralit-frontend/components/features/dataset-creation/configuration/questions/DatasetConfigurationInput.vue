@@ -24,10 +24,6 @@ export default {
       default: "",
     },
   },
-  model: {
-    prop: "value",
-    event: "on-value-change",
-  },
   methods: {
     onInput(value) {
       this.$emit("on-value-change", value);

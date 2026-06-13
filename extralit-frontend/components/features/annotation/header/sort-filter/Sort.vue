@@ -35,15 +35,12 @@ export default {
       type: Array,
       required: true,
     },
-    sortFilters: {
+    modelValue: {
       type: Array,
       required: true,
     },
   },
-  model: {
-    prop: "sortFilters",
-    event: "onSortFilteredChanged",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       visibleDropdown: false,
@@ -79,12 +76,12 @@ export default {
 
       const newSorting = this.categoriesSort.commit();
 
-      this.$emit("onSortFilteredChanged", newSorting);
+      this.$emit("update:modelValue", newSorting);
     },
     updateAppliedCategoriesFromMetadataFilter() {
       if (!this.categoriesSort) return;
 
-      this.categoriesSort.complete(this.sortFilters);
+      this.categoriesSort.complete(this.modelValue);
     },
   },
   watch: {
@@ -105,7 +102,7 @@ export default {
         this.sort();
       },
     },
-    sortFilters() {
+    modelValue() {
       this.updateAppliedCategoriesFromMetadataFilter();
     },
   },

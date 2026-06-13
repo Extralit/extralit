@@ -20,7 +20,7 @@
             v-else
             v-model="selectedWorkspace"
             :options="workspaces"
-            @onValueChange="onWorkspaceChange"
+            @update:model-value="onWorkspaceChange"
           />
         </div>
 
