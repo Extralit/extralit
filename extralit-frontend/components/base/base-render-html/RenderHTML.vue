@@ -179,7 +179,7 @@ import TableRow from "@tiptap/extension-table-row";
 import Text from "@tiptap/extension-text";
 import History from "@tiptap/extension-history";
 import SearchAndReplace from "@sereneinserenade/tiptap-search-and-replace";
-import { Editor, EditorContent } from "@tiptap/vue-2";
+import { Editor, EditorContent } from "@tiptap/vue-3";
 
 export default {
   components: {

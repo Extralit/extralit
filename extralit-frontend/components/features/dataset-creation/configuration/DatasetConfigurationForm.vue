@@ -17,13 +17,15 @@
           </div>
           <div class="config-form__col__content">
             <draggable class="config-form__draggable-area" :list="dataset.selectedSubset.fields"
-              :group="{ name: 'fields' }" ghost-class="config-form__ghost" :disabled="isFocused">
-              <transition-group class="config-form__draggable-area-wrapper" type="transition" :css="false">
+              :group="{ name: 'fields' }" ghost-class="config-form__ghost" :disabled="isFocused"
+              item-key="name" tag="transition-group"
+              :component-data="{ name: 'config-form__draggable-area-wrapper', type: 'transition', css: false }">
+              <template #item="{ element: field }">
                 <DatasetConfigurationField
-                  v-for="field in dataset.selectedSubset.fields.filter((f) => f.name !== dataset.mappings.external_id)"
-                  :key="field.name" :field="field" :available-types="availableFieldTypes.filter((a) => a.value === 'no mapping' || a.value === field.originalType.value)
+                  v-if="field.name !== dataset.mappings.external_id"
+                  :field="field" :available-types="availableFieldTypes.filter((a) => a.value === 'no mapping' || a.value === field.originalType.value)
                     " @is-focused="isFocused = $event" />
-              </transition-group>
+              </template>
             </draggable>
           </div>
         </div>
@@ -48,13 +50,13 @@
           <div v-if="!isUpdateWorkflow" class="config-form__col__content --questions">
             <draggable v-if="dataset.selectedSubset.questions.length" class="config-form__draggable-area"
               ghost-class="config-form__ghost" :list="dataset.selectedSubset.questions" :group="{ name: 'questions' }"
-              :disabled="isFocused">
-              <transition-group class="config-form__draggable-area-wrapper" type="transition" :css="false">
-                <DatasetConfigurationQuestion v-for="(question, index) in dataset.selectedSubset.questions"
-                  :key="`question-${index}`" :selectedSubset="dataset.selectedSubset" :question="question"
+              :disabled="isFocused" item-key="name" tag="transition-group"
+              :component-data="{ name: 'config-form__draggable-area-wrapper', type: 'transition', css: false }">
+              <template #item="{ element: question, index }">
+                <DatasetConfigurationQuestion :selectedSubset="dataset.selectedSubset" :question="question"
                   :remove-is-allowed="true" :available-types="availableQuestionTypes"
                   @change-type="onTypeIsChanged(index, $event)" @is-focused="isFocused = $event" />
-              </transition-group>
+              </template>
             </draggable>
           </div>
         </div>

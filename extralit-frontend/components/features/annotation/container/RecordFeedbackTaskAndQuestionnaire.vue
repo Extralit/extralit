@@ -1,5 +1,5 @@
 <template>
-  <BaseLoading v-if="$fetchState.pending || $fetchState.error" />
+  <BaseLoading v-if="pending || error" />
 
   <BulkAnnotation
     v-else-if="recordCriteria.committed.page.isBulkMode && recordCriteria.committed.isPending"
@@ -41,6 +41,8 @@ export default {
   },
   data() {
     return {
+      pending: true,
+      error: false,
       fetching: false,
       isDocumentPanelOn: false,
     };
@@ -59,10 +61,20 @@ export default {
       return this.record?.isSubmitted && this.record?.isModified;
     },
   },
-  async fetch() {
-    await this.onLoadRecords();
-  },
   methods: {
+    async loadInitialRecords() {
+      this.pending = true;
+      this.error = false;
+
+      try {
+        await this.onLoadRecords();
+      } catch (e) {
+        this.error = true;
+        throw e;
+      } finally {
+        this.pending = false;
+      }
+    },
     async onLoadRecords() {
       if (this.fetching) return Promise.resolve();
 
@@ -131,6 +143,8 @@ export default {
     return useRecordFeedbackTaskViewModel(props);
   },
   mounted() {
+    this.loadInitialRecords();
+
     eventBus.on("on-change-record-page", this.onChangeRecordPage);
 
     eventBus.on("on-change-record-criteria-filter", this.onChangeRecordFilter);

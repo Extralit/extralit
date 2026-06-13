@@ -48,22 +48,25 @@
                 ghost-class="label__item__ghost"
                 :list="question.settings.options"
                 :group="{ name: question.name }"
+                item-key="value"
                 @end="question.reloadAnswerFromOptions()"
               >
-                <div v-for="option in question.settings.options" :key="option.value">
-                  <div class="label__item">
-                    <svgicon width="6" name="draggable" :id="`${option.value}-icon`" />
-                    <span>{{ option.text }}</span>
-                    <button
-                      type="button"
-                      class="label__item__delete"
-                      @click.stop="deleteOption(question, option)"
-                      :title="$t('question.deleteLabel')"
-                    >
-                      <svgicon width="12" name="close" />
-                    </button>
+                <template #item="{ element: option }">
+                  <div>
+                    <div class="label__item">
+                      <svgicon width="6" name="draggable" :id="`${option.value}-icon`" />
+                      <span>{{ option.text }}</span>
+                      <button
+                        type="button"
+                        class="label__item__delete"
+                        @click.stop="deleteOption(question, option)"
+                        :title="$t('question.deleteLabel')"
+                      >
+                        <svgicon width="12" name="close" />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </template>
               </draggable>
 
               <div class="settings__edition-form__add-label --subcategory">
