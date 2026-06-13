@@ -10,7 +10,7 @@ const pinia = createPinia();
 setActivePinia(pinia);
 
 useResolveMock(GetDatasetByIdUseCase, {
-  execute: jest.fn(),
+  execute: vi.fn(),
 });
 
 const $route = {
@@ -41,7 +41,7 @@ describe("AnnotationModePage", () => {
       },
     };
 
-    jest.spyOn(useAnnotationModeViewModel, "useAnnotationModeViewModel").mockReturnValue({
+    vi.spyOn(useAnnotationModeViewModel, "useAnnotationModeViewModel").mockReturnValue({
       isLoadingDataset: true,
     });
 
@@ -70,7 +70,7 @@ describe("AnnotationModePage", () => {
       },
     };
 
-    jest.spyOn(useAnnotationModeViewModel, "useAnnotationModeViewModel").mockReturnValue({
+    vi.spyOn(useAnnotationModeViewModel, "useAnnotationModeViewModel").mockReturnValue({
       isLoadingDataset: false,
     });
 

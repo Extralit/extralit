@@ -3,8 +3,8 @@ import ImportHistoryDataPreview from "./ImportHistoryDataPreview.vue";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 
 // Mock dependencies
-jest.mock("~/v1/domain/entities/import/ImportHistoryDetails", () => ({
-  ImportHistoryDetails: jest.fn(),
+vi.mock("~/v1/domain/entities/import/ImportHistoryDetails", () => ({
+  ImportHistoryDetails: vi.fn(),
 }));
 
 describe("ImportHistoryDataPreview", () => {
@@ -52,7 +52,7 @@ describe("ImportHistoryDataPreview", () => {
         skip_count: 0,
         failed_count: 0,
       },
-      getFieldStats: jest.fn(),
+      getFieldStats: vi.fn(),
     };
 
     const ImportHistoryDetails = require("~/v1/domain/entities/import/ImportHistoryDetails");
@@ -61,15 +61,15 @@ describe("ImportHistoryDataPreview", () => {
 
   afterEach(() => {
     if (wrapper) {
-      wrapper.destroy();
+      wrapper.unmount();
     }
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Loading State", () => {
     it("should display loading state when loading is true", () => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: true,
           importHistoryDetails: null,
         },
@@ -89,7 +89,7 @@ describe("ImportHistoryDataPreview", () => {
   describe("Error State", () => {
     it("should display error state when error prop is provided", () => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: "Failed to load import data",
           importHistoryDetails: null,
@@ -114,7 +114,7 @@ describe("ImportHistoryDataPreview", () => {
 
     it("should emit retry event when retry button is clicked", async () => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: "Network error",
           importHistoryDetails: null,
@@ -138,7 +138,7 @@ describe("ImportHistoryDataPreview", () => {
   describe("Empty State", () => {
     it("should display empty state when no import history details", () => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: null,
@@ -157,7 +157,7 @@ describe("ImportHistoryDataPreview", () => {
   describe("Main Content", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
@@ -225,7 +225,7 @@ describe("ImportHistoryDataPreview", () => {
   describe("Data Filtering", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
@@ -271,7 +271,7 @@ describe("ImportHistoryDataPreview", () => {
   describe("Column Formatters", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
@@ -323,7 +323,7 @@ describe("ImportHistoryDataPreview", () => {
   describe("Table Options", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
@@ -363,7 +363,7 @@ describe("ImportHistoryDataPreview", () => {
   describe("Public Methods", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
@@ -411,7 +411,7 @@ describe("ImportHistoryDataPreview", () => {
       mockImportHistoryDetails.createdAt = "invalid-date";
 
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
@@ -430,7 +430,7 @@ describe("ImportHistoryDataPreview", () => {
       mockImportHistoryDetails.schema = null;
 
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
@@ -447,7 +447,7 @@ describe("ImportHistoryDataPreview", () => {
       mockImportHistoryDetails.records = null;
 
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,

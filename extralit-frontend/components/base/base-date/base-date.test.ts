@@ -2,13 +2,13 @@ import { mount } from "@vue/test-utils";
 import BaseDateVue from "./BaseDate.vue";
 
 const dateMocked = new Date("2023-07-19 00:00:00");
-jest.useFakeTimers("modern").setSystemTime(dateMocked);
-jest.mock("vue-i18n");
+vi.useFakeTimers("modern").setSystemTime(dateMocked);
+vi.mock("vue-i18n");
 
 describe("Base Date should", () => {
   test("should format date correctly", () => {
     const baseDate = mount(BaseDateVue, {
-      propsData: {
+      props: {
         date: new Date("2023-07-19").toString(),
       },
     });
@@ -23,7 +23,7 @@ describe("Base Date should", () => {
           locale: "en",
         },
       },
-      propsData: {
+      props: {
         date: new Date("2023-07-18 23:59:59").toString(),
         format: "date-relative-now",
       },
@@ -39,7 +39,7 @@ describe("Base Date should", () => {
           locale: "en",
         },
       },
-      propsData: {
+      props: {
         date: new Date("2023-07-18 23:59:58").toString(),
         format: "date-relative-now",
       },
@@ -55,7 +55,7 @@ describe("Base Date should", () => {
           locale: "en",
         },
       },
-      propsData: {
+      props: {
         date: new Date("2023-07-18 22:00").toString(),
         format: "date-relative-now",
       },
@@ -71,7 +71,7 @@ describe("Base Date should", () => {
           locale: "en",
         },
       },
-      propsData: {
+      props: {
         date: new Date("2023-07-17 22:00").toString(),
         format: "date-relative-now",
       },
@@ -87,7 +87,7 @@ describe("Base Date should", () => {
           locale: "en",
         },
       },
-      propsData: {
+      props: {
         date: new Date("2023-07-16 22:00").toString(),
         format: "date-relative-now",
       },
@@ -103,7 +103,7 @@ describe("Base Date should", () => {
           locale: "en",
         },
       },
-      propsData: {
+      props: {
         date: new Date("2023-07-11 22:00").toString(),
         format: "date-relative-now",
       },
@@ -119,7 +119,7 @@ describe("Base Date should", () => {
           locale: "en",
         },
       },
-      propsData: {
+      props: {
         date: new Date("2023-07-01 22:00").toString(),
         format: "date-relative-now",
       },
@@ -135,7 +135,7 @@ describe("Base Date should", () => {
           locale: "en",
         },
       },
-      propsData: {
+      props: {
         date: new Date("2023-06-18 22:00").toString(),
         format: "date-relative-now",
       },
@@ -151,7 +151,7 @@ describe("Base Date should", () => {
           locale: "en",
         },
       },
-      propsData: {
+      props: {
         date: new Date("2023-05-18 22:00").toString(),
         format: "date-relative-now",
       },

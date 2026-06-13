@@ -4,7 +4,7 @@ import RatingMonoSelectionComponent from "./RatingMonoSelection.component";
 let wrapper = null;
 const options = {
   stubs: ["BaseTooltip"],
-  propsData: {
+  props: {
     options: [
       { id: "helpfulness_reply_1_1", value: 1, text: 1, isSelected: false },
       { id: "helpfulness_reply_1_2", value: 2, text: 2, isSelected: false },
@@ -19,7 +19,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("RatingMonoSelectionComponent", () => {

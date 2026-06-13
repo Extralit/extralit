@@ -4,7 +4,7 @@ import BaseTabs from "./BaseTabs";
 let wrapper = null;
 const options = {
   components: { BaseTabs },
-  propsData: {
+  props: {
     tabs: [
       { id: "tab1", name: "Tab 1" },
       { id: "tab2", name: "Tab 2" },
@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("BaseTabs", () => {

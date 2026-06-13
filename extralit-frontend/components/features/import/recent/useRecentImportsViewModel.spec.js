@@ -8,20 +8,20 @@ import { GetImportHistoryUseCase } from "~/v1/domain/usecases/get-import-history
 
 // Mock the use case
 const mockGetImportHistoryUseCase = {
-  getRecent: jest.fn(),
+  getRecent: vi.fn(),
 };
 
 // Mock ts-injecty
-jest.mock("ts-injecty", () => ({
-  useResolve: jest.fn(() => mockGetImportHistoryUseCase),
+vi.mock("ts-injecty", () => ({
+  useResolve: vi.fn(() => mockGetImportHistoryUseCase),
 }));
 
 // Mock Nuxt composition API
-jest.mock("@nuxtjs/composition-api", () => ({
-  ref: jest.fn(),
-  computed: jest.fn(),
-  watch: jest.fn(),
-  onMounted: jest.fn(),
+vi.mock("@nuxtjs/composition-api", () => ({
+  ref: vi.fn(),
+  computed: vi.fn(),
+  watch: vi.fn(),
+  onMounted: vi.fn(),
 }));
 
 describe("useRecentImportsViewModel", () => {
@@ -56,7 +56,7 @@ describe("useRecentImportsViewModel", () => {
 
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Get the mocked functions
     const compositionApi = require("@nuxtjs/composition-api");
@@ -99,7 +99,7 @@ describe("useRecentImportsViewModel", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Initialization", () => {
@@ -354,7 +354,7 @@ describe("useRecentImportsViewModel", () => {
 
   describe("Error Handling", () => {
     it("should log errors to console", async () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const error = new Error("API Error");
       mockGetImportHistoryUseCase.getRecent.mockRejectedValue(error);
 

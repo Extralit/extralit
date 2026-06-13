@@ -1,4 +1,12 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`BaseSlider > renders properly 1`] = `
+"<div data-v-71f7f870="" class="slides-nav"><a data-v-71f7f870="" class="disabled" href="#">
+    <svgicon-stub data-v-71f7f870="" name="chevron-left" width="8" height="8" color="#4C4EA3"></svgicon-stub>
+  </a> 1 of 2 sentences <a data-v-71f7f870="" class="" href="#">
+    <svgicon-stub data-v-71f7f870="" name="chevron-right" width="8" height="8"></svgicon-stub>
+  </a></div>"
+`;
 
 exports[`BaseSlider renders properly 1`] = `
 <div class="slides-nav"><a href="#" class="disabled"><svg version="1.1" viewBox="0 0 8 8" class="svg-icon svg-fill" style="width: 8px; height: 8px;"></svg></a>

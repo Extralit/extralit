@@ -1,20 +1,20 @@
 import { useImportBatchProgressViewModel } from "./useImportBatchProgressViewModel";
 
 // Mock dependencies
-jest.mock("~/v1/domain/usecases/bulk-upload-documents-use-case", () => ({
-  BulkUploadDocumentsUseCase: jest.fn(),
+vi.mock("~/v1/domain/usecases/bulk-upload-documents-use-case", () => ({
+  BulkUploadDocumentsUseCase: vi.fn(),
 }));
 
-jest.mock("~/v1/domain/usecases/get-job-status-use-case", () => ({
-  GetJobStatusUseCase: jest.fn(),
+vi.mock("~/v1/domain/usecases/get-job-status-use-case", () => ({
+  GetJobStatusUseCase: vi.fn(),
 }));
 
-jest.mock("~/v1/domain/usecases/create-import-history-use-case", () => ({
-  CreateImportHistoryUseCase: jest.fn(),
+vi.mock("~/v1/domain/usecases/create-import-history-use-case", () => ({
+  CreateImportHistoryUseCase: vi.fn(),
 }));
 
-jest.mock("ts-injecty", () => ({
-  useResolve: jest.fn(() => ({})),
+vi.mock("ts-injecty", () => ({
+  useResolve: vi.fn(() => ({})),
 }));
 
 describe("useImportBatchProgressViewModel", () => {

@@ -4,7 +4,7 @@ import BaseCard from "./BaseCard";
 let wrapper = null;
 const options = {
   stubs: ["base-button"],
-  propsData: {
+  props: {
     title: "title",
     subtitle: "subtitle",
     text: "text",
@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("BaseCardComponent", () => {

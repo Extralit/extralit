@@ -4,7 +4,7 @@ import DatasetDescriptionReadOnly from "./DatasetDescriptionReadOnly";
 let wrapper = null;
 const options = {
   stubs: ["MarkdownRenderer"],
-  propsData: {
+  props: {
     guidelines: "Lorem ipsum",
   },
   mocks: {
@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("DatasetDescriptionReadonlyComponent", () => {

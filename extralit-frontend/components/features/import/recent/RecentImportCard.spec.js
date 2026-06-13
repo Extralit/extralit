@@ -7,7 +7,7 @@ import { mount } from "@vue/test-utils";
 import RecentImportCard from "./RecentImportCard.vue";
 
 // Mock assets
-jest.mock("assets/icons/time", () => ({}));
+vi.mock("assets/icons/time", () => ({}));
 
 describe("RecentImportCard Component", () => {
   let wrapper;
@@ -32,20 +32,20 @@ describe("RecentImportCard Component", () => {
 
   beforeEach(() => {
     // Mock Date.now() for consistent date formatting tests
-    jest.spyOn(Date, "now").mockImplementation(() => new Date("2025-01-01T12:00:00Z").getTime());
+    vi.spyOn(Date, "now").mockImplementation(() => new Date("2025-01-01T12:00:00Z").getTime());
   });
 
   afterEach(() => {
     if (wrapper) {
-      wrapper.destroy();
+      wrapper.unmount();
     }
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Component Structure and Display", () => {
     it("should render the component with correct structure", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -65,7 +65,7 @@ describe("RecentImportCard Component", () => {
 
     it("should display filename correctly", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -83,7 +83,7 @@ describe("RecentImportCard Component", () => {
 
     it("should display statistics correctly", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -119,7 +119,7 @@ describe("RecentImportCard Component", () => {
 
     it("should not display failed stat when failed_count is 0", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecordNoFailures },
+        props: { importRecord: mockImportRecordNoFailures },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -147,7 +147,7 @@ describe("RecentImportCard Component", () => {
       };
 
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: recentRecord },
+        props: { importRecord: recentRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -170,7 +170,7 @@ describe("RecentImportCard Component", () => {
       };
 
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: hoursAgoRecord },
+        props: { importRecord: hoursAgoRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -193,7 +193,7 @@ describe("RecentImportCard Component", () => {
       };
 
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: yesterdayRecord },
+        props: { importRecord: yesterdayRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -216,7 +216,7 @@ describe("RecentImportCard Component", () => {
       };
 
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: daysAgoRecord },
+        props: { importRecord: daysAgoRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -239,7 +239,7 @@ describe("RecentImportCard Component", () => {
       };
 
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: oldRecord },
+        props: { importRecord: oldRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -263,7 +263,7 @@ describe("RecentImportCard Component", () => {
       };
 
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: invalidDateRecord },
+        props: { importRecord: invalidDateRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -283,7 +283,7 @@ describe("RecentImportCard Component", () => {
   describe("Event Handling", () => {
     it("should emit click event when card is clicked", async () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button" @click="$emit(\'click\')"><slot /></button>',
@@ -306,7 +306,7 @@ describe("RecentImportCard Component", () => {
   describe("Computed Properties", () => {
     it("should calculate totalPapers correctly", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -328,7 +328,7 @@ describe("RecentImportCard Component", () => {
       };
 
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: recordWithoutTotal },
+        props: { importRecord: recordWithoutTotal },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -347,7 +347,7 @@ describe("RecentImportCard Component", () => {
   describe("Styling and CSS Classes", () => {
     it("should apply correct CSS classes", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button recent-import-card"><slot /></button>',
@@ -369,7 +369,7 @@ describe("RecentImportCard Component", () => {
 
     it("should apply success styling to success stat", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -387,7 +387,7 @@ describe("RecentImportCard Component", () => {
 
     it("should apply failed styling to failed stat when failures exist", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -407,7 +407,7 @@ describe("RecentImportCard Component", () => {
   describe("Responsive Design", () => {
     it("should have responsive structure for different screen sizes", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -429,7 +429,7 @@ describe("RecentImportCard Component", () => {
   describe("Accessibility", () => {
     it("should have proper heading structure", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -447,7 +447,7 @@ describe("RecentImportCard Component", () => {
 
     it("should provide meaningful text content", () => {
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: mockImportRecord },
+        props: { importRecord: mockImportRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
@@ -478,7 +478,7 @@ describe("RecentImportCard Component", () => {
       };
 
       wrapper = mount(RecentImportCard, {
-        propsData: { importRecord: longFilenameRecord },
+        props: { importRecord: longFilenameRecord },
         stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',

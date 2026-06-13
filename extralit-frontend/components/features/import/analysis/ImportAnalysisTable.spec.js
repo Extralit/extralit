@@ -2,30 +2,30 @@ import { mount } from "@vue/test-utils";
 import ImportAnalysisTable from "./ImportAnalysisTable.vue";
 
 // Mock dependencies inline to avoid hoisting issues
-jest.mock("ts-injecty", () => ({
-  useResolve: jest.fn(() => mockUseCase),
+vi.mock("ts-injecty", () => ({
+  useResolve: vi.fn(() => mockUseCase),
 }));
 
-jest.mock("@nuxtjs/composition-api", () => ({
-  ref: jest.fn(),
-  watch: jest.fn(),
+vi.mock("@nuxtjs/composition-api", () => ({
+  ref: vi.fn(),
+  watch: vi.fn(),
 }));
 
-jest.mock("./useImportAnalysisTableViewModel", () => ({
-  useImportAnalysisTableViewModel: jest.fn(() => ({
+vi.mock("./useImportAnalysisTableViewModel", () => ({
+  useImportAnalysisTableViewModel: vi.fn(() => ({
     isAnalyzing: false,
     hasError: false,
     errorMessage: "",
     analysisResult: null,
     documentActions: {},
-    reset: jest.fn(),
-    analyzeImport: jest.fn(),
-    retryAnalysis: jest.fn(),
+    reset: vi.fn(),
+    analyzeImport: vi.fn(),
+    retryAnalysis: vi.fn(),
   })),
 }));
 
 const mockUseCase = {
-  analyzeImport: jest.fn(),
+  analyzeImport: vi.fn(),
 };
 
 describe("ImportAnalysisTable", () => {
@@ -67,7 +67,7 @@ describe("ImportAnalysisTable", () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     const compositionApi = require("@nuxtjs/composition-api");
     mockRef = compositionApi.ref;
@@ -81,7 +81,7 @@ describe("ImportAnalysisTable", () => {
     mockWatch.mockImplementation(() => {});
 
     wrapper = mount(ImportAnalysisTable, {
-      propsData: {
+      props: {
         dataframeData: mockDataframeData,
         pdfData: { matchedFiles: [] },
         workspace: mockWorkspace,
@@ -101,9 +101,9 @@ describe("ImportAnalysisTable", () => {
 
   afterEach(() => {
     if (wrapper) {
-      wrapper.destroy();
+      wrapper.unmount();
     }
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Basic Rendering", () => {
@@ -145,7 +145,7 @@ describe("ImportAnalysisTable", () => {
 
   describe("Emit Update", () => {
     it("should emit update with correct data structure", () => {
-      const emitSpy = jest.spyOn(wrapper.vm, "$emit");
+      const emitSpy = vi.spyOn(wrapper.vm, "$emit");
 
       wrapper.vm.emitUpdate();
 
@@ -161,7 +161,7 @@ describe("ImportAnalysisTable", () => {
     });
 
     it("should only include references with PDFs in confirmed documents", () => {
-      const emitSpy = jest.spyOn(wrapper.vm, "$emit");
+      const emitSpy = vi.spyOn(wrapper.vm, "$emit");
 
       wrapper.vm.emitUpdate();
 
@@ -184,7 +184,7 @@ describe("ImportAnalysisTable", () => {
   describe("Loading and Error States", () => {
     it("should show loading state when loading prop is true", () => {
       wrapper = mount(ImportAnalysisTable, {
-        propsData: {
+        props: {
           dataframeData: mockDataframeData,
           pdfData: { matchedFiles: [] },
           workspace: mockWorkspace,
@@ -209,13 +209,13 @@ describe("ImportAnalysisTable", () => {
         errorMessage: "Test error",
         analysisResult: null,
         documentActions: {},
-        reset: jest.fn(),
-        analyzeImport: jest.fn(),
-        retryAnalysis: jest.fn(),
+        reset: vi.fn(),
+        analyzeImport: vi.fn(),
+        retryAnalysis: vi.fn(),
       });
 
       wrapper = mount(ImportAnalysisTable, {
-        propsData: {
+        props: {
           dataframeData: mockDataframeData,
           pdfData: { matchedFiles: [] },
           workspace: mockWorkspace,

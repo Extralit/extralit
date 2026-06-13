@@ -4,7 +4,7 @@ import LabelSelectionComponent from "./LabelSelection.component";
 let wrapper = null;
 const options = {
   stubs: ["SearchLabelComponent", "BaseTooltip"],
-  propsData: {
+  props: {
     componentId: `componentId`,
     options: [],
     maxOptionsToShowBeforeCollapse: 0,
@@ -15,7 +15,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
   window.questionSettings["componentId"].isExpandedLabelQuestions = false;
 });
 

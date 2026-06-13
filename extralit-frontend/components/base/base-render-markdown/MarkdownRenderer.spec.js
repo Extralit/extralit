@@ -3,7 +3,7 @@ import MarkdownRenderer from "./MarkdownRenderer";
 
 const options = {
   components: { MarkdownRenderer },
-  propsData: {
+  props: {
     markdown: "# example<script><TABLE> \n\n",
   },
   directives: {
@@ -33,7 +33,7 @@ describe("MarkdownRenderer", () => {
   it("add viewBox for svg", () => {
     const wrapper = shallowMount(MarkdownRenderer, {
       ...options,
-      propsData: {
+      props: {
         markdown:
           '<svg height="100" width="100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" /></svg>',
       },
@@ -49,7 +49,7 @@ describe("MarkdownRenderer", () => {
   it("not add viewBox for svg if it has defined a viewport", () => {
     const wrapper = shallowMount(MarkdownRenderer, {
       ...options,
-      propsData: {
+      props: {
         markdown:
           '<svg height="100" width="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" /></svg>',
       },
@@ -66,7 +66,7 @@ describe("MarkdownRenderer", () => {
   it("open in other window if the node is a link", () => {
     const wrapper = shallowMount(MarkdownRenderer, {
       ...options,
-      propsData: {
+      props: {
         markdown: "[example](https://example.com)",
       },
     });
@@ -80,7 +80,7 @@ describe("MarkdownRenderer", () => {
   it("open in other window if the node already hace target blank", () => {
     const wrapper = shallowMount(MarkdownRenderer, {
       ...options,
-      propsData: {
+      props: {
         markdown: '<a href="https://example.com" target="_blank">example</a>',
       },
     });

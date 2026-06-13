@@ -3,8 +3,8 @@ import DocumentsList from "./DocumentsList.vue";
 import { Document } from "~/v1/domain/entities/document/Document";
 
 // Mock the view model
-const mockShowDocumentMetadata = jest.fn();
-const mockCloseMetadataModal = jest.fn();
+const mockShowDocumentMetadata = vi.fn();
+const mockCloseMetadataModal = vi.fn();
 const mockViewModel = {
   documents: [],
   isLoading: false,
@@ -14,24 +14,24 @@ const mockViewModel = {
   showMetadataModal: false,
   selectedDocumentMetadata: null,
   selectedDocumentName: "",
-  loadDocuments: jest.fn(),
-  openDocument: jest.fn(),
+  loadDocuments: vi.fn(),
+  openDocument: vi.fn(),
   showDocumentMetadata: mockShowDocumentMetadata,
   closeMetadataModal: mockCloseMetadataModal,
 };
 
-jest.mock("./useDocumentsListViewModel", () => ({
+vi.mock("./useDocumentsListViewModel", () => ({
   useDocumentsListViewModel: () => mockViewModel,
 }));
 
 // Mock base components
-jest.mock("~/components/base/base-modal/BaseModal.vue", () => ({
+vi.mock("~/components/base/base-modal/BaseModal.vue", () => ({
   name: "BaseModal",
   template: '<div class="base-modal"><slot /></div>',
   props: ["modalVisible", "modalTitle", "modalClass"],
 }));
 
-jest.mock("~/components/base/base-button/BaseButton.vue", () => ({
+vi.mock("~/components/base/base-button/BaseButton.vue", () => ({
   name: "BaseButton",
   template: '<button class="base-button" @click="$emit(\'click\')"><slot /></button>',
 }));
@@ -41,7 +41,7 @@ describe("DocumentsList", () => {
 
   const createWrapper = (props = {}) => {
     return mount(DocumentsList, {
-      propsData: {
+      props: {
         workspaceId: "test-workspace",
         ...props,
       },
@@ -54,7 +54,7 @@ describe("DocumentsList", () => {
       },
       mocks: {
         $notification: {
-          error: jest.fn(),
+          error: vi.fn(),
         },
       },
     });
@@ -62,7 +62,7 @@ describe("DocumentsList", () => {
 
   beforeEach(() => {
     // Reset mocks before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     // Reset mock view model state
     mockViewModel.documents = [];
     mockViewModel.showMetadataModal = false;
@@ -74,7 +74,7 @@ describe("DocumentsList", () => {
   });
 
   afterEach(() => {
-    wrapper.destroy();
+    wrapper.unmount();
   });
 
   describe("metadata modal functionality", () => {

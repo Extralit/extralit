@@ -3,7 +3,7 @@ import BaseTooltip from "./BaseTooltip";
 
 let wrapper = null;
 const options = {
-  propsData: {
+  props: {
     text: "this is a  tooltip message",
     position: "",
   },
@@ -13,7 +13,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 describe("BaseTooltip", () => {
   it("render the component", () => {

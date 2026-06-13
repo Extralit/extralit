@@ -4,20 +4,20 @@ import BaseFeedBackErrorComponent from "./BaseFeedbackError.component";
 let wrapper = null;
 const options = {
   stubs: ["BaseButton"],
-  propsData: {
+  props: {
     message: "This is the message to show in the feedbackError component",
     buttonLabels: null,
   },
 };
 
-const spyOnClickMethod = jest.spyOn(BaseFeedBackErrorComponent.methods, "onClick");
+const spyOnClickMethod = vi.spyOn(BaseFeedBackErrorComponent.methods, "onClick");
 
 beforeEach(() => {
   wrapper = shallowMount(BaseFeedBackErrorComponent, options);
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("BaseFeedbackErrorComponent", () => {

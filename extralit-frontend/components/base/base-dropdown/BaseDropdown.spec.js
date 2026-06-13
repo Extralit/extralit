@@ -3,7 +3,7 @@ import BaseDropdown from "./BaseDropdown";
 
 let wrapper = null;
 const options = {
-  propsData: {
+  props: {
     visible: false,
   },
 };
@@ -12,7 +12,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("BaseDropdownComponent", () => {

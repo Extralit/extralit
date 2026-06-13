@@ -5,7 +5,7 @@ import { TableData } from "~/v1/domain/entities/table/TableData";
 import { TabulatorFull as Tabulator, ColumnComponent } from "tabulator-tables";
 
 // Mock Tabulator functionality
-jest.mock("tabulator-tables");
+vi.mock("tabulator-tables");
 
 interface RenderTableInstance extends Vue {
   tabulator: Tabulator;
@@ -20,22 +20,22 @@ interface RenderTableInstance extends Vue {
 }
 
 
-jest.mock("./useSchemaTableViewModel", () => ({
+vi.mock("./useSchemaTableViewModel", () => ({
   useSchemaTableViewModel: () => ({
-    fetchValidation: jest.fn().mockResolvedValue(undefined)
+    fetchValidation: vi.fn().mockResolvedValue(undefined)
   })
 }));
 
-jest.mock("./useReferenceTablesViewModel", () => ({
+vi.mock("./useReferenceTablesViewModel", () => ({
   useReferenceTablesViewModel: () => ({
     referenceValues: { value: null },
-    getTableDataFromRecords: jest.fn()
+    getTableDataFromRecords: vi.fn()
   })
 }));
 
-jest.mock("./useLLMExtractionViewModel", () => ({
+vi.mock("./useLLMExtractionViewModel", () => ({
   useLLMExtractionViewModel: () => ({
-    completeExtraction: jest.fn().mockResolvedValue(undefined)
+    completeExtraction: vi.fn().mockResolvedValue(undefined)
   })
 }));
 
@@ -53,7 +53,7 @@ describe('RenderTable', () => {
     });
 
     return shallowMount<RenderTableInstance>(RenderTable, {
-      propsData: {
+      props: {
         tableJSON: mockTableData,
         editable: true,
         hasValidValues: true,
@@ -63,8 +63,8 @@ describe('RenderTable', () => {
       stubs: ['BaseButton', 'BaseDropdown', 'svgicon'],
       mocks: {
         $notification: {
-          notify: jest.fn(),
-          clear: jest.fn()
+          notify: vi.fn(),
+          clear: vi.fn()
         }
       }
     });
@@ -89,9 +89,9 @@ describe('RenderTable', () => {
 
       // Mock tabulator instance
       wrapper.vm.tabulator = {
-        validate: jest.fn().mockReturnValue(true),
-        getColumns: jest.fn().mockReturnValue([]),
-        getDataCount: jest.fn().mockReturnValue(0)
+        validate: vi.fn().mockReturnValue(true),
+        getColumns: vi.fn().mockReturnValue([]),
+        getDataCount: vi.fn().mockReturnValue(0)
       };
 
       const result = wrapper.vm.validateTable({});

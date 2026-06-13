@@ -17,10 +17,10 @@ describe("BaseFlowModal", () => {
 
   beforeEach(() => {
     // Mock window.confirm
-    global.confirm = jest.fn(() => true);
+    global.confirm = vi.fn(() => true);
 
     wrapper = mount(BaseFlowModal, {
-      propsData: defaultProps,
+      props: defaultProps,
       stubs: {
         "base-icon": true,
         BaseButton: {
@@ -32,8 +32,8 @@ describe("BaseFlowModal", () => {
   });
 
   afterEach(() => {
-    wrapper.destroy();
-    jest.restoreAllMocks();
+    wrapper.unmount();
+    vi.restoreAllMocks();
   });
 
   describe("Component Structure", () => {

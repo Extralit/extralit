@@ -2,12 +2,12 @@ import { shallowMount } from "@vue/test-utils";
 import BaseSimpleTable from "./BaseSimpleTable.vue";
 
 // Mock RenderTable component
-jest.mock("~/components/base/base-render-table/RenderTable.vue", () => ({
+vi.mock("~/components/base/base-render-table/RenderTable.vue", () => ({
   name: "RenderTable",
   template: '<div class="mock-render-table"></div>',
   props: ["tableJSON", "editable", "hasValidValues", "questions"],
   methods: {
-    validateTable: jest.fn(() => true),
+    validateTable: vi.fn(() => true),
   },
 }));
 
@@ -35,7 +35,7 @@ describe("BaseSimpleTable", () => {
   describe("rendering", () => {
     it("renders without crashing", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
         },
@@ -47,7 +47,7 @@ describe("BaseSimpleTable", () => {
 
     it("renders RenderTable component", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
         },
@@ -60,7 +60,7 @@ describe("BaseSimpleTable", () => {
   describe("props", () => {
     it("accepts columns and data props", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
         },
@@ -72,7 +72,7 @@ describe("BaseSimpleTable", () => {
 
     it("accepts editable prop with default false", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
         },
@@ -83,7 +83,7 @@ describe("BaseSimpleTable", () => {
 
     it("accepts editable prop set to true", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
           editable: true,
@@ -96,7 +96,7 @@ describe("BaseSimpleTable", () => {
     it("accepts validation prop", () => {
       const validation = { columns: {}, index: [], checks: {} };
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
           validation,
@@ -109,7 +109,7 @@ describe("BaseSimpleTable", () => {
     it("accepts validators prop", () => {
       const validators = { name: ["required", "unique"] };
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
           validators,
@@ -121,7 +121,7 @@ describe("BaseSimpleTable", () => {
 
     it("accepts hasValidValues prop", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
           hasValidValues: true,
@@ -134,7 +134,7 @@ describe("BaseSimpleTable", () => {
     it("accepts questions prop", () => {
       const questions = [{ id: "q1", name: "Question 1" }];
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
           questions,
@@ -148,7 +148,7 @@ describe("BaseSimpleTable", () => {
   describe("computedTableJSON", () => {
     it("converts data/columns to TableData format", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
         },
@@ -165,7 +165,7 @@ describe("BaseSimpleTable", () => {
     it("includes validation when provided", () => {
       const validation = { columns: { name: { dtype: "str" } }, index: [], checks: {} };
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
           validation,
@@ -180,7 +180,7 @@ describe("BaseSimpleTable", () => {
   describe("editable class modifier", () => {
     it("does not have editable class when editable is false", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
           editable: false,
@@ -192,7 +192,7 @@ describe("BaseSimpleTable", () => {
 
     it("has editable class when editable is true", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
           editable: true,
@@ -206,7 +206,7 @@ describe("BaseSimpleTable", () => {
   describe("methods", () => {
     it("provides public API methods", () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
         },
@@ -226,7 +226,7 @@ describe("BaseSimpleTable", () => {
   describe("events", () => {
     it("emits events correctly", async () => {
       const wrapper = shallowMount(BaseSimpleTable, {
-        propsData: {
+        props: {
           columns: mockColumns,
           data: mockData,
         },

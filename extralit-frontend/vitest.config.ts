@@ -14,6 +14,7 @@ export default defineVitestConfig({
       "@": r("./"),
       assets: r("./assets"),
       // tabulator-tables touches the DOM at construction; specs use the stub.
+      "tabulator-tables/dist/css/tabulator.min.css": r("./__mocks__/empty.css"),
       "tabulator-tables": r("./__mocks__/tabulator-tables.js"),
     },
   },

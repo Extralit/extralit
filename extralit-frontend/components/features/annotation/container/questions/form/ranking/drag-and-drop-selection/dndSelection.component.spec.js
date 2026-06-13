@@ -6,11 +6,11 @@ import { settingsFake, settingsFakeWith12Elements } from "../ranking-fakes";
 let wrapper = null;
 const options = {
   stubs: ["draggable", "BaseTooltip"],
-  propsData: { ranking: {} },
+  props: { ranking: {} },
 };
 
 const eventFor = (key) => {
-  return { stopPropagation: jest.fn(), key };
+  return { stopPropagation: vi.fn(), key };
 };
 
 beforeEach(() => {
@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("DndSelectionComponent", () => {
@@ -39,7 +39,7 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
 
     component.vm.rankWithKeyboard(eventFor("5"), questionOne);
@@ -55,7 +55,7 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
 
     component.vm.rankWithKeyboard(eventFor("&"), questionOne);
@@ -71,7 +71,7 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
 
     component.vm.rankWithKeyboard(eventFor("1"), questionOne);
@@ -84,7 +84,7 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
     component.vm.rankWithKeyboard(eventFor("1"), questionOne);
 
@@ -100,7 +100,7 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
     component.vm.rankWithKeyboard(eventFor("2"), questionOne);
 
@@ -123,7 +123,7 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
 
     component.vm.rankWithKeyboard(eventFor("1"), questionOne);

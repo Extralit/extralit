@@ -4,19 +4,19 @@ import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryD
 
 // Mock dependencies
 const mockUseDatasetConfiguration = {
-  getFirstRecord: jest.fn(),
-  getSuggestedFieldMappings: jest.fn(() => ({})),
-  configureImportHistoryFields: jest.fn(),
-  getSuggestedQuestions: jest.fn(() => []),
+  getFirstRecord: vi.fn(),
+  getSuggestedFieldMappings: vi.fn(() => ({})),
+  configureImportHistoryFields: vi.fn(),
+  getSuggestedQuestions: vi.fn(() => []),
   firstRecord: { reference: "paper_001", title: "Test Paper" },
 };
 
-jest.mock("./useDatasetConfiguration", () => ({
-  useDatasetConfiguration: jest.fn(() => mockUseDatasetConfiguration),
+vi.mock("./useDatasetConfiguration", () => ({
+  useDatasetConfiguration: vi.fn(() => mockUseDatasetConfiguration),
 }));
 
-jest.mock("~/v1/domain/entities/import/ImportHistoryDetails", () => ({
-  ImportHistoryDetails: jest.fn(),
+vi.mock("~/v1/domain/entities/import/ImportHistoryDetails", () => ({
+  ImportHistoryDetails: vi.fn(),
 }));
 
 describe("DatasetConfiguration", () => {
@@ -26,7 +26,7 @@ describe("DatasetConfiguration", () => {
 
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Mock dataset object
     mockDataset = {
@@ -40,11 +40,11 @@ describe("DatasetConfiguration", () => {
           type: "rating",
         },
       ],
-      createFields: jest.fn(() => [
+      createFields: vi.fn(() => [
         { name: "reference", value: "paper_001" },
         { name: "title", value: "Test Paper" },
       ]),
-      changeSubset: jest.fn(),
+      changeSubset: vi.fn(),
     };
 
     // Mock ImportHistoryDetails
@@ -68,15 +68,15 @@ describe("DatasetConfiguration", () => {
 
   afterEach(() => {
     if (wrapper) {
-      wrapper.destroy();
+      wrapper.unmount();
     }
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("HuggingFace Hub Mode", () => {
     beforeEach(() => {
       wrapper = mount(DatasetConfiguration, {
-        propsData: {
+        props: {
           dataset: mockDataset,
           dataSource: "hub",
         },
@@ -142,7 +142,7 @@ describe("DatasetConfiguration", () => {
   describe("ImportHistory Mode", () => {
     beforeEach(() => {
       wrapper = mount(DatasetConfiguration, {
-        propsData: {
+        props: {
           dataset: mockDataset,
           dataSource: "import",
           importData: mockImportHistoryDetails,
@@ -221,7 +221,7 @@ describe("DatasetConfiguration", () => {
   describe("Empty State", () => {
     beforeEach(() => {
       wrapper = mount(DatasetConfiguration, {
-        propsData: {
+        props: {
           dataset: { ...mockDataset, repoId: null },
           dataSource: "hub",
         },
@@ -265,7 +265,7 @@ describe("DatasetConfiguration", () => {
       const datasetWithoutQuestions = { ...mockDataset, questions: [] };
 
       wrapper = mount(DatasetConfiguration, {
-        propsData: {
+        props: {
           dataset: datasetWithoutQuestions,
           dataSource: "hub",
         },
@@ -300,7 +300,7 @@ describe("DatasetConfiguration", () => {
 
     it("should display questions component when questions exist", () => {
       wrapper = mount(DatasetConfiguration, {
-        propsData: {
+        props: {
           dataset: mockDataset,
           dataSource: "hub",
         },
@@ -340,7 +340,7 @@ describe("DatasetConfiguration", () => {
   describe("Event Handling", () => {
     beforeEach(() => {
       wrapper = mount(DatasetConfiguration, {
-        propsData: {
+        props: {
           dataset: mockDataset,
           dataSource: "import",
           importData: mockImportHistoryDetails,
@@ -420,7 +420,7 @@ describe("DatasetConfiguration", () => {
   describe("Watchers", () => {
     beforeEach(() => {
       wrapper = mount(DatasetConfiguration, {
-        propsData: {
+        props: {
           dataset: mockDataset,
           dataSource: "import",
           importData: mockImportHistoryDetails,
@@ -489,12 +489,12 @@ describe("DatasetConfiguration", () => {
       });
 
       // Mock console.error to avoid noise in tests
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       // Should not throw error when mounting
       expect(() => {
         wrapper = mount(DatasetConfiguration, {
-          propsData: {
+          props: {
             dataset: mockDataset,
             dataSource: "import",
             importData: mockImportHistoryDetails,

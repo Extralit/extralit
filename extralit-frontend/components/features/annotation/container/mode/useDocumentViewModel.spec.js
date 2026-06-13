@@ -1,42 +1,42 @@
 import { useDocumentViewModel } from "./useDocumentViewModel";
 
 // Mock dependencies inline to avoid hoisting issues
-jest.mock("ts-injecty", () => ({
-  useResolve: jest.fn(() => mockGetDocumentUseCase),
+vi.mock("ts-injecty", () => ({
+  useResolve: vi.fn(() => mockGetDocumentUseCase),
 }));
 
-jest.mock("@/v1/infrastructure/storage/DocumentStorage", () => ({
-  useDocument: jest.fn(() => ({
+vi.mock("@/v1/infrastructure/storage/DocumentStorage", () => ({
+  useDocument: vi.fn(() => ({
     state: mockDocument,
     set: mockSetDocument,
     clear: mockClearDocument,
   })),
 }));
 
-jest.mock("@/v1/infrastructure/storage/DatasetStorage", () => ({
-  useDataset: jest.fn(() => ({
+vi.mock("@/v1/infrastructure/storage/DatasetStorage", () => ({
+  useDataset: vi.fn(() => ({
     state: mockDataset,
   })),
 }));
 
-jest.mock("@/v1/infrastructure/storage/WorkspaceStorage", () => ({
-  useWorkspaces: jest.fn(() => ({
+vi.mock("@/v1/infrastructure/storage/WorkspaceStorage", () => ({
+  useWorkspaces: vi.fn(() => ({
     state: mockWorkspaces,
   })),
 }));
 
-jest.mock("~/v1/infrastructure/services/useNotifications", () => ({
-  useNotifications: jest.fn(() => mockNotifications),
+vi.mock("~/v1/infrastructure/services/useNotifications", () => ({
+  useNotifications: vi.fn(() => mockNotifications),
 }));
 
-jest.mock("@/v1/infrastructure/services/useWait", () => ({
-  waitForAsyncValue: jest.fn(() => Promise.resolve()),
+vi.mock("@/v1/infrastructure/services/useWait", () => ({
+  waitForAsyncValue: vi.fn(() => Promise.resolve()),
 }));
 
-jest.mock("vue-demi", () => ({
-  ref: jest.fn(),
-  watch: jest.fn(),
-  computed: jest.fn(),
+vi.mock("vue-demi", () => ({
+  ref: vi.fn(),
+  watch: vi.fn(),
+  computed: vi.fn(),
 }));
 
 // Mock objects
@@ -53,7 +53,7 @@ let mockComputed;
 
 describe("useDocumentViewModel", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Setup mock document state
     mockDocument = {
@@ -65,8 +65,8 @@ describe("useDocumentViewModel", () => {
       page_number: null,
     };
 
-    mockSetDocument = jest.fn();
-    mockClearDocument = jest.fn();
+    mockSetDocument = vi.fn();
+    mockClearDocument = vi.fn();
 
     mockDataset = {
       workspaceName: "test-workspace",
@@ -79,13 +79,13 @@ describe("useDocumentViewModel", () => {
     };
 
     mockNotifications = {
-      notify: jest.fn(),
+      notify: vi.fn(),
     };
 
     mockGetDocumentUseCase = {
-      setDocument: jest.fn(),
-      setSegments: jest.fn(),
-      createParams: jest.fn(),
+      setDocument: vi.fn(),
+      setSegments: vi.fn(),
+      createParams: vi.fn(),
     };
 
     // Setup Vue composition API mocks
@@ -100,7 +100,7 @@ describe("useDocumentViewModel", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("hasDocumentLoaded computed property", () => {

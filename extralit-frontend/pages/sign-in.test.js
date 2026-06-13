@@ -19,15 +19,15 @@ const mountLoginPage = ({ auth } = {}) => {
   });
 };
 
-jest.mock("./useSignInViewModel", () => {
-  const useSignInViewModel = jest.fn();
+vi.mock("./useSignInViewModel", () => {
+  const useSignInViewModel = vi.fn();
 
   return { useSignInViewModel };
 });
 
 describe("Login page should", () => {
   it("still in the same page if the auth token is not valid", () => {
-    const loginUserSpy = jest.spyOn(SignIn.methods, "loginUser");
+    const loginUserSpy = vi.spyOn(SignIn.methods, "loginUser");
 
     mountLoginPage({ auth: "INVALID" });
 
@@ -35,7 +35,7 @@ describe("Login page should", () => {
   });
 
   it("still in the same page if the auth token query params is empty", () => {
-    const loginUserSpy = jest.spyOn(SignIn.methods, "loginUser");
+    const loginUserSpy = vi.spyOn(SignIn.methods, "loginUser");
 
     mountLoginPage();
 
@@ -43,7 +43,7 @@ describe("Login page should", () => {
   });
 
   it("try to login user when the auth token is valid", () => {
-    const loginUserSpy = jest.spyOn(SignIn.methods, "loginUser");
+    const loginUserSpy = vi.spyOn(SignIn.methods, "loginUser");
 
     mountLoginPage({ auth: validAuthToken });
 

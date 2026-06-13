@@ -2,9 +2,9 @@ import { mount } from "@vue/test-utils";
 import ImportFlow from "./ImportFlow.vue";
 
 // Mock dependencies
-jest.mock("@nuxtjs/composition-api", () => ({
-  ref: jest.fn(),
-  watch: jest.fn(),
+vi.mock("@nuxtjs/composition-api", () => ({
+  ref: vi.fn(),
+  watch: vi.fn(),
 }));
 
 describe("ImportFlow", () => {
@@ -41,7 +41,7 @@ describe("ImportFlow", () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     const compositionApi = require("@nuxtjs/composition-api");
     compositionApi.ref.mockImplementation((initialValue) => ({
@@ -50,7 +50,7 @@ describe("ImportFlow", () => {
     compositionApi.watch.mockImplementation(() => {});
 
     wrapper = mount(ImportFlow, {
-      propsData: {
+      props: {
         isVisible: true,
         workspace: mockWorkspace,
       },
@@ -82,9 +82,9 @@ describe("ImportFlow", () => {
 
   afterEach(() => {
     if (wrapper) {
-      wrapper.destroy();
+      wrapper.unmount();
     }
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Analysis Update Handling", () => {

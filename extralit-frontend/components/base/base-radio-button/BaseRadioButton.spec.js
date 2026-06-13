@@ -3,7 +3,7 @@ import BaseRadioButton from "./BaseRadioButton";
 
 let wrapper = null;
 const options = {
-  propsData: {
+  props: {
     id: "id",
     name: "name",
     value: "1",
@@ -15,7 +15,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("BaseRadioButtonComponent", () => {
@@ -24,7 +24,7 @@ describe("BaseRadioButtonComponent", () => {
   });
   it("bind disabled class", async () => {
     wrapper = shallowMount(BaseRadioButton, {
-      propsData: {
+      props: {
         disabled: true,
       },
     });

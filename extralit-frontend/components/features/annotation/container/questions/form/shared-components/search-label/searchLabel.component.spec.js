@@ -4,24 +4,24 @@ import SearchLabelComponent from "./SearchLabel.component";
 let wrapper = null;
 const options = {
   stubs: ["BaseIconWithBadge"],
-  propsData: {
+  props: {
     searchRef: "searchRef",
     placeholder: "placeholder",
     value: "",
   },
 };
-const spyResetValueMethod = jest.spyOn(SearchLabelComponent.methods, "resetValue");
+const spyResetValueMethod = vi.spyOn(SearchLabelComponent.methods, "resetValue");
 
-const spyFocusInSearchMethod = jest.spyOn(SearchLabelComponent.methods, "focusInSearch");
+const spyFocusInSearchMethod = vi.spyOn(SearchLabelComponent.methods, "focusInSearch");
 
-const spyLooseFocusMethod = jest.spyOn(SearchLabelComponent.methods, "looseFocus");
+const spyLooseFocusMethod = vi.spyOn(SearchLabelComponent.methods, "looseFocus");
 
 beforeEach(() => {
   wrapper = shallowMount(SearchLabelComponent, options);
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("LabelSelectionComponent", () => {
