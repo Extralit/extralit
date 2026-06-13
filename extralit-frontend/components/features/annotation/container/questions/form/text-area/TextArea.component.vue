@@ -47,10 +47,10 @@ export default {
       return [
         {
           id: "0",
-          name: this.isSuggested ? `Use: ${this.suggestedAgent}` : this.$nuxt.$t("questions_form.write"),
+          name: this.isSuggested ? `Use: ${this.suggestedAgent}` : this.$t("questions_form.write"),
           icon: this.isSuggested ? "suggestion" : "",
           info: this.isSuggested ? this.suggestedScore : "",
-          tooltipTitle: this.isSuggested ? this.$nuxt.$t("suggestion.name") : "",
+          tooltipTitle: this.isSuggested ? this.$t("suggestion.name") : "",
           tooltipText: this.isSuggested ? this.suggestedAgent : "",
           component: "TextAreaContents",
         },
@@ -61,7 +61,7 @@ export default {
                 name: `${this.suggestedAgent}`,
                 icon: "suggestion",
                 info: this.suggestedScore,
-                tooltipTitle: this.$nuxt.$t("suggestion.name"),
+                tooltipTitle: this.$t("suggestion.name"),
                 tooltipText: this.suggestedAgent,
                 component: "TextAreaSuggestion",
               },

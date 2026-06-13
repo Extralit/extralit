@@ -49,6 +49,7 @@
 </template>
 
 <script>
+import { eventBus } from "~/v1/infrastructure/eventBus";
 import { useDatasetsFiltersViewModel } from "./useDatasetsFiltersViewModel";
 
 export default {
@@ -86,7 +87,7 @@ export default {
         this.recordCriteria.page.goToFirst();
       }
 
-      this.$root.$emit("on-change-record-criteria-filter", this.recordCriteria);
+      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
     },
     toggleVisibilityOfFilters() {
       this.visibleFilters = !this.visibleFilters;

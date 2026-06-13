@@ -31,7 +31,7 @@
         class="span-entity__input"
         type="text"
         autocomplete="off"
-        :placeholder="selection.length ? '' : $nuxt.$t('search')"
+        :placeholder="selection.length ? '' : $t('search')"
         autofocus
         v-model="searchText"
         @keydown.stop=""

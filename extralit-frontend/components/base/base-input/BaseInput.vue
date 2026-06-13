@@ -51,8 +51,6 @@ export default {
       this.parentContainer = getClosestVueParent(this.$parent, "input-container");
 
       if (!this.parentContainer) {
-        this.$destroy();
-
         throw new Error("You should wrap the input in a input-container");
       }
 

@@ -32,6 +32,7 @@
   </div>
 </template>
 <script>
+import { eventBus } from "~/v1/infrastructure/eventBus";
 export default {
   props: {
     preview: {
@@ -67,7 +68,7 @@ export default {
       if (!this.recordCriteria.hasChanges) return;
       this.recordCriteria.page.goToFirst();
 
-      this.$root.$emit("on-change-record-criteria-filter", this.recordCriteria);
+      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
     },
   },
 };

@@ -29,6 +29,7 @@
 </template>
 
 <script>
+import { eventBus } from "~/v1/infrastructure/eventBus";
 export default {
   name: "Pagination",
   props: {
@@ -98,12 +99,12 @@ export default {
     goToNextPage() {
       this.recordCriteria.nextPage();
 
-      this.$root.$emit("on-change-record-page", this.recordCriteria);
+      eventBus.emit("on-change-record-page", this.recordCriteria);
     },
     goToPrevPage() {
       this.recordCriteria.previousPage();
 
-      this.$root.$emit("on-change-record-page", this.recordCriteria);
+      eventBus.emit("on-change-record-page", this.recordCriteria);
     },
   },
 };

@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import { eventBus } from "~/v1/infrastructure/eventBus";
 import { useRecordFeedbackTaskViewModel } from "./useRecordFeedbackTaskViewModel";
 
 export default {
@@ -69,7 +70,7 @@ export default {
 
       await this.loadRecords(this.recordCriteria);
 
-      this.$nuxt.$emit("on-change-record-metadata", this.metadata);
+      eventBus.emit("on-change-record-metadata", this.metadata);
 
       this.fetching = false;
     },
@@ -82,7 +83,7 @@ export default {
 
       await this.paginateRecords(this.recordCriteria);
 
-      this.$nuxt.$emit("on-change-record-metadata", this.metadata);
+      eventBus.emit("on-change-record-metadata", this.metadata);
 
       this.fetching = false;
     },
@@ -130,13 +131,13 @@ export default {
     return useRecordFeedbackTaskViewModel(props);
   },
   mounted() {
-    this.$root.$on("on-change-record-page", this.onChangeRecordPage);
+    eventBus.on("on-change-record-page", this.onChangeRecordPage);
 
-    this.$root.$on("on-change-record-criteria-filter", this.onChangeRecordFilter);
+    eventBus.on("on-change-record-criteria-filter", this.onChangeRecordFilter);
   },
   unmounted() {
-    this.$root.$off("on-change-record-page");
-    this.$root.$off("on-change-record-criteria-filter");
+    eventBus.off("on-change-record-page");
+    eventBus.off("on-change-record-criteria-filter");
     this.$notification.clear();
   },
 };
