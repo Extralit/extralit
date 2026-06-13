@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { ref, onBeforeMount } from "vue-demi";
+import { ref, onBeforeMount } from "vue";
 import { useRecordMessages } from "./useRecordsMessages";
 import { LoadRecordsToAnnotateUseCase } from "@/v1/domain/usecases/load-records-to-annotate-use-case";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";

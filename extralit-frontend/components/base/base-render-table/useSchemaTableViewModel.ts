@@ -1,5 +1,5 @@
 import { isEqual } from "lodash";
-import { ref, Ref } from "vue-demi";
+import { ref, Ref } from "vue";
 import { useResolve } from "ts-injecty";
 
 import { Question } from "@/v1/domain/entities/question/Question";

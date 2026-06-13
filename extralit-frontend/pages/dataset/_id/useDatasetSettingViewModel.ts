@@ -1,4 +1,4 @@
-import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from "vue-demi";
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from "vue";
 import { useResolve } from "ts-injecty";
 import { useDatasetViewModel } from "./useDatasetViewModel";
 import { GetDatasetSettingsUseCase } from "~/v1/domain/usecases/dataset-setting/get-dataset-settings-use-case";

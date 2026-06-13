@@ -14,7 +14,7 @@
     </div>
 
     <div class="hf-login__img-container">
-      <img class="hf-login__img" src="images/welcome-hf-sign-in-ss.jpg" alt="extralit UI" />
+      <img class="hf-login__img" src="/images/welcome-hf-sign-in-ss.jpg" alt="extralit UI" />
     </div>
   </main>
 </template>

@@ -17,11 +17,7 @@
 </template>
 
 <script>
-import ClickOutside from "v-click-outside";
 export default {
-  directives: {
-    clickOutside: ClickOutside.directive,
-  },
   props: {
     modalCloseButton: {
       type: Boolean,

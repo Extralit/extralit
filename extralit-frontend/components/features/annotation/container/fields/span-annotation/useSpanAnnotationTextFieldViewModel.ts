@@ -1,5 +1,5 @@
 import Vue from "vue";
-import { onMounted, onUnmounted, ref, watch } from "vue-demi";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import { useSearchTextHighlight } from "../useSearchTextHighlight";
 import { Highlighting, LoadedSpan, Position } from "./components/highlighting";
 import EntityComponent from "./components/EntityComponent.vue";

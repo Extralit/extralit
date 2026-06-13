@@ -31,7 +31,7 @@ export default defineNuxtConfig({
 
   css: ["~/assets/styles.scss"],
 
-  components: [{ path: "~/components", pathPrefix: false }],
+  components: [{ path: "~/components", pathPrefix: false, ignore: ["**/types.ts", "**/*.test.*", "**/*.spec.*"] }],
 
   modules: ["@pinia/nuxt", "@nuxtjs/i18n"],
 
@@ -51,6 +51,9 @@ export default defineNuxtConfig({
     defaultLocale: "en",
     strategy: "no_prefix",
     bundle: { optimizeTranslationDirective: false },
+    // Some translation messages intentionally contain HTML (e.g. doc links);
+    // allow them instead of failing the message compiler.
+    compilation: { strictMessage: false, escapeHtml: false },
     vueI18n: "./i18n.config.ts",
   },
 
@@ -67,6 +70,9 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
+    // Nuxt 4 serves `public/`, but this app keeps its assets in `static/` (Nuxt 2
+    // layout). Serve them at the site root so /images, /fonts, favicons resolve.
+    publicAssets: [{ dir: fileURLToPath(new URL("./static", import.meta.url)), baseURL: "/" }],
     devProxy: {
       "/api/": { target: BASE_URL, changeOrigin: true },
       "/share-your-progress": { target: BASE_URL, changeOrigin: true },
