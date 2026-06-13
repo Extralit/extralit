@@ -39,12 +39,9 @@ export default {
     },
   },
   setup() {
-    return useAnnotationModeViewModel();
-  },
-  head() {
-    return {
-      title: this.dataset.name,
-    };
+    const vm = useAnnotationModeViewModel();
+    useHead(() => ({ title: vm.dataset?.name }));
+    return vm;
   },
 };
 </script>
