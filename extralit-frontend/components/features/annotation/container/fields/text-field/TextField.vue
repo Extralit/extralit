@@ -17,13 +17,7 @@
       <MarkdownRenderer v-else-if="useMarkdown" :markdown="fieldText" />
       <Sandbox v-else-if="isHTML" :content="fieldText" />
       <div :class="classes" v-else v-html="fieldText" />
-      <template>
-        <style :key="id" scoped>
-          ::highlight(search-text-highlight-{{id}}) {
-            color: #ff675f;
-          }
-        </style>
-      </template>
+      <component :is="'style'" :key="id" v-html="highlightStyles" />
     </div>
   </div>
 </template>
@@ -70,6 +64,9 @@ export default {
     },
     isHTML() {
       return /<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/.test(this.fieldText);
+    },
+    highlightStyles() {
+      return `::highlight(search-text-highlight-${this.id}) {\n  color: #ff675f;\n}`;
     },
   },
   setup(props) {

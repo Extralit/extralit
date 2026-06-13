@@ -21,11 +21,13 @@ describe("BaseFlowModal", () => {
 
     wrapper = mount(BaseFlowModal, {
       props: defaultProps,
-      stubs: {
-        "base-icon": true,
-        BaseButton: {
-          template: '<button class="mock-base-button"><slot /></button>',
-          props: ["variant", "disabled", "loading"],
+      global: {
+        stubs: {
+          "base-icon": true,
+          BaseButton: {
+            template: '<button class="mock-base-button"><slot /></button>',
+            props: ["variant", "disabled", "loading"],
+          },
         },
       },
     });
@@ -54,15 +56,15 @@ describe("BaseFlowModal", () => {
     it("should render all steps in progress indicator", () => {
       const steps = wrapper.findAll(".flow-modal__step");
       expect(steps).toHaveLength(3);
-      expect(steps.at(0).text()).toContain("Step 1");
-      expect(steps.at(1).text()).toContain("Step 2");
-      expect(steps.at(2).text()).toContain("Step 3");
+      expect(steps[0].text()).toContain("Step 1");
+      expect(steps[1].text()).toContain("Step 2");
+      expect(steps[2].text()).toContain("Step 3");
     });
   });
 
   describe("Step Navigation", () => {
     it("should highlight the current step", () => {
-      const currentStep = wrapper.findAll(".flow-modal__step").at(0);
+      const currentStep = wrapper.findAll(".flow-modal__step")[0];
       expect(currentStep.classes()).toContain("flow-modal__step--active");
     });
 
@@ -70,9 +72,9 @@ describe("BaseFlowModal", () => {
       await wrapper.setProps({ currentStep: 2 });
 
       const steps = wrapper.findAll(".flow-modal__step");
-      expect(steps.at(0).classes()).toContain("flow-modal__step--completed");
-      expect(steps.at(1).classes()).toContain("flow-modal__step--completed");
-      expect(steps.at(2).classes()).toContain("flow-modal__step--active");
+      expect(steps[0].classes()).toContain("flow-modal__step--completed");
+      expect(steps[1].classes()).toContain("flow-modal__step--completed");
+      expect(steps[2].classes()).toContain("flow-modal__step--active");
     });
 
     it("should calculate progress percentage correctly", async () => {

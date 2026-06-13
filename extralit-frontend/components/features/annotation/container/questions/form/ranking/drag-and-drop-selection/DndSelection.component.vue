@@ -187,7 +187,7 @@ export default {
         const firstQuestion = this.$refs.questions?.find(({ title }) => title == this.ranking.questions[0]?.text);
 
         if (!firstQuestion) {
-          const firstItem = this.$refs.items[0];
+          const firstItem = this.$refs.items?.[0];
 
           firstItem?.focus();
 

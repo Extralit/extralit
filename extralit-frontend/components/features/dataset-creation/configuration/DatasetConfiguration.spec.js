@@ -1,3 +1,4 @@
+// @vitest-environment nuxt
 import { mount } from "@vue/test-utils";
 import DatasetConfiguration from "./DatasetConfiguration.vue";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
@@ -62,8 +63,7 @@ describe("DatasetConfiguration", () => {
       },
     };
 
-    const ImportHistoryDetails = require("~/v1/domain/entities/import/ImportHistoryDetails");
-    ImportHistoryDetails.ImportHistoryDetails.mockImplementation(() => mockImportHistoryDetails);
+    ImportHistoryDetails.mockImplementation(() => mockImportHistoryDetails);
   });
 
   afterEach(() => {
@@ -80,7 +80,7 @@ describe("DatasetConfiguration", () => {
           dataset: mockDataset,
           dataSource: "hub",
         },
-        stubs: {
+        global: { stubs: {
           HorizontalResizable: {
             template: `
               <div class="mock-horizontal-resizable">
@@ -116,7 +116,7 @@ describe("DatasetConfiguration", () => {
             props: ["import-history-details", "loading", "error"],
           },
           BaseIcon: true,
-        },
+        } },
       });
     });
 
@@ -147,7 +147,7 @@ describe("DatasetConfiguration", () => {
           dataSource: "import",
           importData: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           HorizontalResizable: {
             template: `
               <div class="mock-horizontal-resizable">
@@ -183,7 +183,7 @@ describe("DatasetConfiguration", () => {
             props: ["import-history-details", "loading", "error"],
           },
           BaseIcon: true,
-        },
+        } },
       });
     });
 
@@ -212,7 +212,7 @@ describe("DatasetConfiguration", () => {
       expect(wrapper.emitted("import-dataset-configured")).toBeTruthy();
 
       const emittedEvent = wrapper.emitted("import-dataset-configured")[0][0];
-      expect(emittedEvent.dataset).toBe(mockDataset);
+      expect(emittedEvent.dataset).toEqual(mockDataset);
       expect(emittedEvent.suggestedMappings).toBeDefined();
       expect(emittedEvent.suggestedQuestions).toBeDefined();
     });
@@ -225,7 +225,7 @@ describe("DatasetConfiguration", () => {
           dataset: { ...mockDataset, repoId: null },
           dataSource: "hub",
         },
-        stubs: {
+        global: { stubs: {
           HorizontalResizable: {
             template: `
               <div class="mock-horizontal-resizable">
@@ -250,7 +250,7 @@ describe("DatasetConfiguration", () => {
             template: '<div class="mock-icon"></div>',
             props: ["icon-name"],
           },
-        },
+        } },
       });
     });
 
@@ -269,7 +269,7 @@ describe("DatasetConfiguration", () => {
           dataset: datasetWithoutQuestions,
           dataSource: "hub",
         },
-        stubs: {
+        global: { stubs: {
           HorizontalResizable: {
             template: `
               <div class="mock-horizontal-resizable">
@@ -291,7 +291,7 @@ describe("DatasetConfiguration", () => {
           DatasetConfigurationForm: true,
           ImportHistoryDataPreview: true,
           BaseIcon: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".dataset-config__empty-questions").exists()).toBe(true);
@@ -304,7 +304,7 @@ describe("DatasetConfiguration", () => {
           dataset: mockDataset,
           dataSource: "hub",
         },
-        stubs: {
+        global: { stubs: {
           HorizontalResizable: {
             template: `
               <div class="mock-horizontal-resizable">
@@ -329,7 +329,7 @@ describe("DatasetConfiguration", () => {
           DatasetConfigurationForm: true,
           ImportHistoryDataPreview: true,
           BaseIcon: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".mock-questions").exists()).toBe(true);
@@ -345,7 +345,7 @@ describe("DatasetConfiguration", () => {
           dataSource: "import",
           importData: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           HorizontalResizable: {
             template: `
               <div class="mock-horizontal-resizable">
@@ -381,7 +381,7 @@ describe("DatasetConfiguration", () => {
             props: ["import-history-details", "loading", "error"],
           },
           BaseIcon: true,
-        },
+        } },
       });
     });
 
@@ -425,7 +425,7 @@ describe("DatasetConfiguration", () => {
           dataSource: "import",
           importData: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           HorizontalResizable: {
             template: `<div><slot name="up" /><slot name="down" /></div>`,
           },
@@ -437,7 +437,7 @@ describe("DatasetConfiguration", () => {
           DatasetConfigurationForm: true,
           ImportHistoryDataPreview: true,
           BaseIcon: true,
-        },
+        } },
       });
     });
 
@@ -499,7 +499,7 @@ describe("DatasetConfiguration", () => {
             dataSource: "import",
             importData: mockImportHistoryDetails,
           },
-          stubs: {
+          global: { stubs: {
             HorizontalResizable: { template: `<div><slot name="up" /><slot name="down" /></div>` },
             VerticalResizable: { template: `<div><slot name="left" /><slot name="right" /></div>` },
             Record: true,
@@ -507,7 +507,7 @@ describe("DatasetConfiguration", () => {
             DatasetConfigurationForm: true,
             ImportHistoryDataPreview: true,
             BaseIcon: true,
-          },
+          } },
         });
       }).not.toThrow();
 

@@ -2,15 +2,21 @@ import { shallowMount } from "@vue/test-utils";
 import HeaderFeedbackTask from "./HeaderFeedbackTask";
 import * as useRole from "~/v1/infrastructure/services/useRole";
 
+vi.mock("~/v1/infrastructure/services/useRoutes", () => ({
+  useRoutes: vi.fn(() => ({})),
+}));
+
 const options = {
-  stubs: [
-    "BaseTopbarBrand",
-    "BaseBreadcrumbs",
-    "BaseButton",
-    "DatasetSettingsIconFeedbackTask",
-    "UserAvatarTooltip",
-    "NuxtLink",
-  ],
+  global: {
+    stubs: [
+      "BaseTopbarBrand",
+      "BaseBreadcrumbs",
+      "BaseButton",
+      "DatasetSettingsIconFeedbackTask",
+      "UserAvatarTooltip",
+      "NuxtLink",
+    ],
+  },
   props: {
     breadcrumbs: [
       { link: { name: "datasets" }, name: "Home" },
@@ -38,6 +44,6 @@ describe("HeaderFeedbackTask", () => {
 
     const wrapper = shallowMount(HeaderFeedbackTask, options);
 
-    expect(wrapper.is(HeaderFeedbackTask)).toBeTruthy();
+    expect(wrapper.findComponent(HeaderFeedbackTask).exists()).toBeTruthy();
   });
 });

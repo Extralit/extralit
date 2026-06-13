@@ -29,16 +29,11 @@
             }"
           >
             <MarkdownRenderer v-if="useMarkdown" :markdown="text" />
-            <span v-else v-html="text" /><template>
-              <style :key="id" scoped>
-                ::highlight(search-text-highlight-{{id}}) {
-                  color: #ff675f;
-                }
-              </style>
-            </template>
+            <span v-else v-html="text" />
           </div>
         </span>
       </div>
+      <component :is="'style'" v-html="highlightStyles" />
     </div>
   </div>
 </template>
@@ -78,6 +73,9 @@ export default {
     },
     colorForRole() {
       return ["var(--fg-chat-1)", "var(--fg-chat-2)", "var(--fg-chat-3)", "var(--fg-chat-4)", "var(--fg-chat-5)"];
+    },
+    highlightStyles() {
+      return `::highlight(search-text-highlight-${this.id}) {\n  color: #ff675f;\n}`;
     },
   },
   methods: {

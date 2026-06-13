@@ -20,7 +20,7 @@ afterEach(() => {
 
 describe("BaseRadioButtonComponent", () => {
   it("render the component", () => {
-    expect(wrapper.is(BaseRadioButton)).toBe(true);
+    expect(wrapper.findComponent(BaseRadioButton).exists()).toBe(true);
   });
   it("bind disabled class", async () => {
     wrapper = shallowMount(BaseRadioButton, {

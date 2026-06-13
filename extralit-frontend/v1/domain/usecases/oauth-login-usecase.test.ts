@@ -1,3 +1,7 @@
+// jest-mock-extended (used by @codescouts/test/jest) lazily calls jest.fn();
+// alias the jest global to vitest's vi so the mock factory works under Vitest.
+(globalThis as any).jest ??= vi;
+
 import { mock } from "@codescouts/test/jest";
 import { IOAuthRepository } from "../services/IOAuthRepository";
 import { IAuthService } from "../services/IAuthService";

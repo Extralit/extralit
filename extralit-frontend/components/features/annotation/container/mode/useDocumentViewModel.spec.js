@@ -1,3 +1,4 @@
+import { ref as mockRef, watch as mockWatch, computed as mockComputed } from "vue";
 import { useDocumentViewModel } from "./useDocumentViewModel";
 
 // Mock dependencies inline to avoid hoisting issues
@@ -33,11 +34,15 @@ vi.mock("@/v1/infrastructure/services/useWait", () => ({
   waitForAsyncValue: vi.fn(() => Promise.resolve()),
 }));
 
-vi.mock("vue-demi", () => ({
-  ref: vi.fn(),
-  watch: vi.fn(),
-  computed: vi.fn(),
-}));
+vi.mock("vue", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    ref: vi.fn(),
+    watch: vi.fn(),
+    computed: vi.fn(),
+  };
+});
 
 // Mock objects
 let mockDocument;
@@ -47,9 +52,6 @@ let mockDataset;
 let mockWorkspaces;
 let mockNotifications;
 let mockGetDocumentUseCase;
-let mockRef;
-let mockWatch;
-let mockComputed;
 
 describe("useDocumentViewModel", () => {
   beforeEach(() => {
@@ -89,11 +91,6 @@ describe("useDocumentViewModel", () => {
     };
 
     // Setup Vue composition API mocks
-    const vueDemi = require("vue-demi");
-    mockRef = vueDemi.ref;
-    mockWatch = vueDemi.watch;
-    mockComputed = vueDemi.computed;
-
     mockRef.mockImplementation((value) => ({ value }));
     mockWatch.mockImplementation(() => {});
     mockComputed.mockImplementation((fn) => ({ value: fn() }));

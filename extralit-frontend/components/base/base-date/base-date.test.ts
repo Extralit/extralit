@@ -18,9 +18,11 @@ describe("Base Date should", () => {
 
   test("should format day 1 second ago", () => {
     const baseDate = mount(BaseDateVue, {
-      mocks: {
-        $i18n: {
-          locale: "en",
+      global: {
+        mocks: {
+          $i18n: {
+            locale: "en",
+          },
         },
       },
       props: {
@@ -34,9 +36,11 @@ describe("Base Date should", () => {
 
   test("should format day 2 seconds ago", () => {
     const baseDate = mount(BaseDateVue, {
-      mocks: {
-        $i18n: {
-          locale: "en",
+      global: {
+        mocks: {
+          $i18n: {
+            locale: "en",
+          },
         },
       },
       props: {
@@ -50,9 +54,11 @@ describe("Base Date should", () => {
 
   test("should format day 2 hours ago", () => {
     const baseDate = mount(BaseDateVue, {
-      mocks: {
-        $i18n: {
-          locale: "en",
+      global: {
+        mocks: {
+          $i18n: {
+            locale: "en",
+          },
         },
       },
       props: {
@@ -66,9 +72,11 @@ describe("Base Date should", () => {
 
   test("should format day as yesterday", () => {
     const baseDate = mount(BaseDateVue, {
-      mocks: {
-        $i18n: {
-          locale: "en",
+      global: {
+        mocks: {
+          $i18n: {
+            locale: "en",
+          },
         },
       },
       props: {
@@ -82,9 +90,11 @@ describe("Base Date should", () => {
 
   test("should format day 2 days ago", () => {
     const baseDate = mount(BaseDateVue, {
-      mocks: {
-        $i18n: {
-          locale: "en",
+      global: {
+        mocks: {
+          $i18n: {
+            locale: "en",
+          },
         },
       },
       props: {
@@ -98,9 +108,11 @@ describe("Base Date should", () => {
 
   test("should format day last week", () => {
     const baseDate = mount(BaseDateVue, {
-      mocks: {
-        $i18n: {
-          locale: "en",
+      global: {
+        mocks: {
+          $i18n: {
+            locale: "en",
+          },
         },
       },
       props: {
@@ -114,9 +126,11 @@ describe("Base Date should", () => {
 
   test("should format day 2 weeks ago", () => {
     const baseDate = mount(BaseDateVue, {
-      mocks: {
-        $i18n: {
-          locale: "en",
+      global: {
+        mocks: {
+          $i18n: {
+            locale: "en",
+          },
         },
       },
       props: {
@@ -130,9 +144,11 @@ describe("Base Date should", () => {
 
   test("should format day last month", () => {
     const baseDate = mount(BaseDateVue, {
-      mocks: {
-        $i18n: {
-          locale: "en",
+      global: {
+        mocks: {
+          $i18n: {
+            locale: "en",
+          },
         },
       },
       props: {
@@ -146,9 +162,11 @@ describe("Base Date should", () => {
 
   test("should format day 2 months ago", () => {
     const baseDate = mount(BaseDateVue, {
-      mocks: {
-        $i18n: {
-          locale: "en",
+      global: {
+        mocks: {
+          $i18n: {
+            locale: "en",
+          },
         },
       },
       props: {

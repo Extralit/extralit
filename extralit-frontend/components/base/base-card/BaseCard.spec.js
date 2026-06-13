@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe("BaseCardComponent", () => {
   it("render the component", () => {
-    expect(wrapper.is(BaseCard)).toBe(true);
+    expect(wrapper.findComponent(BaseCard).exists()).toBe(true);
   });
   it("expect title class to render", () => {
     isClassExist(".card__title");

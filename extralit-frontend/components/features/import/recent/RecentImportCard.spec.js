@@ -46,7 +46,7 @@ describe("RecentImportCard Component", () => {
     it("should render the component with correct structure", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -54,7 +54,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       expect(wrapper.find(".recent-import-card").exists()).toBe(true);
@@ -66,7 +66,7 @@ describe("RecentImportCard Component", () => {
     it("should display filename correctly", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -74,7 +74,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const filename = wrapper.find(".recent-import-card__filename");
@@ -84,7 +84,7 @@ describe("RecentImportCard Component", () => {
     it("should display statistics correctly", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -92,7 +92,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const stats = wrapper.findAll(".recent-import-card__stat");
@@ -120,7 +120,7 @@ describe("RecentImportCard Component", () => {
     it("should not display failed stat when failed_count is 0", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecordNoFailures },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -128,7 +128,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const stats = wrapper.findAll(".recent-import-card__stat");
@@ -148,7 +148,7 @@ describe("RecentImportCard Component", () => {
 
       wrapper = mount(RecentImportCard, {
         props: { importRecord: recentRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -156,7 +156,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const dateElement = wrapper.find(".recent-import-card__date");
@@ -171,7 +171,7 @@ describe("RecentImportCard Component", () => {
 
       wrapper = mount(RecentImportCard, {
         props: { importRecord: hoursAgoRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -179,7 +179,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const dateElement = wrapper.find(".recent-import-card__date");
@@ -194,7 +194,7 @@ describe("RecentImportCard Component", () => {
 
       wrapper = mount(RecentImportCard, {
         props: { importRecord: yesterdayRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -202,7 +202,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const dateElement = wrapper.find(".recent-import-card__date");
@@ -217,7 +217,7 @@ describe("RecentImportCard Component", () => {
 
       wrapper = mount(RecentImportCard, {
         props: { importRecord: daysAgoRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -225,7 +225,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const dateElement = wrapper.find(".recent-import-card__date");
@@ -240,7 +240,7 @@ describe("RecentImportCard Component", () => {
 
       wrapper = mount(RecentImportCard, {
         props: { importRecord: oldRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -248,7 +248,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const dateElement = wrapper.find(".recent-import-card__date");
@@ -264,7 +264,7 @@ describe("RecentImportCard Component", () => {
 
       wrapper = mount(RecentImportCard, {
         props: { importRecord: invalidDateRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -272,7 +272,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const dateElement = wrapper.find(".recent-import-card__date");
@@ -284,15 +284,16 @@ describe("RecentImportCard Component", () => {
     it("should emit click event when card is clicked", async () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button" @click="$emit(\'click\')"><slot /></button>',
+            emits: ["click"],
           },
           BaseIcon: {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const button = wrapper.find(".mock-base-button");
@@ -307,7 +308,7 @@ describe("RecentImportCard Component", () => {
     it("should calculate totalPapers correctly", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -315,7 +316,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       expect(wrapper.vm.totalPapers).toBe(15);
@@ -329,7 +330,7 @@ describe("RecentImportCard Component", () => {
 
       wrapper = mount(RecentImportCard, {
         props: { importRecord: recordWithoutTotal },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -337,7 +338,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       expect(wrapper.vm.totalPapers).toBe(0);
@@ -348,7 +349,7 @@ describe("RecentImportCard Component", () => {
     it("should apply correct CSS classes", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button recent-import-card"><slot /></button>',
           },
@@ -356,7 +357,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       expect(wrapper.find(".recent-import-card").exists()).toBe(true);
@@ -370,7 +371,7 @@ describe("RecentImportCard Component", () => {
     it("should apply success styling to success stat", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -378,7 +379,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const successStat = wrapper.find(".recent-import-card__stat--success");
@@ -388,7 +389,7 @@ describe("RecentImportCard Component", () => {
     it("should apply failed styling to failed stat when failures exist", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -396,7 +397,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const failedStat = wrapper.find(".recent-import-card__stat--failed");
@@ -408,7 +409,7 @@ describe("RecentImportCard Component", () => {
     it("should have responsive structure for different screen sizes", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -416,7 +417,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       // Verify that elements that need responsive behavior are present
@@ -430,7 +431,7 @@ describe("RecentImportCard Component", () => {
     it("should have proper heading structure", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -438,7 +439,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const filename = wrapper.find(".recent-import-card__filename");
@@ -448,7 +449,7 @@ describe("RecentImportCard Component", () => {
     it("should provide meaningful text content", () => {
       wrapper = mount(RecentImportCard, {
         props: { importRecord: mockImportRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -456,7 +457,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       // Check that all text content is meaningful
@@ -479,7 +480,7 @@ describe("RecentImportCard Component", () => {
 
       wrapper = mount(RecentImportCard, {
         props: { importRecord: longFilenameRecord },
-        stubs: {
+        global: { stubs: {
           BaseButton: {
             template: '<button class="mock-base-button"><slot /></button>',
           },
@@ -487,7 +488,7 @@ describe("RecentImportCard Component", () => {
             template: '<div class="mock-icon"></div>',
             props: ["iconName"],
           },
-        },
+        } },
       });
 
       const filename = wrapper.find(".recent-import-card__filename");

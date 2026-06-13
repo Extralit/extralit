@@ -3,11 +3,13 @@ import BaseSimpleTable from "./BaseSimpleTable.vue";
 
 // Mock RenderTable component
 vi.mock("~/components/base/base-render-table/RenderTable.vue", () => ({
-  name: "RenderTable",
-  template: '<div class="mock-render-table"></div>',
-  props: ["tableJSON", "editable", "hasValidValues", "questions"],
-  methods: {
-    validateTable: vi.fn(() => true),
+  default: {
+    name: "RenderTable",
+    template: '<div class="mock-render-table"></div>',
+    props: ["tableJSON", "editable", "hasValidValues", "questions"],
+    methods: {
+      validateTable: vi.fn(() => true),
+    },
   },
 }));
 

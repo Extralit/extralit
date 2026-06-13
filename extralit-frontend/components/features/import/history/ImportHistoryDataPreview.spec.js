@@ -55,8 +55,7 @@ describe("ImportHistoryDataPreview", () => {
       getFieldStats: vi.fn(),
     };
 
-    const ImportHistoryDetails = require("~/v1/domain/entities/import/ImportHistoryDetails");
-    ImportHistoryDetails.ImportHistoryDetails.mockImplementation(() => mockImportHistoryDetails);
+    ImportHistoryDetails.mockImplementation(() => mockImportHistoryDetails);
   });
 
   afterEach(() => {
@@ -73,11 +72,11 @@ describe("ImportHistoryDataPreview", () => {
           loading: true,
           importHistoryDetails: null,
         },
-        stubs: {
-          BaseSpinner: {
+        global: { stubs: {
+          BaseSpinnerComponent: {
             template: '<div class="mock-spinner">Loading...</div>',
           },
-        },
+        } },
       });
 
       expect(wrapper.find(".loading-state").exists()).toBe(true);
@@ -94,7 +93,7 @@ describe("ImportHistoryDataPreview", () => {
           error: "Failed to load import data",
           importHistoryDetails: null,
         },
-        stubs: {
+        global: { stubs: {
           BaseIcon: {
             template: '<div class="mock-icon"></div>',
             props: ["icon-name"],
@@ -103,7 +102,7 @@ describe("ImportHistoryDataPreview", () => {
             template: '<button class="mock-button" @click="$emit(\'click\')"><slot /></button>',
             props: ["variant"],
           },
-        },
+        } },
       });
 
       expect(wrapper.find(".error-state").exists()).toBe(true);
@@ -119,13 +118,14 @@ describe("ImportHistoryDataPreview", () => {
           error: "Network error",
           importHistoryDetails: null,
         },
-        stubs: {
+        global: { stubs: {
           BaseIcon: true,
           BaseButton: {
             template: "<button @click=\"$emit('click')\"><slot /></button>",
             props: ["variant"],
+            emits: ["click"],
           },
-        },
+        } },
       });
 
       await wrapper.find("button").trigger("click");
@@ -143,9 +143,9 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: null,
         },
-        stubs: {
+        global: { stubs: {
           BaseIcon: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".empty-state").exists()).toBe(true);
@@ -162,12 +162,12 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: {
             template: '<div class="mock-table" @row-click="$emit(\'row-click\', $event)"></div>',
             props: ["data", "columns", "options", "loading"],
           },
-        },
+        } },
       });
     });
 
@@ -230,9 +230,9 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
     });
 
@@ -245,13 +245,21 @@ describe("ImportHistoryDataPreview", () => {
     });
 
     it("should filter data by status", async () => {
-      // Add a record with different status for testing
-      mockImportHistoryDetails.records.push({
-        reference: "paper_003",
-        title: "Updated Paper",
-        status: "update",
-      });
-      mockImportHistoryDetails.metadata.paper_003 = { status: "update" };
+      // Add a record with different status for testing. Vue 3 computed caching
+      // does not react to mutating the original prop object in place, so push a
+      // fresh details object through setProps to trigger re-computation.
+      const updatedDetails = {
+        ...mockImportHistoryDetails,
+        records: [
+          ...mockImportHistoryDetails.records,
+          { reference: "paper_003", title: "Updated Paper", status: "update" },
+        ],
+        metadata: {
+          ...mockImportHistoryDetails.metadata,
+          paper_003: { status: "update" },
+        },
+      };
+      await wrapper.setProps({ importHistoryDetails: updatedDetails });
 
       await wrapper.setData({ statusFilter: "update" });
 
@@ -276,9 +284,9 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
     });
 
@@ -328,9 +336,9 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
     });
 
@@ -352,8 +360,10 @@ describe("ImportHistoryDataPreview", () => {
         title: `Paper Title ${i}`,
       }));
 
-      mockImportHistoryDetails.records = manyRecords;
-      await wrapper.vm.$forceUpdate();
+      // Vue 3 computed caching requires a new prop object to recompute.
+      await wrapper.setProps({
+        importHistoryDetails: { ...mockImportHistoryDetails, records: manyRecords },
+      });
 
       const options = wrapper.vm.tableOptions;
       expect(options.pagination).toBe(true);
@@ -368,9 +378,9 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
     });
 
@@ -416,9 +426,9 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
 
       // Should not throw error and should show fallback text
@@ -435,9 +445,9 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
 
       expect(wrapper.vm.tableColumns).toEqual([]);
@@ -452,9 +462,9 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
 
       expect(wrapper.vm.tableData).toEqual([]);

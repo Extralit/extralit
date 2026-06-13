@@ -75,7 +75,7 @@ describe("RecentImports Component", () => {
     it("should render the component with correct header", () => {
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -83,7 +83,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".recent-imports__title").text()).toBe("Recent Imports");
@@ -95,7 +95,7 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -106,7 +106,7 @@ describe("RecentImports Component", () => {
             template: '<div class="mock-recent-import-card" @click="$emit(\'click\')"></div>',
             props: ["importRecord"],
           },
-        },
+        } },
       });
 
       const importCards = wrapper.findAll(".mock-recent-import-card");
@@ -116,7 +116,7 @@ describe("RecentImports Component", () => {
     it("should display action buttons", () => {
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -124,7 +124,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       const viewAllButton = wrapper.find(".recent-imports__view-all-btn");
@@ -139,8 +139,8 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: {
+        global: { stubs: {
+          BaseSpinnerComponent: {
             template: '<div class="mock-spinner">Loading...</div>',
           },
           BaseIcon: true,
@@ -149,7 +149,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".recent-imports__loading").exists()).toBe(true);
@@ -162,7 +162,7 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -170,7 +170,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".recent-imports__loading").exists()).toBe(false);
@@ -183,7 +183,7 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: {
             template: '<div class="mock-icon"></div>',
@@ -194,7 +194,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       const errorSection = wrapper.find(".recent-imports__error");
@@ -208,7 +208,7 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -216,7 +216,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       const retryButton = wrapper.find(".recent-imports__error .mock-base-button");
@@ -232,7 +232,7 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: null },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -240,7 +240,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       const noWorkspaceSection = wrapper.find(".recent-imports__no-workspace");
@@ -254,7 +254,7 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -262,7 +262,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".recent-imports__no-workspace").exists()).toBe(false);
@@ -277,7 +277,7 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -285,7 +285,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       const emptySection = wrapper.find(".recent-imports__empty");
@@ -303,7 +303,7 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -314,7 +314,7 @@ describe("RecentImports Component", () => {
             template: '<div class="mock-recent-import-card" @click="$emit(\'click\')"></div>',
             props: ["importRecord"],
           },
-        },
+        } },
       });
 
       const firstCard = wrapper.find(".mock-recent-import-card");
@@ -327,7 +327,7 @@ describe("RecentImports Component", () => {
     it("should emit view-all-imports when View All Imports button is clicked", async () => {
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -335,7 +335,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       const viewAllButton = wrapper.find(".recent-imports__view-all-btn");
@@ -349,7 +349,7 @@ describe("RecentImports Component", () => {
     it("should call useRecentImportsViewModel with correct props", () => {
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -357,7 +357,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       expect(useRecentImportsViewModel).toHaveBeenCalledWith({ workspace: mockWorkspace });
@@ -366,7 +366,7 @@ describe("RecentImports Component", () => {
     it("should handle workspace prop changes", async () => {
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -374,7 +374,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       const newWorkspace = { id: "workspace-2", name: "New Workspace" };
@@ -389,7 +389,7 @@ describe("RecentImports Component", () => {
     it("should apply responsive classes correctly", () => {
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -397,7 +397,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       // Check that the component has the main class for responsive styling
@@ -410,7 +410,7 @@ describe("RecentImports Component", () => {
       // This test verifies the component structure that supports responsive design
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -418,7 +418,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       // Verify that responsive elements are present
@@ -438,7 +438,7 @@ describe("RecentImports Component", () => {
     it("should have proper heading structure", () => {
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -446,7 +446,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       const title = wrapper.find(".recent-imports__title");
@@ -458,7 +458,7 @@ describe("RecentImports Component", () => {
 
       wrapper = mount(RecentImports, {
         props: { workspace: mockWorkspace },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: {
@@ -466,7 +466,7 @@ describe("RecentImports Component", () => {
             props: ["variant"],
           },
           RecentImportCard: true,
-        },
+        } },
       });
 
       const errorSection = wrapper.find(".recent-imports__error");

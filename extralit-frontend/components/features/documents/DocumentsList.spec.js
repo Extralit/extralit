@@ -24,16 +24,20 @@ vi.mock("./useDocumentsListViewModel", () => ({
   useDocumentsListViewModel: () => mockViewModel,
 }));
 
-// Mock base components
+// Mock base components (.vue modules expose the component as the default export)
 vi.mock("~/components/base/base-modal/BaseModal.vue", () => ({
-  name: "BaseModal",
-  template: '<div class="base-modal"><slot /></div>',
-  props: ["modalVisible", "modalTitle", "modalClass"],
+  default: {
+    name: "BaseModal",
+    template: '<div class="base-modal"><slot /></div>',
+    props: ["modalVisible", "modalTitle", "modalClass"],
+  },
 }));
 
 vi.mock("~/components/base/base-button/BaseButton.vue", () => ({
-  name: "BaseButton",
-  template: '<button class="base-button" @click="$emit(\'click\')"><slot /></button>',
+  default: {
+    name: "BaseButton",
+    template: '<button class="base-button" @click="$emit(\'click\')"><slot /></button>',
+  },
 }));
 
 describe("DocumentsList", () => {
@@ -45,16 +49,18 @@ describe("DocumentsList", () => {
         workspaceId: "test-workspace",
         ...props,
       },
-      stubs: {
-        BaseButton: true,
-        BaseModal: true,
-        BaseDate: true,
-        BaseTag: true,
-        svgicon: true,
-      },
-      mocks: {
-        $notification: {
-          error: vi.fn(),
+      global: {
+        stubs: {
+          BaseButton: true,
+          BaseModal: true,
+          BaseDate: true,
+          BaseTag: true,
+          svgicon: true,
+        },
+        mocks: {
+          $notification: {
+            error: vi.fn(),
+          },
         },
       },
     });

@@ -1,3 +1,7 @@
+// jest-mock-extended (used by @codescouts/test/jest) lazily calls jest.fn();
+// alias the jest global to vitest's vi so the mock factory works under Vitest.
+(globalThis as any).jest ??= vi;
+
 import { mock } from "@codescouts/test/jest";
 import { IFieldRepository } from "../services/IFieldRepository";
 import { GetDatasetFieldsGroupedUseCase } from "./get-dataset-fields-grouped-use-case";

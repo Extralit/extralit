@@ -1,23 +1,29 @@
 import { mount } from "@vue/test-utils";
 import ImportSummary from "./ImportSummary.vue";
 
-// Mock base components
+// Mock base components (.vue modules expose the component as the default export)
 vi.mock("~/components/base/base-icon/BaseIcon.vue", () => ({
-  name: "BaseIcon",
-  template: "<span>{{ iconName }}</span>",
-  props: ["iconName"],
+  default: {
+    name: "BaseIcon",
+    template: "<span>{{ iconName }}</span>",
+    props: ["iconName"],
+  },
 }));
 
 vi.mock("~/components/base/base-button/BaseButton.vue", () => ({
-  name: "BaseButton",
-  template: "<button><slot></slot></button>",
-  props: ["variant", "disabled"],
+  default: {
+    name: "BaseButton",
+    template: "<button><slot></slot></button>",
+    props: ["variant", "disabled"],
+  },
 }));
 
 vi.mock("~/components/base/base-simple-table/BaseSimpleTable.vue", () => ({
-  name: "BaseSimpleTable",
-  template: "<div>Table</div>",
-  props: ["data", "columns", "options"],
+  default: {
+    name: "BaseSimpleTable",
+    template: "<div>Table</div>",
+    props: ["data", "columns", "options"],
+  },
 }));
 
 describe("ImportSummary", () => {

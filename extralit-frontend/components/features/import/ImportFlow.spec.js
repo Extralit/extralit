@@ -1,12 +1,6 @@
 import { mount } from "@vue/test-utils";
 import ImportFlow from "./ImportFlow.vue";
 
-// Mock dependencies
-vi.mock("@nuxtjs/composition-api", () => ({
-  ref: vi.fn(),
-  watch: vi.fn(),
-}));
-
 describe("ImportFlow", () => {
   let wrapper;
 
@@ -40,37 +34,33 @@ describe("ImportFlow", () => {
     data: [{ reference: "test1", title: "Test Paper 1", filePaths: ["test1.pdf"] }],
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-
-    const compositionApi = require("@nuxtjs/composition-api");
-    compositionApi.ref.mockImplementation((initialValue) => ({
-      value: initialValue,
-    }));
-    compositionApi.watch.mockImplementation(() => {});
 
     wrapper = mount(ImportFlow, {
       props: {
         isVisible: true,
         workspace: mockWorkspace,
       },
-      stubs: {
-        BaseFlowModal: {
-          template: '<div class="mock-flow-modal"><slot :currentStep="0" /></div>',
-          props: ["visible", "title", "steps", "currentStep"],
+      global: {
+        stubs: {
+          BaseFlowModal: {
+            template: '<div class="mock-flow-modal"><slot :currentStep="0" /></div>',
+            props: ["visible", "title", "steps", "currentStep"],
+          },
+          ImportFileUpload: true,
+          ImportAnalysisTable: true,
+          ImportBatchProgress: true,
+          ImportSummary: true,
         },
-        ImportFileUpload: true,
-        ImportAnalysisTable: true,
-        ImportBatchProgress: true,
-        ImportSummary: true,
-      },
-      mocks: {
-        $t: (key, params) => `${key}${params ? JSON.stringify(params) : ""}`,
+        mocks: {
+          $t: (key, params) => `${key}${params ? JSON.stringify(params) : ""}`,
+        },
       },
     });
 
     // Set initial bibData
-    wrapper.setData({
+    await wrapper.setData({
       bibData: {
         fileName: "test.bib",
         parsedEntries: [],

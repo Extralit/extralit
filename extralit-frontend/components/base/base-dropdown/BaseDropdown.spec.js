@@ -17,7 +17,7 @@ afterEach(() => {
 
 describe("BaseDropdownComponent", () => {
   it("render the component", () => {
-    expect(wrapper.is(BaseDropdown)).toBe(true);
+    expect(wrapper.findComponent(BaseDropdown).exists()).toBe(true);
   });
   it("expect to show dropdown on click dropdown header", async () => {
     testIfVisibleOnClickOnDropdown(true);

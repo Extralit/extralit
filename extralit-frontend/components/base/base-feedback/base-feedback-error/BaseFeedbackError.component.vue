@@ -21,7 +21,8 @@ export default {
       required: true,
     },
     buttonLabels: {
-      type: Array | null,
+      type: Array,
+      default: null,
     },
     isLoading: {
       type: Boolean,

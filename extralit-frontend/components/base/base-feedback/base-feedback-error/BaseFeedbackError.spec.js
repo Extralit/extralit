@@ -3,7 +3,9 @@ import BaseFeedBackErrorComponent from "./BaseFeedbackError.component";
 
 let wrapper = null;
 const options = {
-  stubs: ["BaseButton"],
+  global: {
+    stubs: ["BaseButton"],
+  },
   props: {
     message: "This is the message to show in the feedbackError component",
     buttonLabels: null,
@@ -22,7 +24,7 @@ afterEach(() => {
 
 describe("BaseFeedbackErrorComponent", () => {
   it("render the component", async () => {
-    expect(wrapper.is(BaseFeedBackErrorComponent)).toBe(true);
+    expect(wrapper.findComponent(BaseFeedBackErrorComponent).exists()).toBe(true);
     isClassExist("feedback-wrapper");
     isMessageExistAndisMessageContentRendered();
     isClassExist("buttons-area", false);
@@ -76,7 +78,7 @@ const setButtonsPropsAndCheckIfButtonsAreRendered = async (buttonLabels) => {
 
 const isMessageExistAndisMessageContentRendered = () => {
   isClassExist("message");
-  expect(wrapper.find(".message").text()).toBe(options.propsData.message);
+  expect(wrapper.find(".message").text()).toBe(options.props.message);
 };
 
 const isClassExist = async (className, isExist = true) => {

@@ -3,7 +3,9 @@ import SearchLabelComponent from "./SearchLabel.component";
 
 let wrapper = null;
 const options = {
-  stubs: ["BaseIconWithBadge"],
+  global: {
+    stubs: ["BaseIconWithBadge"],
+  },
   props: {
     searchRef: "searchRef",
     placeholder: "placeholder",
@@ -26,9 +28,9 @@ afterEach(() => {
 
 describe("LabelSelectionComponent", () => {
   it("render the component", () => {
-    expect(wrapper.is(SearchLabelComponent)).toBe(true);
+    expect(wrapper.findComponent(SearchLabelComponent).exists()).toBe(true);
 
-    const textInput = wrapper.findComponent({ ref: "searchRef" });
+    const textInput = wrapper.find('input[type="text"]');
     expect(textInput.exists()).toBe(true);
 
     expect(textInput.attributes("type")).toBe("text");

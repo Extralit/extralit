@@ -1,14 +1,10 @@
 import { mount } from "@vue/test-utils";
 import ImportAnalysisTable from "./ImportAnalysisTable.vue";
+import { useImportAnalysisTableViewModel } from "./useImportAnalysisTableViewModel";
 
 // Mock dependencies inline to avoid hoisting issues
 vi.mock("ts-injecty", () => ({
   useResolve: vi.fn(() => mockUseCase),
-}));
-
-vi.mock("@nuxtjs/composition-api", () => ({
-  ref: vi.fn(),
-  watch: vi.fn(),
 }));
 
 vi.mock("./useImportAnalysisTableViewModel", () => ({
@@ -30,8 +26,6 @@ const mockUseCase = {
 
 describe("ImportAnalysisTable", () => {
   let wrapper;
-  let mockRef;
-  let mockWatch;
 
   const mockDataframeData = {
     schema: {
@@ -69,17 +63,6 @@ describe("ImportAnalysisTable", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    const compositionApi = require("@nuxtjs/composition-api");
-    mockRef = compositionApi.ref;
-    mockWatch = compositionApi.watch;
-
-    // Configure mock behavior
-    mockRef.mockImplementation((initialValue) => ({
-      value: initialValue,
-    }));
-
-    mockWatch.mockImplementation(() => {});
-
     wrapper = mount(ImportAnalysisTable, {
       props: {
         dataframeData: mockDataframeData,
@@ -87,7 +70,7 @@ describe("ImportAnalysisTable", () => {
         workspace: mockWorkspace,
         loading: false,
       },
-      stubs: {
+      global: { stubs: {
         BaseSpinner: true,
         BaseIcon: true,
         BaseButton: true,
@@ -95,7 +78,7 @@ describe("ImportAnalysisTable", () => {
           template: '<div class="mock-simple-table"></div>',
           props: ["data", "columns", "options"],
         },
-      },
+      } },
     });
   });
 
@@ -145,12 +128,11 @@ describe("ImportAnalysisTable", () => {
 
   describe("Emit Update", () => {
     it("should emit update with correct data structure", () => {
-      const emitSpy = vi.spyOn(wrapper.vm, "$emit");
-
       wrapper.vm.emitUpdate();
 
-      expect(emitSpy).toHaveBeenCalledWith(
-        "update",
+      const updateEvents = wrapper.emitted("update");
+      expect(updateEvents).toBeTruthy();
+      expect(updateEvents[updateEvents.length - 1][0]).toEqual(
         expect.objectContaining({
           confirmedDocuments: expect.any(Object),
           totalConfirmed: expect.any(Number),
@@ -161,11 +143,10 @@ describe("ImportAnalysisTable", () => {
     });
 
     it("should only include references with PDFs in confirmed documents", () => {
-      const emitSpy = vi.spyOn(wrapper.vm, "$emit");
-
       wrapper.vm.emitUpdate();
 
-      const emittedData = emitSpy.mock.calls[0][1];
+      const updateEvents = wrapper.emitted("update");
+      const emittedData = updateEvents[updateEvents.length - 1][0];
       expect(Object.keys(emittedData.confirmedDocuments)).toEqual(["test1"]);
       expect(emittedData.totalConfirmed).toBe(1);
       expect(emittedData.filteredDataframeData.data.length).toBe(1);
@@ -190,20 +171,19 @@ describe("ImportAnalysisTable", () => {
           workspace: mockWorkspace,
           loading: true,
         },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: true,
           BaseSimpleTable: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".loading-state").exists()).toBe(true);
     });
 
     it("should show error state when hasError is true", () => {
-      const mockViewModel = require("./useImportAnalysisTableViewModel").useImportAnalysisTableViewModel;
-      mockViewModel.mockReturnValue({
+      useImportAnalysisTableViewModel.mockReturnValue({
         isAnalyzing: false,
         hasError: true,
         errorMessage: "Test error",
@@ -221,12 +201,12 @@ describe("ImportAnalysisTable", () => {
           workspace: mockWorkspace,
           loading: false,
         },
-        stubs: {
+        global: { stubs: {
           BaseSpinner: true,
           BaseIcon: true,
           BaseButton: true,
           BaseSimpleTable: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".error-state").exists()).toBe(true);

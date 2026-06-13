@@ -5,11 +5,23 @@ vi.mock("ts-injecty", () => ({
   useResolve: vi.fn(),
 }));
 
-vi.mock("@nuxtjs/composition-api", () => ({
-  ref: vi.fn(),
-  useContext: vi.fn(),
-  useRoute: vi.fn(),
+// `ref` is now imported from "vue"; the viewModel still treats the route as a
+// ref-like object (route.value.params.id), so the mock preserves that shape.
+// `useRoute` is a Nuxt auto-import resolving to #app/composables/router; mock it
+// there so this spec runs in the happy-dom env (no parallel nuxt-env conflict).
+const { useRouteMock } = vi.hoisted(() => ({ useRouteMock: vi.fn() }));
+vi.mock("#app/composables/router", () => ({
+  useRoute: useRouteMock,
+  useRouter: vi.fn(),
 }));
+
+vi.mock("vue", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    ref: vi.fn(),
+  };
+});
 
 vi.mock("~/v1/infrastructure/services/useRoutes", () => ({
   useRoutes: vi.fn(),
@@ -31,17 +43,17 @@ describe("useImportConfigurationViewModel", () => {
   let mockImportHistoryDatasetBuilder;
   let mockImportHistoryDetails;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
 
-    // Mock composition API
-    const compositionApi = require("@nuxtjs/composition-api");
-    mockRef = compositionApi.ref;
+    // `ref` mock (now sourced from "vue")
+    const vue = await import("vue");
+    mockRef = vue.ref;
     mockRef.mockImplementation((initialValue) => ({
       value: initialValue,
     }));
 
-    // Mock route
+    // Mock route (ref-like, as the viewModel reads route.value.params.id)
     mockRoute = {
       value: {
         params: {
@@ -49,11 +61,11 @@ describe("useImportConfigurationViewModel", () => {
         },
       },
     };
-    compositionApi.useRoute.mockReturnValue(mockRoute);
+    useRouteMock.mockReturnValue(mockRoute);
 
     // Mock routes service
     mockGoToHome = vi.fn();
-    const useRoutes = require("~/v1/infrastructure/services/useRoutes");
+    const useRoutes = await import("~/v1/infrastructure/services/useRoutes");
     useRoutes.useRoutes.mockReturnValue({
       goToHome: mockGoToHome,
     });
@@ -62,20 +74,27 @@ describe("useImportConfigurationViewModel", () => {
     mockGetImportHistoryDetailsUseCase = {
       execute: vi.fn(),
     };
-    const tsInjecty = require("ts-injecty");
+    const tsInjecty = await import("ts-injecty");
     tsInjecty.useResolve.mockReturnValue(mockGetImportHistoryDetailsUseCase);
 
     // Mock builder
     mockImportHistoryDatasetBuilder = {
       build: vi.fn(),
     };
-    const ImportHistoryDatasetBuilder = require("~/v1/domain/entities/import/ImportHistoryDatasetBuilder");
-    ImportHistoryDatasetBuilder.ImportHistoryDatasetBuilder.mockImplementation(() => mockImportHistoryDatasetBuilder);
+    const { ImportHistoryDatasetBuilder } = await import(
+      "~/v1/domain/entities/import/ImportHistoryDatasetBuilder"
+    );
+    // Regular function (not arrow) so the mock is `new`-able under vitest v4.
+    ImportHistoryDatasetBuilder.mockImplementation(function () {
+      return mockImportHistoryDatasetBuilder;
+    });
 
     // Mock ImportHistoryDetails
     mockImportHistoryDetails = {};
-    const ImportHistoryDetails = require("~/v1/domain/entities/import/ImportHistoryDetails");
-    ImportHistoryDetails.ImportHistoryDetails.mockImplementation(() => mockImportHistoryDetails);
+    const { ImportHistoryDetails } = await import("~/v1/domain/entities/import/ImportHistoryDetails");
+    ImportHistoryDetails.mockImplementation(function () {
+      return mockImportHistoryDetails;
+    });
 
     // Mock console.error to avoid noise in tests
     vi.spyOn(console, "error").mockImplementation(() => {});

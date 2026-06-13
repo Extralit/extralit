@@ -1,3 +1,4 @@
+// @vitest-environment nuxt
 import { shallowMount } from "@vue/test-utils";
 import AnnotationModePage from "./index";
 import AnnotationPage from "@/layouts/AnnotationPage";
@@ -26,18 +27,20 @@ const $route = {
 describe("AnnotationModePage", () => {
   it("render the layout while the data are in fetching state", () => {
     const options = {
-      stubs: [
-        "HeaderFeedbackTask",
-        "SidebarFeedbackTaskContainer",
-        "RecordFeedbackTaskAndQuestionnaire",
-        "DatasetFilters",
-        "PaginationFeedbackTask",
-        "BaseModal",
-        "BaseLoading",
-        "PersistentStorageBanner",
-      ],
-      mocks: {
-        $route,
+      global: {
+        stubs: [
+          "HeaderFeedbackTask",
+          "SidebarFeedbackTaskContainer",
+          "RecordFeedbackTaskAndQuestionnaire",
+          "DatasetFilters",
+          "PaginationFeedbackTask",
+          "BaseModal",
+          "BaseLoading",
+          "PersistentStorageBanner",
+        ],
+        mocks: {
+          $route,
+        },
       },
     };
 
@@ -47,7 +50,7 @@ describe("AnnotationModePage", () => {
 
     const wrapper = shallowMount(AnnotationModePage, options);
 
-    expect(wrapper.is(AnnotationModePage)).toBe(true);
+    expect(wrapper.findComponent(AnnotationModePage).exists()).toBe(true);
 
     const headerComponentWrapper = wrapper.findComponent(AnnotationPage);
 
@@ -55,18 +58,20 @@ describe("AnnotationModePage", () => {
   });
   it("render the layout when data are fetched and no error", () => {
     const options = {
-      stubs: [
-        "HeaderFeedbackTask",
-        "SidebarFeedbackTaskContainer",
-        "RecordFeedbackTaskAndQuestionnaire",
-        "DatasetFilters",
-        "PaginationFeedbackTask",
-        "BaseModal",
-        "BaseLoading",
-        "PersistentStorageBanner",
-      ],
-      mocks: {
-        $route,
+      global: {
+        stubs: [
+          "HeaderFeedbackTask",
+          "SidebarFeedbackTaskContainer",
+          "RecordFeedbackTaskAndQuestionnaire",
+          "DatasetFilters",
+          "PaginationFeedbackTask",
+          "BaseModal",
+          "BaseLoading",
+          "PersistentStorageBanner",
+        ],
+        mocks: {
+          $route,
+        },
       },
     };
 
@@ -76,7 +81,7 @@ describe("AnnotationModePage", () => {
 
     const wrapper = shallowMount(AnnotationModePage, options);
 
-    expect(wrapper.is(AnnotationModePage)).toBe(true);
+    expect(wrapper.findComponent(AnnotationModePage).exists()).toBe(true);
     const headerComponentWrapper = wrapper.findComponent(AnnotationPage);
 
     expect(headerComponentWrapper.exists()).toBeTruthy();

@@ -16,13 +16,17 @@ vi.mock("ts-injecty", () => ({
   useResolve: vi.fn(() => mockGetImportHistoryUseCase),
 }));
 
-// Mock Nuxt composition API
-vi.mock("@nuxtjs/composition-api", () => ({
-  ref: vi.fn(),
-  computed: vi.fn(),
-  watch: vi.fn(),
-  onMounted: vi.fn(),
-}));
+// Mock Vue reactivity/lifecycle primitives (migrated from @nuxtjs/composition-api).
+vi.mock("vue", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    ref: vi.fn(),
+    computed: vi.fn(),
+    watch: vi.fn(),
+    onMounted: vi.fn(),
+  };
+});
 
 describe("useRecentImportsViewModel", () => {
   let mockProps;
@@ -54,16 +58,16 @@ describe("useRecentImportsViewModel", () => {
     },
   ];
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks
     vi.clearAllMocks();
 
     // Get the mocked functions
-    const compositionApi = require("@nuxtjs/composition-api");
-    mockRef = compositionApi.ref;
-    mockComputed = compositionApi.computed;
-    mockWatch = compositionApi.watch;
-    mockOnMounted = compositionApi.onMounted;
+    const vue = await import("vue");
+    mockRef = vue.ref;
+    mockComputed = vue.computed;
+    mockWatch = vue.watch;
+    mockOnMounted = vue.onMounted;
 
     // Mock reactive refs
     mockRecentImports = { value: [] };
