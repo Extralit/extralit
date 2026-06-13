@@ -11,15 +11,20 @@
   </div>
 </template>
 
+<script setup>
+definePageMeta({
+  middleware(to) {
+    if (to.params.repoId === "datasets") {
+      return navigateTo("/");
+    }
+  },
+});
+</script>
+
 <script>
 import { useNewDatasetViewModel } from "@/pages/useNewDatasetViewModel";
 
 export default {
-  middleware({ route, redirect }) {
-    if (route.params.id === "datasets") {
-      redirect("/");
-    }
-  },
   mounted() {
     const repoId = this.$route.params.repoId;
     this.getNewHfDatasetByRepoId(decodeURIComponent(repoId));

@@ -94,4 +94,22 @@ export default defineNuxtConfig({
   },
 
   build: { transpile: ["pdfjs-dist", "tabulator-tables"] },
+
+  hooks: {
+    "pages:extend"(pages) {
+      // Remove co-located non-page files that Nuxt's file router picks up
+      // (viewmodels, specs, etc.). Only .vue files should become routes.
+      function filterNonVue(list: typeof pages) {
+        for (let i = list.length - 1; i >= 0; i--) {
+          const page = list[i];
+          if (page.file && !page.file.endsWith(".vue")) {
+            list.splice(i, 1);
+          } else if (page.children?.length) {
+            filterNonVue(page.children);
+          }
+        }
+      }
+      filterNonVue(pages);
+    },
+  },
 });

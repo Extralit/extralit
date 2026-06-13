@@ -42,17 +42,21 @@
   </div>
 </template>
 
+<script setup lang="ts">
+definePageMeta({
+  middleware(to) {
+    if (!to.params.id) {
+      return navigateTo("/");
+    }
+  },
+});
+</script>
+
 <script lang="ts">
 import { type ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 import { useImportConfigurationViewModel } from "./useImportConfigurationViewModel";
 
 export default {
-  middleware({ route, redirect }) {
-    // Validate that we have an import ID
-    if (!route.params.id) {
-      redirect("/");
-    }
-  },
   async mounted() {
     const importId = this.getImportId();
     if (importId) {
