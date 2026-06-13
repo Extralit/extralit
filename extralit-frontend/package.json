@@ -21,7 +21,6 @@
     },
     "dependencies": {
         "@codescouts/events": "^1.0.2",
-        "@jonnytran/vue-pdf-viewer": "^0.2.5",
         "@nuxtjs/i18n": "^10.4.0",
         "@orcid/bibtex-parse-js": "^0.0.25",
         "@pinia/nuxt": "^0.11.3",
@@ -88,5 +87,11 @@
     },
     "engines": {
         "node": ">=20.0.0"
+    },
+    "overrides": {
+        "@intlify/shared": "11.4.5",
+        "@intlify/core-base": "11.4.5",
+        "@intlify/message-compiler": "11.4.5",
+        "@intlify/core": "11.4.5"
     }
 }
