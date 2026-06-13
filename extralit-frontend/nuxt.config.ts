@@ -83,6 +83,18 @@ export default defineNuxtConfig({
     // Allow reaching the dev server by arbitrary hostnames (e.g. a containerised
     // browser on the same Docker network). Dev-only; the prod build is a static SPA.
     server: { allowedHosts: true },
+    // Pre-bundle deps that are only reached lazily from the home/markdown views.
+    // Without this, Vite discovers them at runtime on first navigation and forces
+    // a re-optimize + full page reload, which flakes open tabs and the e2e suite.
+    optimizeDeps: {
+      include: [
+        "marked",
+        "marked-highlight",
+        "marked-katex-extension",
+        "highlight.js",
+        "dompurify",
+      ],
+    },
     css: {
       preprocessorOptions: {
         scss: {
