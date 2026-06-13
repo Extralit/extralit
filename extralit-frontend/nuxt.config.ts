@@ -1,289 +1,89 @@
-import Mode from "frontmatter-markdown-loader/mode";
-import { NuxtConfig } from "@nuxt/types";
+import { fileURLToPath } from "node:url";
+import { defineNuxtConfig } from "nuxt/config";
+import svgLoader from "vite-svg-loader";
 import pkg from "./package.json";
 
-const LOCAL_ENVIRONMENT = "http://0.0.0.0:6900";
-const BASE_URL = process.env.API_BASE_URL ?? LOCAL_ENVIRONMENT;
-const DIST_FOLDER = process.env.DIST_FOLDER || "dist";
+const BASE_URL = process.env.API_BASE_URL ?? "http://0.0.0.0:6900";
 
-const config: NuxtConfig = {
-  // Disable server-side rendering (https://go.nuxtjs.dev/ssr-mode)
+export default defineNuxtConfig({
   ssr: false,
   telemetry: false,
-  generate: {
-    dir: DIST_FOLDER,
-  },
+  srcDir: ".",
 
-  // Global page headers (https://go.nuxtjs.dev/config-head)
-  head: {
-    title: "Extralit",
-    meta: [
-      { charset: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { hid: "description", name: "description", content: "" },
-    ],
-    link: [
-      { rel: "icon", type: "image/x-icon", href: "favicon.ico" },
-      {
-        rel: "apple-touch-icon",
-        sizes: "180x180",
-        href: "apple-touch-icon.png",
-      },
-      { rel: "icon", sizes: "32x32", href: "favicon-32x32.png" },
-      { rel: "icon", sizes: "16x16", href: "favicon-16x16.png" },
-      { rel: "manifest", href: "site.webmanifest" },
-    ],
-    script: [...(process.env.NODE_ENV === "development" ? [{ src: "http://localhost:8098", defer: true }] : [])],
-  },
-
-  // Global CSS (https://go.nuxtjs.dev/config-css)
-  css: ["~assets/styles.scss"],
-
-  // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
-  plugins: [{ src: "~/plugins" }],
-
-  // Auto import components (https://go.nuxtjs.dev/config-components)
-  components: [
-    {
-      path: "~/components",
-      pattern: "**/*.vue",
-      pathPrefix: false,
-      level: 1,
+  app: {
+    baseURL: process.env.BASE_URL ?? "/",
+    head: {
+      title: "Extralit",
+      meta: [
+        { charset: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1" },
+        { hid: "description", name: "description", content: "" },
+      ],
+      link: [
+        { rel: "icon", type: "image/x-icon", href: "favicon.ico" },
+        { rel: "apple-touch-icon", sizes: "180x180", href: "apple-touch-icon.png" },
+        { rel: "icon", sizes: "32x32", href: "favicon-32x32.png" },
+        { rel: "icon", sizes: "16x16", href: "favicon-16x16.png" },
+        { rel: "manifest", href: "site.webmanifest" },
+      ],
     },
-  ],
+  },
 
-  // Modules for dev and build (recommended) (https://go.nuxtjs.dev/config-modules)
-  buildModules: [
-    // https://go.nuxtjs.dev/typescript
-    "@nuxt/typescript-build",
-    "@nuxtjs/composition-api/module",
-    [
-      "@pinia/nuxt",
-      {
-        disableVuex: false,
-      },
-    ],
-    [
-      "nuxt-compress",
-      {
-        gzip: {
-          cache: true,
-        },
-        brotli: {
-          threshold: 10240,
-        },
-      },
-    ],
-  ],
+  css: ["~/assets/styles.scss"],
 
-  // Modules (https://go.nuxtjs.dev/config-modules)
-  modules: [
-    "@nuxtjs/style-resources",
-    "@nuxtjs/axios",
-    "@nuxtjs/auth-next",
-    [
-      "nuxt-highlightjs",
-      {
-        style: "obsidian",
-      },
-    ],
-    "@nuxtjs/i18n",
-  ],
+  components: [{ path: "~/components", pathPrefix: false }],
+
+  modules: ["@pinia/nuxt", "@nuxtjs/i18n"],
 
   i18n: {
+    // Locale files live in ./translation/*.js (kept from the Nuxt 2 layout).
+    // restructureDir "." disables the v9+ default of nesting under ./i18n/.
+    restructureDir: ".",
+    langDir: "translation",
     locales: [
-      {
-        code: "en",
-        name: "English",
-        file: "en.js",
-      },
-      {
-        code: "de",
-        name: "Deutsch",
-        file: "de.js",
-      },
-      {
-        code: "es",
-        name: "Español",
-        file: "es.js",
-      },
-      {
-        code: "ja",
-        name: "日本語",
-        file: "ja.js",
-      },
+      { code: "en", name: "English", file: "en.js" },
+      { code: "de", name: "Deutsch", file: "de.js" },
+      { code: "es", name: "Español", file: "es.js" },
+      { code: "ja", name: "日本語", file: "ja.js" },
     ],
     detectBrowserLanguage: false,
-    vueI18n: {
-      fallbackLocale: "en",
-    },
     lazy: true,
-    langDir: "translation/",
     defaultLocale: "en",
     strategy: "no_prefix",
+    bundle: { optimizeTranslationDirective: false },
+    vueI18n: "./i18n.config.ts",
   },
 
-  // Axios module configuration (https://go.nuxtjs.dev/config-axios)
-  axios: {
-    proxy: true,
-    browserBaseURL: "api",
+  runtimeConfig: {
+    public: {
+      clientVersion: pkg.version,
+      communityLink:
+        "https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw",
+      documentationSite: "https://docs.extralit.ai/",
+      documentationPersistentStorage:
+        "https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",
+    },
   },
 
-  proxy: {
-    "/api/": {
-      target: BASE_URL,
-    },
-    "/share-your-progress": {
-      target: BASE_URL,
+  nitro: {
+    compressPublicAssets: true,
+    devProxy: {
+      "/api/": { target: BASE_URL, changeOrigin: true },
+      "/share-your-progress": { target: BASE_URL, changeOrigin: true },
     },
   },
-  // Build Configuration (https://go.nuxtjs.dev/config-build)
-  build: {
-    cssSourceMap: false,
-    cache: process.env.NODE_ENV === "production",
-    parallel: true,
-    quiet: true,
-    analyze: false,
-    extend(config) {
-      config.resolve.alias.vue = "vue/dist/vue.common";
-      config.module.rules.push({
-        test: /\.md$/,
-        loader: "frontmatter-markdown-loader",
-        options: {
-          mode: [Mode.BODY],
-        },
-      });
-      config.module.rules.push({
-        test: /\.mjs$/,
-        include: /node_modules/,
-        type: "javascript/auto",
-        use: {
-          loader: "babel-loader",
-          options: {
-            presets: ["@babel/preset-env"],
-            plugins: [
-              ["@babel/plugin-transform-private-methods", { loose: true }],
-              ["@babel/plugin-transform-class-properties", { loose: true }],
-            ],
-            compact: false,
-          },
-        },
-      });
-      config.module.rules.push({
-        test: /\.js$/,
-        include: /node_modules\/tabulator-tables/,
-        use: {
-          loader: "babel-loader",
-          options: {
-            presets: ["@babel/preset-env"],
-            plugins: [
-              ["@babel/plugin-transform-private-methods", { loose: true }],
-              ["@babel/plugin-transform-class-properties", { loose: true }],
-            ],
-            compact: false,
-          },
-        },
-      });
-    },
-    postcss: {
-      postcssOptions: {
-        order: "presetEnvAndCssnanoLast",
-        plugins: {
-          cssnano:
-            process.env.NODE_ENV === "production"
-              ? {
-                  preset: [
-                    "default",
-                    {
-                      discardComments: {
-                        removeAll: true,
-                      },
-                    },
-                  ],
-                }
-              : false,
+
+  vite: {
+    plugins: [svgLoader()],
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: '@use "abstract" as *;',
+          loadPaths: [fileURLToPath(new URL("./assets/scss", import.meta.url))],
         },
       },
     },
-    babel: {
-      plugins: [
-        ["@babel/plugin-transform-private-methods", { loose: true }],
-        ["@babel/plugin-transform-class-properties", { loose: true }],
-        ["@babel/plugin-transform-private-property-in-object", { loose: true }],
-      ],
-      presets: [["@babel/preset-env", { targets: { node: "current" }, loose: true }]],
-    },
-    transpile: ["pdfjs-dist"],
-    terser: {
-      terserOptions: {
-        keep_classnames: true,
-        keep_fnames: true,
-        compress: {
-          drop_console: process.env.NODE_ENV === "production",
-        },
-      },
-    },
-    extractCSS: process.env.NODE_ENV === "production",
-    splitChunks: {
-      pages: false,
-      commons: false,
-      layouts: false,
-    },
-    optimization: {
-      splitChunks: {
-        name: false,
-      },
-    },
-    filenames: {
-      css: ({ isDev }) => (isDev ? "[name].css" : "[contenthash].css"),
-    },
-    publicPath: "/_nuxt/",
   },
 
-  webpack: {
-    devMiddleware: {
-      stats: "minimal",
-    },
-    watchOptions: {
-      aggregateTimeout: 300,
-      poll: 1000,
-      ignored: /node_modules/,
-    },
-  },
-
-  // https://github.com/nuxt-community/style-resources-module
-  styleResources: {
-    scss: "./assets/scss/abstract.scss",
-  },
-
-  loading: false,
-
-  auth: {
-    strategies: {
-      local: {
-        endpoints: {
-          logout: false,
-          user: false,
-          login: false,
-        },
-      },
-    },
-    cookie: false,
-    resetOnError: true,
-    redirect: { login: "/sign-in", logout: "/sign-in" },
-  },
-
-  router: {
-    middleware: ["route-guard", "me"],
-    base: process.env.BASE_URL ?? "/",
-  },
-
-  publicRuntimeConfig: {
-    clientVersion: pkg.version,
-    communityLink: "https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw",
-    documentationSite: "https://docs.extralit.ai/",
-    documentationPersistentStorage:
-      "https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",
-  },
-};
-export default config;
+  build: { transpile: ["pdfjs-dist", "tabulator-tables"] },
+});
