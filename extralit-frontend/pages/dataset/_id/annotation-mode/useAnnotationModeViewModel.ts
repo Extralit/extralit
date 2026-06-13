@@ -1,4 +1,4 @@
-import { computed, onBeforeMount, ref, useRouter, watch } from "@nuxtjs/composition-api";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import { useResolve } from "ts-injecty";
 import { useDatasetViewModel } from "../useDatasetViewModel";
 import { GetDatasetByIdUseCase } from "@/v1/domain/usecases/get-dataset-by-id-use-case";

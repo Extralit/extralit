@@ -3,7 +3,7 @@
  * Handles sequential batch upload logic with job status polling
  */
 
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "@nuxtjs/composition-api";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useResolve } from "ts-injecty";
 import type { ImportResultSummary } from "./types";
 import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";

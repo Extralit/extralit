@@ -1,8 +1,7 @@
-import { useContext } from "@nuxtjs/composition-api";
 import { useLanguageChanger } from "~/v1/infrastructure/services";
 
 export const useUserSettingsLanguageViewModel = () => {
-  const context = useContext();
+  const context = { app: { i18n: useNuxtApp().$i18n } };
   const { change, languages } = useLanguageChanger(context);
 
   return {

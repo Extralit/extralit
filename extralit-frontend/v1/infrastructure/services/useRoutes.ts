@@ -1,4 +1,3 @@
-import { useContext, useRoute, useRouter } from "@nuxtjs/composition-api";
 import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
 
 type KindOfParam =
@@ -28,12 +27,13 @@ export const ROUTES = {
 };
 
 export const useRoutes = () => {
-  const context = useContext();
   const router = useRouter();
   const route = useRoute();
 
   const getPreviousRoute = (): string => {
-    return context.from.value.fullPath;
+    // Nuxt 2's context.from is unavailable in Nuxt 4; the previous route is
+    // tracked by vue-router's history state (the "back" entry).
+    return (router.options.history.state.back as string) ?? "";
   };
 
   const previousRouteMatchWith = (value: string): boolean => {

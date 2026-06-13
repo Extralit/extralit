@@ -3,7 +3,7 @@
  * Gradual migration to Composition API while maintaining existing structure
  */
 
-import { ref, watch, onMounted, computed } from "@nuxtjs/composition-api";
+import { ref, watch, onMounted, computed } from "vue";
 import { useResolve } from "ts-injecty";
 import type { BibliographyData, CsvData } from "./types";
 import type { CSVConfig } from "~/v1/domain/services/IFileParsingService";

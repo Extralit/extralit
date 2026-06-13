@@ -3,7 +3,7 @@
  * Handles reactive state management for recent imports data
  */
 
-import { ref, computed, watch, onMounted } from "@nuxtjs/composition-api";
+import { ref, computed, watch, onMounted } from "vue";
 import { useResolve } from "ts-injecty";
 import { GetImportHistoryUseCase } from "~/v1/domain/usecases/get-import-history-use-case";
 import type { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";

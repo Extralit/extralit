@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { ref, useFetch, computed, watch, useRoute, useRouter } from "@nuxtjs/composition-api";
+import { ref, computed, watch, onMounted } from "vue";
 import { useRoutes, useFocusTab } from "~/v1/infrastructure/services";
 import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
@@ -69,7 +69,7 @@ export const useHomeViewModel = () => {
     await onLoadDatasets();
   });
 
-  useFetch(async () => {
+  onMounted(async () => {
     loadDatasets();
     const workspaces = await getWorkspacesUseCase.execute();
     saveWorkspaces(workspaces);

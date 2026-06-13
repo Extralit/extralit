@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { ref, useContext, useRoute } from "@nuxtjs/composition-api";
+import { ref } from "vue";
 import {
   GetImportHistoryDetailsUseCase,
   ImportHistoryDetailsResponse,

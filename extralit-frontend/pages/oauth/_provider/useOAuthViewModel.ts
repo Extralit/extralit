@@ -1,4 +1,4 @@
-import { useFetch, useRoute } from "@nuxtjs/composition-api";
+import { onMounted } from "vue";
 import { useResolve } from "ts-injecty";
 import { ProviderType } from "~/v1/domain/entities/oauth/OAuthProvider";
 import { OAuthLoginUseCase } from "~/v1/domain/usecases/oauth-login-use-case";
@@ -13,7 +13,7 @@ export const useOAuthViewModel = () => {
   const oauthLoginUseCase = useResolve(OAuthLoginUseCase);
   const { pop } = useLocalStorage();
 
-  useFetch(async () => {
+  onMounted(async () => {
     await tryLogin();
   });
 

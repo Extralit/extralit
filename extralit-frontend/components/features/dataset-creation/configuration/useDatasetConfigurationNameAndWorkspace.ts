@@ -1,6 +1,5 @@
-import { useFetch } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
-import { ref } from "vue-demi";
+import { ref, onMounted } from "vue";
 import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { GetImportCompatibleDatasetsUseCase } from "~/v1/domain/usecases/get-import-compatible-datasets-use-case";
 import { BackendDataset } from "~/v1/infrastructure/types/dataset";
@@ -15,7 +14,7 @@ export const useDatasetConfigurationNameAndWorkspace = () => {
   const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
   const getImportCompatibleDatasetsUseCase = useResolve(GetImportCompatibleDatasetsUseCase);
 
-  useFetch(async () => {
+  onMounted(async () => {
     workspaces.value = await getWorkspacesUseCase.execute();
   });
 
