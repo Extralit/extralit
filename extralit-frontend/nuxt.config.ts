@@ -97,8 +97,11 @@ export default defineNuxtConfig({
 
   hooks: {
     "pages:extend"(pages) {
-      // Remove co-located non-page files that Nuxt's file router picks up
-      // (viewmodels, specs, etc.). Only .vue files should become routes.
+      // Strip co-located non-page files (useXViewModel.ts, *.spec.js) that Nuxt's
+      // file router would otherwise register as routes. Deliberate decision: this
+      // project's domain-driven layout co-locates a page's view-model and spec next
+      // to its .vue under pages/, so we filter the route table rather than relocate
+      // the files into composables/ — co-location is the intended structure, not debt.
       function filterNonVue(list: typeof pages) {
         for (let i = list.length - 1; i >= 0; i--) {
           const page = list[i];

@@ -52,7 +52,9 @@ module.exports = {
   globals: {
     $nuxt: true,
     vi: true,
-    // Nuxt 4 auto-imports (no @nuxt/eslint module yet; declare the ones used in-app)
+    // Nuxt 4 auto-imports, hand-declared to satisfy no-undef. This list can drift;
+    // the real fix is adopting `@nuxt/eslint` (flat config), which auto-generates
+    // these globals from the build manifest. Tracked as follow-up, not done here.
     defineNuxtPlugin: "readonly",
     defineNuxtRouteMiddleware: "readonly",
     definePageMeta: "readonly",
