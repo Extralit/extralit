@@ -33,7 +33,7 @@
           </div>
         </span>
       </div>
-      <component :is="'style'" v-html="highlightStyles" />
+      <component :is="'style'">{{ highlightStyles }}</component>
     </div>
   </div>
 </template>

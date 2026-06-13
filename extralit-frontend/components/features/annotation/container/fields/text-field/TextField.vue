@@ -17,7 +17,7 @@
       <MarkdownRenderer v-else-if="useMarkdown" :markdown="fieldText" />
       <Sandbox v-else-if="isHTML" :content="fieldText" />
       <div :class="classes" v-else v-html="fieldText" />
-      <component :is="'style'" :key="id" v-html="highlightStyles" />
+      <component :is="'style'">{{ highlightStyles }}</component>
     </div>
   </div>
 </template>

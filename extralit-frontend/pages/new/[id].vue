@@ -4,7 +4,7 @@
 definePageMeta({
   middleware(to) {
     if (to.params.id) {
-      return navigateTo(encodeURIComponent(to.params.id as string));
+      return navigateTo(`/new/${encodeURIComponent(to.params.id as string)}`);
     } else {
       return navigateTo("/");
     }

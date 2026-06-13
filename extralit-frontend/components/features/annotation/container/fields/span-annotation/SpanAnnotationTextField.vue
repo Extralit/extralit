@@ -47,7 +47,7 @@
         :entity-name="selectedEntity.text"
         :message="$t('spanAnnotation.shortcutHelper')"
       />
-      <component :is="'style'" v-html="highlightStyles" />
+      <component :is="'style'">{{ highlightStyles }}</component>
     </div>
   </div>
 </template>
