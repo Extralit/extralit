@@ -192,7 +192,7 @@ export default {
   transition: all 0.3s ease-out;
 }
 
-.filterAppear-enter,
+.filterAppear-enter-from,
 .filterAppear-leave-to {
   opacity: 0;
   transform: translateY(-4px);

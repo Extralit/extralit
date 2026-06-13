@@ -198,12 +198,12 @@ export default {
   margin-top: 0;
 }
 
-.modal-enter,
+.modal-enter-from,
 .modal-leave-active {
   opacity: 0;
 }
 
-.modal-enter .modal-container,
+.modal-enter-from .modal-container,
 .modal-leave-active .modal-container {
   transform: scale(0.99);
 }

@@ -458,12 +458,12 @@ export default {
   transition: opacity 0.3s ease;
 }
 
-.flow-modal-enter,
+.flow-modal-enter-from,
 .flow-modal-leave-to {
   opacity: 0;
 }
 
-.flow-modal-enter .flow-modal-container,
+.flow-modal-enter-from .flow-modal-container,
 .flow-modal-leave-to .flow-modal-container {
   transform: scale(0.95);
 }

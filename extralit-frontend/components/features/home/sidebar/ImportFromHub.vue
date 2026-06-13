@@ -127,7 +127,7 @@ $color-error: var(--color-brand);
 .slide-right-leave-active {
   transition: transform 0.3s;
 }
-.slide-right-enter,
+.slide-right-enter-from,
 .slide-right-leave-to {
   transform: translateX(50px);
 }

@@ -386,7 +386,7 @@ $toast-colors: map-merge(
   transition: opacity 150ms ease-out;
 }
 
-.fade-enter,
+.fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
