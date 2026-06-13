@@ -68,7 +68,7 @@ export const useSpanAnnotationTextFieldViewModel = (props: {
     const mountPoint = document.createElement("div");
     app.mount(mountPoint);
 
-    return mountPoint.firstElementChild;
+    return { element: mountPoint.firstElementChild, unmount: () => app.unmount() };
   };
 
   const updateSelectedEntity = () => {
