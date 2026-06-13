@@ -38,8 +38,6 @@
 </template>
 
 <script>
-import "assets/icons/link";
-import "assets/icons/chevron-right";
 export default {
   props: {
     isExpanded: {

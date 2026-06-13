@@ -18,7 +18,6 @@
 const checkedPosition = 70;
 const initialPosition = "-1px";
 
-import "assets/icons/check";
 export default {
   props: {
     name: String,

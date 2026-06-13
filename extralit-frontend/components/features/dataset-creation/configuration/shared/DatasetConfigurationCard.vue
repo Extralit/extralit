@@ -40,7 +40,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/draggable";
 export default {
   props: {
     item: {

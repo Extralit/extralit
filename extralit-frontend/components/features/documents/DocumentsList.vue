@@ -115,9 +115,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/document";
-import "assets/icons/external-link";
-import "assets/icons/info";
 
 import { useDocumentsListViewModel } from "./useDocumentsListViewModel";
 

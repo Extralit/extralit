@@ -156,9 +156,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/close";
-import "assets/icons/danger";
 import type { ImportUploadData } from "./types";
 import { useImportBatchProgressViewModel } from "./useImportBatchProgressViewModel";
 

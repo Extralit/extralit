@@ -25,7 +25,6 @@
 </template>
 
 <script>
-import "assets/icons/change-height";
 export default {
   data() {
     return {

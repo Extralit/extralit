@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import "assets/icons/close";
 export default {
   props: {
     content: {

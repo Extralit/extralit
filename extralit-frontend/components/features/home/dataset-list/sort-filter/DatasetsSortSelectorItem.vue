@@ -35,9 +35,6 @@
 </template>
 
 <script>
-import "assets/icons/arrow-up";
-import "assets/icons/arrow-down";
-import "assets/icons/chevron-down";
 export default {
   props: {
     options: {

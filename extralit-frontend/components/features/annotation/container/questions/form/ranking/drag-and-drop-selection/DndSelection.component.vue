@@ -92,7 +92,6 @@
 </template>
 
 <script>
-import "assets/icons/draggable";
 
 export default {
   name: "DndSelectionComponent",

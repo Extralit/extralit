@@ -124,7 +124,6 @@
 
 <script>
 import { useExportToHubViewModel } from "./useExportToHubViewModel";
-import "assets/icons/export";
 
 export default {
   props: {

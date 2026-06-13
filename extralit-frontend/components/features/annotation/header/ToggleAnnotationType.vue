@@ -24,8 +24,6 @@
 </template>
 
 <script>
-import "assets/icons/focus-mode";
-import "assets/icons/bulk-mode";
 export default {
   props: {
     recordCriteria: {

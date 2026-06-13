@@ -50,7 +50,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/close";
 export default {
   props: {
     question: {

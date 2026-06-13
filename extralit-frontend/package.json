@@ -7,7 +7,6 @@
         "build": "nuxi build",
         "start": "nuxi preview",
         "generate": "nuxi generate",
-        "generate-icons": "vsvg -s ./static/icons -t ./assets/icons --tpl ./assets/icon-template.js.tmp",
         "lint": "eslint --ext .ts,.js,.vue --ignore-path .eslintignore . --quiet",
         "lint:fix": "npm run lint -- --fix",
         "format": "prettier --write \"**/*.{ts,vue}\"",

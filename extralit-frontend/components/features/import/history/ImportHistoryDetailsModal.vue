@@ -60,9 +60,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/close";
-import "assets/icons/danger";
-import "assets/icons/document";
 
 import { useResolve } from "ts-injecty";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";

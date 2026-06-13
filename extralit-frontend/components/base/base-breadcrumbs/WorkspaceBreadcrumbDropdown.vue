@@ -51,7 +51,6 @@
 <script lang="ts">
 import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
-import "assets/icons/chevron-down";
 
 export default {
   props: {

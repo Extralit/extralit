@@ -35,10 +35,6 @@
 </template>
 
 <script>
-import "assets/icons/close";
-import "assets/icons/arrow-up";
-import "assets/icons/arrow-down";
-import "assets/icons/chevron-down";
 export default {
   props: {
     category: {

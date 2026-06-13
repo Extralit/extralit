@@ -37,7 +37,6 @@
 
 <script>
 import { useResponseFilterViewModel } from "./useResponseFilterViewModel";
-import "assets/icons/chevron-left";
 
 export default {
   props: {

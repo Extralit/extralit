@@ -29,9 +29,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/import";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {

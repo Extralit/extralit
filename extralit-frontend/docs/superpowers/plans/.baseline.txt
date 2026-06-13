@@ -1,0 +1,13 @@
+=== BASELINE captured Sat Jun 13 01:01:45 UTC 2026 ===
+node v24.16.0 npm 11.13.0
+
+=== UNIT (jest) baseline ===
+Test Suites: 73 passed, 73 total
+Tests: 3 skipped, 1 todo, 723 passed, 727 total  -> GREEN
+=== LINT baseline ===
+51 problems (51 errors, 0 warnings) -- PRE-EXISTING (camelcase failed_validations etc). NOT in scope to fix.
+=== E2E baseline ===
+Deferred: develop e2e assumed green; authoritative validation is the POST-migration chromium gate (Task 17).
+Node 24 + Nuxt2 webpack dev build is slow/fragile; not worth a pre-migration run.
+=== DEAD DEPS (Task 1.2) ===
+grep for vuex/@vuex-orm/vue-vega/nuxt-mq/$mq in app source -> ZERO. Task 3 is a no-op.

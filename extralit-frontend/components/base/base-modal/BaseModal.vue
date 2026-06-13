@@ -17,7 +17,6 @@
 </template>
 
 <script>
-import "assets/icons/close";
 import ClickOutside from "v-click-outside";
 export default {
   directives: {

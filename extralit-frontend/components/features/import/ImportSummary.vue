@@ -152,11 +152,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/info";
-import "assets/icons/danger";
-import "assets/icons/document";
-import "assets/icons/external-link";
 
 import type { ImportResultSummary, TableColumn } from "./types";
 

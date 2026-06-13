@@ -29,7 +29,6 @@
 </template>
 
 <script>
-import "assets/icons/kebab";
 export default {
   props: {
     record: {

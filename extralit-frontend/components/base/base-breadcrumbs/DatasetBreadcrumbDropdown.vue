@@ -52,7 +52,6 @@
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
 import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
-import "assets/icons/chevron-down";
 
 export default {
   props: {

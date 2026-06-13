@@ -39,7 +39,6 @@
 
 <script>
 import { useMetadataFilterViewModel } from "./useMetadataFilterViewModel";
-import "assets/icons/chevron-left";
 
 export default {
   props: {

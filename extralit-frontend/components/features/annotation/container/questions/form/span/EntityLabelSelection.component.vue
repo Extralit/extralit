@@ -54,8 +54,6 @@
 
 <script>
 const OPTIONS_THRESHOLD_TO_ENABLE_SEARCH = 15;
-import "assets/icons/chevron-down";
-import "assets/icons/chevron-up";
 export default {
   name: "EntityLabelSelectionComponent",
   props: {

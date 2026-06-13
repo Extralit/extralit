@@ -53,11 +53,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/danger";
-import "assets/icons/document";
-import "assets/icons/search";
-import "assets/icons/check";
-import "assets/icons/close";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 
 interface ColumnComponent {

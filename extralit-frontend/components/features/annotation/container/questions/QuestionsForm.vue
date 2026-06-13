@@ -115,8 +115,6 @@
 </template>
 
 <script>
-import "assets/icons/external-link";
-import "assets/icons/refresh";
 
 export default {
   props: {

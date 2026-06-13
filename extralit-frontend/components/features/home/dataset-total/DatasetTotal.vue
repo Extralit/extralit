@@ -8,7 +8,6 @@
 </template>
 
 <script>
-import "assets/icons/records";
 import { formatNumberToK } from "@/v1/infrastructure/services/format-number";
 
 export default {

@@ -23,7 +23,6 @@
 </template>
 
 <script>
-import "assets/icons/chevron-right";
 export default {
   layout: "error",
   props: ["error"],

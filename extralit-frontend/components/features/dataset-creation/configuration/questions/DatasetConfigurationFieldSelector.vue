@@ -22,7 +22,6 @@
 </template>
 
 <script>
-import "assets/icons/assign";
 export default {
   props: {
     value: {

@@ -61,8 +61,6 @@
 </template>
 
 <script>
-import "assets/icons/close";
-import "assets/icons/suggestion";
 
 export default {
   name: "EntityComponent",

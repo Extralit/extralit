@@ -32,8 +32,6 @@
   </div>
 </template>
 <script>
-import "assets/icons/expand-arrows";
-import "assets/icons/minimize-arrows";
 export default {
   props: {
     preview: {

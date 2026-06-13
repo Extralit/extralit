@@ -18,7 +18,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
 
 export default {
   props: {

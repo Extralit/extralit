@@ -26,8 +26,6 @@
   </BaseInputContainer>
 </template>
 <script>
-import "assets/icons/search";
-import "assets/icons/close";
 
 export default {
   props: {

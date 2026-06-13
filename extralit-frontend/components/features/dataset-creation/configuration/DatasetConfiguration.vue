@@ -93,7 +93,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/document";
 import { useDatasetConfiguration } from "./useDatasetConfiguration";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 

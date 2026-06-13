@@ -19,7 +19,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/chevron-left";
 
 export default {
   props: {

@@ -79,9 +79,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/chevron-down";
 import type {
   ImportAnalysisResponse,
   ImportStatus,
