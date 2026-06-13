@@ -34,11 +34,11 @@ export default {
     };
   },
   mounted() {
-    if (this.$attrs["on-click"]) {
+    if (this.$attrs.onOnClick) {
       this.clickable = true;
       this.renderComponent = "baseButton";
     }
-    if (this.$attrs["on-clear"]) {
+    if (this.$attrs.onOnClear) {
       this.clearable = true;
     }
   },

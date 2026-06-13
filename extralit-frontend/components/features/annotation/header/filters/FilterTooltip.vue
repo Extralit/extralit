@@ -48,10 +48,10 @@ export default {
     },
   },
   mounted() {
-    if (this.$attrs["on-click"]) {
+    if (this.$attrs.onOnClick) {
       this.clickable = true;
     }
-    if (this.$attrs["on-clear"]) {
+    if (this.$attrs.onOnClear) {
       this.clearable = true;
     }
     if (this.isViewportBoundary) {
