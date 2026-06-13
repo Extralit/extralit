@@ -6,6 +6,12 @@
 
 <script>
 export default {
+  props: {
+    question: {
+      type: Object,
+      required: true,
+    },
+  },
   data() {
     return {
       timer: null,
@@ -14,7 +20,7 @@ export default {
   },
   computed: {
     options() {
-      return this.$slots.default[0].context?.question.answer.values;
+      return this.question?.answer?.values;
     },
   },
   methods: {
