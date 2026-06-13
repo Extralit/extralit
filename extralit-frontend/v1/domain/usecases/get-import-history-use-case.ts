@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import { ImportStatus } from "../entities/import/ImportAnalysis";
+import { type ImportStatus } from "../entities/import/ImportAnalysis";
 
 export interface ImportHistoryListItem {
   id: string;

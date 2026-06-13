@@ -2,7 +2,7 @@ import { useResolve } from "ts-injecty";
 import { ref } from "vue";
 import {
   GetImportHistoryDetailsUseCase,
-  ImportHistoryDetailsResponse,
+  type ImportHistoryDetailsResponse,
 } from "~/v1/domain/usecases/get-import-history-details-use-case";
 import { ImportHistoryDatasetBuilder } from "~/v1/domain/entities/import/ImportHistoryDatasetBuilder";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";

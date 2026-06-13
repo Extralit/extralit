@@ -1,9 +1,9 @@
 import type { AxiosInstance } from "axios";
-import { BackendEnvironment } from "../types/environment";
-import { PublicAxiosInstance } from "../services/useAxiosExtension";
+import { type BackendEnvironment } from "../types/environment";
+import { type PublicAxiosInstance } from "../services/useAxiosExtension";
 import { largeCache } from "./AxiosCache";
 import { Environment } from "~/v1/domain/entities/environment/Environment";
-import { IEnvironmentRepository } from "~/v1/domain/services/IEnvironmentRepository";
+import { type IEnvironmentRepository } from "~/v1/domain/services/IEnvironmentRepository";
 
 const enum ENVIRONMENT_API_ERRORS {
   FETCHING = "ERROR_FETCHING_ENVIRONMENT_SETTINGS",

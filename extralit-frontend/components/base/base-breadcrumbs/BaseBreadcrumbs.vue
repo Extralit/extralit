@@ -50,7 +50,7 @@
 </template>
 
 <script lang="ts">
-import { BreadcrumbItem, WorkspaceChangeEvent } from "~/v1/infrastructure/types/breadcrumb";
+import { type BreadcrumbItem, type WorkspaceChangeEvent } from "~/v1/infrastructure/types/breadcrumb";
 import WorkspaceBreadcrumbDropdown from "./WorkspaceBreadcrumbDropdown.vue";
 import DatasetBreadcrumbDropdown from "./DatasetBreadcrumbDropdown.vue";
 

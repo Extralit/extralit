@@ -21,7 +21,7 @@ import "tabulator-tables/dist/css/tabulator.min.css";
 import { TableData } from "@/v1/domain/entities/table/TableData";
 import { DataFrameSchema } from "@/v1/domain/entities/table/Schema";
 import { Question } from "@/v1/domain/entities/question/Question";
-import { Validators } from "@/v1/domain/entities/table/Validation";
+import { type Validators } from "@/v1/domain/entities/table/Validation";
 
 export default {
   name: "BaseSimpleTable",

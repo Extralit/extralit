@@ -1,6 +1,6 @@
 import { onMounted } from "vue";
 import { useResolve } from "ts-injecty";
-import { ProviderType } from "~/v1/domain/entities/oauth/OAuthProvider";
+import { type ProviderType } from "~/v1/domain/entities/oauth/OAuthProvider";
 import { OAuthLoginUseCase } from "~/v1/domain/usecases/oauth-login-use-case";
 import { useRoutes, useTranslate, useLocalStorage } from "~/v1/infrastructure/services";
 import { useNotifications } from "~/v1/infrastructure/services/useNotifications";

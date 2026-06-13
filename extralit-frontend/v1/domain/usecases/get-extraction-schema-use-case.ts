@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
-import { FileMetadata } from "../entities/table/Schema";
-import { ValidationSchema } from "../entities/table/Validation";
+import { type FileMetadata } from "../entities/table/Schema";
+import { type ValidationSchema } from "../entities/table/Validation";
 
 const FILES_API_ERRORS = {
   ERROR_FETCHING_SCHEMA_FILE: "ERROR_FETCHING_SCHEMA_FILE",

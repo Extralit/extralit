@@ -3,8 +3,8 @@ import {
   type TextSelection,
   type Entity,
   SpanSelection,
-  Configuration,
-  OverlappedSpan,
+  type Configuration,
+  type OverlappedSpan,
 } from "./span-selection";
 
 export type LoadedSpan = Omit<Span, "text" | "node">;

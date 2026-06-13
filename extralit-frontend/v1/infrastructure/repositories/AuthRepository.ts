@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
-import { PublicAxiosInstance } from "../services/useAxiosExtension";
-import { IAuthRepository } from "~/v1/domain/services/IAuthRepository";
+import { type PublicAxiosInstance } from "../services/useAxiosExtension";
+import { type IAuthRepository } from "~/v1/domain/services/IAuthRepository";
 
 interface TokenResponse {
   access_token: string;

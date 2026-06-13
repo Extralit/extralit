@@ -85,9 +85,9 @@ import type {
   DocumentImportAnalysis,
 } from '~/v1/domain/entities/import/ImportAnalysis';
 import {
-  AnalysisTableRow,
-  TableColumn,
-  CellComponent,
+  type AnalysisTableRow,
+  type TableColumn,
+  type CellComponent,
 } from '../types';
 import { useImportAnalysisTableViewModel } from './useImportAnalysisTableViewModel';
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";

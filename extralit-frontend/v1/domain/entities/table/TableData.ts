@@ -1,5 +1,5 @@
-import { DataFrameField, DataFrameSchema } from "./Schema";
-import { ValidationSchema } from "./Validation";
+import { type DataFrameField, DataFrameSchema } from "./Schema";
+import { type ValidationSchema } from "./Validation";
 
 export type Data = Array<{ [field: string]: any }>;
 

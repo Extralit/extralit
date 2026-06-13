@@ -1,5 +1,5 @@
 import { TableData } from "@/v1/domain/entities/table/TableData";
-import { Checks, SchemaColumns, ValidationSchema, Validator, Validators } from "@/v1/domain/entities/table/Validation";
+import { type Checks, type SchemaColumns, type ValidationSchema, type Validator, type Validators } from "@/v1/domain/entities/table/Validation";
 
 var integer = (cell: any, value: string, parameters: { nullable: boolean }): boolean =>
 	(parameters.nullable && value == "NA") || /^-?\d+$/.test(value);

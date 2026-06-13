@@ -8,7 +8,7 @@ import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { useWorkspaces } from "@/v1/infrastructure/storage/WorkspaceStorage";
 import { RecordCriteria } from "~/v1/domain/entities/record/RecordCriteria";
 import { useRoutes, useUser, useRole } from "~/v1/infrastructure/services";
-import { RecordStatus } from "~/v1/domain/entities/record/RecordAnswer";
+import { type RecordStatus } from "~/v1/domain/entities/record/RecordAnswer";
 
 export const useAnnotationModeViewModel = () => {
   const { isAdminOrOwner } = useRole();

@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import { PublicAxiosInstance } from "../services";
+import { type PublicAxiosInstance } from "../services";
 import { DatasetCreation } from "~/v1/domain/entities/hub/DatasetCreation";
 
 export const enum HUB_REPOSITORY_ERRORS {

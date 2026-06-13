@@ -1,7 +1,7 @@
 import { PageCriteria } from "../page/PageCriteria";
 import { Question } from "../question/Question";
 import { Record } from "./Record";
-import { RecordStatus } from "./RecordAnswer";
+import { type RecordStatus } from "./RecordAnswer";
 import { RecordCriteria } from "./RecordCriteria";
 
 export class Records {

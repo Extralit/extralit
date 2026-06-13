@@ -1,4 +1,4 @@
-import { IDatasetRepository, JobId } from "../services/IDatasetRepository";
+import { type IDatasetRepository, type JobId } from "../services/IDatasetRepository";
 import { DatasetCreation } from "../entities/hub/DatasetCreation";
 
 

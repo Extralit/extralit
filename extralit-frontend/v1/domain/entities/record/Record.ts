@@ -3,7 +3,7 @@ import { Field } from "../field/Field";
 import { Question } from "../question/Question";
 import { Suggestion } from "../question/Suggestion";
 import { Score } from "../similarity/Score";
-import { MetadataRecord } from "../metadata/MetadataRecord";
+import { type MetadataRecord } from "../metadata/MetadataRecord";
 import { TaskDistribution } from "../distribution/TaskDistribution";
 import { RecordAnswer } from "./RecordAnswer";
 

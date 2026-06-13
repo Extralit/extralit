@@ -1,10 +1,10 @@
 import type { AxiosInstance } from "axios";
 
 import {
-  ImportAnalysisRequest,
-  ImportAnalysisResponse,
-  DocumentMetadata,
-  FileInfo,
+  type ImportAnalysisRequest,
+  type ImportAnalysisResponse,
+  type DocumentMetadata,
+  type FileInfo,
 } from "~/v1/domain/entities/import/ImportAnalysis";
 import { TableData } from "@/v1/domain/entities/table/TableData";
 

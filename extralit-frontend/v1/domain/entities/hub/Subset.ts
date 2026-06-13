@@ -1,7 +1,7 @@
-import { QuestionPrototype } from "../question/QuestionSetting";
-import { Feature } from "./DatasetCreationBuilder";
+import { type QuestionPrototype } from "../question/QuestionSetting";
+import { type Feature } from "./DatasetCreationBuilder";
 import { FieldCreation } from "./FieldCreation";
-import { MetadataTypes, MetadataCreation } from "./MetadataCreation";
+import { type MetadataTypes, MetadataCreation } from "./MetadataCreation";
 import { QuestionCreation } from "./QuestionCreation";
 
 type Structure = {

@@ -7,9 +7,9 @@ import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-ca
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
 import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 import { useRole } from "~/v1/infrastructure/services/useRole";
-import { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
+import { type ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
-import { BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
+import { type BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
 
 export const useHomeViewModel = () => {
   const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);

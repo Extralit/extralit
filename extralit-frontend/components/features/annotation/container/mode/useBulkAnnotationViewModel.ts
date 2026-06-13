@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { Record } from "~/v1/domain/entities/record/Record";
 import { RecordCriteria } from "~/v1/domain/entities/record/RecordCriteria";
 import { Records } from "~/v1/domain/entities/record/Records";
-import { AvailableStatus, BulkAnnotationUseCase } from "~/v1/domain/usecases/bulk-annotation-use-case";
+import { type AvailableStatus, BulkAnnotationUseCase } from "~/v1/domain/usecases/bulk-annotation-use-case";
 import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
 import { useTranslate } from "~/v1/infrastructure/services/useTranslate";
 

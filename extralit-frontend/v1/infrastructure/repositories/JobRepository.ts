@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import { BackendJob } from "../types/dataset";
+import { type BackendJob } from "../types/dataset";
 
 class JobStatus {
   constructor(public readonly jobId: string, private readonly status: string) {}

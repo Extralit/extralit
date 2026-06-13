@@ -1,4 +1,4 @@
-import { Dictionary } from "../entities/common/Params";
+import { type Dictionary } from "../entities/common/Params";
 
 export interface RouterService {
   getQuery(): Dictionary<string | (string | null)[]>;

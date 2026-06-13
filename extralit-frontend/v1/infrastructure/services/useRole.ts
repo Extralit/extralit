@@ -1,6 +1,6 @@
-import { ComputedRef, computed } from "vue";
+import { type ComputedRef, computed } from "vue";
 import { useUser } from "./useUser";
-import { RoleService } from "~/v1/domain/services/RoleService";
+import { type RoleService } from "~/v1/domain/services/RoleService";
 
 export const useRole = (): RoleService & {
   isAdminOrOwnerRole: ComputedRef<boolean>;

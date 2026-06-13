@@ -5,7 +5,7 @@ import { LoadRecordsToAnnotateUseCase } from "@/v1/domain/usecases/load-records-
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
 import { RecordCriteria } from "@/v1/domain/entities/record/RecordCriteria";
 import { GetDatasetVectorsUseCase } from "@/v1/domain/usecases/get-dataset-vectors-use-case";
-import { DatasetVector } from "~/v1/domain/entities/vector/DatasetVector";
+import { type DatasetVector } from "~/v1/domain/entities/vector/DatasetVector";
 
 export const useRecordFeedbackTaskViewModel = ({ recordCriteria }: { recordCriteria: RecordCriteria }) => {
   const { getMessagesForLoading, getMessageForPagination } = useRecordMessages(recordCriteria);

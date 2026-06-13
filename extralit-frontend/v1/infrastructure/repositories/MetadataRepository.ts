@@ -1,10 +1,10 @@
 import type { AxiosInstance } from "axios";
-import { BackendMetadata, Response } from "../types";
+import { type BackendMetadata, type Response } from "../types";
 import { MetadataMetricsRepository } from "./MetadataMetricsRepository";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 import { Metadata } from "~/v1/domain/entities/metadata/Metadata";
 import { MetadataCreation } from "~/v1/domain/entities/hub/MetadataCreation";
-import { DatasetId } from "~/v1/domain/services/IDatasetRepository";
+import { type DatasetId } from "~/v1/domain/services/IDatasetRepository";
 
 const METADATA_API_ERRORS = {
   ERROR_FETCHING_METADATA: "ERROR_FETCHING_METADATA",

@@ -1,6 +1,6 @@
 import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent } from "tabulator-tables";
-import { ReferenceValues } from "@/v1/domain/entities/table/TableData";
-import { SuggestionCheck, ValidationSchema, Validator, Validators } from "@/v1/domain/entities/table/Validation";
+import { type ReferenceValues } from "@/v1/domain/entities/table/TableData";
+import { type SuggestionCheck, type ValidationSchema, type Validator, type Validators } from "@/v1/domain/entities/table/Validation";
 
 
 export function isValidJSON(value: string): boolean {

@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import { Document, Segment, Segments } from "@/v1/domain/entities/document/Document";
+import { Document, Segment, type Segments } from "@/v1/domain/entities/document/Document";
 
 const DOCUMENT_API_ERRORS = {
   ERROR_FETCHING_DOCUMENT: "ERROR_FETCHING_DOCUMENT",

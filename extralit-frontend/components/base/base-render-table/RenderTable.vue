@@ -87,9 +87,9 @@ import { getColumnValidators } from "./validatorUtils";
 import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
-import { Data, TableData } from '@/v1/domain/entities/table/TableData';
-import { DataFrameField } from '@/v1/domain/entities/table/Schema';
-import { Validators } from '@/v1/domain/entities/table/Validation';
+import { type Data, TableData } from '@/v1/domain/entities/table/TableData';
+import { type DataFrameField } from '@/v1/domain/entities/table/Schema';
+import { type Validators } from '@/v1/domain/entities/table/Validation';
 import { Question } from "@/v1/domain/entities/question/Question";
 
 export default {

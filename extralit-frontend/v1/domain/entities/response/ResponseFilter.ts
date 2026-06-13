@@ -1,4 +1,4 @@
-import { Filter, FilterWithOption, FilterWithScore, OptionForFilter, RangeValue, ValuesOption } from "../common/Filter";
+import { Filter, FilterWithOption, FilterWithScore, type OptionForFilter, type RangeValue, type ValuesOption } from "../common/Filter";
 import { Question } from "../question/Question";
 
 export interface ResponseSearch {

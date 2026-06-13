@@ -2,7 +2,7 @@ import { useResolve } from "ts-injecty";
 import { ref, onMounted } from "vue";
 import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { GetImportCompatibleDatasetsUseCase } from "~/v1/domain/usecases/get-import-compatible-datasets-use-case";
-import { BackendDataset } from "~/v1/infrastructure/types/dataset";
+import { type BackendDataset } from "~/v1/infrastructure/types/dataset";
 
 export const useDatasetConfigurationNameAndWorkspace = () => {
   const workspaces = ref<any[]>([]);

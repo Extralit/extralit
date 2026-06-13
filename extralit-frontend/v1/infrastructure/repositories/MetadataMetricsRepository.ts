@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import { BackendMetadataMetric } from "../types";
+import { type BackendMetadataMetric } from "../types";
 import { mediumCache } from "./AxiosCache";
 
 const RECORD_API_ERRORS = {

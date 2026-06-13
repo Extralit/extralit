@@ -1,5 +1,5 @@
 import { Dataset } from "../entities/dataset/Dataset";
-import { DatasetExportSettings } from "../entities/dataset/DatasetExport";
+import { type DatasetExportSettings } from "../entities/dataset/DatasetExport";
 import { Progress } from "../entities/dataset/Progress";
 import { DatasetCreation } from "../entities/hub/DatasetCreation";
 

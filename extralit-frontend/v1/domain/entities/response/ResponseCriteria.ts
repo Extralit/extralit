@@ -1,6 +1,6 @@
 import { Criteria } from "../common/Criteria";
-import { RangeValue, ValuesOption } from "../common/Filter";
-import { ResponseSearch } from "./ResponseFilter";
+import { type RangeValue, type ValuesOption } from "../common/Filter";
+import { type ResponseSearch } from "./ResponseFilter";
 
 export class ResponseCriteria extends Criteria {
   public value: ResponseSearch[] = [];

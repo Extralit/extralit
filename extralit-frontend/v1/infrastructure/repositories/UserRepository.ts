@@ -1,5 +1,5 @@
-import { PublicAxiosInstance } from "../services/useAxiosExtension";
-import { IUserRepository } from "~/v1/domain/services/IUserRepository";
+import { type PublicAxiosInstance } from "../services/useAxiosExtension";
+import { type IUserRepository } from "~/v1/domain/services/IUserRepository";
 
 export class UserRepository implements IUserRepository {
   constructor(private readonly axios: PublicAxiosInstance) {}

@@ -1,11 +1,11 @@
 import { createApp, h, onMounted, onUnmounted, ref, watch } from "vue";
 import { useSearchTextHighlight } from "../useSearchTextHighlight";
-import { Highlighting, LoadedSpan, Position } from "./components/highlighting";
+import { Highlighting, type LoadedSpan, type Position } from "./components/highlighting";
 import EntityComponent from "./components/EntityComponent.vue";
-import { Entity, Span } from "./components/span-selection";
+import { type Entity, type Span } from "./components/span-selection";
 import { Question } from "~/v1/domain/entities/question/Question";
 import { SpanQuestionAnswer } from "~/v1/domain/entities/question/QuestionAnswer";
-import { SpanAnswer } from "~/v1/domain/entities/IAnswer";
+import { type SpanAnswer } from "~/v1/domain/entities/IAnswer";
 
 export const useSpanAnnotationTextFieldViewModel = (props: {
   spanQuestion: Question;

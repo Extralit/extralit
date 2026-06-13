@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios";
-import { BackendVector } from "../types/vector";
-import { Response } from "../types";
+import { type BackendVector } from "../types/vector";
+import { type Response } from "../types";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 import { Vector } from "~/v1/domain/entities/vector/Vector";
 

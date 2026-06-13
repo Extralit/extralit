@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import { Response } from "../types";
+import { type Response } from "../types";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 
 interface BackendWorkspace {

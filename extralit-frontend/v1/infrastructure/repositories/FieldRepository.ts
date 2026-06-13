@@ -1,5 +1,5 @@
 import type { AxiosInstance } from "axios";
-import { BackendField, Response } from "../types/";
+import { type BackendField, type Response } from "../types/";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 import { Field } from "~/v1/domain/entities/field/Field";
 import { FieldCreation } from "~/v1/domain/entities/hub/FieldCreation";

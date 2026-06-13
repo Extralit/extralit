@@ -1,26 +1,26 @@
 import type { AxiosInstance } from "axios";
 import {
-  BackendRecord,
-  BackendAnswerCombinations,
-  BackendResponseResponse,
-  BackendSearchRecords,
-  BackendAdvanceSearchQuery,
-  ResponseWithTotal,
-  BackendRecords,
-  BackendRecordStatus,
-  BackendSimilaritySearchOrder,
-  BackendSort,
-  BackendResponseBulkRequest,
-  BackendResponseRequest,
-  BackendResponseBulkResponse,
+  type BackendRecord,
+  type BackendAnswerCombinations,
+  type BackendResponseResponse,
+  type BackendSearchRecords,
+  type BackendAdvanceSearchQuery,
+  type ResponseWithTotal,
+  type BackendRecords,
+  type BackendRecordStatus,
+  type BackendSimilaritySearchOrder,
+  type BackendSort,
+  type BackendResponseBulkRequest,
+  type BackendResponseRequest,
+  type BackendResponseBulkResponse,
 } from "../types";
 import { revalidateCache } from "./AxiosCache";
 import { RecordAnswer } from "@/v1/domain/entities/record/RecordAnswer";
 import { Record } from "@/v1/domain/entities/record/Record";
 import { Question } from "@/v1/domain/entities/question/Question";
 import { RecordCriteria } from "@/v1/domain/entities/record/RecordCriteria";
-import { SimilarityOrder } from "@/v1/domain/entities/similarity/SimilarityCriteria";
-import { RangeValue, ValuesOption } from "~/v1/domain/entities/common/Filter";
+import { type SimilarityOrder } from "@/v1/domain/entities/similarity/SimilarityCriteria";
+import { type RangeValue, type ValuesOption } from "~/v1/domain/entities/common/Filter";
 
 const RECORD_API_ERRORS = {
   ERROR_FETCHING_RECORDS: "ERROR_FETCHING_RECORDS",

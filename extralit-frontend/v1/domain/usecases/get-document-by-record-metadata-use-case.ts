@@ -1,5 +1,5 @@
 import { Segment } from "../entities/document/Document";
-import { IDocumentStorage } from "../services/IDocumentStorage";
+import { type IDocumentStorage } from "../services/IDocumentStorage";
 import { DocumentRepository } from "@/v1/infrastructure/repositories/DocumentRepository";
 
 export class GetDocumentByRecordMetadataUseCase {
