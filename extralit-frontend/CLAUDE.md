@@ -38,11 +38,14 @@ npm run e2e:report       # View test report
 > `@vue/test-utils` v2 and `@nuxt/test-utils`. Specs needing Nuxt runtime context use
 > `// @vitest-environment nuxt` or `mockNuxtImport`.
 >
-> The Playwright e2e suite is inherited from upstream Argilla and is currently **out of
-> sync with Extralit's sign-in UI** (its login helper targets placeholders/buttons Extralit
-> no longer renders), so it is not a passing gate as-is and needs a dedicated reconciliation
-> pass. The local Playwright browser also can't launch on the Orin dev host (missing OS libs,
-> no sudo) — run e2e in CI.
+> The Playwright e2e suite is inherited from upstream Argilla. The shared login helper
+> (`e2e/common/login-and-wait-for.ts`) has been reconciled to Extralit's real sign-in UI:
+> it fills `getByLabel("Username"/"Password")`, submits the `"Sign in"` button, mocks
+> `/api/v1/token` + `/api/v1/me` offline, and waits for the home/datasets landing at `/`
+> (there is no `/datasets` route). This flow is runtime-verified via the CDP browser. The
+> per-page specs still need fresh Extralit screenshot baselines (`--update-snapshots`); the
+> inherited ones are Argilla's. The local Playwright browser can't launch on the Orin dev
+> host (missing OS libs, no sudo) — run the headless gate in CI.
 
 ## Code Quality
 
