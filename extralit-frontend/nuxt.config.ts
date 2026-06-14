@@ -4,6 +4,11 @@ import svgLoader from "vite-svg-loader";
 import pkg from "./package.json";
 
 const BASE_URL = process.env.API_BASE_URL ?? "http://0.0.0.0:6900";
+// Nitro's devProxy mounts each rule via h3 `app.use(prefix, …)`, which STRIPS the matched
+// prefix from the forwarded path (Nuxt 2's @nuxtjs/proxy preserved it). Re-append the prefix
+// to each target origin so e.g. `/api/v1/token` reaches the backend as `/api/v1/token`, not
+// `/v1/token` (which the server answers with its SPA fallback / 405).
+const API_ORIGIN = BASE_URL.replace(/\/+$/, "");
 
 export default defineNuxtConfig({
   ssr: false,
@@ -73,8 +78,11 @@ export default defineNuxtConfig({
     // layout). Serve them at the site root so /images, /fonts, favicons resolve.
     publicAssets: [{ dir: fileURLToPath(new URL("./static", import.meta.url)), baseURL: "/" }],
     devProxy: {
-      "/api/": { target: BASE_URL, changeOrigin: true },
-      "/share-your-progress": { target: BASE_URL, changeOrigin: true },
+      "/api/": { target: `${API_ORIGIN}/api`, changeOrigin: true },
+      "/share-your-progress": {
+        target: `${API_ORIGIN}/share-your-progress`,
+        changeOrigin: true,
+      },
     },
   },
 
