@@ -1,6 +1,12 @@
 export default {
+  // Dual-purpose binding (Vue 3): legacy `:value`/`@input` consumers keep working, and
+  // `v-model` consumers bind through `modelValue`/`update:modelValue`. Without the
+  // `update:modelValue` emit, every `<BaseInput v-model="x">` silently fails to update
+  // (Vue 2's `model:` option that used to wire `value`/`input` was removed).
+  emits: ["change", "input", "update:modelValue", "focus", "blur"],
   props: {
     value: [String, Number],
+    modelValue: [String, Number],
     debounce: {
       type: Number,
       default: 1e2,
@@ -19,6 +25,9 @@ export default {
   },
   watch: {
     value() {
+      this.updateValues();
+    },
+    modelValue() {
       this.updateValues();
     },
     disabled() {
@@ -46,6 +55,7 @@ export default {
       this.timeout = window.setTimeout(() => {
         this.$emit("change", this.$el.value);
         this.$emit("input", this.$el.value);
+        this.$emit("update:modelValue", this.$el.value);
       }, this.debounce);
     },
     setParentValue(value) {
@@ -62,7 +72,7 @@ export default {
     },
     updateValues() {
       this.$nextTick(() => {
-        const newValue = this.$el.value || this.value;
+        const newValue = this.$el.value || this.modelValue || this.value;
 
         this.setParentValue(newValue);
         this.parentContainer.inputLength = newValue ? newValue.length : 0;

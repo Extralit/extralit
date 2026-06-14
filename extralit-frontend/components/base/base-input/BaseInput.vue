@@ -4,7 +4,7 @@
     class="input"
     :type="type"
     :name="name"
-    :value="value"
+    :value="modelValue ?? value"
     :disabled="disabled"
     :required="required"
     :placeholder="placeholder"
