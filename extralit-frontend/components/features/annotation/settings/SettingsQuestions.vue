@@ -8,7 +8,7 @@
             <div class="settings__edition-form__header">
               <div class="settings__edition-form__name">
                 <h4 class="--body1 --medium" v-text="question.name" />
-                <BaseBadge class="--capitalized" :text="`${$t(question.type)}`" />
+                <BaseBadge class="--capitalized" :text="`${$t(question.type.value)}`" />
               </div>
               <p v-if="question.isRequired" v-text="$t('question.required')" />
               <p v-else v-text="$t('question.optional')" />
