@@ -70,6 +70,7 @@
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
         "@typescript-eslint/typescript-estree": "8.39.0",
+        "@vitest/coverage-v8": "^4.1.9",
         "@vue/test-utils": "^2.4.11",
         "cross-env": "^7.0.3",
         "eslint": "^8.57.0",
@@ -82,7 +83,7 @@
         "rimraf": "^5.0.7",
         "typescript": "^5.4.5",
         "vite-svg-loader": "^5.1.1",
-        "vitest": "^4.1.8"
+        "vitest": "^4.1.9"
     },
     "engines": {
         "node": ">=20.0.0"
