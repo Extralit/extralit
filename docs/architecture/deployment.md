@@ -228,11 +228,22 @@ environment points at `extralit-dev/develop`
 (`extralit-dev-develop.hf.space`).
 
 ### Job `deploy-pr-space` — *PR builds only* (`pr_space_slug != ''`)
-Creates an ephemeral preview Space per PR:
+Runs under `environment: develop`. Creates an ephemeral preview Space per PR:
 1. `duplicate_space("extralit-dev/develop" → "extralit-dev/pr-N")` (cpu-basic) on
-   first run, writing a README that enables `app_port: 6900` + HF OAuth.
-2. Uploads a one-line `Dockerfile` (`FROM extralitdev/extralit-hf-space:pr-N`) so
+   first run, writing a README that enables `app_port: 6900`.
+2. **Propagates config.** `duplicate_space` copies files but **not** secrets/variables,
+   so the job forwards the `develop` GitHub environment's `EXTRALIT_*` onto the Space —
+   env **secrets** → `add_space_secret`, env **variables** → `add_space_variable`. It
+   strictly filters to the `EXTRALIT_` prefix (via `toJSON(secrets)`/`toJSON(vars)`), so
+   `HF_TOKEN`/`DOCKER_*`/the GitHub token are never pushed; only keys are logged.
+3. Uploads a one-line `Dockerfile` (`FROM extralitdev/extralit-hf-space:pr-N`) so
    the preview Space tracks the PR's image.
+
+> **OAuth is not wired for previews.** The custom HF OAuth app is pinned to the
+> `extralit-dev-develop.hf.space` callback and can't serve ephemeral `pr-N` domains, so
+> sign-in won't work on a preview. Do **not** put `EXTRALIT_ELASTICSEARCH`/
+> `EXTRALIT_REDIS_URL` in the `develop` env — the bundle runs its own ES/Redis at
+> `localhost` and the generic filter would otherwise override them.
 
 ---
 
@@ -254,6 +265,14 @@ jobs run with `environment: ${{ resolve-env.outputs.env_name }}`, so `vars.*` an
 > `extralit/public-demo` → **extralit-public-demo.hf.space** (the public demo,
 > deployed from `main`); `extralit-dev/develop` → extralit-dev-develop.hf.space.
 > There are **no** repo-level variables in this repo.
+
+> **`EXTRALIT_*` on the `develop` env (consumed by `deploy-pr-space`).** Any
+> `EXTRALIT_*` **variable** or **secret** added to the `develop` environment is forwarded
+> verbatim onto each `pr-N` Space (§4). Recommended: `EXTRALIT_DATABASE_URL`,
+> `EXTRALIT_S3_ACCESS_KEY`/`SECRET_KEY` and `EXTRALIT_AUTH_SECRET_KEY` as **secrets**;
+> `EXTRALIT_S3_ENDPOINT`/`REGION`/`SECURE`, `EXTRALIT_BASE_URL`, `EXTRALIT_CORS_ORIGINS`
+> as **variables**. Set with `gh secret set <KEY> --env develop` /
+> `gh variable set <KEY> --env develop --body <val>`.
 
 ### `extralit/extralit-hf-space` — **Secrets** (names only)
 

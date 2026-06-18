@@ -166,6 +166,8 @@ extralit/site
 **/*.db
 **/*.pdf
 output/
+.output/
+.nuxtrc
 .specstory/
 
 **/.playwright-mcp/
