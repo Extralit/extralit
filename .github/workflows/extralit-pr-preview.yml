@@ -39,6 +39,8 @@ jobs:
   build:
     name: Build `extralit-server` package (frontend baked in)
     runs-on: ubuntu-latest
+    # Fork PRs don't receive secrets (Docker login / dispatch would fail), so skip them.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.fork == false
 
     defaults:
       run:
@@ -48,6 +50,11 @@ jobs:
     steps:
       - name: Checkout Code 🛎
         uses: actions/checkout@v4
+        with:
+          # Auto path: default merge ref (refs/pull/<n>/merge). Manual path: resolve the PR's
+          # merge ref from pr_number so the build is self-contained — no need to run from the
+          # PR's head branch for the pr-<n> image/Space to reflect that PR's code.
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/pull/{0}/merge', inputs.pr_number) || github.ref }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
@@ -93,7 +100,8 @@ jobs:
     with:
       is_release: false
       publish_latest: false
-      # Empty on the PR auto-path (tag derived as pr-<n> from the PR ref); the PR number on
-      # the manual path so the dev image is tagged pr-<n> and the dispatch targets that Space.
-      pr_number: ${{ inputs.pr_number || '' }}
+      # PR number on BOTH paths (manual input, or the PR number on the auto path). This forces
+      # IMAGE_TAG=pr-<n>, DISPATCH_BRANCH=<n>/merge, and crucially PUBLISH_LATEST=false so a
+      # preview never republishes the dev :latest tag from unreviewed PR code.
+      pr_number: ${{ inputs.pr_number || github.event.pull_request.number }}
     secrets: inherit
