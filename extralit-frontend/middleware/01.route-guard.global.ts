@@ -14,7 +14,9 @@ export default defineNuxtRouteMiddleware((to) => {
     case "sign-in":
       if ($auth.loggedIn) return navigateTo("/");
 
-      if (to.params.omitCTA) return;
+      // Query, not params: Vue Router 4 strips non-path `params` on name-based navigation,
+      // so the welcome page passes omitCTA as a query param (see welcome-hf-sign-in.vue).
+      if (to.query.omitCTA) return;
 
       if (isRunningOnHuggingFace()) {
         return navigateTo({ name: "welcome-hf-sign-in" });
