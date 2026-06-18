@@ -19,10 +19,12 @@ The pipeline spans **two repositories** and is glued together by a GitHub
 ```mermaid
 flowchart TD
     subgraph monorepo["Repo: extralit/extralit (monorepo)"]
-        push["git push / merge / PR"]
+        push["git push / merge"]
+        prready["PR ready_for_review / manual dispatch"]
         fe[".github/workflows/extralit-frontend.yml"]
         sdk[".github/workflows/extralit.yml"]
         srv[".github/workflows/extralit-server.yml"]
+        prev[".github/workflows/extralit-pr-preview.yml"]
         srvbuild["extralit-server.build-docker-images.yml"]
     end
 
@@ -43,7 +45,9 @@ flowchart TD
     push --> fe
     push --> sdk
     push --> srv
+    prready -->|server OR frontend PR| prev
     srv -->|tests + builds frontend dist + wheel| srvbuild
+    prev -->|builds frontend dist + wheel| srvbuild
     srvbuild -->|build & push| srvimg
     srvbuild -->|repository_dispatch: build-hf-space| bhs
     bhs -->|FROM server image + ES/Redis/OCR| spaceimg
@@ -53,9 +57,12 @@ flowchart TD
 
 **Key insight:** the HF Space image is built **`FROM` the `extralit-server`
 image**. The server image, in turn, bundles the **compiled frontend** at build
-time. So the Space is rebuilt and redeployed by the **`extralit-server`
-workflow** — not by the frontend or SDK workflows directly. See
-[§5 Gotchas](#5-gotchas--operational-notes).
+time. So the demo is rebuilt by whichever workflow rebuilds that server image:
+the **`extralit-server`** workflow drives `main`/`develop`, and a dedicated
+**`extralit-pr-preview`** workflow drives per-PR ephemeral Spaces (it rebuilds the
+same server image — frontend baked in — so frontend-only PRs get a preview too).
+Both hand off to the same `build-docker-images.yml` + `repository_dispatch`. See
+[§6 Gotchas](#6-gotchas--operational-notes).
 
 ---
 
@@ -66,15 +73,18 @@ don't trigger unrelated builds.
 
 | Module (dir)        | Workflow                          | Triggers on path                              | Produces                                            | Reaches the demo? |
 | ------------------- | --------------------------------- | --------------------------------------------- | --------------------------------------------------- | ----------------- |
-| `extralit-server/`  | `extralit-server.yml`             | `extralit-server/**`                          | `extralit-server` Docker image + PyPI wheel         | **Yes** (drives it) |
+| `extralit-server/`  | `extralit-server.yml`             | `extralit-server/**` (push/PR)                | `extralit-server` Docker image + PyPI wheel         | **Yes** (`main`/`develop`) |
 | `extralit-frontend/`| `extralit-frontend.yml`           | `extralit-frontend/**`                        | Frontend `dist/` artifact (tests/lint only)         | Indirect¹         |
+| *(server **or** frontend PR)* | `extralit-pr-preview.yml` | PR `ready_for_review` on `extralit-server/**` **or** `extralit-frontend/**`; or manual `pr_number` | `extralitdev/extralit-server:pr-N` image → ephemeral Space | **Yes** (`extralit-dev/pr-N`) |
 | `extralit/` (SDK)   | `extralit.yml`                    | `extralit/**` (excl. `docs/`, `mkdocs.yml`)   | `extralit` PyPI wheel                               | No²               |
-| `extralit-hf-space/`| `build-hf-space.yml` *(other repo)* | repository_dispatch / manual                | `extralit-hf-space` Docker image + Space restart    | **Yes** (terminal) |
+| `extralit-hf-space/`| `build-hf-space.yml` *(other repo)* | repository_dispatch / manual                | `extralit-hf-space` Docker image + Space restart/deploy | **Yes** (terminal) |
 
 ¹ The frontend's own workflow only tests and uploads a `dist` artifact. The
 frontend that actually ships is **recompiled from source inside the server
-workflow** (see §3). A frontend-only change does not redeploy the Space on its
-own — it needs the server workflow to run.
+build** (see §3). A frontend-only change does not redeploy the **public** demo on
+its own — that still needs the server/`main` flow — but a frontend-only **PR**
+*does* get an ephemeral preview: `extralit-pr-preview.yml` rebuilds the server
+image (frontend baked in) and deploys `extralit-dev/pr-N` (see §3a).
 
 ² The SDK is published to PyPI and is *consumed by* the demo's CI for
 integration tests (it spins up `extralitdev/extralit-hf-space:latest` as a
@@ -109,7 +119,7 @@ non-draft PRs.
 | Docker org             | `extralit/extralit-server`     | `extralitdev/extralit-server`   |
 | Platforms              | `linux/amd64,linux/arm64`      | `linux/amd64`                   |
 | Image tag              | `v<package_version>`           | branch name (cleaned) or `pr-N` |
-| Publish `:latest`      | only on `main`                 | always (dev `:latest`)          |
+| Publish `:latest`      | only on `main`                 | dev `:latest`, except PR previews (`pr_number` set) |
 
 The tag is derived by the
 [`docker-image-tag-from-ref`](../../.github/actions/docker-image-tag-from-ref)
@@ -126,14 +136,41 @@ cross-repo trigger:
     token: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
     repository: extralit/extralit-hf-space
     event-type: build-hf-space
-    client-payload: '{"tag":"${{ env.IMAGE_TAG }}","is_release":${{ inputs.is_release }},"branch":"${{ github.ref_name }}"}'
+    client-payload: '{"tag":"${{ env.IMAGE_TAG }}","is_release":${{ inputs.is_release }},"branch":"${{ env.DISPATCH_BRANCH }}"}'
 ```
 
 This hands off control — with `tag`, `is_release`, and `branch` — to the HF Space
-repo.
+repo. `DISPATCH_BRANCH` is `github.ref_name` normally, or `<n>/merge` when the
+reusable build is called with the optional `pr_number` input (manual PR preview),
+so `resolve-env` routes to `pr_space_slug=pr-N`.
 
 > The `publish_release` job additionally publishes the `extralit-server` wheel to
 > (Test)PyPI on `main`/dispatch. Not part of the Space deploy.
+
+---
+
+## 3a. PR preview — `extralit-pr-preview.yml` (in the monorepo)
+
+File: [`.github/workflows/extralit-pr-preview.yml`](../../.github/workflows/extralit-pr-preview.yml)
+
+A single-purpose workflow that gives any server- **or** frontend-touching PR an
+ephemeral Space, deliberately decoupled from `extralit-server.yml` so it does
+**not** run on every push:
+
+- **Auto:** `pull_request: types: [ready_for_review]` on `extralit-server/**` or
+  `extralit-frontend/**`. Marking a PR ready (not each subsequent push) builds the
+  preview; refresh later via the manual path. (`ready_for_review` only fires on a
+  draft→ready transition — a PR opened directly as non-draft won't auto-trigger;
+  re-mark it ready or use the manual path.)
+- **Manual:** `workflow_dispatch` with a `pr_number` input — (re)deploy a chosen PR
+  on demand.
+
+Its `build` job mirrors the frontend+wheel steps from §3 (no pytest), then calls
+the same [`build-docker-images.yml`](../../.github/workflows/extralit-server.build-docker-images.yml)
+with `is_release: false` and `pr_number`. Result: `extralitdev/extralit-server:pr-N`
+is pushed and the dispatch (`branch=<n>/merge`) drives the HF Space repo's
+`deploy-pr-space` job → **`extralit-dev/pr-N`** (`extralit-dev-pr-N.hf.space`).
+`main`/`develop` deploys are untouched and still flow through §3.
 
 ---
 
@@ -255,12 +292,15 @@ the Actions logs when debugging a deploy.
 | `IMAGE_TAG`              | `v<package_version>`             | branch (cleaned) or `pr-N`        |
 | `SERVER_DOCKER_IMAGE`    | `extralit/extralit-server`       | `extralitdev/extralit-server`     |
 | `HF_SPACES_DOCKER_IMAGE` | `extralit/extralit-hf-space`     | `extralitdev/extralit-hf-space`   |
-| `PUBLISH_LATEST`         | `inputs.publish_latest` (main)   | `true`                            |
+| `PUBLISH_LATEST`         | `inputs.publish_latest` (main)   | `true` (PR preview: `false`)      |
 | `DOCKER_USERNAME/PASSWORD`| `AR_DOCKER_*` secrets            | `AR_DOCKER_*_DEV` secrets         |
+| `DISPATCH_BRANCH`        | `github.ref_name`                | `github.ref_name`, or `<n>/merge` when `pr_number` set |
 
+The optional `pr_number` input (set by `extralit-pr-preview.yml`'s manual path)
+forces `IMAGE_TAG=pr-N`, `PUBLISH_LATEST=false`, and `DISPATCH_BRANCH=<n>/merge`.
 The cross-repo `client-payload` carries the handoff state:
 `tag` = `IMAGE_TAG`, `is_release` = `inputs.is_release`, `branch` =
-`github.ref_name`.
+`DISPATCH_BRANCH`.
 
 **Stage B — `build-hf-space.yml`**:
 
@@ -289,12 +329,17 @@ The cross-repo `client-payload` carries the handoff state:
 
 ## 6. Gotchas & operational notes
 
-- **Frontend changes don't auto-deploy the demo.** A commit touching only
+- **Frontend changes don't auto-deploy the *public* demo.** A commit touching only
   `extralit-frontend/**` runs `extralit-frontend.yml` (tests + artifact) but does
-  **not** trigger `extralit-server.yml`, whose path filter is
-  `extralit-server/**`. The shipped frontend is rebuilt from source *inside* the
-  server workflow. To roll a frontend-only change to the demo, also touch the
-  server (or run `extralit-server.yml` via `workflow_dispatch`).
+  **not** trigger `extralit-server.yml` (path filter `extralit-server/**`), so it
+  doesn't redeploy `extralit/public-demo`. The shipped frontend is rebuilt from
+  source *inside* the server build. To roll a frontend-only change to the public
+  demo, merge to `main`/`develop` via the server flow.
+- **PR previews cover frontend too.** Marking a PR (server **or** frontend)
+  **ready for review** triggers `extralit-pr-preview.yml` → ephemeral
+  `extralit-dev/pr-N`. It does **not** rebuild on later pushes (by design); use
+  **Actions → Deploy PR preview HF Space → Run workflow** with the `pr_number` to
+  refresh. Previews are dev-org images and never touch `:latest` or production.
 - **Two Docker orgs.** `extralit/*` = release (from `main`), `extralitdev/*` =
   dev (from `develop`/PRs). The demo's `EXTRALIT_SERVER_IMAGE` env var picks
   which base it builds on.
@@ -328,3 +373,16 @@ The cross-repo `client-payload` carries the handoff state:
 
 Same flow, env=`develop`: `extralitdev/*` images tagged `develop` (+`:latest`,
 amd64-only), restarting `extralit-dev/develop` → extralit-dev-develop.hf.space.
+
+### PR preview → ephemeral Space (`pr-N`)
+
+1. A PR touching `extralit-server/**` or `extralit-frontend/**` is marked **ready
+   for review** (or run manually with `pr_number=N`).
+2. `extralit-pr-preview.yml` → builds frontend `dist` + wheel (no pytest).
+3. `build_docker_images` (`is_release=false`, `pr_number=N`) → pushes
+   `extralitdev/extralit-server:pr-N` (amd64, no `:latest`).
+4. `repository_dispatch(build-hf-space, {tag: pr-N, is_release: false, branch: N/merge})`.
+5. `build-hf-space.yml` → `resolve-env` (env=`develop`, `pr_space_slug=pr-N`) → builds
+   `extralitdev/extralit-hf-space:pr-N`, then `deploy-pr-space` duplicates
+   `extralit-dev/develop` → **`extralit-dev/pr-N`** and points it at the image.
+6. Preview live at **`https://extralit-dev-pr-N.hf.space`**.
