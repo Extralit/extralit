@@ -86,17 +86,20 @@ jobs:
 
       - name: Build package 📦
         env:
-          # BASE_URL is used in the server to support parameterizable base root path
-          BASE_URL: "@@baseUrl@@"
-          DIST_FOLDER: ./dist
+          # Nuxt 4 SPA (ssr:false) ships as static files served at the site root, so build at
+          # base "/". (The Nuxt 2 "@@baseUrl@@" placeholder breaks Nuxt 4's prerender crawler;
+          # parameterizable sub-path hosting is a separate follow-up.)
+          BASE_URL: "/"
         run: |
-          npm run build
+          # `nuxi generate` prerenders the SPA shell to .output/public (index.html + _nuxt
+          # assets); `nuxi build` only emits a Nitro server with no static index.html.
+          npm run generate
 
       - name: Upload frontend statics as artifact
         uses: actions/upload-artifact@v4
         with:
           name: extralit-frontend
-          path: extralit-frontend/dist
+          path: extralit-frontend/.output/public
 
   # build_dev_docker_image:
   #   name: Build development extralit-frontend docker image

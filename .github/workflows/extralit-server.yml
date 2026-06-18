@@ -141,15 +141,24 @@ jobs:
       - name: Install frontend dependencies
         working-directory: extralit-frontend
         env:
-          BASE_URL: "@@baseUrl@@"
-          DIST_FOLDER: ./dist
+          # Nuxt 4 SPA (ssr:false) is served as static files from the server's static dir at
+          # the site root, so build at base "/". (The Nuxt 2 "@@baseUrl@@" placeholder, which
+          # the server rewrote at runtime, breaks Nuxt 4's prerender crawler and yields "//_nuxt"
+          # asset paths; parameterizable sub-path hosting is a separate follow-up.)
+          BASE_URL: "/"
         run: |
           npm install
-          npm run build
+          # `nuxi generate` prerenders the SPA shell to .output/public (index.html + _nuxt
+          # assets); `nuxi build` only emits a Nitro server with no static index.html.
+          npm run generate
       # End of frontend build section
       - name: Build package
         run: |
-          cp -r ../extralit-frontend/dist src/extralit_server/static
+          set -euo pipefail
+          # Bake the compiled SPA into the wheel's static dir. Fail loudly if it's missing or
+          # empty, otherwise the server ships with no statics and 404s every route.
+          cp -r ../extralit-frontend/.output/public src/extralit_server/static
+          test -f src/extralit_server/static/index.html
           uv build
 
       - name: Upload artifact
