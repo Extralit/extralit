@@ -1,0 +1,99 @@
+name: Deploy PR preview HF Space
+
+# Builds a dev-tagged extralit-server image (pr-<n>) and dispatches the HF Space repo to
+# deploy an ephemeral Space at https://huggingface.co/spaces/extralit-dev/pr-<n>.
+#
+# Deliberately decoupled from extralit-server.yml so it does NOT run on every push:
+#   - auto:   only when a PR (touching the server or frontend) is marked "ready for review"
+#   - manual: workflow_dispatch with a PR number, to (re)deploy a preview on demand
+# main/develop deploys keep flowing through extralit-server.yml as before.
+
+on:
+  # Note: `ready_for_review` only fires on a draft→ready transition. A PR opened
+  # directly as non-draft does NOT auto-trigger — mark it ready, or use the manual
+  # workflow_dispatch below. This is intentional: previews never build on push.
+  pull_request:
+    types: [ready_for_review]
+    paths:
+      - "extralit-server/**"
+      - "extralit-frontend/**"
+      - ".github/workflows/extralit-pr-preview.yml"
+      - ".github/workflows/extralit-server.build-docker-images.yml"
+
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to deploy to extralit-dev/pr-<n>"
+        required: true
+        type: string
+
+concurrency:
+  # One preview build per PR; cancel superseded runs.
+  group: pr-preview-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build `extralit-server` package (frontend baked in)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash -l {0}
+        working-directory: extralit-server
+
+    steps:
+      - name: Checkout Code 🛎
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
+        with:
+          pyproject-file: "extralit-server/pyproject.toml"
+          enable-cache: true
+          cache-local-path: ~/.cache/uv
+          cache-dependency-glob: "extralit-server/uv.lock"
+
+      # Mirrors the frontend+wheel build in extralit-server.yml (no pytest here — this is a
+      # preview-only path). The compiled frontend is copied into the server's static dir so
+      # the server image (and the HF Space built FROM it) ships the PR's frontend changes.
+      - name: Setup Node.js for frontend dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        working-directory: extralit-frontend
+        env:
+          BASE_URL: "@@baseUrl@@"
+          DIST_FOLDER: ./dist
+        run: |
+          npm install
+          npm run build
+
+      - name: Build package
+        run: |
+          cp -r ../extralit-frontend/dist src/extralit_server/static
+          uv build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: extralit-server
+          path: extralit-server/dist
+
+  build_docker_images:
+    name: Build docker images
+    needs:
+      - build
+    uses: ./.github/workflows/extralit-server.build-docker-images.yml
+    with:
+      is_release: false
+      publish_latest: false
+      # Empty on the PR auto-path (tag derived as pr-<n> from the PR ref); the PR number on
+      # the manual path so the dev image is tagged pr-<n> and the dispatch targets that Space.
+      pr_number: ${{ inputs.pr_number || '' }}
+    secrets: inherit

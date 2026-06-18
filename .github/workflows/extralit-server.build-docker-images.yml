@@ -13,6 +13,12 @@ on:
         required: true
         type: boolean
 
+      pr_number:
+        description: "When set (manual PR preview), tag the dev image pr-<n> and dispatch branch <n>/merge so the HF Space repo deploys extralit-dev/pr-<n>."
+        required: false
+        type: string
+        default: ""
+
 jobs:
   build:
     name: Build Extralit server docker images
@@ -41,6 +47,11 @@ jobs:
 
       - name: Setup environment variables
         run: |
+          if [[ -n "$PR_NUMBER" ]]; then
+            echo "DISPATCH_BRANCH=$PR_NUMBER/merge" >> $GITHUB_ENV
+          else
+            echo "DISPATCH_BRANCH=$REF_NAME" >> $GITHUB_ENV
+          fi
           if [[ $IS_RELEASE == true ]]; then
             echo "PLATFORMS=linux/amd64,linux/arm64" >> $GITHUB_ENV
             echo "IMAGE_TAG=v$PACKAGE_VERSION" >> $GITHUB_ENV
@@ -51,16 +62,24 @@ jobs:
             echo "PUBLISH_LATEST=$PUBLISH_LATEST" >> $GITHUB_ENV
           else
             echo "PLATFORMS=linux/amd64" >> $GITHUB_ENV
-            echo "IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
             echo "SERVER_DOCKER_IMAGE=extralitdev/extralit-server" >> $GITHUB_ENV
             echo "HF_SPACES_DOCKER_IMAGE=extralitdev/extralit-hf-space" >> $GITHUB_ENV
             echo "DOCKER_USERNAME=$DOCKER_USERNAME_DEV" >> $GITHUB_ENV
             echo "DOCKER_PASSWORD=$DOCKER_PASSWORD_DEV" >> $GITHUB_ENV
-            echo "PUBLISH_LATEST=true" >> $GITHUB_ENV
+            if [[ -n "$PR_NUMBER" ]]; then
+              # Manual PR preview: force the identifiable pr-<n> tag and don't move dev :latest.
+              echo "IMAGE_TAG=pr-$PR_NUMBER" >> $GITHUB_ENV
+              echo "PUBLISH_LATEST=false" >> $GITHUB_ENV
+            else
+              echo "IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
+              echo "PUBLISH_LATEST=true" >> $GITHUB_ENV
+            fi
           fi
         env:
           IS_RELEASE: ${{ inputs.is_release }}
           PUBLISH_LATEST: ${{ inputs.publish_latest }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REF_NAME: ${{ github.ref_name }}
           PACKAGE_VERSION: ${{ steps.package-info.outputs.PACKAGE_VERSION }}
           DOCKER_IMAGE_TAG: ${{ steps.docker-image-tag-from-ref.outputs.docker-image-tag }}
           DOCKER_USERNAME: ${{ secrets.AR_DOCKER_USERNAME }}
@@ -116,7 +135,9 @@ jobs:
           token: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
           repository: extralit/extralit-hf-space
           event-type: build-hf-space
-          client-payload: '{"tag":"${{ env.IMAGE_TAG }}","is_release":${{ inputs.is_release }},"branch":"${{ github.ref_name }}"}'
+          # DISPATCH_BRANCH is <n>/merge for manual PR previews (so resolve-env routes to
+          # pr_space_slug=pr-<n>), otherwise github.ref_name. Computed in "Setup environment variables".
+          client-payload: '{"tag":"${{ env.IMAGE_TAG }}","is_release":${{ inputs.is_release }},"branch":"${{ env.DISPATCH_BRANCH }}"}'
 
       - name: Docker Hub Description for `extralit-server`
         uses: peter-evans/dockerhub-description@v4
