@@ -1,4 +1,4 @@
-import type { Ref } from "vue";
+import { shallowRef, type Ref } from "vue";
 import type { IAuthService } from "~/v1/domain/services/IAuthService";
 
 // Replaces @nuxtjs/auth-next. Only ever used as a token store + loggedIn flag
@@ -6,7 +6,11 @@ import type { IAuthService } from "~/v1/domain/services/IAuthService";
 // token is held in a Nuxt `useCookie` ref injected at plugin time, which keeps
 // this class unit-testable with a plain ref.
 export class AuthService implements IAuthService {
-  private _user: Record<string, unknown> | null = null;
+  // Backed by a shallowRef so `user` is reactive: auth-next exposed a reactive
+  // $auth.user, and useUser()/useRole() wrap it in computeds that must update
+  // when the user is (re)loaded. The user object is replaced wholesale, so
+  // reference-level (shallow) reactivity is sufficient.
+  private readonly _user = shallowRef<Record<string, unknown> | null>(null);
 
   constructor(private readonly tokenRef: Ref<string | null | undefined>) {}
 
@@ -19,11 +23,11 @@ export class AuthService implements IAuthService {
   }
 
   get user(): Record<string, unknown> | null {
-    return this._user;
+    return this._user.value;
   }
 
   setUser(user: unknown): void {
-    this._user = (user as Record<string, unknown>) ?? null;
+    this._user.value = (user as Record<string, unknown>) ?? null;
   }
 
   async setUserToken(token: string): Promise<void> {
@@ -32,6 +36,6 @@ export class AuthService implements IAuthService {
 
   async logout(): Promise<void> {
     this.tokenRef.value = null;
-    this._user = null;
+    this._user.value = null;
   }
 }

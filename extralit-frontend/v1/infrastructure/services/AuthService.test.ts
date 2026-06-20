@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
+import { computed } from "vue";
 import { AuthService } from "./AuthService";
 
 describe("AuthService", () => {
@@ -26,6 +27,19 @@ describe("AuthService", () => {
     await a.setUserToken("ABC");
     expect(a.loggedIn).toBe(true);
     expect(a.token).toBe("ABC");
+  });
+
+  it("exposes user reactively so computed dependents update", () => {
+    // Regression: @nuxtjs/auth-next exposed a reactive $auth.user; the hand-rolled
+    // replacement must keep it reactive or useUser()/useRole() computeds go stale.
+    const a = new AuthService(fakeCookie("t") as never);
+    const currentUser = computed(() => a.user);
+
+    expect(currentUser.value).toBeNull();
+
+    a.setUser({ id: 1, username: "owner" });
+
+    expect(currentUser.value).toEqual({ id: 1, username: "owner" });
   });
 
   it("clears token and user on logout", async () => {

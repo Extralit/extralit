@@ -45,7 +45,6 @@ def create_user(
             first_name=first_name,
             last_name=last_name,
             role=role,
-            workspaces=workspaces,
             client=client,
         )
 
