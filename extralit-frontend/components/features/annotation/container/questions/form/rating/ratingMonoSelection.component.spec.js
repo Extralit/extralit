@@ -11,7 +11,7 @@ const options = {
     },
   },
   props: {
-    options: [
+    modelValue: [
       { id: "helpfulness_reply_1_1", value: 1, text: 1, isSelected: false },
       { id: "helpfulness_reply_1_2", value: 2, text: 2, isSelected: false },
       { id: "helpfulness_reply_1_3", value: 3, text: 3, isSelected: false },
@@ -62,7 +62,7 @@ describe("RatingMonoSelectionComponent", () => {
     const checkbox4 = wrapper.find("#helpfulness_reply_1_4");
     const checkbox5 = wrapper.find("#helpfulness_reply_1_5");
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       { id: "helpfulness_reply_1_1", value: 1, text: 1, isSelected: false },
       { id: "helpfulness_reply_1_2", value: 2, text: 2, isSelected: false },
       { id: "helpfulness_reply_1_3", value: 3, text: 3, isSelected: false },
@@ -72,7 +72,7 @@ describe("RatingMonoSelectionComponent", () => {
 
     await checkbox1.setChecked();
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       { id: "helpfulness_reply_1_1", value: 1, text: 1, isSelected: true },
       { id: "helpfulness_reply_1_2", value: 2, text: 2, isSelected: false },
       { id: "helpfulness_reply_1_3", value: 3, text: 3, isSelected: false },

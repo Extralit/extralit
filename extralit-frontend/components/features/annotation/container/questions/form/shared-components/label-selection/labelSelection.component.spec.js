@@ -16,7 +16,7 @@ const options = {
   },
   props: {
     componentId: `componentId`,
-    options: [],
+    modelValue: [],
     maxOptionsToShowBeforeCollapse: 0,
   },
 };
@@ -63,7 +63,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 1,
     });
 
@@ -108,7 +108,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 2,
     });
 
@@ -162,7 +162,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
     });
 
@@ -219,14 +219,14 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
     });
 
     // by default it's a single selection
     expect(wrapper.vm.multiple).toBe(false);
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -249,7 +249,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     const checkbox = wrapper.find("#sentiment_positive");
     await checkbox.setChecked();
     expect(checkbox.element.checked).toBeTruthy();
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -293,14 +293,14 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
     });
 
     // by default it's a single selection
     expect(wrapper.vm.multiple).toBe(false);
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -323,7 +323,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     const checkbox = wrapper.find("#sentiment_very_positive");
     await checkbox.setChecked();
     expect(checkbox.element.checked).toBeTruthy();
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -367,7 +367,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       showSearch: true,
     });
@@ -473,7 +473,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 2,
       showSearch: true,
     });
@@ -558,7 +558,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       multiple: true,
     });
@@ -616,7 +616,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       multiple: true,
     });
@@ -624,7 +624,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     // by default it's a single selection
     expect(wrapper.vm.multiple).toBe(true);
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -647,7 +647,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     const checkbox = wrapper.find("#sentiment_positive");
     await checkbox.setChecked();
     expect(checkbox.element.checked).toBeTruthy();
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -691,7 +691,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       multiple: true,
     });
@@ -699,7 +699,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     // by default it's a single selection
     expect(wrapper.vm.multiple).toBe(true);
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -722,7 +722,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     const checkbox = wrapper.find("#sentiment_very_positive");
     await checkbox.setChecked();
     expect(checkbox.element.checked).toBeTruthy();
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -766,7 +766,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       multiple: true,
       showSearch: true,
@@ -873,7 +873,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       multiple: true,
       maxOptionsToShowBeforeCollapse: 2,
       showSearch: true,

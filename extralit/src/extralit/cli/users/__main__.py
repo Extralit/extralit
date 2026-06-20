@@ -50,10 +50,34 @@ def create_user(
 
         user.create()
 
+        linked_workspaces: list[str] = []
+        unknown_workspaces: list[str] = []
+        for workspace_name in workspaces or []:
+            workspace = client.workspaces(name=workspace_name)
+            if workspace is None:
+                unknown_workspaces.append(workspace_name)
+                continue
+            user.add_to_workspace(workspace)
+            linked_workspaces.append(workspace_name)
+
+        title = "User created"
+        if linked_workspaces:
+            title += f" (linked to workspaces: {', '.join(linked_workspaces)})"
+
         print_rich_table(
             [user],
-            title="User created",
+            title=title,
         )
+
+        if unknown_workspaces:
+            panel = get_themed_panel(
+                "User was created, but the following workspaces were not found and "
+                f"could not be linked: {', '.join(unknown_workspaces)}.",
+                title="Some workspaces not linked",
+                title_align="left",
+                success=False,
+            )
+            Console().print(panel)
     except KeyError:
         panel = get_themed_panel(
             f"User with name={username} already exists.",
