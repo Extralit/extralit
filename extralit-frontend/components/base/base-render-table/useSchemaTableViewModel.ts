@@ -1,11 +1,11 @@
 import { isEqual } from "lodash";
-import { ref, Ref } from "vue-demi";
+import { ref, type Ref } from "vue";
 import { useResolve } from "ts-injecty";
 
 import { Question } from "@/v1/domain/entities/question/Question";
 import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-schema-use-case";
 import { TableData } from "@/v1/domain/entities/table/TableData";
-import { ValidationSchema } from "@/v1/domain/entities/table/Validation";
+import { type ValidationSchema } from "@/v1/domain/entities/table/Validation";
 import { DataFrameSchema } from "@/v1/domain/entities/table/Schema";
 
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";

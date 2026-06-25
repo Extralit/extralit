@@ -17,9 +17,9 @@
       :is-expanded="isExpanded"
       @toggle-expand="toggleExpand"
     >
-      <slot name="downHeader" slot="panelHeader" />
-      <slot name="downHeaderExpanded" slot="panelHeaderExpanded" />
-      <slot name="downContent" slot="panelContent" />
+      <template #panelHeader><slot name="downHeader" /></template>
+      <template #panelHeaderExpanded><slot name="downHeaderExpanded" /></template>
+      <template #panelContent><slot name="downContent" /></template>
     </BaseCollapsablePanel>
   </div>
 </template>
@@ -124,7 +124,7 @@ export default {
       this.upSide.style.height = "100%";
     }
   },
-  destroyed() {
+  unmounted() {
     this.resizer?.removeEventListener(EVENT.MOUSE_DOWN, this.mouseDownHandler);
   },
   methods: {

@@ -2,7 +2,7 @@
 
 ## Architecture Notes
 - **extralit-server/**: FastAPI + PostgreSQL + Redis Queue
-- **extralit-frontend/**: Vue.js/Nuxt.js (Vuex → Pinia migration)
+- **extralit-frontend/**: Vue 3 / Nuxt 4 (Vite); Pinia state management
 - **extralit/**: Python SDK client
 - **extralit-hf-space/**: Self-contained HF Spaces deployment bundle (Docker; bundles Elasticsearch + Redis + OCR) — git submodule
 - **Vector DB**: Elasticsearch/OpenSearch (separate service)

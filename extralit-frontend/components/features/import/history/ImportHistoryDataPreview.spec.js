@@ -3,8 +3,8 @@ import ImportHistoryDataPreview from "./ImportHistoryDataPreview.vue";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 
 // Mock dependencies
-jest.mock("~/v1/domain/entities/import/ImportHistoryDetails", () => ({
-  ImportHistoryDetails: jest.fn(),
+vi.mock("~/v1/domain/entities/import/ImportHistoryDetails", () => ({
+  ImportHistoryDetails: vi.fn(),
 }));
 
 describe("ImportHistoryDataPreview", () => {
@@ -52,32 +52,31 @@ describe("ImportHistoryDataPreview", () => {
         skip_count: 0,
         failed_count: 0,
       },
-      getFieldStats: jest.fn(),
+      getFieldStats: vi.fn(),
     };
 
-    const ImportHistoryDetails = require("~/v1/domain/entities/import/ImportHistoryDetails");
-    ImportHistoryDetails.ImportHistoryDetails.mockImplementation(() => mockImportHistoryDetails);
+    ImportHistoryDetails.mockImplementation(() => mockImportHistoryDetails);
   });
 
   afterEach(() => {
     if (wrapper) {
-      wrapper.destroy();
+      wrapper.unmount();
     }
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Loading State", () => {
     it("should display loading state when loading is true", () => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: true,
           importHistoryDetails: null,
         },
-        stubs: {
-          BaseSpinner: {
+        global: { stubs: {
+          BaseSpinnerComponent: {
             template: '<div class="mock-spinner">Loading...</div>',
           },
-        },
+        } },
       });
 
       expect(wrapper.find(".loading-state").exists()).toBe(true);
@@ -89,12 +88,12 @@ describe("ImportHistoryDataPreview", () => {
   describe("Error State", () => {
     it("should display error state when error prop is provided", () => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: "Failed to load import data",
           importHistoryDetails: null,
         },
-        stubs: {
+        global: { stubs: {
           BaseIcon: {
             template: '<div class="mock-icon"></div>',
             props: ["icon-name"],
@@ -103,7 +102,7 @@ describe("ImportHistoryDataPreview", () => {
             template: '<button class="mock-button" @click="$emit(\'click\')"><slot /></button>',
             props: ["variant"],
           },
-        },
+        } },
       });
 
       expect(wrapper.find(".error-state").exists()).toBe(true);
@@ -114,18 +113,19 @@ describe("ImportHistoryDataPreview", () => {
 
     it("should emit retry event when retry button is clicked", async () => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: "Network error",
           importHistoryDetails: null,
         },
-        stubs: {
+        global: { stubs: {
           BaseIcon: true,
           BaseButton: {
             template: "<button @click=\"$emit('click')\"><slot /></button>",
             props: ["variant"],
+            emits: ["click"],
           },
-        },
+        } },
       });
 
       await wrapper.find("button").trigger("click");
@@ -138,14 +138,14 @@ describe("ImportHistoryDataPreview", () => {
   describe("Empty State", () => {
     it("should display empty state when no import history details", () => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: null,
         },
-        stubs: {
+        global: { stubs: {
           BaseIcon: true,
-        },
+        } },
       });
 
       expect(wrapper.find(".empty-state").exists()).toBe(true);
@@ -157,17 +157,17 @@ describe("ImportHistoryDataPreview", () => {
   describe("Main Content", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: {
             template: '<div class="mock-table" @row-click="$emit(\'row-click\', $event)"></div>',
             props: ["data", "columns", "options", "loading"],
           },
-        },
+        } },
       });
     });
 
@@ -225,14 +225,14 @@ describe("ImportHistoryDataPreview", () => {
   describe("Data Filtering", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
     });
 
@@ -245,13 +245,21 @@ describe("ImportHistoryDataPreview", () => {
     });
 
     it("should filter data by status", async () => {
-      // Add a record with different status for testing
-      mockImportHistoryDetails.records.push({
-        reference: "paper_003",
-        title: "Updated Paper",
-        status: "update",
-      });
-      mockImportHistoryDetails.metadata.paper_003 = { status: "update" };
+      // Add a record with different status for testing. Vue 3 computed caching
+      // does not react to mutating the original prop object in place, so push a
+      // fresh details object through setProps to trigger re-computation.
+      const updatedDetails = {
+        ...mockImportHistoryDetails,
+        records: [
+          ...mockImportHistoryDetails.records,
+          { reference: "paper_003", title: "Updated Paper", status: "update" },
+        ],
+        metadata: {
+          ...mockImportHistoryDetails.metadata,
+          paper_003: { status: "update" },
+        },
+      };
+      await wrapper.setProps({ importHistoryDetails: updatedDetails });
 
       await wrapper.setData({ statusFilter: "update" });
 
@@ -271,14 +279,14 @@ describe("ImportHistoryDataPreview", () => {
   describe("Column Formatters", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
     });
 
@@ -323,14 +331,14 @@ describe("ImportHistoryDataPreview", () => {
   describe("Table Options", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
     });
 
@@ -352,8 +360,10 @@ describe("ImportHistoryDataPreview", () => {
         title: `Paper Title ${i}`,
       }));
 
-      mockImportHistoryDetails.records = manyRecords;
-      await wrapper.vm.$forceUpdate();
+      // Vue 3 computed caching requires a new prop object to recompute.
+      await wrapper.setProps({
+        importHistoryDetails: { ...mockImportHistoryDetails, records: manyRecords },
+      });
 
       const options = wrapper.vm.tableOptions;
       expect(options.pagination).toBe(true);
@@ -363,14 +373,14 @@ describe("ImportHistoryDataPreview", () => {
   describe("Public Methods", () => {
     beforeEach(() => {
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
     });
 
@@ -411,14 +421,14 @@ describe("ImportHistoryDataPreview", () => {
       mockImportHistoryDetails.createdAt = "invalid-date";
 
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
 
       // Should not throw error and should show fallback text
@@ -430,14 +440,14 @@ describe("ImportHistoryDataPreview", () => {
       mockImportHistoryDetails.schema = null;
 
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
 
       expect(wrapper.vm.tableColumns).toEqual([]);
@@ -447,14 +457,14 @@ describe("ImportHistoryDataPreview", () => {
       mockImportHistoryDetails.records = null;
 
       wrapper = mount(ImportHistoryDataPreview, {
-        propsData: {
+        props: {
           loading: false,
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        stubs: {
+        global: { stubs: {
           BaseSimpleTable: true,
-        },
+        } },
       });
 
       expect(wrapper.vm.tableData).toEqual([]);

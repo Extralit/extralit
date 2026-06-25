@@ -51,9 +51,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/danger";
-import "assets/icons/document";
-import "assets/icons/import";
 import { useRecentImportsViewModel } from "./useRecentImportsViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 

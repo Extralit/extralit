@@ -1,5 +1,5 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { BackendJob } from "../types/dataset";
+import type { AxiosInstance } from "axios";
+import { type BackendJob } from "../types/dataset";
 
 class JobStatus {
   constructor(public readonly jobId: string, private readonly status: string) {}
@@ -42,7 +42,7 @@ class JobStatus {
 }
 
 export class JobRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async getJobStatus(jobId: string): Promise<JobStatus> {
     try {

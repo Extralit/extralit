@@ -5,7 +5,7 @@ import BaseDropdown from "../base-dropdown/BaseDropdown.vue";
 
 const options = {
   components: { RenderHTML, BaseButton, BaseDropdown },
-  propsData: {
+  props: {
     value: "<p>Test</p>",
     placeholder: "Enter text...",
     originalValue: "<p>Original</p>",
@@ -48,7 +48,7 @@ describe("RenderHTML", () => {
   });
 
   it("calls replaceAll method and updates the content", async () => {
-    jest.spyOn(wrapper.vm, "replaceAll").mockImplementation(() => {
+    vi.spyOn(wrapper.vm, "replaceAll").mockImplementation(() => {
       wrapper.vm.editor.commands.setContent("<p>Replaced</p>");
     });
     await wrapper.vm.replaceAll();

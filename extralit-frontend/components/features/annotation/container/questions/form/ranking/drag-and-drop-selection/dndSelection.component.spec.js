@@ -5,12 +5,14 @@ import { settingsFake, settingsFakeWith12Elements } from "../ranking-fakes";
 
 let wrapper = null;
 const options = {
-  stubs: ["draggable", "BaseTooltip"],
-  propsData: { ranking: {} },
+  global: {
+    stubs: ["draggable", "BaseTooltip"],
+  },
+  props: { ranking: {} },
 };
 
 const eventFor = (key) => {
-  return { stopPropagation: jest.fn(), key };
+  return { stopPropagation: vi.fn(), key };
 };
 
 beforeEach(() => {
@@ -18,12 +20,12 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("DndSelectionComponent", () => {
   it("render the component", () => {
-    expect(wrapper.is(DndSelectionComponent)).toBe(true);
+    expect(wrapper.findComponent(DndSelectionComponent).exists()).toBe(true);
   });
   it("has a ranking prop as required and must be an Object", () => {
     expect(DndSelectionComponent.props.ranking).toMatchObject({
@@ -39,7 +41,7 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
 
     component.vm.rankWithKeyboard(eventFor("5"), questionOne);
@@ -55,7 +57,7 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
 
     component.vm.rankWithKeyboard(eventFor("&"), questionOne);
@@ -71,12 +73,12 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
 
     component.vm.rankWithKeyboard(eventFor("1"), questionOne);
 
-    expect(component.vm.ranking.slots[0].items[0]).toBe(questionOne);
+    expect(component.vm.ranking.slots[0].items[0]).toStrictEqual(questionOne);
   });
 
   it("prevent duplicate question if user try to move twice the same question", () => {
@@ -84,13 +86,13 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
     component.vm.rankWithKeyboard(eventFor("1"), questionOne);
 
     component.vm.rankWithKeyboard(eventFor("1"), questionOne);
 
-    expect(component.vm.ranking.slots[0].items[0]).toBe(questionOne);
+    expect(component.vm.ranking.slots[0].items[0]).toStrictEqual(questionOne);
     expect(component.vm.ranking.slots[0].items.length).toBe(1);
     expect(component.vm.ranking.questions.length).toBe(3);
   });
@@ -100,7 +102,7 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
     component.vm.rankWithKeyboard(eventFor("2"), questionOne);
 
@@ -112,7 +114,7 @@ describe("rankWithKeyboard should", () => {
 
     component.vm.rankWithKeyboard(eventFor("1"), questionOne);
 
-    expect(component.vm.ranking.slots[0].items[0]).toBe(questionOne);
+    expect(component.vm.ranking.slots[0].items[0]).toStrictEqual(questionOne);
     expect(component.vm.ranking.slots[0].items.length).toBe(1);
     expect(component.vm.ranking.questions.length).toBe(3);
     expect(component.vm.ranking.slots[1].items.length).toBe(0);
@@ -123,14 +125,14 @@ describe("rankWithKeyboard should", () => {
     const questionOne = ranking.questions[0];
     const component = shallowMount(DndSelectionComponent, {
       ...options,
-      propsData: { ranking },
+      props: { ranking },
     });
 
     component.vm.rankWithKeyboard(eventFor("1"), questionOne);
     component.vm.rankWithKeyboard(eventFor("1"), questionOne);
 
     expect(component.vm.ranking.slots[10].items.length).toBe(1);
-    expect(component.vm.ranking.slots[10].items[0]).toBe(questionOne);
+    expect(component.vm.ranking.slots[10].items[0]).toStrictEqual(questionOne);
     expect(component.vm.ranking.questions.length).toBe(11);
   });
 });

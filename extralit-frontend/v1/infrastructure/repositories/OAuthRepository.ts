@@ -1,11 +1,11 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { Response } from "../types";
+import type { AxiosInstance } from "axios";
+import { type Response } from "../types";
 import { useRunningEnvironment } from "../services/useRunningEnvironment";
-import { PublicNuxtAxiosInstance } from "../services/useAxiosExtension";
+import { type PublicAxiosInstance } from "../services/useAxiosExtension";
 import { largeCache } from "./AxiosCache";
-import { OAuthParams, OAuthProvider, ProviderType } from "~/v1/domain/entities/oauth/OAuthProvider";
-import { IOAuthRepository } from "~/v1/domain/services/IOAuthRepository";
-import { RouterService } from "~/v1/domain/services/RouterService";
+import { type OAuthParams, OAuthProvider, type ProviderType } from "~/v1/domain/entities/oauth/OAuthProvider";
+import { type IOAuthRepository } from "~/v1/domain/services/IOAuthRepository";
+import { type RouterService } from "~/v1/domain/services/RouterService";
 
 const OAUTH_API_ERRORS = {
   ERROR_FETCHING_OAUTH_PROVIDERS: "ERROR_FETCHING_OAUTH_PROVIDERS",
@@ -17,8 +17,8 @@ interface BackendOAuthProvider {
 }
 
 export class OAuthRepository implements IOAuthRepository {
-  private readonly axios: NuxtAxiosInstance;
-  constructor(axios: PublicNuxtAxiosInstance, private readonly router: RouterService) {
+  private readonly axios: AxiosInstance;
+  constructor(axios: PublicAxiosInstance, private readonly router: RouterService) {
     this.axios = axios.makePublic();
   }
 

@@ -146,7 +146,7 @@ export default {
   methods: {
     onBreadcrumbAction(e) {
       if (e === "clearFilters") {
-        this.$refs.datasetList?.clearFilters();
+        (this.$refs.datasetList as { clearFilters?: () => void })?.clearFilters();
       }
     },
     cardAction(action) {

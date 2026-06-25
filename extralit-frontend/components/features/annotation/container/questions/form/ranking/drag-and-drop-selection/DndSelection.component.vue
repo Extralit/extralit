@@ -7,37 +7,38 @@
       :sort="false"
       role="listbox"
       aria-orientation="vertical"
+      item-key="value"
     >
-      <div
-        v-for="item in ranking.questions"
-        :id="item.value"
-        :key="item.value"
-        :title="item.text"
-        tabindex="0"
-        ref="questions"
-        @keydown="rankWithKeyboard($event, item)"
-        @focus="onFocus"
-      >
-        <BaseTooltip
-          class="draggable__rank-card--unranked"
-          :title="isSuggested(item) ? $t('suggestion.name') : null"
-          :text="getSuggestedAgent(item)"
-          minimalist
+      <template #item="{ element: item }">
+        <div
+          :id="item.value"
+          :title="item.text"
+          tabindex="0"
+          ref="questions"
+          @keydown="rankWithKeyboard($event, item)"
+          @focus="onFocus"
         >
-          <svgicon width="6" name="draggable" :id="`${item.value}-icon`" aria-label="Dragging Icon" />
-          <span class="draggable__rank-card__title" v-text="item.text" :id="`${item.value}-span`" />
+          <BaseTooltip
+            class="draggable__rank-card--unranked"
+            :title="isSuggested(item) ? $t('suggestion.name') : null"
+            :text="getSuggestedAgent(item)"
+            minimalist
+          >
+            <svgicon width="6" name="draggable" :id="`${item.value}-icon`" aria-label="Dragging Icon" />
+            <span class="draggable__rank-card__title" v-text="item.text" :id="`${item.value}-span`" />
 
-          <span v-if="isSuggested(item)" class="draggable__suggestion">
-            <span v-text="getSuggestedRank(item)" />
-            <svgicon name="suggestion" width="10" height="10" />
-            <span
-              class="draggable__suggestion__score"
-              v-if="getSuggestedScore(item)"
-              v-text="getSuggestedScore(item)"
-            />
-          </span>
-        </BaseTooltip>
-      </div>
+            <span v-if="isSuggested(item)" class="draggable__suggestion">
+              <span v-text="getSuggestedRank(item)" />
+              <svgicon name="suggestion" width="10" height="10" />
+              <span
+                class="draggable__suggestion__score"
+                v-if="getSuggestedScore(item)"
+                v-text="getSuggestedScore(item)"
+              />
+            </span>
+          </BaseTooltip>
+        </div>
+      </template>
     </draggable>
     <div class="draggable__slots-container">
       <div
@@ -52,39 +53,40 @@
           :list="items"
           group="question"
           :sort="false"
+          item-key="value"
           @add="onMoveEnd"
           @remove="onMoveEnd"
         >
-          <div
-            v-for="item in items"
-            :id="item.value"
-            :key="item.value"
-            :title="item.text"
-            tabindex="0"
-            ref="items"
-            @keydown="rankWithKeyboard($event, item)"
-            @focus="onFocus"
-          >
-            <BaseTooltip
-              :title="isSuggested(item) ? $t('suggestion.name') : null"
-              :text="getSuggestedAgent(item)"
-              minimalist
-              class="draggable__rank-card--ranked"
+          <template #item="{ element: item }">
+            <div
+              :id="item.value"
+              :title="item.text"
+              tabindex="0"
+              ref="items"
+              @keydown="rankWithKeyboard($event, item)"
+              @focus="onFocus"
             >
-              <svgicon width="6" name="draggable" :id="`${item.value}-icon`" />
-              <span class="draggable__rank-card__title" v-text="item.text" :id="`${item.value}-span`" />
+              <BaseTooltip
+                :title="isSuggested(item) ? $t('suggestion.name') : null"
+                :text="getSuggestedAgent(item)"
+                minimalist
+                class="draggable__rank-card--ranked"
+              >
+                <svgicon width="6" name="draggable" :id="`${item.value}-icon`" />
+                <span class="draggable__rank-card__title" v-text="item.text" :id="`${item.value}-span`" />
 
-              <span v-if="isSuggested(item)" class="draggable__suggestion">
-                <span v-text="getSuggestedRank(item)" />
-                <svgicon name="suggestion" width="10" height="10" />
-                <span
-                  class="draggable__suggestion__score"
-                  v-if="getSuggestedScore(item)"
-                  v-text="getSuggestedScore(item)"
-                />
-              </span>
-            </BaseTooltip>
-          </div>
+                <span v-if="isSuggested(item)" class="draggable__suggestion">
+                  <span v-text="getSuggestedRank(item)" />
+                  <svgicon name="suggestion" width="10" height="10" />
+                  <span
+                    class="draggable__suggestion__score"
+                    v-if="getSuggestedScore(item)"
+                    v-text="getSuggestedScore(item)"
+                  />
+                </span>
+              </BaseTooltip>
+            </div>
+          </template>
         </draggable>
       </div>
     </div>
@@ -92,7 +94,6 @@
 </template>
 
 <script>
-import "assets/icons/draggable";
 
 export default {
   name: "DndSelectionComponent",
@@ -186,7 +187,7 @@ export default {
         const firstQuestion = this.$refs.questions?.find(({ title }) => title == this.ranking.questions[0]?.text);
 
         if (!firstQuestion) {
-          const firstItem = this.$refs.items[0];
+          const firstItem = this.$refs.items?.[0];
 
           firstItem?.focus();
 

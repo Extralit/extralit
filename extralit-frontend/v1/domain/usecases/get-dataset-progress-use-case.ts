@@ -1,5 +1,5 @@
-import { IDatasetRepository } from "../services/IDatasetRepository";
-import { ITeamProgressStorage } from "../services/ITeamProgressStorage";
+import { type IDatasetRepository } from "../services/IDatasetRepository";
+import { type ITeamProgressStorage } from "../services/ITeamProgressStorage";
 
 export class GetDatasetProgressUseCase {
   constructor(

@@ -3,8 +3,8 @@ import {
   type TextSelection,
   type Entity,
   SpanSelection,
-  Configuration,
-  OverlappedSpan,
+  type Configuration,
+  type OverlappedSpan,
 } from "./span-selection";
 
 export type LoadedSpan = Omit<Span, "text" | "node">;
@@ -56,6 +56,7 @@ export class Highlighting {
   private readonly styles: Required<Styles>;
   private entity: Entity = null;
   private scrollingElement: HTMLElement;
+  private entityAppDisposers: Array<() => void> = [];
   readonly config: Configuration;
 
   constructor(
@@ -67,7 +68,7 @@ export class Highlighting {
       removeSpan: (span: Span) => void,
       replaceEntity: (entity: Entity) => void,
       cloneSpanWith: (span: Span, entity: Entity) => void
-    ) => Element,
+    ) => { element: Element; unmount: () => void },
     config?: InitialConfiguration,
     styles?: Styles
   ) {
@@ -122,7 +123,15 @@ export class Highlighting {
   }
 
   unmount() {
+    this.disposeEntityApps();
     this.removeAllHighlights();
+  }
+
+  private disposeEntityApps() {
+    for (const dispose of this.entityAppDisposers) {
+      dispose();
+    }
+    this.entityAppDisposers = [];
   }
 
   changeSelectedEntity(entity: Entity) {
@@ -321,6 +330,8 @@ export class Highlighting {
   }
 
   private applyEntityStyle() {
+    this.disposeEntityApps();
+
     while (this.entitySpanContainer.firstChild) {
       this.entitySpanContainer.removeChild(this.entitySpanContainer.firstChild);
     }
@@ -330,7 +341,7 @@ export class Highlighting {
     for (const span of this.nodeSpans) {
       const entityPosition = this.createPosition(span);
 
-      const entityElement = this.EntityComponentConstructor(
+      const { element, unmount } = this.EntityComponentConstructor(
         span,
         entityPosition,
         (isHovered) => this.hoverSpan(span, isHovered),
@@ -339,7 +350,8 @@ export class Highlighting {
         (span, newEntity) => this.addSpanBaseOn(span, newEntity)
       );
 
-      this.entitySpanContainer.appendChild(entityElement);
+      this.entityAppDisposers.push(unmount);
+      this.entitySpanContainer.appendChild(element);
     }
   }
 

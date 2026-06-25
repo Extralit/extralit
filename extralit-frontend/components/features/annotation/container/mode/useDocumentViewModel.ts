@@ -1,4 +1,4 @@
-import { ref, watch, computed } from "vue-demi";
+import { ref, watch, computed } from "vue";
 import { useResolve } from "ts-injecty";
 import { GetDocumentByRecordMetadataUseCase } from "~/v1/domain/usecases/get-document-by-record-metadata-use-case";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";

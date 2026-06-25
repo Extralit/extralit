@@ -2,13 +2,13 @@
   <div class="dataset-total">
     <template v-if="!!total">
       <svgicon name="records" height="12" width="12" color="var(--fg-tertiary)" aria-hidden="true" />
-      <span>{{ total | formatNumberToK(2) }} {{ $t("rows") }}</span>
+      <span>{{ formatNumberToK(total, 2) }} {{ $t("rows") }}</span>
     </template>
   </div>
 </template>
 
 <script>
-import "assets/icons/records";
+import { formatNumberToK } from "@/v1/infrastructure/services/format-number";
 
 export default {
   props: {
@@ -16,6 +16,9 @@ export default {
       type: Number,
       required: true,
     },
+  },
+  methods: {
+    formatNumberToK,
   },
 };
 </script>

@@ -20,12 +20,9 @@
 <script>
 export default {
   props: {
-    dataset: {
+    modelValue: {
       type: Object,
     },
-  },
-  model: {
-    prop: "dataset",
   },
   data() {
     return {
@@ -45,15 +42,15 @@ export default {
   },
   computed: {
     sanitizedDescription() {
-      return this.dataset.guidelines ?? "";
+      return this.modelValue.guidelines ?? "";
     },
     originalSanitizedDescription() {
-      return this.dataset.original.guidelines ?? "";
+      return this.modelValue.original.guidelines ?? "";
     },
   },
   methods: {
     onChangeTextArea(newText) {
-      this.dataset.guidelines = newText;
+      this.modelValue.guidelines = newText;
     },
   },
 };

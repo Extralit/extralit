@@ -17,12 +17,7 @@
 </template>
 
 <script>
-import "assets/icons/close";
-import ClickOutside from "v-click-outside";
 export default {
-  directives: {
-    clickOutside: ClickOutside.directive,
-  },
   props: {
     modalCloseButton: {
       type: Boolean,
@@ -203,12 +198,12 @@ export default {
   margin-top: 0;
 }
 
-.modal-enter,
+.modal-enter-from,
 .modal-leave-active {
   opacity: 0;
 }
 
-.modal-enter .modal-container,
+.modal-enter-from .modal-container,
 .modal-leave-active .modal-container {
   transform: scale(0.99);
 }

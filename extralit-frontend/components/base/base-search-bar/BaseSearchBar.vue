@@ -26,10 +26,9 @@
   </BaseInputContainer>
 </template>
 <script>
-import "assets/icons/search";
-import "assets/icons/close";
 
 export default {
+  emits: ["input"],
   props: {
     querySearch: {
       type: String,

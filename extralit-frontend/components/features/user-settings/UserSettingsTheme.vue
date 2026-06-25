@@ -11,10 +11,6 @@
 </template>
 
 <script>
-import "assets/icons/light-theme";
-import "assets/icons/dark-theme";
-import "assets/icons/system-theme";
-import "assets/icons/high-contrast-theme";
 
 export default {
   data() {

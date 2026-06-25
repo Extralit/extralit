@@ -4,7 +4,7 @@ import { Question } from "@/v1/domain/entities/question/Question";
 import { GetLLMExtractionUseCase } from "@/v1/domain/usecases/get-extraction-completion-use-case";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
-import { Data, ReferenceValues, TableData } from "@/v1/domain/entities/table/TableData";
+import { type Data, type ReferenceValues, TableData } from "@/v1/domain/entities/table/TableData";
 
 
 export const useLLMExtractionViewModel = (

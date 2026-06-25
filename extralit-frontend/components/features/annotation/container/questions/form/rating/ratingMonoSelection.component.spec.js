@@ -3,9 +3,15 @@ import RatingMonoSelectionComponent from "./RatingMonoSelection.component";
 
 let wrapper = null;
 const options = {
-  stubs: ["BaseTooltip"],
-  propsData: {
-    options: [
+  global: {
+    stubs: {
+      // Render the default slot so the inner <input>/<label> are present
+      // (VTU v2 stubs drop slot content by default, unlike VTU v1).
+      BaseTooltip: { template: "<div><slot /></div>" },
+    },
+  },
+  props: {
+    modelValue: [
       { id: "helpfulness_reply_1_1", value: 1, text: 1, isSelected: false },
       { id: "helpfulness_reply_1_2", value: 2, text: 2, isSelected: false },
       { id: "helpfulness_reply_1_3", value: 3, text: 3, isSelected: false },
@@ -19,33 +25,33 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("RatingMonoSelectionComponent", () => {
   it("render the component and the rating options", () => {
-    expect(wrapper.is(RatingMonoSelectionComponent)).toBe(true);
+    expect(wrapper.findComponent(RatingMonoSelectionComponent).exists()).toBe(true);
 
     const labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("label-text");
-    expect(labelsWrapper.at(0).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(0).text()).toBe("1");
+    expect(labelsWrapper[0].classes()).toContain("label-text");
+    expect(labelsWrapper[0].classes()).not.toContain("label-active");
+    expect(labelsWrapper[0].text()).toBe("1");
 
-    expect(labelsWrapper.at(1).classes()).toContain("label-text");
-    expect(labelsWrapper.at(1).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(1).text()).toBe("2");
+    expect(labelsWrapper[1].classes()).toContain("label-text");
+    expect(labelsWrapper[1].classes()).not.toContain("label-active");
+    expect(labelsWrapper[1].text()).toBe("2");
 
-    expect(labelsWrapper.at(2).classes()).toContain("label-text");
-    expect(labelsWrapper.at(2).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(2).text()).toBe("3");
+    expect(labelsWrapper[2].classes()).toContain("label-text");
+    expect(labelsWrapper[2].classes()).not.toContain("label-active");
+    expect(labelsWrapper[2].text()).toBe("3");
 
-    expect(labelsWrapper.at(3).classes()).toContain("label-text");
-    expect(labelsWrapper.at(3).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(3).text()).toBe("4");
+    expect(labelsWrapper[3].classes()).toContain("label-text");
+    expect(labelsWrapper[3].classes()).not.toContain("label-active");
+    expect(labelsWrapper[3].text()).toBe("4");
 
-    expect(labelsWrapper.at(4).classes()).toContain("label-text");
-    expect(labelsWrapper.at(4).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(4).text()).toBe("5");
+    expect(labelsWrapper[4].classes()).toContain("label-text");
+    expect(labelsWrapper[4].classes()).not.toContain("label-active");
+    expect(labelsWrapper[4].text()).toBe("5");
 
     expect(labelsWrapper.length).toBe(5);
   });
@@ -56,7 +62,7 @@ describe("RatingMonoSelectionComponent", () => {
     const checkbox4 = wrapper.find("#helpfulness_reply_1_4");
     const checkbox5 = wrapper.find("#helpfulness_reply_1_5");
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       { id: "helpfulness_reply_1_1", value: 1, text: 1, isSelected: false },
       { id: "helpfulness_reply_1_2", value: 2, text: 2, isSelected: false },
       { id: "helpfulness_reply_1_3", value: 3, text: 3, isSelected: false },
@@ -66,7 +72,7 @@ describe("RatingMonoSelectionComponent", () => {
 
     await checkbox1.setChecked();
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       { id: "helpfulness_reply_1_1", value: 1, text: 1, isSelected: true },
       { id: "helpfulness_reply_1_2", value: 2, text: 2, isSelected: false },
       { id: "helpfulness_reply_1_3", value: 3, text: 3, isSelected: false },
@@ -81,11 +87,11 @@ describe("RatingMonoSelectionComponent", () => {
     expect(checkbox5.element.checked).toBeFalsy();
 
     const labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("label-active");
-    expect(labelsWrapper.at(1).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(2).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(3).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(4).classes()).not.toContain("label-active");
+    expect(labelsWrapper[0].classes()).toContain("label-active");
+    expect(labelsWrapper[1].classes()).not.toContain("label-active");
+    expect(labelsWrapper[2].classes()).not.toContain("label-active");
+    expect(labelsWrapper[3].classes()).not.toContain("label-active");
+    expect(labelsWrapper[4].classes()).not.toContain("label-active");
     expect(labelsWrapper.length).toBe(5);
   });
   it("update the flag 'isSelected' of the corresponding checkbox which have been selected previously => unselect a select checkbox", async () => {
@@ -105,11 +111,11 @@ describe("RatingMonoSelectionComponent", () => {
     expect(checkbox5.element.checked).toBeFalsy();
 
     const labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(1).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(2).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(3).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(4).classes()).not.toContain("label-active");
+    expect(labelsWrapper[0].classes()).not.toContain("label-active");
+    expect(labelsWrapper[1].classes()).not.toContain("label-active");
+    expect(labelsWrapper[2].classes()).not.toContain("label-active");
+    expect(labelsWrapper[3].classes()).not.toContain("label-active");
+    expect(labelsWrapper[4].classes()).not.toContain("label-active");
     expect(labelsWrapper.length).toBe(5);
   });
   it("update the flag 'isSelected' of the corresponding checkbox which have been selected previously => ensure that only one checkbox is checked at a time", async () => {
@@ -129,11 +135,11 @@ describe("RatingMonoSelectionComponent", () => {
     expect(checkbox5.element.checked).toBeTruthy();
 
     const labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(1).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(2).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(3).classes()).not.toContain("label-active");
-    expect(labelsWrapper.at(4).classes()).toContain("label-active");
+    expect(labelsWrapper[0].classes()).not.toContain("label-active");
+    expect(labelsWrapper[1].classes()).not.toContain("label-active");
+    expect(labelsWrapper[2].classes()).not.toContain("label-active");
+    expect(labelsWrapper[3].classes()).not.toContain("label-active");
+    expect(labelsWrapper[4].classes()).toContain("label-active");
     expect(labelsWrapper.length).toBe(5);
   });
 });

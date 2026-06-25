@@ -6,15 +6,15 @@
     @visibility="onVisibility"
     v-if="options.length"
   >
-    <template slot="dropdown-header">
+    <template #dropdown-header>
       {{ useExtraText }}
       {{ selectedValue }}
       <svgicon name="chevron-down" height="8" />
     </template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <ul class="similarity-config__options">
         <li
-          :class="value === getKeyProp(option) ? 'similarity-config__option--selected' : 'similarity-config__option'"
+          :class="modelValue === getKeyProp(option) ? 'similarity-config__option--selected' : 'similarity-config__option'"
           v-for="option in options"
           :key="getKeyProp(option)"
           @click="selectOption(getKeyProp(option))"
@@ -29,7 +29,7 @@
 <script>
 export default {
   props: {
-    value: {
+    modelValue: {
       type: [String, Number],
       required: true,
     },
@@ -51,10 +51,7 @@ export default {
       type: String,
     },
   },
-  model: {
-    prop: "value",
-    event: "onValueChange",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       dropdownIsVisible: false,
@@ -62,7 +59,7 @@ export default {
   },
   computed: {
     selectedValue() {
-      const selectedOption = this.options.find((option) => this.value === this.getKeyProp(option));
+      const selectedOption = this.options.find((option) => this.modelValue === this.getKeyProp(option));
 
       return this.getDisplayProp(selectedOption);
     },
@@ -84,7 +81,7 @@ export default {
       this.dropdownIsVisible = value;
     },
     selectOption(option) {
-      this.$emit("onValueChange", option);
+      this.$emit("update:modelValue", option);
 
       this.dropdownIsVisible = false;
     },

@@ -9,10 +9,10 @@
     @visibility="onChangeDropDownVisibility"
     class="similarity-filter"
   >
-    <template slot="dropdown-header">
+    <template #dropdown-header>
       <BaseButton class="small">{{ $t("similarity.findSimilar") }}</BaseButton>
     </template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <div class="similarity-filter__dropdown">
         <span class="similarity-filter__header">
           <SimilarityFilterOrder v-model="order" />
@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import { eventBus } from "~/v1/infrastructure/eventBus";
 export default {
   props: {
     availableVectors: {
@@ -85,7 +86,7 @@ export default {
       if (!this.recordCriteria.hasChanges) return;
       this.recordCriteria.page.goToFirst();
 
-      this.$root.$emit("on-change-record-criteria-filter", this.recordCriteria);
+      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
     },
   },
 };

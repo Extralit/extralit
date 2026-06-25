@@ -58,9 +58,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/import";
 import { usePdfUploadLogic } from "./usePdfUploadLogic";
 import type { PdfData } from "./types";
 

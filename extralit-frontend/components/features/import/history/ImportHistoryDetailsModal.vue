@@ -41,7 +41,7 @@
     <!-- Main Content -->
     <div v-else-if="importHistoryDetails" class="details-content">
       <ImportHistoryDataPreview
-        :import-history-details="importHistoryDetails"
+        :import-history-details="importHistoryDetails as ImportHistoryDetails"
         :loading="isLoading"
         :error="error"
         @retry="loadDetails"
@@ -60,9 +60,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/close";
-import "assets/icons/danger";
-import "assets/icons/document";
 
 import { useResolve } from "ts-injecty";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";

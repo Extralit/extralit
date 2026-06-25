@@ -8,21 +8,25 @@ import { GetImportHistoryUseCase } from "~/v1/domain/usecases/get-import-history
 
 // Mock the use case
 const mockGetImportHistoryUseCase = {
-  getRecent: jest.fn(),
+  getRecent: vi.fn(),
 };
 
 // Mock ts-injecty
-jest.mock("ts-injecty", () => ({
-  useResolve: jest.fn(() => mockGetImportHistoryUseCase),
+vi.mock("ts-injecty", () => ({
+  useResolve: vi.fn(() => mockGetImportHistoryUseCase),
 }));
 
-// Mock Nuxt composition API
-jest.mock("@nuxtjs/composition-api", () => ({
-  ref: jest.fn(),
-  computed: jest.fn(),
-  watch: jest.fn(),
-  onMounted: jest.fn(),
-}));
+// Mock Vue reactivity/lifecycle primitives (migrated from @nuxtjs/composition-api).
+vi.mock("vue", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    ref: vi.fn(),
+    computed: vi.fn(),
+    watch: vi.fn(),
+    onMounted: vi.fn(),
+  };
+});
 
 describe("useRecentImportsViewModel", () => {
   let mockProps;
@@ -54,16 +58,16 @@ describe("useRecentImportsViewModel", () => {
     },
   ];
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Get the mocked functions
-    const compositionApi = require("@nuxtjs/composition-api");
-    mockRef = compositionApi.ref;
-    mockComputed = compositionApi.computed;
-    mockWatch = compositionApi.watch;
-    mockOnMounted = compositionApi.onMounted;
+    const vue = await import("vue");
+    mockRef = vue.ref;
+    mockComputed = vue.computed;
+    mockWatch = vue.watch;
+    mockOnMounted = vue.onMounted;
 
     // Mock reactive refs
     mockRecentImports = { value: [] };
@@ -99,7 +103,7 @@ describe("useRecentImportsViewModel", () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Initialization", () => {
@@ -354,7 +358,7 @@ describe("useRecentImportsViewModel", () => {
 
   describe("Error Handling", () => {
     it("should log errors to console", async () => {
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
       const error = new Error("API Error");
       mockGetImportHistoryUseCase.getRecent.mockRejectedValue(error);
 

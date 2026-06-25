@@ -5,13 +5,13 @@
   >
     <div class="__table-buttons">
       <BaseDropdown v-show="editable" :visible="dropdownEditTableVisible" >
-        <span slot="dropdown-header">
+        <template #dropdown-header><span>
           <BaseButton @click.prevent="dropdownEditTableVisible=!dropdownEditTableVisible">
             Edit table
             <svgicon name="chevron-down" width="8" height="8" />
           </BaseButton>
-        </span>
-        <span slot="dropdown-content">
+        </span></template>
+        <template #dropdown-content><span>
           <BaseButton v-show="editable && tabulator" @click.prevent="tabulator.undo();">
             Undo
           </BaseButton>
@@ -21,17 +21,17 @@
           <BaseButton v-show="editable" @click.prevent="clearTable(); dropdownEditTableVisible=false">
             {{ tabulator?.getDataCount() > 0 ? 'Clear data' : 'Delete table' }}
           </BaseButton>
-        </span>
+        </span></template>
       </BaseDropdown>
 
       <BaseDropdown v-show="editable && tabulator" :visible="visibleColumnDropdown" class="dropdown"  >
-        <span slot="dropdown-header">
+        <template #dropdown-header><span>
           <BaseButton @click.prevent="visibleColumnDropdown=!visibleColumnDropdown">
             ➕ Add Column
             <svgicon name="chevron-down" width="8" height="8" />
           </BaseButton>
-        </span>
-        <span slot="dropdown-content">
+        </span></template>
+        <template #dropdown-content><span>
           <BaseButton
             v-for="(attrs, field) in remainingSchemaColumns"
             :key="field"
@@ -40,7 +40,7 @@
           >
             {{ field }}
           </BaseButton>
-        </span>
+        </span></template>
       </BaseDropdown>
 
       <BaseButton v-show="editable && tabulator" @click.prevent="addRow()">
@@ -49,13 +49,13 @@
 
       <BaseDropdown v-show="tabulator && columnValidators && Object.keys(columnValidators).length"
         :visible="editable && visibleCheckdropdown" >
-        <span slot="dropdown-header">
+        <template #dropdown-header><span>
           <BaseButton
             @click.prevent="validateTable({ scrollToError: true, saveData: true }); visibleCheckdropdown=!visibleCheckdropdown">
             Check data <i v-if="tableJSON?.schema?.is_latest === false">!</i>
           </BaseButton>
-        </span>
-        <span slot="dropdown-content">
+        </span></template>
+        <template #dropdown-content><span>
           <BaseButton @click.prevent="$emit('updateValidValues', true);">
             Ignore errors
           </BaseButton>
@@ -65,7 +65,7 @@
           >
             Fetch latest schema
           </BaseButton>
-        </span>
+        </span></template>
       </BaseDropdown>
     </div>
 
@@ -80,16 +80,16 @@
 
 <script lang="ts">
 import { merge } from 'lodash';
-import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
+import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator, type Options } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns, getColumnEditorParams } from "./tableUtils";
 import { getColumnValidators } from "./validatorUtils";
 import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
-import { Data, TableData } from '@/v1/domain/entities/table/TableData';
-import { DataFrameField } from '@/v1/domain/entities/table/Schema';
-import { Validators } from '@/v1/domain/entities/table/Validation';
+import { type Data, type ReferenceValues, TableData } from '@/v1/domain/entities/table/TableData';
+import { type DataFrameField } from '@/v1/domain/entities/table/Schema';
+import { type Validators } from '@/v1/domain/entities/table/Validation';
 import { Question } from "@/v1/domain/entities/question/Question";
 
 export default {
@@ -112,10 +112,6 @@ export default {
     },
   },
 
-  model: {
-    prop: "hasValidValues",
-    event: "updateValidValues",
-  },
 
   data() {
     return {
@@ -126,6 +122,7 @@ export default {
       dropdownEditTableVisible: false,
       visibleColumnDropdown: false,
       addColumnSearchText: null,
+      error: null,
     };
   },
 
@@ -168,8 +165,8 @@ export default {
         console.error(`Failed to fetch validation: ${error}`);
         this.$notification.notify({
           message: `${error.response}: ${error.message}`,
-          type: "error",
-          onClick() {
+          type: "danger",
+          onClick: () => {
             this.$notification.clear();
           },
         });
@@ -269,7 +266,7 @@ export default {
                 fixedValues[parentGroup.getField()] = parentGroup.getKey();
                 parentGroup = parentGroup.getParentGroup();
               }
-              const combinations = this.generateCombinations(this.referenceValues, fixedValues);
+              const combinations = this.generateCombinations(this.referenceValues as ReferenceValues, fixedValues);
 
               combinations.filter((rowData) => {
                 return !group.getSubGroups().some((subGroup: GroupComponent) => {
@@ -328,14 +325,14 @@ export default {
           this.tabulator.rowManager.rows.forEach((row)=>{
             removeColumns.forEach((field) => {
               row.deleteCell(field);
-              this.$delete(row.data, field)
+              delete row.data[field]
             });
           })
 
           // Remove removeColumns from this.tableJSON.data
           this.tableJSON.data.forEach((row) => {
             removeColumns.forEach((field) => {
-              this.$delete(row, field);
+              delete row[field];
 
             });
           });
@@ -434,11 +431,11 @@ export default {
         // },
       };
 
-      config = merge({}, config, getColumnEditorParams(field, this.validation, this.refColumns, this.referenceValues));
+      config = merge({}, config, getColumnEditorParams(field, this.validation, this.refColumns, this.referenceValues as ReferenceValues));
 
       return config;
     },
-    validateTable(options: { scrollToError?: boolean, saveData?: boolean }): boolean {
+    validateTable(options: { scrollToError?: boolean, saveData?: boolean } = {}): boolean {
       var validErrors = this.tabulator.validate();
 
       const isValid = validErrors === true;
@@ -564,7 +561,7 @@ export default {
           this.$notification.notify({
             message: `Column name '${newFieldName}' already exists. Please choose a different name.`,
             type: "warning",
-            onClick() {
+            onClick: () => {
               this.$notification.clear();
             },
           });
@@ -596,7 +593,7 @@ export default {
       this.updateTableJsonData();
     },
     addEmptyReferenceRows() {
-      const combinations = this.generateCombinations(this.referenceValues);
+      const combinations = this.generateCombinations(this.referenceValues as ReferenceValues);
 
       combinations.forEach(rowData => {
         this.addRow(null, rowData);
@@ -605,10 +602,10 @@ export default {
     async completionRange(range: RangeComponent) {
       const rangeData = getRangeRowData(range)
       const rangeColumns = getRangeColumns(range);
-      const selectedRowData: Record<string, any> = Object.values(rangeData)
+      const selectedRowData: Data = Object.values(rangeData)
         .map(({ _id, ...rest }) => rest);
 
-      this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues)
+      this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues as ReferenceValues)
         .then((predictedRowData: Data) => {
           this.updateRangeData(predictedRowData, range);
         })
@@ -616,8 +613,8 @@ export default {
           console.error(error)
           this.$notification.notify({
             message: `${error.message}`,
-            type: "error",
-            onClick() {
+            type: "danger",
+            onClick: () => {
               this.$notification.clear();
             },
           });
@@ -818,7 +815,7 @@ export default {
     try {
       Tabulator.extendModule("keybindings", "bindings", null);
 
-      this.tabulator = new Tabulator(this.$refs.tabulator, {
+      this.tabulator = new Tabulator(this.$refs.tabulator as HTMLElement, {
         data: this.tableJSON.data,
         reactiveData: true,
         layout: this.columns.length <= 2 ? "fitData" : "fitDataTable",
@@ -908,7 +905,7 @@ export default {
 
         validationMode: "highlight",
         history: this.editable,
-      });
+      } as unknown as Options);
 
       if (this.editable) {
         this.tabulator.on("columnTitleChanged", this.columnTitleChanged.bind(this));
@@ -920,7 +917,7 @@ export default {
           this.$emit("cell-edited", cell);
           // const rowPos: number | boolean = cell.getRow().getPosition();
           // if (typeof rowPos != 'number' || rowPos < 0 || rowPos > this.tableJSON.data.length) return;
-          // this.$set(this.tableJSON.data[rowPos-1], cell.getColumn().getField(), cell.getValue());
+          // this.tableJSON.data[rowPos-1][cell.getColumn().getField()] = cell.getValue();
         });
 
         this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {
@@ -956,9 +953,8 @@ export default {
       const message = `Failed to load table: ${error}`;
       this.$notification.notify({
         message: message,
-        numberOfChars: message.length,
-        type: "error",
-        onClick() {
+        type: "danger",
+        onClick: () => {
           this.$notification.clear();
         },
       });

@@ -5,7 +5,7 @@
       <BaseBadge
         v-for="question in questions"
         :key="question.id"
-        :text="$t(question.type)"
+        :text="$t(question.type.value)"
         font-size="11px"
         color="var(--fg-label)"
       />

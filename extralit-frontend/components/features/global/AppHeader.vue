@@ -14,8 +14,7 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/code";
-import { BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
+import { type BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
 
 export default {
   data() {

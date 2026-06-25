@@ -1,5 +1,5 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { PublicNuxtAxiosInstance } from "../services";
+import type { AxiosInstance } from "axios";
+import { type PublicAxiosInstance } from "../services";
 import { DatasetCreation } from "~/v1/domain/entities/hub/DatasetCreation";
 
 export const enum HUB_REPOSITORY_ERRORS {
@@ -7,8 +7,8 @@ export const enum HUB_REPOSITORY_ERRORS {
 }
 
 export class HubRepository {
-  private axios: NuxtAxiosInstance;
-  constructor(axios: PublicNuxtAxiosInstance) {
+  private axios: AxiosInstance;
+  constructor(axios: PublicAxiosInstance) {
     this.axios = axios.makePublic({
       enableErrors: false,
     });

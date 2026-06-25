@@ -115,8 +115,6 @@
 </template>
 
 <script>
-import "assets/icons/external-link";
-import "assets/icons/refresh";
 
 export default {
   props: {
@@ -245,7 +243,7 @@ export default {
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
   },
 
-  beforeDestroy() {
+  beforeUnmount() {
     this.stopTimer();
     document.removeEventListener('visibilitychange', this.handleVisibilityChange);
     document.removeEventListener("keydown", this.handleGlobalKeys);

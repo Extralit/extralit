@@ -1,5 +1,4 @@
-import { ref } from "vue-demi";
-import { useFetch } from "@nuxtjs/composition-api";
+import { ref, onMounted } from "vue";
 import { useRunningEnvironment } from "@/v1/infrastructure/services/useRunningEnvironment";
 import { useRole } from "@/v1/infrastructure/services";
 
@@ -8,7 +7,7 @@ export const usePersistentStorageViewModel = () => {
   const { hasPersistentStorageWarning } = useRunningEnvironment();
   const { isAdminOrOwnerRole } = useRole();
 
-  useFetch(async () => {
+  onMounted(async () => {
     try {
       showBanner.value = await hasPersistentStorageWarning();
     } catch (error) {}

@@ -6,7 +6,7 @@
       <FilterButton
         v-if="isAnyAvailableFilter"
         class="filters__filter-button"
-        @click.native="toggleVisibilityOfFilters"
+        @click="toggleVisibilityOfFilters"
         :button-name="$t('filters')"
         icon-name="filter"
         :show-chevron-icon="false"
@@ -49,6 +49,7 @@
 </template>
 
 <script>
+import { eventBus } from "~/v1/infrastructure/eventBus";
 import { useDatasetsFiltersViewModel } from "./useDatasetsFiltersViewModel";
 
 export default {
@@ -86,7 +87,7 @@ export default {
         this.recordCriteria.page.goToFirst();
       }
 
-      this.$root.$emit("on-change-record-criteria-filter", this.recordCriteria);
+      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
     },
     toggleVisibilityOfFilters() {
       this.visibleFilters = !this.visibleFilters;
@@ -191,7 +192,7 @@ export default {
   transition: all 0.3s ease-out;
 }
 
-.filterAppear-enter,
+.filterAppear-enter-from,
 .filterAppear-leave-to {
   opacity: 0;
   transform: translateY(-4px);

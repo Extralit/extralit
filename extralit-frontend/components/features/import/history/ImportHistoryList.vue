@@ -78,10 +78,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/danger";
-import "assets/icons/document";
-import "assets/icons/external-link";
-import "assets/icons/time";
 
 import type { TableColumn } from "../types";
 import type {

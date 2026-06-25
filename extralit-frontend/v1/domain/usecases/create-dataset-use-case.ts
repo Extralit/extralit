@@ -1,6 +1,6 @@
 import { DatasetCreation } from "../entities/hub/DatasetCreation";
 import { Workspace } from "../entities/workspace/Workspace";
-import { DatasetId, IDatasetRepository } from "../services/IDatasetRepository";
+import { type DatasetId, type IDatasetRepository } from "../services/IDatasetRepository";
 import { Debounce } from "~/v1/infrastructure/services";
 import {
   FieldRepository,

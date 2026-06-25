@@ -1,14 +1,14 @@
 <template>
   <BaseDropdown class="selector" :visible="dropdownIsVisible" @visibility="onVisibility" v-if="options.length">
-    <template slot="dropdown-header">
-      {{ value?.name ?? value ?? $t("datasetCreation.select") }}
+    <template #dropdown-header>
+      {{ modelValue?.name ?? modelValue ?? $t("datasetCreation.select") }}
       <svgicon name="chevron-down" height="8" />
     </template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <slot name="optionsIntro" />
       <ul class="selector__options">
         <li
-          :class="option === value ? 'selector__option--selected' : 'selector__option'"
+          :class="option === modelValue ? 'selector__option--selected' : 'selector__option'"
           v-for="(option, index) in filteredOptions"
           :key="index"
           @click="selectOption(option)"
@@ -23,7 +23,7 @@
 <script>
 export default {
   props: {
-    value: {
+    modelValue: {
       type: [Object, String],
     },
     options: {
@@ -31,10 +31,7 @@ export default {
       required: true,
     },
   },
-  model: {
-    prop: "value",
-    event: "onValueChange",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       dropdownIsVisible: false,
@@ -42,7 +39,7 @@ export default {
   },
   computed: {
     filteredOptions() {
-      return this.options.filter((option) => JSON.stringify(option) !== JSON.stringify(this.value));
+      return this.options.filter((option) => JSON.stringify(option) !== JSON.stringify(this.modelValue));
     },
   },
   methods: {
@@ -50,7 +47,7 @@ export default {
       this.dropdownIsVisible = value;
     },
     selectOption(option) {
-      this.$emit("onValueChange", option);
+      this.$emit("update:modelValue", option);
 
       this.dropdownIsVisible = false;
     },

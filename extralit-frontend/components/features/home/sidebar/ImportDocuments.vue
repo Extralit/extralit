@@ -15,7 +15,6 @@
 </template>
 
 <script>
-import "assets/icons/import";
 
 export default {
   name: "ImportDocuments",

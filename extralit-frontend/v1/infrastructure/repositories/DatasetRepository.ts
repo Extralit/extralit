@@ -1,19 +1,19 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import {
-  BackendDataset,
-  BackendDatasetFeedbackTaskResponse,
-  BackendDatasetWithWorkspace,
-  BackendJob,
-  BackendProgress,
-  BackendUpdateDataset,
+  type BackendDataset,
+  type BackendDatasetFeedbackTaskResponse,
+  type BackendDatasetWithWorkspace,
+  type BackendJob,
+  type BackendProgress,
+  type BackendUpdateDataset,
 } from "../types/dataset";
-import { Response } from "../types";
+import { type Response } from "../types";
 import { largeCache, revalidateCache } from "./AxiosCache";
-import { DatasetId, IDatasetRepository, JobId } from "@/v1/domain/services/IDatasetRepository";
+import { type DatasetId, type IDatasetRepository, type JobId } from "@/v1/domain/services/IDatasetRepository";
 import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
 import { Progress } from "~/v1/domain/entities/dataset/Progress";
 import { DatasetCreation } from "~/v1/domain/entities/hub/DatasetCreation";
-import { DatasetExportSettings } from "~/v1/domain/entities/dataset/DatasetExport";
+import { type DatasetExportSettings } from "~/v1/domain/entities/dataset/DatasetExport";
 
 export const DATASET_API_ERRORS = {
   ERROR_FETCHING_FEEDBACK_DATASETS: "ERROR_FETCHING_FEEDBACK_DATASETS",
@@ -30,7 +30,7 @@ export const DATASET_API_ERRORS = {
 };
 
 export class DatasetRepository implements IDatasetRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async create(dataset: DatasetCreation): Promise<DatasetId> {
     try {

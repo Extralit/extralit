@@ -2,7 +2,7 @@ import { IEventDispatcher } from "@codescouts/events";
 import { Record } from "../entities/record/Record";
 import { RecordResponseUpdatedEvent } from "../events/RecordResponseUpdatedEvent";
 import { RecordCriteria } from "../entities/record/RecordCriteria";
-import { RecordStatus } from "../entities/record/RecordAnswer";
+import { type RecordStatus } from "../entities/record/RecordAnswer";
 import { GetRecordsByCriteriaUseCase } from "./get-records-by-criteria-use-case";
 import { LoadRecordsToAnnotateUseCase } from "./load-records-to-annotate-use-case";
 import { RecordRepository } from "~/v1/infrastructure/repositories";

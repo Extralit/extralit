@@ -61,8 +61,6 @@
 </template>
 
 <script>
-import "assets/icons/close";
-import "assets/icons/suggestion";
 
 export default {
   name: "EntityComponent",
@@ -224,7 +222,7 @@ export default {
       }
     });
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.scroll) {
       this.scroll.removeEventListener("scroll", this.getPosition);
     }

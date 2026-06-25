@@ -1,5 +1,5 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { Response } from "../types";
+import type { AxiosInstance } from "axios";
+import { type Response } from "../types";
 import { mediumCache } from "./AxiosCache";
 
 interface BackendAgent {
@@ -16,7 +16,7 @@ const enum AGENTS_API_ERRORS {
 }
 
 export class AgentRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
   async getAgents(datasetId: string): Promise<BackendAgent[]> {
     try {
       const { data } = await this.axios.get<Response<BackendAgent[]>>(

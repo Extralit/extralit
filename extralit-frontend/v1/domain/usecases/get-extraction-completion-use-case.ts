@@ -1,7 +1,7 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 
-import { BackendExtractionRequest, BackendExtractionResponse } from "~/v1/domain/entities/table/Extraction";
-import { Data, TableData, ReferenceValues } from "../entities/table/TableData";
+import { type BackendExtractionRequest, type BackendExtractionResponse } from "~/v1/domain/entities/table/Extraction";
+import { type Data, TableData, type ReferenceValues } from "../entities/table/TableData";
 
 const LLM_EXTRACTION_API_ERRORS = {
   ERROR_FETCHING_LLM_EXTRACTION: "ERROR_FETCHING_LLM_EXTRACTION",
@@ -9,7 +9,7 @@ const LLM_EXTRACTION_API_ERRORS = {
 
 export class GetLLMExtractionUseCase {
   constructor(
-    private readonly axios: NuxtAxiosInstance,
+    private readonly axios: AxiosInstance,
   ) {}
 
   async getExtractionCompletion(

@@ -43,7 +43,7 @@ export default {
     },
     recordInfo() {
       return {
-        titleKey: $nuxt.$t("recordInfo"),
+        titleKey: this.$t("recordInfo"),
         classType: "--intro",
         data: {
           ID: this.record.id,
@@ -56,8 +56,8 @@ export default {
       if (!this.record.metadata) return [];
 
       return {
-        titleKey: $nuxt.$t("metadata"),
-        titleValue: $nuxt.$t("value"),
+        titleKey: this.$t("metadata"),
+        titleValue: this.$t("value"),
         classType: "--table",
         data: this.record.metadata,
       };

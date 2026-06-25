@@ -21,7 +21,7 @@ import "tabulator-tables/dist/css/tabulator.min.css";
 import { TableData } from "@/v1/domain/entities/table/TableData";
 import { DataFrameSchema } from "@/v1/domain/entities/table/Schema";
 import { Question } from "@/v1/domain/entities/question/Question";
-import { Validators } from "@/v1/domain/entities/table/Validation";
+import { type Validators } from "@/v1/domain/entities/table/Validation";
 
 export default {
   name: "BaseSimpleTable",
@@ -96,11 +96,11 @@ export default {
       // ImportFileUpload passes :validators, so we must prioritize that.
       if (this.validators) {
         // We wrap it in a structure RenderTable understands
-        tableData.validation = { columns: {}, ...this.validation };
+        tableData.validation = { columns: {}, ...this.validation } as typeof tableData.validation;
         // We might need to pass this directly to the RenderTable prop instead,
         // but attaching it to tableData is the safest way for the Schema to know about it.
       } else if (this.validation) {
-        tableData.validation = this.validation;
+        tableData.validation = this.validation as typeof tableData.validation;
       }
 
       return tableData;
@@ -110,7 +110,7 @@ export default {
   methods: {
     // Public API methods - delegate to internal RenderTable's tabulator
     getInternalTabulator() {
-      return this.$refs.renderTable?.tabulator;
+      return (this.$refs.renderTable as { tabulator?: any } | undefined)?.tabulator;
     },
 
     getData() {
@@ -137,8 +137,11 @@ export default {
     },
 
     validateTable(options?: { scrollToError?: boolean; saveData?: boolean }) {
-      if (this.$refs.renderTable?.validateTable) {
-        return this.$refs.renderTable.validateTable(options);
+      const renderTable = this.$refs.renderTable as
+        | { validateTable?: (opts?: typeof options) => boolean }
+        | undefined;
+      if (renderTable?.validateTable) {
+        return renderTable.validateTable(options);
       }
       return true;
     },

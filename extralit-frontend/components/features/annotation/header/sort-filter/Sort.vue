@@ -1,10 +1,10 @@
 <template>
   <div class="sort-filter">
     <BaseDropdown :visible="visibleDropdown" @visibility="onSortToggleVisibility">
-      <span slot="dropdown-header">
+      <template #dropdown-header><span>
         <SortButton :is-active="visibleDropdown" :active-sort-items="selectedSortingItems" />
-      </span>
-      <span slot="dropdown-content" class="sort-filter__container">
+      </span></template>
+      <template #dropdown-content><span class="sort-filter__container">
         <SortCategoriesList
           v-if="!selectedSortingItems.length"
           class="sort-filter__selector"
@@ -17,7 +17,7 @@
           @clear-category="clearSortCategory"
           @apply-sort="applySort"
         />
-      </span>
+      </span></template>
     </BaseDropdown>
   </div>
 </template>
@@ -35,15 +35,12 @@ export default {
       type: Array,
       required: true,
     },
-    sortFilters: {
+    modelValue: {
       type: Array,
       required: true,
     },
   },
-  model: {
-    prop: "sortFilters",
-    event: "onSortFilteredChanged",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       visibleDropdown: false,
@@ -79,12 +76,12 @@ export default {
 
       const newSorting = this.categoriesSort.commit();
 
-      this.$emit("onSortFilteredChanged", newSorting);
+      this.$emit("update:modelValue", newSorting);
     },
     updateAppliedCategoriesFromMetadataFilter() {
       if (!this.categoriesSort) return;
 
-      this.categoriesSort.complete(this.sortFilters);
+      this.categoriesSort.complete(this.modelValue);
     },
   },
   watch: {
@@ -105,7 +102,7 @@ export default {
         this.sort();
       },
     },
-    sortFilters() {
+    modelValue() {
       this.updateAppliedCategoriesFromMetadataFilter();
     },
   },

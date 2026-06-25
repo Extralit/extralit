@@ -32,9 +32,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/document";
-import "assets/icons/import";
 
 interface BibliographyData {
   fileName: string;

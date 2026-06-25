@@ -1,5 +1,5 @@
 import { Document, Segment } from "@/v1/domain/entities/document/Document";
-import { IDocumentStorage } from "@/v1/domain/services/IDocumentStorage";
+import { type IDocumentStorage } from "@/v1/domain/services/IDocumentStorage";
 import { useStoreFor } from "@/v1/store/create";
 
 const useStoreForDocument = useStoreFor<Document, IDocumentStorage>(Document);

@@ -3,12 +3,14 @@ import DatasetDescriptionReadOnly from "./DatasetDescriptionReadOnly";
 
 let wrapper = null;
 const options = {
-  stubs: ["MarkdownRenderer"],
-  propsData: {
-    guidelines: "Lorem ipsum",
+  global: {
+    stubs: ["MarkdownRenderer"],
+    mocks: {
+      $t: (msg) => msg,
+    },
   },
-  mocks: {
-    $t: (msg) => msg,
+  props: {
+    guidelines: "Lorem ipsum",
   },
 };
 beforeEach(() => {
@@ -16,11 +18,11 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("DatasetDescriptionReadonlyComponent", () => {
   it("render the component", () => {
-    expect(wrapper.is(DatasetDescriptionReadOnly)).toBe(true);
+    expect(wrapper.findComponent(DatasetDescriptionReadOnly).exists()).toBe(true);
   });
 });

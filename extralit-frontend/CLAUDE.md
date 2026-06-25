@@ -25,7 +25,7 @@ API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
 ## Testing
 
 ```bash
-npm run test             # Jest unit tests
+npm run test             # Vitest unit tests (run once)
 npm run test:watch       # Watch mode
 npm run test:coverage    # With coverage
 
@@ -34,35 +34,63 @@ npm run e2e:silent       # Playwright headless
 npm run e2e:report       # View test report
 ```
 
+> Unit tests run on **Vitest** (`vitest.config.ts` + `test/setup.ts`), using
+> `@vue/test-utils` v2 and `@nuxt/test-utils`. Specs needing Nuxt runtime context use
+> `// @vitest-environment nuxt` or `mockNuxtImport`.
+>
+> The Playwright e2e suite is inherited from upstream Argilla. The shared login helper
+> (`e2e/common/login-and-wait-for.ts`) has been reconciled to Extralit's real sign-in UI:
+> it fills `getByLabel("Username"/"Password")`, submits the `"Sign in"` button, mocks
+> `/api/v1/token` + `/api/v1/me` offline, and waits for the home/datasets landing at `/`
+> (there is no `/datasets` route). This flow is runtime-verified via the CDP browser. The
+> per-page specs still need fresh Extralit screenshot baselines (`--update-snapshots`); the
+> inherited ones are Argilla's. The local Playwright browser can't launch on the Orin dev
+> host (missing OS libs, no sudo) — run the headless gate in CI.
+
 ## Code Quality
 
 ```bash
-npm run lint             # ESLint check
+npm run lint             # ESLint check (eslint 8 + vue-eslint-parser)
 npm run lint:fix         # Fix ESLint issues
 npm run format           # Format with Prettier
 npm run format:check     # Check formatting
 npm run generate-icons   # Generate icon components from SVG
+
+npx nuxi typecheck       # vue-tsc type check
+npm run build            # Production build (vite/nitro)
 ```
 
 ## Requirements
 
-- Node.js 18+
+- Node.js 18+ (developed on Node 24)
 - Backend server running for full functionality
 
 ## Architecture
 
-**Migration in progress**: Vuex → Pinia
-
-- **v1/** directory: New Pinia architecture with domain-driven design
-- Domain-driven design with entities, use cases, dependency injection
+- **v1/** directory: Pinia + domain-driven design (entities, use cases, dependency injection
+  via `ts-injecty`). The domain/use-case layer is framework-agnostic; only the Vue/Nuxt
+  adapters (HTTP, Auth, Icons) were swapped during the Vue 3 / Nuxt 4 migration.
 - Component hierarchy: base (stateless) → features (page-specific) → global (reusable)
+- HTTP: plain `axios` in `plugins/2.axios.ts` (replaced `@nuxtjs/axios`), re-injected into DI.
+- Auth: `AuthService` (`v1/infrastructure/services/AuthService.ts`) implementing `IAuthService`,
+  provided as `$auth` by `plugins/1.auth.ts` (replaced `@nuxtjs/auth-next`).
+- Icons: custom `<svg-icon>` (`components/base/BaseSvgIcon.vue`) reading `static/icons/*.svg`
+  (replaced `vue-svgicon`).
+- Plugins load in order via numeric prefixes (`1.auth` → `2.axios` → `3.di`); middleware are
+  Nuxt-4 globals (`middleware/*.global.ts`).
+
+> **TS posture:** `tsconfig.json` keeps `strict:false` (matching the pre-Vue3 config) and
+> disables Nuxt-4's new `verbatimModuleSyntax`/`noImplicitOverride`. Tightening to strict is a
+> separate hardening effort. Note: Vite/esbuild (`isolatedModules`) requires type-only imports
+> to use the inline `import { type X }` modifier or they throw at runtime in dev.
 
 ## Key Technologies
 
-- Vue.js + Nuxt.js
-- Pinia (state management, replacing Vuex)
-- Jest (unit tests) + Playwright (e2e)
-- ESLint + Prettier
+- Vue 3.5 + Nuxt 4 (Vite + Nitro)
+- Pinia (state management; Vuex fully removed)
+- Vitest + @vue/test-utils v2 (unit) + Playwright (e2e)
+- @nuxtjs/i18n v10 (vue-i18n v11), @vueuse/core, mitt
+- ESLint 8 + Prettier
 
 ## Structure
 

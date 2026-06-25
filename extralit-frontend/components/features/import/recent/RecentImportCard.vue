@@ -29,7 +29,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/time";
 import type { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
 
 export default {

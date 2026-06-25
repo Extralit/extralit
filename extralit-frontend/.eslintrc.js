@@ -10,14 +10,17 @@ module.exports = {
     "plugin:@intlify/vue-i18n/recommended",
     "plugin:prettier/recommended",
     "plugin:nuxt/recommended",
-    "prettier/vue",
   ],
+  plugins: ["vue"],
   settings: {
     "vue-i18n": {
-      localeDir: "./translation/*.json",
+      localeDir: "./translation/*.js",
     },
   },
   rules: {
+    // Formatting is advisory here (parity with the *.ts override and the separate
+    // `npm run format` step); keeps `lint --quiet` focused on real correctness rules.
+    "prettier/prettier": "warn",
     "no-console": process.env.NODE_ENV === "production" ? "error" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off",
     "prefer-const": "warn",
@@ -48,14 +51,38 @@ module.exports = {
   },
   globals: {
     $nuxt: true,
+    vi: true,
+    // Nuxt 4 auto-imports, hand-declared to satisfy no-undef. This list can drift;
+    // the real fix is adopting `@nuxt/eslint` (flat config), which auto-generates
+    // these globals from the build manifest. Tracked as follow-up, not done here.
+    defineNuxtPlugin: "readonly",
+    defineNuxtRouteMiddleware: "readonly",
+    definePageMeta: "readonly",
+    navigateTo: "readonly",
+    abortNavigation: "readonly",
+    useNuxtApp: "readonly",
+    useRuntimeConfig: "readonly",
+    useRoute: "readonly",
+    useRouter: "readonly",
+    useState: "readonly",
+    useCookie: "readonly",
+    useHead: "readonly",
+    useSeoMeta: "readonly",
+    useError: "readonly",
+    createError: "readonly",
+    clearError: "readonly",
+    showError: "readonly",
   },
+  parser: "vue-eslint-parser",
   parserOptions: {
-    parser: "@babel/eslint-parser",
+    parser: "@typescript-eslint/parser",
+    ecmaVersion: 2022,
+    sourceType: "module",
   },
   overrides: [
     {
       files: ["**/*.ts"],
-      extends: ["@nuxtjs/eslint-config-typescript", "prettier"],
+      extends: ["plugin:@typescript-eslint/recommended", "prettier"],
       parser: "@typescript-eslint/parser",
       plugins: ["@typescript-eslint", "prettier"],
       parserOptions: { project: ["./tsconfig.json"] },

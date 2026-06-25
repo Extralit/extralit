@@ -1,7 +1,7 @@
-import { Filter, FilterWithOption, FilterWithScore, OptionForFilter, RangeValue, ValuesOption } from "../common/Filter";
+import { Filter, FilterWithOption, FilterWithScore, type OptionForFilter, type RangeValue, type ValuesOption } from "../common/Filter";
 import { Question } from "../question/Question";
-import { Agent } from "./Agent";
-import { ConfigurationSearch, SuggestionSearch } from "./SuggestionCriteria";
+import { type Agent } from "./Agent";
+import { type ConfigurationSearch, type SuggestionSearch } from "./SuggestionCriteria";
 
 class ConfigurationValues extends Filter {
   public readonly rangeValue: FilterWithScore;

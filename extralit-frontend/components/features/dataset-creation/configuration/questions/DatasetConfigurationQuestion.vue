@@ -28,14 +28,16 @@
       />
       <DatasetConfigurationRanking
         v-else-if="question.settings.type.isRankingType"
-        v-model="question.settings.options"
+        :value="question.settings.options"
+        @on-value-change="question.settings.options = $event"
         @is-focused="$emit('is-focused', $event)"
       />
     </template>
     <span class="separator"></span>
     <DatasetConfigurationColumnSelector
       v-if="showColumnSelector"
-      v-model="question.column"
+      :value="question.column"
+      @onValueChange="question.column = $event"
       class="config-card__type"
       :options="selectedSubset.columns"
     />
@@ -50,7 +52,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/close";
 export default {
   props: {
     question: {
@@ -69,10 +70,6 @@ export default {
       type: Array,
       required: true,
     },
-  },
-  model: {
-    prop: "type",
-    event: "change",
   },
   computed: {
     noMapping() {

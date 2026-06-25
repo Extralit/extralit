@@ -23,7 +23,6 @@
 
 <script>
 import { useImportFromPython } from "../sidebar/useImportFromPython";
-import "assets/icons/code";
 export default {
   data() {
     return {

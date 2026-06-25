@@ -1,7 +1,7 @@
 <template>
   <div class="responses-filter" v-if="questionFilters.hasFilters">
     <BaseDropdown boundary="viewport" :visible="visibleDropdown" @visibility="onToggleVisibility">
-      <span slot="dropdown-header">
+      <template #dropdown-header><span>
         <FilterButtonWithBadges
           :is-active="visibleDropdown"
           :badges="appliedCategoriesFilters"
@@ -11,8 +11,8 @@
           @click-on-clear-all="clearAllResponseFilter"
           :name="$t('responses')"
         />
-      </span>
-      <span slot="dropdown-content" class="responses-filter__container">
+      </span></template>
+      <template #dropdown-content><span class="responses-filter__container">
         <CategoriesSelector
           v-if="!selectedResponse"
           name="responsesCategories"
@@ -30,14 +30,13 @@
             <RangeSelector v-else :filter="selectedResponse.rangeValue" />
           </div>
         </template>
-      </span>
+      </span></template>
     </BaseDropdown>
   </div>
 </template>
 
 <script>
 import { useResponseFilterViewModel } from "./useResponseFilterViewModel";
-import "assets/icons/chevron-left";
 
 export default {
   props: {
@@ -45,15 +44,12 @@ export default {
       type: Array,
       required: true,
     },
-    responseFiltered: {
+    modelValue: {
       type: Array,
       required: true,
     },
   },
-  model: {
-    prop: "responseFiltered",
-    event: "onResponseFilteredChanged",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       visibleDropdown: false,
@@ -83,7 +79,7 @@ export default {
 
       const newFilter = this.questionFilters.commit();
 
-      this.$emit("onResponseFilteredChanged", newFilter);
+      this.$emit("update:modelValue", newFilter);
 
       this.appliedCategoriesFilters = this.questionFilters.filteredCategories;
     },
@@ -107,7 +103,7 @@ export default {
     updateAppliedCategoriesFromMetadataFilter() {
       if (!this.questionFilters) return;
 
-      this.questionFilters.complete(this.responseFiltered);
+      this.questionFilters.complete(this.modelValue);
 
       this.appliedCategoriesFilters = this.questionFilters.filteredCategories;
     },
@@ -130,7 +126,7 @@ export default {
         this.filter();
       },
     },
-    responseFiltered() {
+    modelValue() {
       this.updateAppliedCategoriesFromMetadataFilter();
     },
   },

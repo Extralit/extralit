@@ -29,9 +29,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/import";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
@@ -327,7 +324,7 @@ export default {
 
     cancelUpload() {
       if (this.$refs.batchProgressComponent) {
-        this.$refs.batchProgressComponent.cancelUpload();
+        (this.$refs.batchProgressComponent as { cancelUpload: () => void }).cancelUpload();
       }
     },
 
@@ -381,7 +378,7 @@ export default {
 
     hasDataToLose() {
       // Check if user has uploaded any data that would be lost on close
-      const analysisTable = this.$refs.analysisTableComponent;
+      const analysisTable = this.$refs.analysisTableComponent as { editableTableData?: unknown[] };
       return (
         (this.bibData.dataframeData && this.bibData.dataframeData.data && this.bibData.dataframeData.data.length > 0) ||
         this.pdfData.totalFiles > 0 ||
@@ -440,18 +437,10 @@ export default {
 
       // Reset child components
       this.$nextTick(() => {
-        if (this.$refs.fileUploadComponent) {
-          this.$refs.fileUploadComponent.reset();
-        }
-        if (this.$refs.analysisTableComponent) {
-          this.$refs.analysisTableComponent.reset();
-        }
-        if (this.$refs.batchProgressComponent) {
-          this.$refs.batchProgressComponent.reset();
-        }
-        if (this.$refs.summaryComponent) {
-          this.$refs.summaryComponent.reset();
-        }
+        (this.$refs.fileUploadComponent as { reset?: () => void } | undefined)?.reset();
+        (this.$refs.analysisTableComponent as { reset?: () => void } | undefined)?.reset();
+        (this.$refs.batchProgressComponent as { reset?: () => void } | undefined)?.reset();
+        (this.$refs.summaryComponent as { reset?: () => void } | undefined)?.reset();
       });
     },
 

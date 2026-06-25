@@ -40,10 +40,6 @@
 </template>
 
 <script>
-import "assets/icons/copy";
-import "assets/icons/link";
-import "assets/icons/settings";
-import "assets/icons/update";
 
 import { useDatasetCardViewModel } from "./useDatasetCardViewModel";
 

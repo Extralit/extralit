@@ -31,7 +31,7 @@ export default {
       const handleIntersection = (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            this.$set(this.hydrate, entry.target.id, true);
+            this.hydrate[entry.target.id] = true;
           }
         }
       };

@@ -3,10 +3,20 @@ import LabelSelectionComponent from "./LabelSelection.component";
 
 let wrapper = null;
 const options = {
-  stubs: ["SearchLabelComponent", "BaseTooltip"],
-  propsData: {
+  global: {
+    stubs: {
+      SearchLabelComponent: true,
+      // Render the default slot so the wrapped <label> elements are present
+      // (VTU v2 stubs drop slot content by default, unlike VTU v1).
+      BaseTooltip: { template: "<div><slot /></div>" },
+      // Render the real <transition-group> so the inner inputs/labels exist
+      // in the DOM (otherwise it is stubbed to an empty element).
+      "transition-group": { template: "<div><slot /></div>" },
+    },
+  },
+  props: {
     componentId: `componentId`,
-    options: [],
+    modelValue: [],
     maxOptionsToShowBeforeCollapse: 0,
   },
 };
@@ -15,13 +25,13 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
   window.questionSettings["componentId"].isExpandedLabelQuestions = false;
 });
 
 describe("LabelSelectionComponent in Single Selection mode", () => {
   it("render the component", () => {
-    expect(wrapper.is(LabelSelectionComponent)).toBe(true);
+    expect(wrapper.findComponent(LabelSelectionComponent).exists()).toBe(true);
 
     expect(wrapper.vm.showSearch).toBe(false);
     expect(wrapper.vm.multiple).toBe(false);
@@ -33,10 +43,10 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     const searchWrapper = wrapper.findComponent({
       name: "SearchLabelComponent",
     });
-    const showLessButtonWrapper = wrapper.findComponent({
+    const showLessButtonWrapper = wrapper.find({
       ref: "showLessButtonRef",
     });
-    const inputsAreaWrapper = wrapper.findComponent({ ref: "inputsAreaRef" });
+    const inputsAreaWrapper = wrapper.find(".inputs-area");
 
     expect(searchWrapper.exists()).toBe(false);
     expect(showLessButtonWrapper.exists()).toBe(false);
@@ -53,7 +63,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 1,
     });
 
@@ -67,18 +77,18 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     expect(searchWrapper.exists()).toBe(false);
 
     // by default there is no collapse button
-    const showLessButtonWrapper = wrapper.findComponent({
+    const showLessButtonWrapper = wrapper.find({
       ref: "showLessButtonRef",
     });
     expect(showLessButtonWrapper.exists()).toBe(false);
 
-    const inputsAreaWrapper = wrapper.findComponent({ ref: "inputsAreaRef" });
+    const inputsAreaWrapper = wrapper.find(".inputs-area");
     expect(inputsAreaWrapper.exists()).toBe(true);
-    const inputWrapper = wrapper.findComponent("#sentiment_positive");
+    const inputWrapper = wrapper.find("#sentiment_positive");
     expect(inputWrapper.exists()).toBe(true);
 
     const labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("round");
+    expect(labelsWrapper[0].classes()).toContain("round");
     expect(labelsWrapper.length).toBe(1);
   });
   it("render two checkbox if there is two items in options props", async () => {
@@ -98,7 +108,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 2,
     });
 
@@ -112,21 +122,21 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     expect(searchWrapper.exists()).toBe(false);
 
     // by default there is no collapse button
-    const showLessButtonWrapper = wrapper.findComponent({
+    const showLessButtonWrapper = wrapper.find({
       ref: "showLessButtonRef",
     });
     expect(showLessButtonWrapper.exists()).toBe(false);
 
-    const inputsAreaWrapper = wrapper.findComponent({ ref: "inputsAreaRef" });
+    const inputsAreaWrapper = wrapper.find(".inputs-area");
     expect(inputsAreaWrapper.exists()).toBe(true);
-    const input1Wrapper = wrapper.findComponent("#sentiment_positive");
+    const input1Wrapper = wrapper.find("#sentiment_positive");
     expect(input1Wrapper.exists()).toBe(true);
-    const input2Wrapper = wrapper.findComponent("#sentiment_very_positive");
+    const input2Wrapper = wrapper.find("#sentiment_very_positive");
     expect(input2Wrapper.exists()).toBe(true);
 
     const labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("round");
-    expect(labelsWrapper.at(1).classes()).toContain("round");
+    expect(labelsWrapper[0].classes()).toContain("round");
+    expect(labelsWrapper[1].classes()).toContain("round");
     expect(labelsWrapper.length).toBe(2);
   });
   it("render three checkbox if there is three items in options props", async () => {
@@ -152,7 +162,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
     });
 
@@ -166,24 +176,24 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     expect(searchWrapper.exists()).toBe(false);
 
     // by default there is no collapse button
-    const showLessButtonWrapper = wrapper.findComponent({
+    const showLessButtonWrapper = wrapper.find({
       ref: "showLessButtonRef",
     });
     expect(showLessButtonWrapper.exists()).toBe(false);
 
-    const inputsAreaWrapper = wrapper.findComponent({ ref: "inputsAreaRef" });
+    const inputsAreaWrapper = wrapper.find(".inputs-area");
     expect(inputsAreaWrapper.exists()).toBe(true);
-    const input1Wrapper = wrapper.findComponent("#sentiment_positive");
+    const input1Wrapper = wrapper.find("#sentiment_positive");
     expect(input1Wrapper.exists()).toBe(true);
-    const input2Wrapper = wrapper.findComponent("#sentiment_very_positive");
+    const input2Wrapper = wrapper.find("#sentiment_very_positive");
     expect(input2Wrapper.exists()).toBe(true);
-    const input3Wrapper = wrapper.findComponent("#sentiment_negative");
+    const input3Wrapper = wrapper.find("#sentiment_negative");
     expect(input3Wrapper.exists()).toBe(true);
 
     const labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("round");
-    expect(labelsWrapper.at(1).classes()).toContain("round");
-    expect(labelsWrapper.at(2).classes()).toContain("round");
+    expect(labelsWrapper[0].classes()).toContain("round");
+    expect(labelsWrapper[1].classes()).toContain("round");
+    expect(labelsWrapper[2].classes()).toContain("round");
     expect(labelsWrapper.length).toBe(3);
   });
   it("update the flag 'isSelected' of the corresponding checkbox option when user click (no items have been selected)", async () => {
@@ -209,14 +219,14 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
     });
 
     // by default it's a single selection
     expect(wrapper.vm.multiple).toBe(false);
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -239,7 +249,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     const checkbox = wrapper.find("#sentiment_positive");
     await checkbox.setChecked();
     expect(checkbox.element.checked).toBeTruthy();
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -283,14 +293,14 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
     });
 
     // by default it's a single selection
     expect(wrapper.vm.multiple).toBe(false);
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -313,7 +323,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     const checkbox = wrapper.find("#sentiment_very_positive");
     await checkbox.setChecked();
     expect(checkbox.element.checked).toBeTruthy();
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -357,7 +367,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       showSearch: true,
     });
@@ -390,9 +400,9 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
       },
     ]);
     let labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("round");
-    expect(labelsWrapper.at(1).classes()).toContain("round");
-    expect(labelsWrapper.at(2).classes()).toContain("round");
+    expect(labelsWrapper[0].classes()).toContain("round");
+    expect(labelsWrapper[1].classes()).toContain("round");
+    expect(labelsWrapper[2].classes()).toContain("round");
     expect(labelsWrapper.length).toBe(3);
 
     await wrapper.setData({ searchInput: "Very" });
@@ -405,7 +415,7 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
       },
     ]);
     labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("round");
+    expect(labelsWrapper[0].classes()).toContain("round");
     expect(labelsWrapper.length).toBe(1);
 
     await wrapper.setData({ searchInput: "I'm blue daboudi dabouda" });
@@ -435,9 +445,9 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
       },
     ]);
     labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("round");
-    expect(labelsWrapper.at(1).classes()).toContain("round");
-    expect(labelsWrapper.at(2).classes()).toContain("round");
+    expect(labelsWrapper[0].classes()).toContain("round");
+    expect(labelsWrapper[1].classes()).toContain("round");
+    expect(labelsWrapper[2].classes()).toContain("round");
     expect(labelsWrapper.length).toBe(3);
   });
   it("collapse the list of labels when user click on collapse button", async () => {
@@ -463,12 +473,12 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 2,
       showSearch: true,
     });
 
-    const showLessButtonWrapper = wrapper.findComponent({
+    const showLessButtonWrapper = wrapper.find({
       ref: "showLessButtonRef",
     });
     expect(showLessButtonWrapper.exists()).toBe(true);
@@ -489,8 +499,8 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
       },
     ]);
     let labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("round");
-    expect(labelsWrapper.at(1).classes()).toContain("round");
+    expect(labelsWrapper[0].classes()).toContain("round");
+    expect(labelsWrapper[1].classes()).toContain("round");
     expect(labelsWrapper.length).toBe(2);
 
     await showLessButtonWrapper.trigger("click");
@@ -517,9 +527,9 @@ describe("LabelSelectionComponent in Single Selection mode", () => {
       },
     ]);
     labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("round");
-    expect(labelsWrapper.at(1).classes()).toContain("round");
-    expect(labelsWrapper.at(2).classes()).toContain("round");
+    expect(labelsWrapper[0].classes()).toContain("round");
+    expect(labelsWrapper[1].classes()).toContain("round");
+    expect(labelsWrapper[2].classes()).toContain("round");
     expect(labelsWrapper.length).toBe(3);
   });
 });
@@ -548,7 +558,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       multiple: true,
     });
@@ -563,24 +573,24 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     expect(searchWrapper.exists()).toBe(false);
 
     // by default there is no collapse button
-    const showLessButtonWrapper = wrapper.findComponent({
+    const showLessButtonWrapper = wrapper.find({
       ref: "showLessButtonRef",
     });
     expect(showLessButtonWrapper.exists()).toBe(false);
 
-    const inputsAreaWrapper = wrapper.findComponent({ ref: "inputsAreaRef" });
+    const inputsAreaWrapper = wrapper.find(".inputs-area");
     expect(inputsAreaWrapper.exists()).toBe(true);
-    const input1Wrapper = wrapper.findComponent("#sentiment_positive");
+    const input1Wrapper = wrapper.find("#sentiment_positive");
     expect(input1Wrapper.exists()).toBe(true);
-    const input2Wrapper = wrapper.findComponent("#sentiment_very_positive");
+    const input2Wrapper = wrapper.find("#sentiment_very_positive");
     expect(input2Wrapper.exists()).toBe(true);
-    const input3Wrapper = wrapper.findComponent("#sentiment_negative");
+    const input3Wrapper = wrapper.find("#sentiment_negative");
     expect(input3Wrapper.exists()).toBe(true);
 
     const labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("square");
-    expect(labelsWrapper.at(1).classes()).toContain("square");
-    expect(labelsWrapper.at(2).classes()).toContain("square");
+    expect(labelsWrapper[0].classes()).toContain("square");
+    expect(labelsWrapper[1].classes()).toContain("square");
+    expect(labelsWrapper[2].classes()).toContain("square");
     expect(labelsWrapper.length).toBe(3);
   });
   it("update the flag 'isSelected' of the corresponding checkbox option when user click (no items have been selected)", async () => {
@@ -606,7 +616,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       multiple: true,
     });
@@ -614,7 +624,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     // by default it's a single selection
     expect(wrapper.vm.multiple).toBe(true);
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -637,7 +647,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     const checkbox = wrapper.find("#sentiment_positive");
     await checkbox.setChecked();
     expect(checkbox.element.checked).toBeTruthy();
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -681,7 +691,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       multiple: true,
     });
@@ -689,7 +699,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     // by default it's a single selection
     expect(wrapper.vm.multiple).toBe(true);
 
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -712,7 +722,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     const checkbox = wrapper.find("#sentiment_very_positive");
     await checkbox.setChecked();
     expect(checkbox.element.checked).toBeTruthy();
-    expect(wrapper.vm.options).toStrictEqual([
+    expect(wrapper.vm.modelValue).toStrictEqual([
       {
         id: "sentiment_positive",
         text: "Positive",
@@ -756,7 +766,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       maxOptionsToShowBeforeCollapse: 3,
       multiple: true,
       showSearch: true,
@@ -790,9 +800,9 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
       },
     ]);
     let labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("square");
-    expect(labelsWrapper.at(1).classes()).toContain("square");
-    expect(labelsWrapper.at(2).classes()).toContain("square");
+    expect(labelsWrapper[0].classes()).toContain("square");
+    expect(labelsWrapper[1].classes()).toContain("square");
+    expect(labelsWrapper[2].classes()).toContain("square");
     expect(labelsWrapper.length).toBe(3);
 
     await wrapper.setData({ searchInput: "Very" });
@@ -805,7 +815,7 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
       },
     ]);
     labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("square");
+    expect(labelsWrapper[0].classes()).toContain("square");
     expect(labelsWrapper.length).toBe(1);
 
     await wrapper.setData({ searchInput: "I'm blue daboudi dabouda" });
@@ -835,9 +845,9 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
       },
     ]);
     labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("square");
-    expect(labelsWrapper.at(1).classes()).toContain("square");
-    expect(labelsWrapper.at(2).classes()).toContain("square");
+    expect(labelsWrapper[0].classes()).toContain("square");
+    expect(labelsWrapper[1].classes()).toContain("square");
+    expect(labelsWrapper[2].classes()).toContain("square");
     expect(labelsWrapper.length).toBe(3);
   });
   it("collapse the list of labels when user click on collapse button", async () => {
@@ -863,13 +873,13 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
     ];
 
     await wrapper.setProps({
-      options,
+      modelValue: options,
       multiple: true,
       maxOptionsToShowBeforeCollapse: 2,
       showSearch: true,
     });
 
-    const showLessButtonWrapper = wrapper.findComponent({
+    const showLessButtonWrapper = wrapper.find({
       ref: "showLessButtonRef",
     });
     expect(showLessButtonWrapper.exists()).toBe(true);
@@ -890,8 +900,8 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
       },
     ]);
     let labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("square");
-    expect(labelsWrapper.at(1).classes()).toContain("square");
+    expect(labelsWrapper[0].classes()).toContain("square");
+    expect(labelsWrapper[1].classes()).toContain("square");
     expect(labelsWrapper.length).toBe(2);
 
     await showLessButtonWrapper.trigger("click");
@@ -918,9 +928,9 @@ describe("LabelSelectionComponent in Multi Selection mode", () => {
       },
     ]);
     labelsWrapper = wrapper.findAll("label");
-    expect(labelsWrapper.at(0).classes()).toContain("square");
-    expect(labelsWrapper.at(1).classes()).toContain("square");
-    expect(labelsWrapper.at(2).classes()).toContain("square");
+    expect(labelsWrapper[0].classes()).toContain("square");
+    expect(labelsWrapper[1].classes()).toContain("square");
+    expect(labelsWrapper[2].classes()).toContain("square");
     expect(labelsWrapper.length).toBe(3);
   });
 });

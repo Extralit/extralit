@@ -30,8 +30,6 @@
 </template>
 
 <script>
-import "assets/icons/external";
-import "assets/icons/log-out";
 
 import { useAvatarTooltipViewModel } from "./userAvatarTooltipViewModel";
 

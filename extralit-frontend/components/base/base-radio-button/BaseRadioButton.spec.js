@@ -3,11 +3,11 @@ import BaseRadioButton from "./BaseRadioButton";
 
 let wrapper = null;
 const options = {
-  propsData: {
+  props: {
     id: "id",
     name: "name",
     value: "1",
-    model: "1",
+    modelValue: "1",
   },
 };
 beforeEach(() => {
@@ -15,16 +15,16 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("BaseRadioButtonComponent", () => {
   it("render the component", () => {
-    expect(wrapper.is(BaseRadioButton)).toBe(true);
+    expect(wrapper.findComponent(BaseRadioButton).exists()).toBe(true);
   });
   it("bind disabled class", async () => {
     wrapper = shallowMount(BaseRadioButton, {
-      propsData: {
+      props: {
         disabled: true,
       },
     });
@@ -32,7 +32,7 @@ describe("BaseRadioButtonComponent", () => {
   });
   it("component is selected when model and value matched", async () => {
     expect(wrapper.vm.isSelected).toBe(true);
-    expect(wrapper.props().model).toBe("1");
+    expect(wrapper.props().modelValue).toBe("1");
   });
   it("input is checked when model and value matched", async () => {
     const radioInput = wrapper.find('input[type="radio"]');

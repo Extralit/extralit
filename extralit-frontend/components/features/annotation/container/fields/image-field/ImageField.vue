@@ -6,7 +6,7 @@
       <img v-show="isLoaded" :src="content" @error="handleError()" @load="onLoad()" />
     </div>
     <div v-else class="image_field_placeholder">
-      <img src="images/img-placeholder.svg" />
+      <img src="/images/img-placeholder.svg" />
       <p v-text="$t('couldNotLoadImage')" />
     </div>
   </div>

@@ -26,13 +26,13 @@
             <div class="document-group__metadata" v-if="group.metadata">
               <BaseTag
                 v-if="group.metadata.source"
-                :text="group.metadata.source"
+                :name="group.metadata.source"
                 class="metadata-tag metadata-tag--source"
               />
               <BaseTag
                 v-for="collection in group.metadata.collections || []"
                 :key="collection"
-                :text="collection"
+                :name="collection"
                 class="metadata-tag metadata-tag--collection"
               />
             </div>
@@ -115,9 +115,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/document";
-import "assets/icons/external-link";
-import "assets/icons/info";
 
 import { useDocumentsListViewModel } from "./useDocumentsListViewModel";
 

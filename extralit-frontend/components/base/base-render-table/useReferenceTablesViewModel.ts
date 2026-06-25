@@ -2,7 +2,7 @@ import { Record as FeedbackRecord } from '@/v1/domain/entities/record/Record';
 import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
 
-import { Data, ReferenceValues, TableData } from '~/v1/domain/entities/table/TableData';
+import { type Data, type ReferenceValues, TableData } from '~/v1/domain/entities/table/TableData';
 
 type RecordDataFrames = Record<string, TableData>;
 

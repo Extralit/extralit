@@ -5,7 +5,7 @@
       <BaseBadge
         v-for="field in fields"
         :key="field.id"
-        :text="$t(field.type)"
+        :text="$t(field.type.value)"
         color="var(--bg-opacity-54)"
         font-size="11px"
       />

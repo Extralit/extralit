@@ -1,4 +1,4 @@
-import { Answer, RankingAnswer, SpanAnswer, TableAnswer } from "../IAnswer";
+import { type Answer, type RankingAnswer, type SpanAnswer, type TableAnswer } from "../IAnswer";
 import { TableData } from "../table/TableData";
 import { QuestionType } from "./QuestionType";
 

@@ -1,4 +1,4 @@
-import { IDatasetRepository } from "../services/IDatasetRepository";
+import { type IDatasetRepository } from "../services/IDatasetRepository";
 
 export class DeleteDatasetUseCase {
   constructor(private readonly datasetRepository: IDatasetRepository) {}

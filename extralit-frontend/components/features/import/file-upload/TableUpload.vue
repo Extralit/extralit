@@ -55,9 +55,6 @@
 
 <script lang="ts">
 import CsvColumnSelection from "./CsvColumnSelection.vue";
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/document";
 import { useTableUploadLogic } from "./useTableUploadLogic";
 import type { BibliographyData } from "./types";
 

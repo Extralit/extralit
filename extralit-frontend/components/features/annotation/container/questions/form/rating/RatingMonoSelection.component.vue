@@ -3,7 +3,7 @@
     <div class="inputs-area" role="radiogroup" aria-label="Label-Options">
       <div
         class="input-button"
-        v-for="option in options"
+        v-for="option in modelValue"
         :key="option.id"
         @keydown.enter.prevent
         role="button"
@@ -43,8 +43,11 @@
 <script>
 export default {
   name: "RatingMonoSelectionComponent",
+  // v-model consumer (rating/Rating.component.vue): same Vue 3 migration as
+  // LabelSelection — rename `options` → `modelValue` and emit `update:modelValue`.
+  emits: ["update:modelValue", "on-focus", "on-selected"],
   props: {
-    options: {
+    modelValue: {
       type: Array,
       required: true,
     },
@@ -55,10 +58,6 @@ export default {
     suggestion: {
       type: Object,
     },
-  },
-  model: {
-    prop: "options",
-    event: "on-change",
   },
   watch: {
     isFocused: {
@@ -90,11 +89,11 @@ export default {
       return `${agent}${score}`;
     },
     onSelect({ id, isSelected }) {
-      this.options.forEach((option) => {
+      this.modelValue.forEach((option) => {
         option.isSelected = option.id === id ? isSelected : false;
       });
 
-      this.$emit("on-change", this.options);
+      this.$emit("update:modelValue", this.modelValue);
 
       if (isSelected) {
         this.$emit("on-selected");

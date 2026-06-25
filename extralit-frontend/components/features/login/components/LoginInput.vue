@@ -18,7 +18,7 @@
           @blur="isBlurred = true"
         />
         <BaseButton
-          v-if="type === 'password' && !!value"
+          v-if="type === 'password' && !!modelValue"
           @on-click="toggleVisibility"
           class="input-field__toggle-visibility"
           >{{ isPasswordVisible ? $t("login.hide") : $t("login.show") }}</BaseButton
@@ -40,7 +40,7 @@ export default {
       type: Boolean,
       default: false,
     },
-    value: {
+    modelValue: {
       type: String,
       default: "",
     },
@@ -67,28 +67,25 @@ export default {
   },
   data() {
     return {
-      originalValue: this.value,
-      inputValue: this.value,
+      originalValue: this.modelValue,
+      inputValue: this.modelValue,
       isTouched: false,
       isBlurred: false,
       isPasswordVisible: false,
       isAutoFilled: false,
     };
   },
-  model: {
-    prop: "value",
-    event: "input",
-  },
+  emits: ["update:modelValue"],
   watch: {
     isAutoFilled(newValue) {
       if (newValue) {
-        this.value = `${this.value} `;
+        this.inputValue = `${this.inputValue} `;
       }
     },
     inputValue(newValue) {
-      this.$emit("input", newValue);
+      this.$emit("update:modelValue", newValue);
     },
-    value(newValue) {
+    modelValue(newValue) {
       this.inputValue = newValue;
     },
     wasModified(newValue) {

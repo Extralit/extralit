@@ -5,9 +5,9 @@
 
 import { DatasetCreation } from "../hub/DatasetCreation";
 import { Subset } from "../hub/Subset";
-import { FieldCreationTypes } from "../hub/FieldCreation";
-import { MetadataTypes, MetadataCreation } from "../hub/MetadataCreation";
-import { ImportHistoryDetailsResponse } from "../../usecases/get-import-history-details-use-case";
+import { type FieldCreationTypes } from "../hub/FieldCreation";
+import { type MetadataTypes, MetadataCreation } from "../hub/MetadataCreation";
+import { type ImportHistoryDetailsResponse } from "../../usecases/get-import-history-details-use-case";
 
 export interface ImportHistoryFeature {
   dtype: "string" | "int32" | "int64" | "float32" | "boolean";

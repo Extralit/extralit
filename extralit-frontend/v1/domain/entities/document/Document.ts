@@ -1,4 +1,4 @@
-import { LabelAnswer } from "../IAnswer";
+import { type LabelAnswer } from "../IAnswer";
 
 export class Segment {
 	constructor(

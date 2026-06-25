@@ -1,15 +1,15 @@
 <template>
   <BaseDropdown class="column-selector" :visible="dropdownIsVisible" @visibility="onVisibility">
-    <template slot="dropdown-header">
+    <template #dropdown-header>
       <svgicon name="assign" height="12" />
       {{ $t("datasetCreation.applyToaAField") }}
-      <span v-if="options.length" class="column-selector__chip" v-text="value" />
+      <span v-if="options.length" class="column-selector__chip" v-text="modelValue" />
     </template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <span class="column-selector__options__intro" v-text="$t('field')" />
       <ul class="column-selector__options">
         <li
-          :class="option === value ? 'column-selector__option--selected' : 'column-selector__option'"
+          :class="option === modelValue ? 'column-selector__option--selected' : 'column-selector__option'"
           v-for="(option, index) in filteredOptions"
           :key="index"
           @click="selectOption(option)"
@@ -22,10 +22,9 @@
 </template>
 
 <script>
-import "assets/icons/assign";
 export default {
   props: {
-    value: {
+    modelValue: {
       type: [Object, String],
       required: true,
     },
@@ -34,10 +33,7 @@ export default {
       required: true,
     },
   },
-  model: {
-    prop: "value",
-    event: "onValueChange",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       dropdownIsVisible: false,
@@ -45,7 +41,7 @@ export default {
   },
   computed: {
     filteredOptions() {
-      return this.options.filter((option) => JSON.stringify(option) !== JSON.stringify(this.value));
+      return this.options.filter((option) => JSON.stringify(option) !== JSON.stringify(this.modelValue));
     },
     optionNames() {
       return this.options.map((option) => option.name);
@@ -56,7 +52,7 @@ export default {
       this.dropdownIsVisible = value;
     },
     selectOption(option) {
-      this.$emit("onValueChange", option.name);
+      this.$emit("update:modelValue", option.name);
 
       this.dropdownIsVisible = false;
     },

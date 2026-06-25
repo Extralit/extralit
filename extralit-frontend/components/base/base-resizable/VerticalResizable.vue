@@ -63,7 +63,7 @@ export default {
       this.leftSide.style.width = `${this.leftPercentWidth}%`;
     }
   },
-  destroyed() {
+  unmounted() {
     this.resizer?.removeEventListener(EVENT.MOUSE_DOWN, this.mouseDownHandler);
   },
   methods: {

@@ -1,30 +1,16 @@
 {
+  // Nuxt 4 generates .nuxt/tsconfig.json with strict:true. The pre-Vue3 project
+  // explicitly ran with strict:false ("// Temporal"); preserve that posture so the
+  // migration doesn't newly impose strict-null / no-implicit-any on a codebase that
+  // never satisfied them. Tightening to strict is a separate hardening effort.
+  "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
-    "target": "ES2015",
-    "module": "ES2015",
-    "moduleResolution": "node",
-    "lib": ["esnext", "esnext.asynciterable", "dom"],
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "sourceMap": true,
-    "strict": false, // Temporal
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "~/*": ["./*"],
-      "@/*": ["./*"]
-    },
-    "types": [
-      "@types/node",
-      "@nuxt/typescript-build",
-      "@nuxt/types",
-      "@types/jest",
-      "@nuxtjs/i18n"
-    ]
-  },
-  "vueCompilerOptions": {
-    "target": 2.7
-  },
-  "exclude": ["node_modules", "dist", "build"]
+    "strict": false,
+    // Nuxt 4 newly enables these; the pre-Vue3 tsconfig had neither. Keep them off to
+    // match original posture. (Runtime type-only erasure is handled by inline `import type`
+    // modifiers for Vite/esbuild isolatedModules, independent of verbatimModuleSyntax.)
+    "verbatimModuleSyntax": false,
+    "noImplicitOverride": false,
+    "types": ["node", "vitest/globals"]
+  }
 }

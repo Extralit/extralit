@@ -27,7 +27,7 @@
       ref="inputsAreaRef"
       :key="searchInput"
       name="shuffle"
-      :css="options.length < 50"
+      :css="modelValue.length < 50"
       class="inputs-area"
       v-if="filteredOptions.length"
       role="group"
@@ -88,18 +88,22 @@
 
 <script>
 const OPTIONS_THRESHOLD_TO_ENABLE_SEARCH = 10;
-import "assets/icons/chevron-down";
-import "assets/icons/chevron-up";
 
 import { useLabelSelectionViewModel } from "./useLabelSelectionViewModel";
 
 export default {
   name: "LabelSelectionComponent",
+  // Consumed via `v-model="question.answer.values"` from parent (Single/Multi/Rating/Span).
+  // Vue 3 removed the `model: { prop, event }` option, so `v-model` now desugars to
+  // `:modelValue` + `@update:modelValue`. The selection list is mutated in place
+  // (`option.isSelected = ...`), so reactivity flows via the shared array reference;
+  // we still declare `update:modelValue` for correctness.
+  emits: ["update:modelValue", "on-focus", "on-selected"],
   props: {
     maxOptionsToShowBeforeCollapse: {
       type: Number,
     },
-    options: {
+    modelValue: {
       type: Array,
       required: true,
     },
@@ -126,10 +130,6 @@ export default {
       type: Boolean,
       default: true,
     },
-  },
-  model: {
-    prop: "options",
-    event: "on-change",
   },
   data() {
     return {
@@ -166,13 +166,13 @@ export default {
   },
   computed: {
     keyboards() {
-      return this.options.reduce((acc, option, index) => {
+      return this.modelValue.reduce((acc, option, index) => {
         acc[option.id] = index + 1;
         return acc;
       }, {});
     },
     filteredOptions() {
-      return this.options.filter((option) =>
+      return this.modelValue.filter((option) =>
         String(option.text).toLowerCase().includes(this.searchInput.toLowerCase())
       );
     },
@@ -211,7 +211,7 @@ export default {
       return this.filteredOptions.length > this.maxVisibleOptions;
     },
     showSearch() {
-      return this.options.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH || this.showCollapseButton;
+      return this.modelValue.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH || this.showCollapseButton;
     },
     textToShowInTheCollapseButton() {
       if (this.isExpanded) {
@@ -224,7 +224,7 @@ export default {
       return this.isExpanded ? "chevron-up" : "chevron-down";
     },
     maxVisibleOptions() {
-      return this.maxOptionsToShowBeforeCollapse ?? this.options.length + 1;
+      return this.maxOptionsToShowBeforeCollapse ?? this.modelValue.length + 1;
     },
   },
   methods: {
@@ -295,7 +295,7 @@ export default {
     onSelect({ id, isSelected }) {
       if (this.multiple) return;
 
-      this.options.forEach((option) => {
+      this.modelValue.forEach((option) => {
         option.isSelected = option.id === id ? isSelected : false;
       });
 
@@ -518,7 +518,7 @@ input[type="checkbox"] {
   transition: opacity 0.5s;
 }
 
-.fade-enter,
+.fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }

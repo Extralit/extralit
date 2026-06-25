@@ -1,4 +1,4 @@
-import { onBeforeUnmount, onMounted } from "vue-demi";
+import { onBeforeUnmount, onMounted } from "vue";
 
 export const useFocusTab = (onFocus: Function, onBlur = () => {}) => {
   if (!onFocus) throw new Error("onFocus is mandatory");

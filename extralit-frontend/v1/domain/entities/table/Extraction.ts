@@ -1,5 +1,5 @@
 import { DataFrameSchema } from "./Schema";
-import { Data } from "./TableData";
+import { type Data } from "./TableData";
 
 export interface BackendExtractionRequest {
   reference: string;

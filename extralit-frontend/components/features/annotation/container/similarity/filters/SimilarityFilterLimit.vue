@@ -8,26 +8,23 @@
 <script>
 export default {
   props: {
-    value: {
+    modelValue: {
       type: Number,
       required: true,
     },
   },
-  model: {
-    prop: "value",
-    event: "onValueChanged",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
-      selected: this.value,
+      selected: this.modelValue,
     };
   },
   watch: {
-    value(newValue) {
+    modelValue(newValue) {
       this.selected = newValue;
     },
     selected() {
-      this.$emit("onValueChanged", this.selected);
+      this.$emit("update:modelValue", this.selected);
     },
   },
 };

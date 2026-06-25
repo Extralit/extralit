@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { onBeforeMount, ref } from "vue-demi";
+import { onBeforeMount, ref } from "vue";
 import { Field } from "~/v1/domain/entities/field/Field";
 import { Metadata } from "~/v1/domain/entities/metadata/Metadata";
 import { Question } from "~/v1/domain/entities/question/Question";

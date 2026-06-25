@@ -3,7 +3,7 @@
  * Handles document loading and grouping logic
  */
 
-import { ref, computed, watch, onMounted } from "@nuxtjs/composition-api";
+import { ref, computed, watch, onMounted } from "vue";
 import { useResolve } from "ts-injecty";
 import { GetDocumentsByWorkspaceUseCase } from "~/v1/domain/usecases/get-documents-by-workspace-use-case";
 import { Document } from "~/v1/domain/entities/document/Document";

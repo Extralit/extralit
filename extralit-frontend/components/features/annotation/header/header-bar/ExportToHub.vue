@@ -2,9 +2,9 @@
   <div class="export-to-hub" @keydown.stop="">
     <BaseButton
       class="primary export-to-hub__button"
-      @mousedown.native.prevent="openDialog"
-      @mouseenter.native="openDialogOnHover"
-      @mouseleave.native="closeDialogOnLeave"
+      @mousedown.prevent="openDialog"
+      @mouseenter="openDialogOnHover"
+      @mouseleave="closeDialogOnLeave"
       :loading="isExporting"
       :disabled="isExporting"
     >
@@ -124,7 +124,6 @@
 
 <script>
 import { useExportToHubViewModel } from "./useExportToHubViewModel";
-import "assets/icons/export";
 
 export default {
   props: {

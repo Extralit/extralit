@@ -8,13 +8,13 @@ import { useRole } from "~/v1/infrastructure/services";
 import { useMetrics } from "~/v1/infrastructure/storage/MetricsStorage";
 import { useTeamProgress } from "~/v1/infrastructure/storage/TeamProgressStorage";
 
-jest.mock("~/v1/infrastructure/storage/MetricsStorage");
-const useMetricsMocked = jest.mocked(useMetrics);
-jest.mock("~/v1/infrastructure/storage/TeamProgressStorage");
-const useTeamProgressMocked = jest.mocked(useTeamProgress);
+vi.mock("~/v1/infrastructure/storage/MetricsStorage");
+const useMetricsMocked = vi.mocked(useMetrics);
+vi.mock("~/v1/infrastructure/storage/TeamProgressStorage");
+const useTeamProgressMocked = vi.mocked(useTeamProgress);
 
-jest.mock("~/v1/infrastructure/services/useRole");
-const useRoleMocked = jest.mocked(useRole);
+vi.mock("~/v1/infrastructure/services/useRole");
+const useRoleMocked = vi.mocked(useRole);
 
 class RecordCriteriaMocked extends RecordCriteria {
   constructor(
@@ -74,20 +74,20 @@ const PROGRESS = {
 const mockMetricsWith = (metrics: Metrics) => {
   useMetricsMocked.mockReturnValue({
     state: metrics,
-    save: jest.fn(),
-    get: jest.fn(),
+    save: vi.fn(),
+    get: vi.fn(),
   });
 };
 
 const mockTamProgressWith = (progress: Progress) => {
   useTeamProgressMocked.mockReturnValue({
     state: progress,
-    save: jest.fn(),
-    get: jest.fn(),
+    save: vi.fn(),
+    get: vi.fn(),
   });
 };
 useRoleMocked.mockReturnValue({
-  isAdminOrOwner: jest.fn(),
+  isAdminOrOwner: vi.fn(),
   isAdminOrOwnerRole: {
     value: true,
   } as any,
@@ -111,7 +111,7 @@ describe("useRecordsMessages", () => {
       const recordCriteria = createRecordCriteria("pending");
       const records = createRecordsMockWith(false);
       useRoleMocked.mockReturnValue({
-        isAdminOrOwner: jest.fn(),
+        isAdminOrOwner: vi.fn(),
         isAdminOrOwnerRole: {
           value: false,
         } as any,

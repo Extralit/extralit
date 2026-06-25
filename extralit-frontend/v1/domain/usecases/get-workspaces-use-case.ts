@@ -1,5 +1,5 @@
 import { Workspace } from "../entities/workspace/Workspace";
-import { IWorkspaceStorage } from "../services/IWorkspaceStorage";
+import { type IWorkspaceStorage } from "../services/IWorkspaceStorage";
 import { WorkspaceRepository } from "~/v1/infrastructure/repositories/WorkspaceRepository";
 
 export class GetWorkspacesUseCase {

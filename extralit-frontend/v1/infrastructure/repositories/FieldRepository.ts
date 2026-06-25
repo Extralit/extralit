@@ -1,5 +1,5 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { BackendField, Response } from "../types/";
+import type { AxiosInstance } from "axios";
+import { type BackendField, type Response } from "../types/";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 import { Field } from "~/v1/domain/entities/field/Field";
 import { FieldCreation } from "~/v1/domain/entities/hub/FieldCreation";
@@ -10,7 +10,7 @@ export const enum FIELD_API_ERRORS {
 }
 
 export class FieldRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async create(datasetId: string, field: FieldCreation): Promise<BackendField> {
     try {

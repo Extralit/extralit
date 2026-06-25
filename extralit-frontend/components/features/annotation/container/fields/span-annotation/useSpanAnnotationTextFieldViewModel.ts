@@ -1,12 +1,11 @@
-import Vue from "vue";
-import { onMounted, onUnmounted, ref, watch } from "vue-demi";
+import { createApp, h, onMounted, onUnmounted, ref, watch } from "vue";
 import { useSearchTextHighlight } from "../useSearchTextHighlight";
-import { Highlighting, LoadedSpan, Position } from "./components/highlighting";
+import { Highlighting, type LoadedSpan, type Position } from "./components/highlighting";
 import EntityComponent from "./components/EntityComponent.vue";
-import { Entity, Span } from "./components/span-selection";
+import { type Entity, type Span } from "./components/span-selection";
 import { Question } from "~/v1/domain/entities/question/Question";
 import { SpanQuestionAnswer } from "~/v1/domain/entities/question/QuestionAnswer";
-import { SpanAnswer } from "~/v1/domain/entities/IAnswer";
+import { type SpanAnswer } from "~/v1/domain/entities/IAnswer";
 
 export const useSpanAnnotationTextFieldViewModel = (props: {
   spanQuestion: Question;
@@ -37,7 +36,6 @@ export const useSpanAnnotationTextFieldViewModel = (props: {
     replaceEntity: (entity: Entity) => void,
     cloneSpanWith: (span: Span, entity: Entity) => void
   ) => {
-    const EntityComponentReference = Vue.extend(EntityComponent);
     const entity = answer.options.find((e) => e.id === span.entity.id);
     const suggestion = spanQuestion.suggestion?.getSuggestion({
       start: span.from,
@@ -47,29 +45,30 @@ export const useSpanAnnotationTextFieldViewModel = (props: {
 
     const spanInRange = highlighting.value.spans.filter((entity) => entity.from === span.from && entity.to === span.to);
 
-    const instance = new EntityComponentReference({
-      propsData: {
-        span,
-        spanInRange,
-        entity,
-        spanQuestion,
-        entityPosition,
-        suggestion,
-      },
+    const app = createApp({
+      render: () =>
+        h(EntityComponent, {
+          span,
+          spanInRange,
+          entity,
+          spanQuestion,
+          entityPosition,
+          suggestion,
+          onOnRemoveSpan: removeSpan,
+          onOnHoverSpan: hoverSpan,
+          onOnAddSpanBaseOn: cloneSpanWith,
+          onOnReplaceEntity: (newEntity: Entity) => {
+            selectEntity(newEntity);
+
+            replaceEntity(newEntity);
+          },
+        }),
     });
 
-    instance.$on("on-remove-span", removeSpan);
-    instance.$on("on-hover-span", hoverSpan);
-    instance.$on("on-add-span-base-on", cloneSpanWith);
-    instance.$on("on-replace-entity", (newEntity: Entity) => {
-      selectEntity(newEntity);
+    const mountPoint = document.createElement("div");
+    app.mount(mountPoint);
 
-      replaceEntity(newEntity);
-    });
-
-    instance.$mount();
-
-    return instance.$el;
+    return { element: mountPoint.firstElementChild, unmount: () => app.unmount() };
   };
 
   const updateSelectedEntity = () => {

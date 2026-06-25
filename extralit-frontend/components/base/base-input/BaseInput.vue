@@ -4,7 +4,7 @@
     class="input"
     :type="type"
     :name="name"
-    :value="value"
+    :value="modelValue ?? value"
     :disabled="disabled"
     :required="required"
     :placeholder="placeholder"
@@ -51,8 +51,6 @@ export default {
       this.parentContainer = getClosestVueParent(this.$parent, "input-container");
 
       if (!this.parentContainer) {
-        this.$destroy();
-
         throw new Error("You should wrap the input in a input-container");
       }
 

@@ -3,7 +3,7 @@
  * Handles coordination between bibliography and PDF uploads
  */
 
-import { ref, computed, watch, nextTick } from "@nuxtjs/composition-api";
+import { ref, computed, watch, nextTick } from "vue";
 import type { BibliographyData, PdfData } from "./types";
 
 export const useImportFileUploadViewModel = (props: any, { emit }: any) => {

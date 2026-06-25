@@ -1,10 +1,10 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 
 import {
-  ImportAnalysisRequest,
-  ImportAnalysisResponse,
-  DocumentMetadata,
-  FileInfo,
+  type ImportAnalysisRequest,
+  type ImportAnalysisResponse,
+  type DocumentMetadata,
+  type FileInfo,
 } from "~/v1/domain/entities/import/ImportAnalysis";
 import { TableData } from "@/v1/domain/entities/table/TableData";
 
@@ -13,7 +13,7 @@ const IMPORT_ANALYSIS_API_ERRORS = {
 };
 
 export class GetImportAnalysisUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async analyzeImport(
     workspaceId: string,

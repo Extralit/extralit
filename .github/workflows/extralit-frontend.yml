@@ -11,26 +11,18 @@ on:
     branches:
       - main
       - develop
+      - feat/**
       - releases/**
     paths:
       - "extralit-frontend/**"
       - ".github/workflows/extralit-frontend.yml"
 
-  pull_request:
-    paths:
-      - "extralit-frontend/**"
-      - ".github/workflows/extralit-frontend.yml"
-
-
 permissions:
   contents: read
-  id-token: write
-  pull-requests: write
 
 jobs:
   build:
     name: Build extralit-frontend
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,26 +32,10 @@ jobs:
       - name: Checkout Code 🛎
         uses: actions/checkout@v4
 
-      - name: Update repo visualizer
-        uses: githubocto/repo-visualizer@0.7.1
-        with:
-          root_path: "extralit-frontend/"
-          excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,pdm.lock"
-          excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
-          output_file: "repo-visualizer.svg"
-          should_push: false
-
-      - name: Upload repo visualizer diagram as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: repo-visualizer
-          path: repo-visualizer.svg
-          retention-days: 10
-
       - name: Setup Node.js ⚙️
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Install dependencies 📦
         run: |
@@ -86,40 +62,17 @@ jobs:
 
       - name: Build package 📦
         env:
-          # BASE_URL is used in the server to support parameterizable base root path
-          BASE_URL: "@@baseUrl@@"
-          DIST_FOLDER: ./dist
+          # Nuxt 4 SPA (ssr:false) ships as static files served at the site root, so build at
+          # base "/". (The Nuxt 2 "@@baseUrl@@" placeholder breaks Nuxt 4's prerender crawler;
+          # parameterizable sub-path hosting is a separate follow-up.)
+          BASE_URL: "/"
         run: |
-          npm run build
+          # `nuxi generate` prerenders the SPA shell to .output/public (index.html + _nuxt
+          # assets); `nuxi build` only emits a Nitro server with no static index.html.
+          npm run generate
 
       - name: Upload frontend statics as artifact
         uses: actions/upload-artifact@v4
         with:
           name: extralit-frontend
-          path: extralit-frontend/dist
-
-  # build_dev_docker_image:
-  #   name: Build development extralit-frontend docker image
-  #   needs: build
-  #   uses: ./.github/workflows/extralit-frontend.build-push-dev-frontend-docker.yml
-  #   if: |
-  #     !cancelled() &&
-  #     github.event_name == 'pull_request' && github.event.pull_request.draft == false
-  #   with:
-  #     image-name: extralit/extralit-frontend-for-dev
-  #     dockerfile: extralit-frontend/dev.frontend.Dockerfile
-  #     platforms: linux/amd64
-  #   secrets: inherit
-
-  # deploy:
-  #   name: Deploy pr environment
-  #   uses: ./.github/workflows/extralit-frontend.deploy-environment.yml
-  #   needs: build_dev_docker_image
-  #   if: |
-  #     !cancelled() &&
-  #     needs.build_dev_docker_image.result == 'success' &&
-  #     github.event_name == 'pull_request' && github.event.pull_request.draft == false
-  #   with:
-  #     image-name: extralit/extralit-frontend-for-dev
-  #     image-version: ${{ needs.build_dev_docker_image.outputs.version }}
-  #   secrets: inherit
+          path: extralit-frontend/.output/public

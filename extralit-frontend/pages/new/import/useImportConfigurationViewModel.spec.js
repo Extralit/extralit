@@ -1,26 +1,38 @@
 import { useImportConfigurationViewModel } from "./useImportConfigurationViewModel";
 
 // Mock dependencies
-jest.mock("ts-injecty", () => ({
-  useResolve: jest.fn(),
+vi.mock("ts-injecty", () => ({
+  useResolve: vi.fn(),
 }));
 
-jest.mock("@nuxtjs/composition-api", () => ({
-  ref: jest.fn(),
-  useContext: jest.fn(),
-  useRoute: jest.fn(),
+// `ref` is now imported from "vue"; the viewModel still treats the route as a
+// ref-like object (route.value.params.id), so the mock preserves that shape.
+// `useRoute` is a Nuxt auto-import resolving to #app/composables/router; mock it
+// there so this spec runs in the happy-dom env (no parallel nuxt-env conflict).
+const { useRouteMock } = vi.hoisted(() => ({ useRouteMock: vi.fn() }));
+vi.mock("#app/composables/router", () => ({
+  useRoute: useRouteMock,
+  useRouter: vi.fn(),
 }));
 
-jest.mock("~/v1/infrastructure/services/useRoutes", () => ({
-  useRoutes: jest.fn(),
+vi.mock("vue", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    ref: vi.fn(),
+  };
+});
+
+vi.mock("~/v1/infrastructure/services/useRoutes", () => ({
+  useRoutes: vi.fn(),
 }));
 
-jest.mock("~/v1/domain/entities/import/ImportHistoryDatasetBuilder", () => ({
-  ImportHistoryDatasetBuilder: jest.fn(),
+vi.mock("~/v1/domain/entities/import/ImportHistoryDatasetBuilder", () => ({
+  ImportHistoryDatasetBuilder: vi.fn(),
 }));
 
-jest.mock("~/v1/domain/entities/import/ImportHistoryDetails", () => ({
-  ImportHistoryDetails: jest.fn(),
+vi.mock("~/v1/domain/entities/import/ImportHistoryDetails", () => ({
+  ImportHistoryDetails: vi.fn(),
 }));
 
 describe("useImportConfigurationViewModel", () => {
@@ -31,58 +43,64 @@ describe("useImportConfigurationViewModel", () => {
   let mockImportHistoryDatasetBuilder;
   let mockImportHistoryDetails;
 
-  beforeEach(() => {
-    jest.clearAllMocks();
+  beforeEach(async () => {
+    vi.clearAllMocks();
 
-    // Mock composition API
-    const compositionApi = require("@nuxtjs/composition-api");
-    mockRef = compositionApi.ref;
+    // `ref` mock (now sourced from "vue")
+    const vue = await import("vue");
+    mockRef = vue.ref;
     mockRef.mockImplementation((initialValue) => ({
       value: initialValue,
     }));
 
-    // Mock route
+    // Nuxt 4 useRoute() returns the route already unwrapped (not a Ref),
+    // so the viewModel reads route.params.id directly.
     mockRoute = {
-      value: {
-        params: {
-          id: "test-import-123",
-        },
+      params: {
+        id: "test-import-123",
       },
     };
-    compositionApi.useRoute.mockReturnValue(mockRoute);
+    useRouteMock.mockReturnValue(mockRoute);
 
     // Mock routes service
-    mockGoToHome = jest.fn();
-    const useRoutes = require("~/v1/infrastructure/services/useRoutes");
+    mockGoToHome = vi.fn();
+    const useRoutes = await import("~/v1/infrastructure/services/useRoutes");
     useRoutes.useRoutes.mockReturnValue({
       goToHome: mockGoToHome,
     });
 
     // Mock use case
     mockGetImportHistoryDetailsUseCase = {
-      execute: jest.fn(),
+      execute: vi.fn(),
     };
-    const tsInjecty = require("ts-injecty");
+    const tsInjecty = await import("ts-injecty");
     tsInjecty.useResolve.mockReturnValue(mockGetImportHistoryDetailsUseCase);
 
     // Mock builder
     mockImportHistoryDatasetBuilder = {
-      build: jest.fn(),
+      build: vi.fn(),
     };
-    const ImportHistoryDatasetBuilder = require("~/v1/domain/entities/import/ImportHistoryDatasetBuilder");
-    ImportHistoryDatasetBuilder.ImportHistoryDatasetBuilder.mockImplementation(() => mockImportHistoryDatasetBuilder);
+    const { ImportHistoryDatasetBuilder } = await import(
+      "~/v1/domain/entities/import/ImportHistoryDatasetBuilder"
+    );
+    // Regular function (not arrow) so the mock is `new`-able under vitest v4.
+    ImportHistoryDatasetBuilder.mockImplementation(function () {
+      return mockImportHistoryDatasetBuilder;
+    });
 
     // Mock ImportHistoryDetails
     mockImportHistoryDetails = {};
-    const ImportHistoryDetails = require("~/v1/domain/entities/import/ImportHistoryDetails");
-    ImportHistoryDetails.ImportHistoryDetails.mockImplementation(() => mockImportHistoryDetails);
+    const { ImportHistoryDetails } = await import("~/v1/domain/entities/import/ImportHistoryDetails");
+    ImportHistoryDetails.mockImplementation(function () {
+      return mockImportHistoryDetails;
+    });
 
     // Mock console.error to avoid noise in tests
-    jest.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("loadImportConfiguration", () => {
@@ -248,7 +266,7 @@ describe("useImportConfigurationViewModel", () => {
       mockImportHistoryDatasetBuilder.build.mockReturnValue({});
 
       // Mock setTimeout to avoid actual delays in tests
-      jest.spyOn(global, "setTimeout").mockImplementation((callback) => {
+      vi.spyOn(global, "setTimeout").mockImplementation((callback) => {
         callback();
         return 123;
       });
@@ -275,7 +293,7 @@ describe("useImportConfigurationViewModel", () => {
     });
 
     it("should handle missing import ID during retry", async () => {
-      mockRoute.value.params.id = null;
+      mockRoute.params.id = null;
 
       const viewModel = useImportConfigurationViewModel();
       await viewModel.retry();
@@ -288,7 +306,7 @@ describe("useImportConfigurationViewModel", () => {
   describe("handleSubsetChange", () => {
     it("should handle subset change successfully", () => {
       const mockDatasetConfig = {
-        changeSubset: jest.fn(),
+        changeSubset: vi.fn(),
       };
 
       const viewModel = useImportConfigurationViewModel();
@@ -302,7 +320,7 @@ describe("useImportConfigurationViewModel", () => {
 
     it("should handle subset change error", () => {
       const mockDatasetConfig = {
-        changeSubset: jest.fn(() => {
+        changeSubset: vi.fn(() => {
           throw new Error("Subset change failed");
         }),
       };
@@ -334,7 +352,7 @@ describe("useImportConfigurationViewModel", () => {
 
     it("should handle back action", () => {
       // Mock window.history.back
-      const mockBack = jest.fn();
+      const mockBack = vi.fn();
       Object.defineProperty(window, "history", {
         value: { back: mockBack },
         writable: true,
@@ -347,7 +365,7 @@ describe("useImportConfigurationViewModel", () => {
     });
 
     it("should handle unknown action", () => {
-      const consoleSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
       const viewModel = useImportConfigurationViewModel();
       viewModel.handleBreadcrumbAction("unknown");
@@ -376,7 +394,7 @@ describe("useImportConfigurationViewModel", () => {
     });
 
     it("should return null if no import ID in route", () => {
-      mockRoute.value.params.id = null;
+      mockRoute.params.id = null;
 
       const viewModel = useImportConfigurationViewModel();
       const importId = viewModel.getImportId();

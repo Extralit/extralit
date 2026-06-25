@@ -156,9 +156,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/close";
-import "assets/icons/danger";
 import type { ImportUploadData } from "./types";
 import { useImportBatchProgressViewModel } from "./useImportBatchProgressViewModel";
 
@@ -200,7 +197,10 @@ export default {
   emits: ["completed", "cancelled", "error", "progress"],
 
   setup(props, { emit }) {
-    return useImportBatchProgressViewModel(props, emit);
+    return useImportBatchProgressViewModel(
+      props as unknown as Parameters<typeof useImportBatchProgressViewModel>[0],
+      emit
+    );
   },
 };
 </script>

@@ -1,5 +1,5 @@
 import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
-import { IDatasetsStorage } from "@/v1/domain/services/IDatasetsStorage";
+import { type IDatasetsStorage } from "@/v1/domain/services/IDatasetsStorage";
 import { useStoreFor } from "@/v1/store/create";
 
 class Datasets {

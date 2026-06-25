@@ -1,3 +1,7 @@
+// jest-mock-extended (used by @codescouts/test/jest) lazily calls jest.fn();
+// alias the jest global to vitest's vi so the mock factory works under Vitest.
+(globalThis as any).jest ??= vi;
+
 import { mock } from "@codescouts/test/jest";
 import { IFieldRepository } from "../services/IFieldRepository";
 import { GetDatasetFieldsGroupedUseCase } from "./get-dataset-fields-grouped-use-case";
@@ -20,7 +24,7 @@ describe("GetDatasetFieldsGroupedUseCase should", () => {
     const backendFields = [createBackendField("chat"), createBackendField("chat"), createBackendField("text")];
 
     const fieldRepository = mock<IFieldRepository>();
-    fieldRepository.getFields.mockResolvedValue(backendFields);
+    (fieldRepository.getFields as any).mockResolvedValue(backendFields);
 
     const getDatasetFieldsGroupedUseCase = new GetDatasetFieldsGroupedUseCase(fieldRepository);
 
@@ -34,7 +38,7 @@ describe("GetDatasetFieldsGroupedUseCase should", () => {
     const backendFields = [];
 
     const fieldRepository = mock<IFieldRepository>();
-    fieldRepository.getFields.mockResolvedValue(backendFields);
+    (fieldRepository.getFields as any).mockResolvedValue(backendFields);
 
     const getDatasetFieldsGroupedUseCase = new GetDatasetFieldsGroupedUseCase(fieldRepository);
 

@@ -14,7 +14,7 @@
     </div>
 
     <div class="hf-login__img-container">
-      <img class="hf-login__img" src="images/welcome-hf-sign-in-ss.jpg" alt="extralit UI" />
+      <img class="hf-login__img" src="/images/welcome-hf-sign-in-ss.jpg" alt="extralit UI" />
     </div>
   </main>
 </template>
@@ -32,10 +32,13 @@ export default {
   },
   methods: {
     goToLogin() {
+      // omitCTA tells the sign-in route guard NOT to bounce back here (avoids an
+      // infinite welcome <-> sign-in loop on HF Spaces). It must travel as a QUERY
+      // param: Vue Router 4 drops `params` that aren't part of the route path when
+      // navigating by name (it silently worked as router state under Vue Router 3).
       this.$router.replace({
         name: "sign-in",
-        params: { omitCTA: true },
-        query: this.$route.query,
+        query: { ...this.$route.query, omitCTA: "true" },
       });
     },
   },
@@ -43,7 +46,7 @@ export default {
     this.isHuggingFaceConfigured = await this.hasHuggingFaceOAuthConfigured();
 
     if (!this.isHuggingFaceConfigured) {
-      this.goToLogin();
+      return this.goToLogin();
     }
 
     const huggingFaceSpaceInfo = await this.getHuggingFaceSpace();

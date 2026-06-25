@@ -1,4 +1,4 @@
-import { watch, ref } from "vue-demi";
+import { watch, ref } from "vue";
 
 declare global {
   interface Window {

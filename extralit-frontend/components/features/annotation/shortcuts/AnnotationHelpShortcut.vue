@@ -1,16 +1,19 @@
 <template>
   <div>
     <p class="shortcuts__title">Shortcuts</p>
-    <base-spinner v-if="$fetchState.pending" />
+    <base-spinner v-if="pending" />
     <documentation-viewer v-else class="shortcuts__content" :content="content" />
   </div>
 </template>
 
 <script>
+const docs = import.meta.glob("~/docs/*.md", { query: "?raw", import: "default" });
+
 export default {
   name: "HelpShortcut",
   data() {
     return {
+      pending: true,
       content: {
         tabs: [],
       },
@@ -18,10 +21,8 @@ export default {
   },
   methods: {
     async getShortcutsDocumentation() {
-      const folderContent = require.context(`../../../../docs/`, false, /^[^_]+\.md$/, "lazy");
-
-      const shortcutContent = await folderContent("./shortcuts.md");
-      const shortcuts = shortcutContent.body.split("\n");
+      const raw = await docs["/docs/shortcuts.md"]();
+      const shortcuts = raw.split("\n");
 
       this.removeTitle(shortcuts);
 
@@ -45,17 +46,22 @@ export default {
 
       return manipulatedByPlatform.join("\n");
     },
+    async loadShortcuts() {
+      try {
+        this.content.tabs.push({
+          id: "shortcuts",
+          name: this.$t("shortcuts.label"),
+          markdown: await this.getShortcutsDocumentation(),
+        });
+      } catch (e) {
+        console.log(e);
+      } finally {
+        this.pending = false;
+      }
+    },
   },
-  async fetch() {
-    try {
-      this.content.tabs.push({
-        id: "shortcuts",
-        name: this.$t("shortcuts.label"),
-        markdown: await this.getShortcutsDocumentation(),
-      });
-    } catch (e) {
-      console.log(e);
-    }
+  mounted() {
+    this.loadShortcuts();
   },
 };
 </script>

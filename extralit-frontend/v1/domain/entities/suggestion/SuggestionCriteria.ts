@@ -1,5 +1,5 @@
 import { Criteria } from "../common/Criteria";
-import { RangeValue, ValuesOption } from "../common/Filter";
+import { type RangeValue, type ValuesOption } from "../common/Filter";
 
 export interface ConfigurationSearch {
   name: "score" | "value" | "agent";
