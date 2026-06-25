@@ -131,27 +131,14 @@ jobs:
           flags: extralit-server
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # This section is used to build the frontend and copy the build files to the server.
-      # In the future, static files should be downloaded after the frontend is built and uploaded as an artifact.
-      - name: Setup Node.js for frontend dependencies
-        uses: actions/setup-node@v4
+      # The server no longer builds the frontend from source. The live UI is published to Vercel
+      # by extralit-frontend.yml; here we just bake a prebuilt SPA into the wheel as the bundled
+      # fallback UI (main for release builds, else develop).
+      - name: Download prebuilt frontend statics
+        uses: ./.github/actions/download-frontend-artifact
         with:
-          node-version: 20
+          branch: ${{ github.ref_name == 'main' && 'main' || 'develop' }}
 
-      - name: Install frontend dependencies
-        working-directory: extralit-frontend
-        env:
-          # Nuxt 4 SPA (ssr:false) is served as static files from the server's static dir at
-          # the site root, so build at base "/". (The Nuxt 2 "@@baseUrl@@" placeholder, which
-          # the server rewrote at runtime, breaks Nuxt 4's prerender crawler and yields "//_nuxt"
-          # asset paths; parameterizable sub-path hosting is a separate follow-up.)
-          BASE_URL: "/"
-        run: |
-          npm install
-          # `nuxi generate` prerenders the SPA shell to .output/public (index.html + _nuxt
-          # assets); `nuxi build` only emits a Nitro server with no static index.html.
-          npm run generate
-      # End of frontend build section
       - name: Build package
         run: |
           set -euo pipefail

@@ -17,7 +17,7 @@ on:
     paths:
       - "extralit-server/**"
       - "extralit-frontend/**"
-      - ".github/workflows/extralit-pr-preview.yml"
+      - ".github/workflows/extralit-frontend.build-push-dev.yml"
       - ".github/workflows/extralit-server.build-docker-images.yml"
 
   workflow_dispatch:
@@ -64,27 +64,13 @@ jobs:
           cache-local-path: ~/.cache/uv
           cache-dependency-glob: "extralit-server/uv.lock"
 
-      # Mirrors the frontend+wheel build in extralit-server.yml (no pytest here — this is a
-      # preview-only path). The compiled frontend is copied into the server's static dir so
-      # the server image (and the HF Space built FROM it) ships the PR's frontend changes.
-      - name: Setup Node.js for frontend dependencies
-        uses: actions/setup-node@v4
+      # No pytest here — preview-only path. The live frontend preview for this PR is published to
+      # Vercel by extralit-frontend.yml; the HF Space only needs a bundled fallback UI, so bake
+      # the prebuilt develop frontend artifact instead of rebuilding from source.
+      - name: Download prebuilt frontend statics
+        uses: ./.github/actions/download-frontend-artifact
         with:
-          node-version: 20
-
-      - name: Install frontend dependencies
-        working-directory: extralit-frontend
-        env:
-          # Nuxt 4 SPA (ssr:false) is served as static files from the server's static dir at
-          # the site root, so build at base "/". (The Nuxt 2 "@@baseUrl@@" placeholder, which
-          # the server rewrote at runtime, breaks Nuxt 4's prerender crawler and yields "//_nuxt"
-          # asset paths; parameterizable sub-path hosting is a separate follow-up.)
-          BASE_URL: "/"
-        run: |
-          npm install
-          # `nuxi generate` prerenders the SPA shell to .output/public (index.html + _nuxt
-          # assets); `nuxi build` only emits a Nitro server with no static index.html.
-          npm run generate
+          branch: develop
 
       - name: Build package
         run: |
