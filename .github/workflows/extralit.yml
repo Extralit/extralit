@@ -11,19 +11,12 @@ on:
     branches:
       - main
       - develop
+      - feat/**
       - releases/**
     paths:
       - "extralit/**"
       - "!extralit/docs/**"
       - "!extralit/mkdocs.yml"
-      - ".github/workflows/extralit.yml"
-
-  pull_request:
-    paths:
-      - "extralit/**"
-      - "!extralit/docs/**"
-      - "!extralit/mkdocs.yml"
-      - ".github/workflows/extralit.yml"
 
 permissions:
   id-token: write

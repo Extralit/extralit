@@ -11,15 +11,10 @@ on:
     branches:
       - main
       - develop
+      - feat/**
       - releases/**
     paths:
       - "extralit-server/**"
-      - ".github/workflows/extralit-server.yml"
-
-  pull_request:
-    paths:
-      - "extralit-server/**"
-      - ".github/workflows/extralit-server.yml"
 
 permissions:
   id-token: write

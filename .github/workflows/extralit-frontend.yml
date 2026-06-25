@@ -11,6 +11,7 @@ on:
     branches:
       - main
       - develop
+      - feat/**
       - releases/**
     paths:
       - "extralit-frontend/**"
