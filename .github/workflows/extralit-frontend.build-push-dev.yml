@@ -100,3 +100,49 @@ jobs:
       # preview never republishes the dev :latest tag from unreviewed PR code.
       pr_number: ${{ inputs.pr_number || github.event.pull_request.number }}
     secrets: inherit
+
+  # Opportunistic: this PR has its own ephemeral HF Space (extralit-dev/pr-<n>), so point the
+  # PR's Vercel preview at it instead of the shared develop backend. Vercel's native Git
+  # integration builds the preview; we just set a branch-scoped Preview env var (read by
+  # extralit-frontend/vercel.ts at build time) and redeploy the branch's latest preview so it
+  # takes effect now. Best-effort — never blocks the preview pipeline.
+  point-preview-at-pr-space:
+    name: Point Vercel preview at this PR's HF Space
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.fork == false
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.pr_number || github.event.pull_request.number }}
+      HEAD_REF: ${{ github.head_ref }}
+    steps:
+      - name: Set branch-scoped preview backend + redeploy
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          if [[ -z "${VERCEL_TOKEN:-}" || -z "${VERCEL_PROJECT_ID:-}" ]]; then
+            echo "Vercel secrets not configured; skipping preview override."; exit 0
+          fi
+          # Resolve the PR head branch (manual dispatch only carries the PR number).
+          BRANCH="${HEAD_REF:-}"
+          if [[ -z "$BRANCH" ]]; then
+            BRANCH=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json headRefName -q .headRefName)
+          fi
+          SPACE_URL="https://extralit-dev-pr-${PR_NUMBER}.hf.space"
+          echo "Pointing preview for branch '$BRANCH' at $SPACE_URL"
+          npm install -g vercel@latest
+          # Durable: branch-scoped Preview env var so every build of this branch targets its Space.
+          # (Branch-scoped add is non-interactive with an explicit branch arg + --value + --yes.)
+          vercel env rm API_BASE_URL preview "$BRANCH" --token="$VERCEL_TOKEN" --yes 2>/dev/null || true
+          vercel env add API_BASE_URL preview "$BRANCH" --value "$SPACE_URL" --token="$VERCEL_TOKEN" --yes --force
+          # Immediate: redeploy the branch's latest preview so the new env applies now.
+          uid=$(curl -fsSL -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_ORG_ID}&target=preview&limit=30" 2>/dev/null \
+            | jq -r --arg b "$BRANCH" '[.deployments[] | select(.meta.githubCommitRef==$b)][0].uid // empty')
+          if [[ -n "${uid:-}" ]]; then
+            vercel redeploy "$uid" --token="$VERCEL_TOKEN" || echo "Redeploy failed (non-fatal); env applies on next build."
+          else
+            echo "No existing preview for '$BRANCH' yet; env applies on first/next build."
+          fi

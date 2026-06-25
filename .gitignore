@@ -173,3 +173,5 @@ output/
 **/.playwright-mcp/
 **/.nuxt-stale-root/
 .worktree/
+.vercel
+.env*
