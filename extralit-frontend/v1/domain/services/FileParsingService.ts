@@ -74,7 +74,7 @@ export class BibTeXParser {
 
     const cleaned = field
       .toString()
-      .replace(/[\{\}]/g, "")
+      .replace(/[{}]/g, "")
       .replace(/^"+|"+$/g, "")
       .trim();
 

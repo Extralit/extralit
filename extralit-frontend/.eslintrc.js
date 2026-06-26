@@ -95,6 +95,9 @@ module.exports = {
         "space-before-function-paren": 0,
         "no-throw-literal": 0,
         "no-new": 0,
+        // Ambient `declare namespace CSS { ... }` global augmentations (CSS Custom
+        // Highlight API) can't be expressed as ES modules; allow declaration-only namespaces.
+        "@typescript-eslint/no-namespace": ["error", { allowDeclarations: true }],
       },
     },
   ],

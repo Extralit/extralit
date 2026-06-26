@@ -26,7 +26,7 @@ export const createTextQuestionMocked = () => {
   });
 };
 
-export const createLabelQuestionMocked = (settings: Object) => {
+export const createLabelQuestionMocked = (settings: object) => {
   return new Question("FAKE_ID", "FAKE_NAME", "FAKE_DESCRIPTION", "FAKE_DATASET_ID", "FAKE_ TITLE", false, {
     type: "label_selection",
     options: [

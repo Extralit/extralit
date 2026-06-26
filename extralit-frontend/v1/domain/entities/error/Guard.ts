@@ -9,7 +9,9 @@ export class GuardError extends Error {
 }
 
 export class Guard {
-  private constructor() {}
+  private constructor() {
+    /* static-only utility; not instantiable */
+  }
 
   static condition(showThrow: boolean, message: string) {
     if (showThrow) {

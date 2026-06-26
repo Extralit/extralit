@@ -161,7 +161,7 @@ export class Record {
       if (
         this.isPending &&
         !!question.suggestion &&
-        // @ts-ignore
+        // @ts-expect-error -- use_table is present only on some question settings variants
         !question.settings?.settings?.use_table
       ) {
         question.response(question.suggestion);

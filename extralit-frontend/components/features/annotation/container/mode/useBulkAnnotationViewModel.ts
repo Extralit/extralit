@@ -66,6 +66,7 @@ export const useBulkAnnotationViewModel = ({ records }: { records: Records }) =>
         });
       }
     } catch {
+      /* notification already surfaced upstream; reset state in finally */
     } finally {
       affectAllRecords.value = false;
       progress.value = 0;

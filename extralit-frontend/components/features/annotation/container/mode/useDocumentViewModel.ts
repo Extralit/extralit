@@ -60,7 +60,7 @@ export const useDocumentViewModel = (props: { record: any }) => {
   };
 
   const focusDocumentPageNumber = (pageNumber: number | string) => {
-    // @ts-ignore
+    // @ts-expect-error -- Document type lacks page_number; tolerated here
     setDocument({ ...document, page_number: pageNumber });
   };
 

@@ -15,6 +15,7 @@ export const useDatasetFields = ({ dataset }: { dataset: Dataset }) => {
 
       fields.value = await getFieldsUseCase.execute(dataset.id);
     } catch {
+      /* best-effort: leave fields empty if loading fails */
     } finally {
       isFieldsLoading.value = false;
     }

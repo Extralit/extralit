@@ -28,7 +28,9 @@ export class BulkAnnotationUseCase {
     recordReference: Record,
     selectedRecords: Record[],
     affectAllRecords = false,
-    progress: Progress = () => {}
+    progress: Progress = () => {
+      /* no-op: progress reporting is optional */
+    }
   ) {
     const records = [...selectedRecords];
 
@@ -56,7 +58,9 @@ export class BulkAnnotationUseCase {
     status: AvailableStatus,
     recordReference: Record,
     selectedRecords: Record[],
-    progress: Progress = () => {}
+    progress: Progress = () => {
+      /* no-op: progress reporting is optional */
+    }
   ) {
     const results: boolean[] = [];
 

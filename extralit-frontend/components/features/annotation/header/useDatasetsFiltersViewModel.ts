@@ -37,7 +37,9 @@ export const useDatasetsFiltersViewModel = ({ recordCriteria }: { recordCriteria
   const loadFields = async () => {
     try {
       datasetFields.value = await getFieldsUseCase.execute(recordCriteria.datasetId);
-    } catch {}
+    } catch {
+      /* best-effort: leave datasetFields empty if loading fails */
+    }
   };
 
   onBeforeMount(() => {

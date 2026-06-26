@@ -5,7 +5,7 @@ import { Subset } from "./Subset";
 export class DatasetCreation {
   public selectedSubset: Subset;
 
-  public readonly firstRecord: {};
+  public readonly firstRecord: Record<string, unknown>;
   public workspace: Workspace;
   public importHistoryId?: string;
 
