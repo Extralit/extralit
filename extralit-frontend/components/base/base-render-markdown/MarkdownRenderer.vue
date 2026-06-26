@@ -63,9 +63,10 @@ export default {
       return this.$language.isRTL(this.markdown) ? "--rtl" : "--ltr";
     },
     markdownToHtml() {
+      // `headerIds` and `mangle` were removed in marked >5 (split out to
+      // marked-gfm-heading-id / marked-mangle); marked 18 defaults match the
+      // old `false` behaviour (no auto ids, no email mangling), so we drop them.
       let html = marked.parse(this.markdown, {
-        headerIds: false,
-        mangle: false,
         breaks: true,
       });
 
