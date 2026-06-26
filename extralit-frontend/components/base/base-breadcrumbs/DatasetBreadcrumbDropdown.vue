@@ -149,7 +149,7 @@ export default {
   &__header {
     display: flex;
     align-items: center;
-    padding: $base-space / 2;
+    padding: $base-space * 0.5;
     color: var(--fg-lighter);
     cursor: pointer;
     border-radius: $border-radius-s;
@@ -193,7 +193,7 @@ export default {
   }
 
   &__items {
-    padding: $base-space / 2;
+    padding: $base-space * 0.5;
   }
 
   &__item {
@@ -268,7 +268,7 @@ export default {
   margin: 0;
 
   .base-search__input {
-    padding: $base-space / 2;
+    padding: $base-space * 0.5;
     border-radius: $border-radius-s;
     border: 1px solid var(--border-field);
     background: var(--bg-field);

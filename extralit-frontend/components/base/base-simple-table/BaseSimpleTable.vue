@@ -186,11 +186,11 @@ export default {
 
   // Hide RenderTable's edit buttons when not editable
   :deep(.table-container) {
+    max-height: inherit;
+    margin-bottom: 0;
     .__table-buttons {
       display: none;
     }
-    max-height: inherit;
-    margin-bottom: 0;
   }
 
   // Apply design system styling to RenderTable's tabulator
