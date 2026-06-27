@@ -62,7 +62,11 @@ repos:
     hooks:
       - id: frontend-lint
         name: "Lint and fix extralit-frontend files"
-        entry: bash -c 'cd extralit-frontend && npx eslint --fix --cache "$@" || true'
+        # pre-commit passes repo-relative paths (extralit-frontend/foo.vue). The trailing
+        # `--` is the placeholder $0 (otherwise `bash -c` assigns the first file to $0 and
+        # "$@" drops it); `${@#extralit-frontend/}` strips the prefix so paths resolve after
+        # the cd. `|| true` keeps lint advisory (non-blocking), matching `eslint . --quiet`.
+        entry: bash -c 'cd extralit-frontend && npx eslint --fix --cache "${@#extralit-frontend/}" || true' --
         language: system
         files: '^extralit-frontend/.*\.(js|ts|vue)$'
         pass_filenames: true
