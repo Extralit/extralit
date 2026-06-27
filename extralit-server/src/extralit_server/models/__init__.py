@@ -5,3 +5,4 @@ from extralit_server.enums import *
 
 from .database import *
 from .metadata_properties import *
+from .v2 import Schema, SchemaVersion  # register v2 tables on DatabaseModel.metadata
