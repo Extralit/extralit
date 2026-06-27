@@ -21,7 +21,6 @@ export class ImportHistoryDatasetBuilder {
   private readonly importHistoryData: ImportHistoryDetailsResponse;
   private readonly datasetName: string;
 
-
   constructor(importHistoryData: ImportHistoryDetailsResponse) {
     this.importHistoryData = importHistoryData;
     this.datasetName = this.generateDatasetName();
@@ -177,12 +176,8 @@ export class ImportHistoryDatasetBuilder {
    */
   private hasReferenceField(): boolean {
     return (
-      this.importHistoryData.data.schema.fields.some((field) =>
-        METADATA_FIELDS.includes(field.name as any)
-      ) ||
-      this.importHistoryData.data.data.some((record) =>
-        METADATA_FIELDS.some((field) => field in record)
-      )
+      this.importHistoryData.data.schema.fields.some((field) => METADATA_FIELDS.includes(field.name as any)) ||
+      this.importHistoryData.data.data.some((record) => METADATA_FIELDS.some((field) => field in record))
     );
   }
 

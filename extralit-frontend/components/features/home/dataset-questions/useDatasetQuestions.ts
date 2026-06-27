@@ -15,6 +15,7 @@ export const useDatasetQuestions = ({ dataset }: { dataset: Dataset }) => {
 
       questions.value = await getQuestionsUseCase.execute(dataset.id);
     } catch {
+      /* best-effort: leave questions empty if loading fails */
     } finally {
       isQuestionsLoading.value = false;
     }

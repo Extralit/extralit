@@ -6,7 +6,7 @@ export class GetDocumentByRecordMetadataUseCase {
   constructor(
     private readonly documentRepository: DocumentRepository,
     private readonly documentStorage: IDocumentStorage
-  ) { }
+  ) {}
 
   createParams(
     metadata: Record<string, any> | null,

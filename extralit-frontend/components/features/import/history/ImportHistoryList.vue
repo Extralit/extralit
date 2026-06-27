@@ -1,6 +1,5 @@
 <template>
   <div class="import-history-list">
-
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-container">
       <BaseSpinner />
@@ -12,18 +11,14 @@
       <BaseIcon icon-name="danger" class="error-icon" />
       <h4>Failed to Load Import History</h4>
       <p>{{ error }}</p>
-      <BaseButton variant="outline" @click="loadHistory">
-        Retry
-      </BaseButton>
+      <BaseButton variant="outline" @click="loadHistory"> Retry </BaseButton>
     </div>
 
     <!-- Empty State -->
     <div v-else-if="!historyData.items.length" class="empty-container">
       <BaseIcon icon-name="document" class="empty-icon" />
       <h4>No Import History Found</h4>
-      <p>
-        You haven't imported any documents yet. Start by importing your first bibliography file.
-      </p>
+      <p>You haven't imported any documents yet. Start by importing your first bibliography file.</p>
     </div>
 
     <!-- History Table -->
@@ -39,9 +34,7 @@
 
     <!-- Pagination -->
     <div v-if="historyData.pages > 1" class="pagination-container">
-      <div class="pagination-info">
-        Showing {{ startItem }} - {{ endItem }} of {{ historyData.total }} imports
-      </div>
+      <div class="pagination-info">Showing {{ startItem }} - {{ endItem }} of {{ historyData.total }} imports</div>
       <div class="pagination-controls">
         <BaseButton
           variant="outline"
@@ -78,7 +71,6 @@
 </template>
 
 <script lang="ts">
-
 import type { TableColumn } from "../types";
 import type {
   ImportHistoryListItem,
@@ -291,8 +283,8 @@ export default {
         const params = {
           page: this.currentPage,
           size: this.pageSize,
-          sort_by: 'created_at',
-          sort_order: 'desc' as const,
+          sort_by: "created_at",
+          sort_order: "desc" as const,
           filters: {
             workspace_id: this.workspace?.id,
           },
@@ -300,8 +292,8 @@ export default {
 
         this.historyData = await this.getImportHistoryUseCase.execute(params);
       } catch (error: any) {
-        console.error('Error loading import history:', error);
-        this.error = error.message || 'Failed to load import history';
+        console.error("Error loading import history:", error);
+        this.error = error.message || "Failed to load import history";
       } finally {
         this.isLoading = false;
       }

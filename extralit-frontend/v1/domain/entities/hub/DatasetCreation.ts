@@ -5,11 +5,15 @@ import { Subset } from "./Subset";
 export class DatasetCreation {
   public selectedSubset: Subset;
 
-  public readonly firstRecord: {};
+  public readonly firstRecord: Record<string, unknown>;
   public workspace: Workspace;
   public importHistoryId?: string;
 
-  constructor(public readonly repoId: string, public name: string, private readonly subset: Subset[]) {
+  constructor(
+    public readonly repoId: string,
+    public name: string,
+    private readonly subset: Subset[]
+  ) {
     this.selectedSubset = subset[0];
   }
 

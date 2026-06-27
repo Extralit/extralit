@@ -24,7 +24,7 @@ export default {
   },
   props: {
     breadcrumbs: {
-      type: Array  as () =>  BreadcrumbItem[],
+      type: Array as () => BreadcrumbItem[],
     },
   },
   methods: {

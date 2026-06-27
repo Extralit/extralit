@@ -89,12 +89,12 @@ export const useDocumentsListViewModel = (props: { workspaceId: string }) => {
       // Get the latest updated_at timestamp for each group
       const getLatestUpdatedAt = (group: DocumentGroup): Date => {
         const validTimestamps = group.documents
-          .map(doc => doc.updated_at)
-          .filter(timestamp => timestamp)
-          .map(timestamp => new Date(timestamp));
+          .map((doc) => doc.updated_at)
+          .filter((timestamp) => timestamp)
+          .map((timestamp) => new Date(timestamp));
 
         return validTimestamps.length > 0
-          ? new Date(Math.max(...validTimestamps.map(date => date.getTime())))
+          ? new Date(Math.max(...validTimestamps.map((date) => date.getTime())))
           : new Date(0); // Fallback for groups with no valid timestamps
       };
 
@@ -118,10 +118,11 @@ export const useDocumentsListViewModel = (props: { workspaceId: string }) => {
     const target = event.target as HTMLImageElement;
     if (target) {
       // Hide the broken image and show placeholder
-      target.style.display = 'none';
+      target.style.display = "none";
       const thumbnailContainer = target.parentElement;
       if (thumbnailContainer) {
-        thumbnailContainer.innerHTML = '<div class="thumbnail-placeholder"><svg-icon name="document" width="24" height="24" /></div>';
+        thumbnailContainer.innerHTML =
+          '<div class="thumbnail-placeholder"><svg-icon name="document" width="24" height="24" /></div>';
       }
     }
   };

@@ -90,7 +90,8 @@ export const useTableUploadLogic = (
   const emitUpdate = () => {
     if (emit) {
       emit("update", {
-        isValid: uploaded.value && !hasError.value && data.value.dataframeData && data.value.dataframeData.data.length > 0,
+        isValid:
+          uploaded.value && !hasError.value && data.value.dataframeData && data.value.dataframeData.data.length > 0,
         fileName: data.value.fileName,
         dataframeData: data.value.dataframeData,
         rawContent: data.value.rawContent,
@@ -192,10 +193,7 @@ export const useTableUploadLogic = (
         return;
       }
 
-      data.value.dataframeData = await fileService.parseCSVWithConfig(
-        csvData.value.rawData,
-        csvConfig.value
-      );
+      data.value.dataframeData = await fileService.parseCSVWithConfig(csvData.value.rawData, csvConfig.value);
 
       showCsvColumnSelection.value = false;
       uploaded.value = true;
@@ -267,7 +265,11 @@ export const useTableUploadLogic = (
   };
 
   const initializeWithExistingData = () => {
-    if (props.initialData && (props.initialData.fileName || (props.initialData.dataframeData && props.initialData.dataframeData.data.length > 0))) {
+    if (
+      props.initialData &&
+      (props.initialData.fileName ||
+        (props.initialData.dataframeData && props.initialData.dataframeData.data.length > 0))
+    ) {
       data.value = {
         fileName: props.initialData.fileName || "",
         dataframeData: props.initialData.dataframeData || null,

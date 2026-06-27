@@ -30,7 +30,6 @@
 </template>
 
 <script>
-
 import { useAvatarTooltipViewModel } from "./userAvatarTooltipViewModel";
 
 export default {

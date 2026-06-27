@@ -116,7 +116,11 @@ export class Records {
 }
 
 export class RecordsWithReference extends Records {
-  constructor(records: Record[], total, public readonly reference: Record) {
+  constructor(
+    records: Record[],
+    total,
+    public readonly reference: Record
+  ) {
     super(records, total);
   }
 }

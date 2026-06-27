@@ -21,7 +21,7 @@ export class SuggestionCriteria extends Criteria {
       const [questionName, configurationName, ...rest] = suggestion.split(".") as [
         string,
         ConfigurationSearch["name"],
-        ...string[]
+        ...string[],
       ];
 
       if (configurationName === "score" || configurationName === "value") {

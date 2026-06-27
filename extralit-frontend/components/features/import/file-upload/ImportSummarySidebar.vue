@@ -5,16 +5,16 @@
     <div class="import-summary-sidebar__stats">
       <!-- Bibliography Status -->
       <div v-if="bibData.dataframeData && bibData.dataframeData.data.length > 0" class="import-summary-sidebar__stat">
-        <BaseIcon icon-name="document"
-          class="import-summary-sidebar__stat-icon import-summary-sidebar__stat-icon--bib" />
-        <span class="import-summary-sidebar__stat-text">{{ bibData.dataframeData.data.length }} references
-          found</span>
+        <BaseIcon
+          icon-name="document"
+          class="import-summary-sidebar__stat-icon import-summary-sidebar__stat-icon--bib"
+        />
+        <span class="import-summary-sidebar__stat-text">{{ bibData.dataframeData.data.length }} references found</span>
       </div>
 
       <!-- PDF Status -->
       <div v-if="pdfData.totalFiles > 0" class="import-summary-sidebar__stat">
-        <BaseIcon icon-name="import"
-          class="import-summary-sidebar__stat-icon import-summary-sidebar__stat-icon--pdf" />
+        <BaseIcon icon-name="import" class="import-summary-sidebar__stat-icon import-summary-sidebar__stat-icon--pdf" />
         <span class="import-summary-sidebar__stat-text">{{ pdfData.totalFiles }} PDF files uploaded</span>
       </div>
 
@@ -32,7 +32,6 @@
 </template>
 
 <script lang="ts">
-
 interface BibliographyData {
   fileName: string;
   dataframeData: any;

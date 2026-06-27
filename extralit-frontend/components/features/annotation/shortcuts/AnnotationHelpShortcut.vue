@@ -90,7 +90,9 @@ export default {
   border-radius: $border-radius;
   border-spacing: 0;
   background: var(--bg-solig-grey-1);
-  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.05), 0 0 0.0625rem rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 0.2rem 0.5rem rgba(0, 0, 0, 0.05),
+    0 0 0.0625rem rgba(0, 0, 0, 0.1);
   td,
   th {
     display: block;
@@ -132,7 +134,14 @@ export default {
     border-radius: $border-radius;
     background: var(--bg-accent-grey-1) !important;
     color: var(--fg-primary) !important;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif;
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      "Open Sans",
+      "Helvetica Neue",
+      sans-serif;
     min-width: 24px;
     text-align: center;
   }

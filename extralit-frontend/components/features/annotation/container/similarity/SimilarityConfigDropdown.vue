@@ -14,7 +14,9 @@
     <template #dropdown-content>
       <ul class="similarity-config__options">
         <li
-          :class="modelValue === getKeyProp(option) ? 'similarity-config__option--selected' : 'similarity-config__option'"
+          :class="
+            modelValue === getKeyProp(option) ? 'similarity-config__option--selected' : 'similarity-config__option'
+          "
           v-for="option in options"
           :key="getKeyProp(option)"
           @click="selectOption(getKeyProp(option))"

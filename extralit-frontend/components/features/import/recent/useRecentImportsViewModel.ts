@@ -8,7 +8,6 @@ import { useResolve } from "ts-injecty";
 import { GetImportHistoryUseCase } from "~/v1/domain/usecases/get-import-history-use-case";
 import type { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
 
-
 export const useRecentImportsViewModel = (props: {
   workspace: {
     id: string;
@@ -91,4 +90,4 @@ export const useRecentImportsViewModel = (props: {
     retryLoad,
     refresh,
   };
-}
+};

@@ -1,6 +1,11 @@
 import { onBeforeUnmount, onMounted } from "vue";
 
-export const useFocusTab = (onFocus: Function, onBlur = () => {}) => {
+export const useFocusTab = (
+  onFocus: () => void,
+  onBlur: () => void = () => {
+    /* no-op */
+  }
+) => {
   if (!onFocus) throw new Error("onFocus is mandatory");
 
   const onFocusCallback = () => onFocus();

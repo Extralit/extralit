@@ -132,10 +132,7 @@ const recordForRating = {
   updated_at: "2023-07-21T09:23:20",
 };
 
-export const mockRecord = async (
-  page: Page,
-  { datasetId, workspaceId }: DatasetData
-) => {
+export const mockRecord = async (page: Page, { datasetId, workspaceId }: DatasetData) => {
   await mockFeedbackTaskDataset(page, { datasetId, workspaceId });
 
   await mockQuestion(page, datasetId);
@@ -156,10 +153,7 @@ export const mockRecord = async (
   return recordOne;
 };
 
-export const mockTwoRecords = async (
-  page: Page,
-  { datasetId, workspaceId }: DatasetData
-) => {
+export const mockTwoRecords = async (page: Page, { datasetId, workspaceId }: DatasetData) => {
   await mockFeedbackTaskDataset(page, { datasetId, workspaceId });
 
   await mockQuestion(page, datasetId);
@@ -179,10 +173,7 @@ export const mockTwoRecords = async (
   return recordOne;
 };
 
-export const mockRecordForLongAndShortQuestion = async (
-  page: Page,
-  { datasetId, workspaceId }: DatasetData
-) => {
+export const mockRecordForLongAndShortQuestion = async (page: Page, { datasetId, workspaceId }: DatasetData) => {
   await mockFeedbackTaskDataset(page, { datasetId, workspaceId });
 
   await mockQuestionLongAndShortQuestions(page, datasetId);
@@ -203,26 +194,19 @@ export const mockRecordForLongAndShortQuestion = async (
   return recordOne;
 };
 
-export const mockRecordResponses = async (
-  page: Page,
-  recordId: string,
-  status: "submitted" | "discarded"
-) => {
-  await page.route(
-    `*/**/api/v1/records/${recordId}/responses`,
-    async (route, request) => {
-      await route.fulfill({
-        json: {
-          id: recordId,
-          values: request.postDataJSON().values,
-          status,
-          user_id: "3e760b76-e19a-480a-b436-a85812b98843",
-          inserted_at: "2023-07-28T14:45:37",
-          updated_at: "2023-07-28T14:45:37",
-        },
-      });
-    }
-  );
+export const mockRecordResponses = async (page: Page, recordId: string, status: "submitted" | "discarded") => {
+  await page.route(`*/**/api/v1/records/${recordId}/responses`, async (route, request) => {
+    await route.fulfill({
+      json: {
+        id: recordId,
+        values: request.postDataJSON().values,
+        status,
+        user_id: "3e760b76-e19a-480a-b436-a85812b98843",
+        inserted_at: "2023-07-28T14:45:37",
+        updated_at: "2023-07-28T14:45:37",
+      },
+    });
+  });
 };
 
 const debounce = useDebounce(1000);
@@ -242,30 +226,24 @@ export const mockDraftRecord = async (page: Page, recordId: string) => {
     debounce.stop();
   });
 
-  await page.route(
-    `*/**/api/v1/records/${recordId}/responses`,
-    async (route) => {
-      await debounce.wait();
-      await route.fulfill({
-        json: {
-          id: recordId,
-          values: {},
-          status: "draft",
-          user_id: "3e760b76-e19a-480a-b436-a85812b98843",
-          inserted_at: "2023-07-28T14:45:37",
-          updated_at: "2023-07-28T14:45:37",
-        },
-      });
+  await page.route(`*/**/api/v1/records/${recordId}/responses`, async (route) => {
+    await debounce.wait();
+    await route.fulfill({
+      json: {
+        id: recordId,
+        values: {},
+        status: "draft",
+        user_id: "3e760b76-e19a-480a-b436-a85812b98843",
+        inserted_at: "2023-07-28T14:45:37",
+        updated_at: "2023-07-28T14:45:37",
+      },
+    });
 
-      debounce.stop();
-    }
-  );
+    debounce.stop();
+  });
 };
 
-export const mockRecordWith12Ranking = async (
-  page: Page,
-  { datasetId, workspaceId }: DatasetData
-) => {
+export const mockRecordWith12Ranking = async (page: Page, { datasetId, workspaceId }: DatasetData) => {
   await mockFeedbackTaskDataset(page, { datasetId, workspaceId });
 
   await mockQuestionWith12Ranking(page, datasetId);
@@ -294,10 +272,7 @@ export const mockRecordWith12Ranking = async (
   );
 };
 
-export const mockRecordWithRating = async (
-  page: Page,
-  { datasetId, workspaceId }: DatasetData
-) => {
+export const mockRecordWithRating = async (page: Page, { datasetId, workspaceId }: DatasetData) => {
   await mockFeedbackTaskDataset(page, { datasetId, workspaceId });
 
   await mockQuestionWithRating(page, datasetId);

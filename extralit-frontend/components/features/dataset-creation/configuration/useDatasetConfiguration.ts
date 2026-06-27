@@ -21,7 +21,7 @@ export const useDatasetConfiguration = () => {
         // Handle both ImportHistoryDetails instance and raw data
         let sampleRecord;
 
-        if (importData.getSampleRecord && typeof importData.getSampleRecord === 'function') {
+        if (importData.getSampleRecord && typeof importData.getSampleRecord === "function") {
           // It's an ImportHistoryDetails instance
           sampleRecord = importData.getSampleRecord();
         } else if (importData.data && importData.data.data && importData.data.data.length > 0) {
@@ -55,7 +55,7 @@ export const useDatasetConfiguration = () => {
     let rawData;
     let fieldNames: string[] = [];
 
-    if (importData.getRawData && typeof importData.getRawData === 'function') {
+    if (importData.getRawData && typeof importData.getRawData === "function") {
       // It's an ImportHistoryDetails instance
       rawData = importData.getRawData();
       fieldNames = importData.fieldNames || [];
@@ -71,23 +71,23 @@ export const useDatasetConfiguration = () => {
     // Enhance the dataset with ImportHistory-specific metadata handling
     // Override the mappings to ensure record.metadata.reference is populated
     const originalMappings = dataset.mappings;
-    Object.defineProperty(dataset, 'mappings', {
+    Object.defineProperty(dataset, "mappings", {
       get() {
         const mappings = { ...originalMappings };
 
         // Ensure we have a reference field in metadata mapping
         // This will populate record.metadata.reference from ImportHistory data
-        const hasReferenceMapping = mappings.metadata.some(m => m.target === 'reference');
-        if (!hasReferenceMapping && fieldNames.includes('reference')) {
+        const hasReferenceMapping = mappings.metadata.some((m) => m.target === "reference");
+        if (!hasReferenceMapping && fieldNames.includes("reference")) {
           mappings.metadata.push({
-            source: 'reference',
-            target: 'reference'
+            source: "reference",
+            target: "reference",
           });
         }
 
         return mappings;
       },
-      configurable: true
+      configurable: true,
     });
 
     return dataset;
@@ -106,7 +106,7 @@ export const useDatasetConfiguration = () => {
     let rawData;
     let fieldNames: string[] = [];
 
-    if (importData.getRawData && typeof importData.getRawData === 'function') {
+    if (importData.getRawData && typeof importData.getRawData === "function") {
       // It's an ImportHistoryDetails instance
       rawData = importData.getRawData();
       fieldNames = importData.fieldNames || [];
@@ -119,12 +119,12 @@ export const useDatasetConfiguration = () => {
     const builder = new ImportHistoryDatasetBuilder(rawData);
 
     // Apply field mappings to the dataset
-    fieldMappings.forEach(mapping => {
-      const field = dataset.fields.find(f => f.name === mapping.target);
-      if (field && mapping.source !== 'no mapping') {
+    fieldMappings.forEach((mapping) => {
+      const field = dataset.fields.find((f) => f.name === mapping.target);
+      if (field && mapping.source !== "no mapping") {
         // Update field configuration based on ImportHistory data
         const fieldType = builder.inferFieldType(mapping.source);
-        if (fieldType !== 'no mapping') {
+        if (fieldType !== "no mapping") {
           // Set the field type as a FieldType instance
           (field as any).type = FieldType.from(fieldType);
         }
@@ -132,9 +132,9 @@ export const useDatasetConfiguration = () => {
     });
 
     // Ensure metadata mappings include reference field
-    const metadataField = dataset.metadata.find(m => m.name === 'reference');
-    if (!metadataField && fieldNames.includes('reference')) {
-      const referenceMetadata = MetadataCreation.from('reference', 'terms');
+    const metadataField = dataset.metadata.find((m) => m.name === "reference");
+    if (!metadataField && fieldNames.includes("reference")) {
+      const referenceMetadata = MetadataCreation.from("reference", "terms");
       if (referenceMetadata) {
         (dataset.selectedSubset as any).metadata.push(referenceMetadata);
       }
@@ -149,7 +149,7 @@ export const useDatasetConfiguration = () => {
     let rawData;
     let fieldNames: string[] = [];
 
-    if (importData.getRawData && typeof importData.getRawData === 'function') {
+    if (importData.getRawData && typeof importData.getRawData === "function") {
       // It's an ImportHistoryDetails instance
       rawData = importData.getRawData();
       fieldNames = importData.fieldNames || [];
@@ -161,11 +161,11 @@ export const useDatasetConfiguration = () => {
 
     const builder = new ImportHistoryDatasetBuilder(rawData);
 
-    return fieldNames.map(fieldName => ({
+    return fieldNames.map((fieldName) => ({
       source: fieldName,
       target: fieldName,
       type: builder.inferFieldType(fieldName),
-      metadataType: builder.inferMetadataType(fieldName)
+      metadataType: builder.inferMetadataType(fieldName),
     }));
   };
 
@@ -176,7 +176,7 @@ export const useDatasetConfiguration = () => {
     // Handle both ImportHistoryDetails instance and raw data
     let rawData;
 
-    if (importData.getRawData && typeof importData.getRawData === 'function') {
+    if (importData.getRawData && typeof importData.getRawData === "function") {
       // It's an ImportHistoryDetails instance
       rawData = importData.getRawData();
     } else {

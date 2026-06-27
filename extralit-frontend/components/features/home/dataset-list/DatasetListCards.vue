@@ -80,7 +80,9 @@ export default {
 .list-move,
 .list-enter-active,
 .list-leave-active {
-  transition: transform 0.2s ease-in, opacity 0.1s ease;
+  transition:
+    transform 0.2s ease-in,
+    opacity 0.1s ease;
 }
 .list-enter-from,
 .list-leave-to {

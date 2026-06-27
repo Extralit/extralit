@@ -31,7 +31,9 @@ export const useLocalStorage = (): ILocalStorageService => {
           [key]: value,
         })
       );
-    } catch { }
+    } catch {
+      /* ignore: localStorage may be unavailable or full */
+    }
   };
 
   const pop = <T>(key: Options) => {

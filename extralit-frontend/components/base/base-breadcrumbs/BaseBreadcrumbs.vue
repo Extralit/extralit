@@ -17,18 +17,10 @@
           :is-last-breadcrumb="index === filteredBreadcrumbs.length - 1"
         />
         <!-- Render normal breadcrumb items -->
-        <nuxt-link
-          v-else-if="breadcrumb.link"
-          class="breadcrumbs__item"
-          :to="breadcrumb.link"
-        >
+        <nuxt-link v-else-if="breadcrumb.link" class="breadcrumbs__item" :to="breadcrumb.link">
           {{ breadcrumb.name }}
         </nuxt-link>
-        <span
-          v-else
-          class="breadcrumbs__item --action"
-          @click="onBreadcrumbAction(breadcrumb)"
-        >
+        <span v-else class="breadcrumbs__item --action" @click="onBreadcrumbAction(breadcrumb)">
           {{ breadcrumb.name }}
         </span>
       </li>
@@ -39,7 +31,10 @@
         class="breadcrumbs__copy"
         @click.prevent="
           $copyToClipboard(
-            filteredBreadcrumbs.slice(-2).map(breadcrumb => breadcrumb.name).join('/')
+            filteredBreadcrumbs
+              .slice(-2)
+              .map((breadcrumb) => breadcrumb.name)
+              .join('/')
           )
         "
       >

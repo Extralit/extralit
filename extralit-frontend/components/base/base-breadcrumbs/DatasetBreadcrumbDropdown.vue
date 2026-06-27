@@ -2,50 +2,45 @@
   <div class="breadcrumb-dropdown">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
       <template #dropdown-header>
-      <span
-        class="breadcrumb-dropdown__header"
-      >
-        <span
-          class="breadcrumb-dropdown__name"
-          :class="{ '--last': isLastBreadcrumb }"
-        >
-          {{ selectedDatasetName }}
+        <span class="breadcrumb-dropdown__header">
+          <span class="breadcrumb-dropdown__name" :class="{ '--last': isLastBreadcrumb }">
+            {{ selectedDatasetName }}
+          </span>
+          <BaseIcon
+            icon-name="chevron-down"
+            class="breadcrumb-dropdown__icon"
+            :class="{ '--rotated': visibleDropdown }"
+          />
         </span>
-        <BaseIcon
-          icon-name="chevron-down"
-          class="breadcrumb-dropdown__icon"
-          :class="{ '--rotated': visibleDropdown }"
-        />
-      </span>
       </template>
       <template #dropdown-content>
-      <span class="breadcrumb-dropdown__content">
-        <div class="breadcrumb-dropdown__selector">
-          <BaseSearch v-model="searchText" :placeholder="$t('searchDatasets')" />
-          <div class="breadcrumb-dropdown__items">
-            <div v-if="datasets.length === 0" class="breadcrumb-dropdown__empty">
-              {{ $t('No datasets available') }}
+        <span class="breadcrumb-dropdown__content">
+          <div class="breadcrumb-dropdown__selector">
+            <BaseSearch v-model="searchText" :placeholder="$t('searchDatasets')" />
+            <div class="breadcrumb-dropdown__items">
+              <div v-if="datasets.length === 0" class="breadcrumb-dropdown__empty">
+                {{ $t("No datasets available") }}
+              </div>
+              <div v-else-if="datasetsFilteredBySearchText.length === 0" class="breadcrumb-dropdown__empty">
+                {{ $t("No datasets match your search") }}
+              </div>
+              <template v-else>
+                <BaseRadioButton
+                  class="breadcrumb-dropdown__item"
+                  v-for="dataset in datasetsFilteredBySearchText"
+                  :key="dataset.id"
+                  :id="dataset.id"
+                  :name="dataset.id"
+                  :value="dataset.id"
+                  :checked="selectedDatasetId === dataset.id"
+                  @change="onDatasetSelectionChange(dataset.id)"
+                >
+                  {{ dataset.name }}
+                </BaseRadioButton>
+              </template>
             </div>
-            <div v-else-if="datasetsFilteredBySearchText.length === 0" class="breadcrumb-dropdown__empty">
-              {{ $t('No datasets match your search') }}
-            </div>
-            <template v-else>
-              <BaseRadioButton
-                class="breadcrumb-dropdown__item"
-                v-for="dataset in datasetsFilteredBySearchText"
-                :key="dataset.id"
-                :id="dataset.id"
-                :name="dataset.id"
-                :value="dataset.id"
-                :checked="selectedDatasetId === dataset.id"
-                @change="onDatasetSelectionChange(dataset.id)"
-              >
-                {{ dataset.name }}
-              </BaseRadioButton>
-            </template>
           </div>
-        </div>
-      </span>
+        </span>
       </template>
     </BaseDropdown>
   </div>
@@ -95,28 +90,26 @@ export default {
       if (!this.selectedWorkspace) {
         return this.allDatasets;
       }
-      return this.allDatasets.filter(dataset => dataset.workspaceId === this.selectedWorkspace.id);
+      return this.allDatasets.filter((dataset) => dataset.workspaceId === this.selectedWorkspace.id);
     },
     selectedDataset(): Dataset | null {
-      return this.datasets.find(d => d.id === this.datasetId) || null;
+      return this.datasets.find((d) => d.id === this.datasetId) || null;
     },
     selectedDatasetName(): string {
-      return this.selectedDataset?.name || this.$t('Select dataset');
+      return this.selectedDataset?.name || this.$t("Select dataset");
     },
     selectedDatasetId: {
       get(): string | null {
         return this.datasetId;
       },
       set(datasetId: string | null) {
-        const dataset = this.datasets.find(d => d.id === datasetId) || null;
+        const dataset = this.datasets.find((d) => d.id === datasetId) || null;
         this.onDatasetChange(dataset);
         this.visibleDropdown = false;
-      }
+      },
     },
     datasetsFilteredBySearchText(): Dataset[] {
-      return this.datasets.filter((dataset) =>
-        dataset.name.toLowerCase().includes(this.searchText.toLowerCase())
-      );
+      return this.datasets.filter((dataset) => dataset.name.toLowerCase().includes(this.searchText.toLowerCase()));
     },
   },
   methods: {
@@ -130,14 +123,14 @@ export default {
           path: `/dataset/${dataset.id}/annotation-mode`,
           query: {
             ...this.$route.query,
-            workspace: this.selectedWorkspace?.name
-          }
+            workspace: this.selectedWorkspace?.name,
+          },
         });
       }
     },
     onDatasetSelectionChange(datasetId: string) {
       this.selectedDatasetId = datasetId;
-    }
+    },
   },
 };
 </script>
@@ -149,7 +142,7 @@ export default {
   &__header {
     display: flex;
     align-items: center;
-    padding: $base-space / 2;
+    padding: $base-space * 0.5;
     color: var(--fg-lighter);
     cursor: pointer;
     border-radius: $border-radius-s;
@@ -193,7 +186,7 @@ export default {
   }
 
   &__items {
-    padding: $base-space / 2;
+    padding: $base-space * 0.5;
   }
 
   &__item {
@@ -268,7 +261,7 @@ export default {
   margin: 0;
 
   .base-search__input {
-    padding: $base-space / 2;
+    padding: $base-space * 0.5;
     border-radius: $border-radius-s;
     border: 1px solid var(--border-field);
     background: var(--bg-field);

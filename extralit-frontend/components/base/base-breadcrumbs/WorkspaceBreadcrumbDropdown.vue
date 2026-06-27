@@ -2,50 +2,45 @@
   <div class="breadcrumb-dropdown">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
       <template #dropdown-header>
-      <span
-        class="breadcrumb-dropdown__header"
-      >
-        <span
-          class="breadcrumb-dropdown__name"
-          :class="{ '--last': isLastBreadcrumb }"
-        >
-          {{ selectedWorkspaceName }}
+        <span class="breadcrumb-dropdown__header">
+          <span class="breadcrumb-dropdown__name" :class="{ '--last': isLastBreadcrumb }">
+            {{ selectedWorkspaceName }}
+          </span>
+          <BaseIcon
+            icon-name="chevron-down"
+            class="breadcrumb-dropdown__icon"
+            :class="{ '--rotated': visibleDropdown }"
+          />
         </span>
-        <BaseIcon
-          icon-name="chevron-down"
-          class="breadcrumb-dropdown__icon"
-          :class="{ '--rotated': visibleDropdown }"
-        />
-      </span>
       </template>
       <template #dropdown-content>
-      <span class="breadcrumb-dropdown__content">
-        <div class="breadcrumb-dropdown__selector">
-          <BaseSearch v-model="searchText" :placeholder="$t('searchWorkspaces')" />
-          <div class="breadcrumb-dropdown__items">
-            <div v-if="workspaces.length === 0" class="breadcrumb-dropdown__empty">
-              {{ $t('No workspaces available') }}
+        <span class="breadcrumb-dropdown__content">
+          <div class="breadcrumb-dropdown__selector">
+            <BaseSearch v-model="searchText" :placeholder="$t('searchWorkspaces')" />
+            <div class="breadcrumb-dropdown__items">
+              <div v-if="workspaces.length === 0" class="breadcrumb-dropdown__empty">
+                {{ $t("No workspaces available") }}
+              </div>
+              <div v-else-if="workspacesFilteredBySearchText.length === 0" class="breadcrumb-dropdown__empty">
+                {{ $t("No workspaces match your search") }}
+              </div>
+              <template v-else>
+                <BaseRadioButton
+                  class="breadcrumb-dropdown__item"
+                  v-for="workspace in workspacesFilteredBySearchText"
+                  :key="workspace.id"
+                  :id="workspace.id"
+                  :name="workspace.id"
+                  :value="workspace.id"
+                  :checked="selectedWorkspaceId === workspace.id"
+                  @change="onWorkspaceSelectionChange(workspace.id)"
+                >
+                  {{ workspace.name }}
+                </BaseRadioButton>
+              </template>
             </div>
-            <div v-else-if="workspacesFilteredBySearchText.length === 0" class="breadcrumb-dropdown__empty">
-              {{ $t('No workspaces match your search') }}
-            </div>
-            <template v-else>
-              <BaseRadioButton
-                class="breadcrumb-dropdown__item"
-                v-for="workspace in workspacesFilteredBySearchText"
-                :key="workspace.id"
-                :id="workspace.id"
-                :name="workspace.id"
-                :value="workspace.id"
-                :checked="selectedWorkspaceId === workspace.id"
-                @change="onWorkspaceSelectionChange(workspace.id)"
-              >
-                {{ workspace.name }}
-              </BaseRadioButton>
-            </template>
           </div>
-        </div>
-      </span>
+        </span>
       </template>
     </BaseDropdown>
   </div>
@@ -83,18 +78,18 @@ export default {
       return this.workspaceStore.get().selectedWorkspace;
     },
     selectedWorkspaceName(): string {
-      return this.selectedWorkspace?.name || this.$t('Select workspace');
+      return this.selectedWorkspace?.name || this.$t("Select workspace");
     },
     selectedWorkspaceId: {
       get(): string | null {
         return this.selectedWorkspace?.id || null;
       },
       set(workspaceId: string | null) {
-        const workspace = this.workspaces.find(w => w.id === workspaceId) || null;
+        const workspace = this.workspaces.find((w) => w.id === workspaceId) || null;
         this.workspaceStore.saveSelectedWorkspace(workspace);
         this.onWorkspaceChange(workspace);
         this.visibleDropdown = false;
-      }
+      },
     },
     workspacesFilteredBySearchText(): Workspace[] {
       return this.workspaces.filter((workspace) =>
@@ -110,26 +105,26 @@ export default {
       // Navigate to home page (dataset selection) when workspace changes
       // This ensures users always go to the dataset selection view when switching workspaces
       const targetRoute = {
-        path: '/',
-        query: workspace ? { workspace: workspace.name } : {}
+        path: "/",
+        query: workspace ? { workspace: workspace.name } : {},
       };
 
       // Only navigate if we're not already on the home page
-      if (this.$route.path !== '/') {
+      if (this.$route.path !== "/") {
         this.$router.push(targetRoute);
       }
 
       // Emit breadcrumb link update event with workspace information
-      this.$emit('workspace-change', {
+      this.$emit("workspace-change", {
         workspace,
         workspaceId: workspace?.id || null,
         workspaceName: workspace?.name || null,
-        link: targetRoute
+        link: targetRoute,
       });
     },
     onWorkspaceSelectionChange(workspaceId: string) {
       this.selectedWorkspaceId = workspaceId;
-    }
+    },
   },
 };
 </script>
@@ -141,7 +136,7 @@ export default {
   &__header {
     display: flex;
     align-items: center;
-    padding: $base-space / 2;
+    padding: $base-space * 0.5;
     color: var(--fg-lighter);
     cursor: pointer;
     border-radius: $border-radius-s;
@@ -185,7 +180,7 @@ export default {
   }
 
   &__items {
-    padding: $base-space / 2;
+    padding: $base-space * 0.5;
   }
 
   &__item {
@@ -260,7 +255,7 @@ export default {
   margin: 0;
 
   .base-search__input {
-    padding: $base-space / 2;
+    padding: $base-space * 0.5;
     border-radius: $border-radius-s;
     border: 1px solid var(--border-field);
     background: var(--bg-field);
@@ -282,5 +277,4 @@ export default {
     flex: 1;
   }
 }
-
 </style>

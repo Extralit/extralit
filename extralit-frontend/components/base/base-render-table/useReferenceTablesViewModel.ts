@@ -1,34 +1,31 @@
-import { Record as FeedbackRecord } from '@/v1/domain/entities/record/Record';
+import { Record as FeedbackRecord } from "@/v1/domain/entities/record/Record";
 import { Records } from "@/v1/domain/entities/record/Records";
 import { useRecords } from "@/v1/infrastructure/storage/RecordsStorage";
 
-import { type Data, type ReferenceValues, TableData } from '~/v1/domain/entities/table/TableData';
+import { type Data, type ReferenceValues, TableData } from "~/v1/domain/entities/table/TableData";
 
 type RecordDataFrames = Record<string, TableData>;
 
-export const useReferenceTablesViewModel = (
-  props: {
-    tableJSON: TableData,
-  }
-) => {
+export const useReferenceTablesViewModel = (props: { tableJSON: TableData }) => {
   const { state: records }: { state: Records } = useRecords();
 
   const getTableDataFromRecords = (filter_fn: (record: FeedbackRecord) => boolean): RecordDataFrames[] => {
     // filter_fn is a function that takes a record and returns true if it should be included in the table
     // returns an array of objects of the form {field: {refValue: {column: value, ...}, ...}, ...}
-    let recordTables: RecordDataFrames[] = records.records?.filter(filter_fn)
+    let recordTables: RecordDataFrames[] = records.records
+      ?.filter(filter_fn)
       .map((rec) => {
         let answer_tables = rec?.answer?.value || {};
         if (answer_tables) {
           answer_tables = Object.fromEntries(
             Object.entries(answer_tables)
               .filter(([key, obj]) => {
-                const value = (obj as { value: string; }).value;
-                return (typeof value === 'string') && (value.startsWith('{'));
+                const value = (obj as { value: string }).value;
+                return typeof value === "string" && value.startsWith("{");
               })
               .map(([key, obj]) => {
                 try {
-                  const value = (obj as { value: string; }).value;
+                  const value = (obj as { value: string }).value;
                   const table = JSON.parse(value);
                   return [key, new TableData(table.data, table.schema, table.reference)];
                 } catch (e) {
@@ -41,7 +38,7 @@ export const useReferenceTablesViewModel = (
         }
 
         let field_table = rec.fields
-          .filter((field) => field?.settings?.use_table && field?.content.startsWith('{'))
+          .filter((field) => field?.settings?.use_table && field?.content.startsWith("{"))
           .reduce((acc, field) => {
             try {
               acc[field.name] = JSON.parse(field.content);
@@ -55,7 +52,8 @@ export const useReferenceTablesViewModel = (
         // ensures that answer tables are prioritized over field tables
         let tables = Object.keys(answer_tables).length ? answer_tables : field_table;
         return tables;
-      }).filter((obj) => Object.keys(obj).length > 0);
+      })
+      .filter((obj) => Object.keys(obj).length > 0);
 
     return recordTables;
   };
@@ -63,7 +61,7 @@ export const useReferenceTablesViewModel = (
   const findMatchingRefValues = (
     refColumns: string[],
     records: RecordDataFrames[],
-    filterByColumnUniqueCounts: boolean = true,
+    filterByColumnUniqueCounts: boolean = true
   ): Record<string, Record<string, Record<string, any>>> => {
     // refValues is an object of the form {field: refValue}
     // records is an array of objects of the form {table_name: {data: [{reference: refValue, ...}, ...]}}
@@ -77,16 +75,15 @@ export const useReferenceTablesViewModel = (
       for (const recordTables of records) {
         if (!recordTables) continue;
         // Try to match by reference property first, then fallback to schemaName
-        const matchingTables = Object.values(recordTables)
-          .filter((table: TableData) => {
-            // Prefer matching by reference property if available
-            if (table?.reference && props.tableJSON?.reference && table.reference === props.tableJSON.reference) {
-              return true;
-            }
-            // Fallback to schemaName logic
-            const schemaName = table?.schema?.schemaName || table?.validation?.name;
-            return schemaName?.toLowerCase() === field.replace(/(_ref|_ID)$/i, '').toLowerCase();
-          });
+        const matchingTables = Object.values(recordTables).filter((table: TableData) => {
+          // Prefer matching by reference property if available
+          if (table?.reference && props.tableJSON?.reference && table.reference === props.tableJSON.reference) {
+            return true;
+          }
+          // Fallback to schemaName logic
+          const schemaName = table?.schema?.schemaName || table?.validation?.name;
+          return schemaName?.toLowerCase() === field.replace(/(_ref|_ID)$/i, "").toLowerCase();
+        });
 
         for (let matchingTable of matchingTables) {
           // Ensure matchingTable is a TableData instance
@@ -94,18 +91,21 @@ export const useReferenceTablesViewModel = (
             const mt: any = matchingTable;
             matchingTable = new TableData(mt.data, mt.schema, mt.reference);
           }
-          if (!matchingTable.hasOwnProperty('columnUniqueCounts')) {
+          if (!matchingTable.hasOwnProperty("columnUniqueCounts")) {
             matchingTable.columnUniqueCounts = matchingTable.getColumnUniqueCounts();
           }
 
           const tableRefRows = matchingTable.data.reduce((acc, row) => {
             const filteredRowValues: Record<string, any> = Object.entries(row)
-              .filter(([key, value]) =>
-                key != "reference" && key != "_id" &&
-                (!filterByColumnUniqueCounts ||
-                  matchingTable.data.length <= 1 ||
-                  !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) ||
-                  matchingTable.columnUniqueCounts[key] > 1))
+              .filter(
+                ([key, value]) =>
+                  key != "reference" &&
+                  key != "_id" &&
+                  (!filterByColumnUniqueCounts ||
+                    matchingTable.data.length <= 1 ||
+                    !matchingTable?.columnUniqueCounts?.hasOwnProperty(key) ||
+                    matchingTable.columnUniqueCounts[key] > 1)
+              )
               .reduce((acc, [key, value]) => {
                 acc[key] = value;
                 return acc;
@@ -122,30 +122,24 @@ export const useReferenceTablesViewModel = (
     return matchingRefValues;
   };
 
-  const getColumnMaxValue = (
-    columnName: string, data: Data
-  ): any => {
-    return data.reduce((max, row) => !max || row[columnName] > max ? row[columnName] : max, null);
-  }
+  const getColumnMaxValue = (columnName: string, data: Data): any => {
+    return data.reduce((max, row) => (!max || row[columnName] > max ? row[columnName] : max), null);
+  };
 
-  const incrementReferenceStr = (
-    reference: string
-  ): string => {
-    if (typeof reference !== 'string') return undefined;
+  const incrementReferenceStr = (reference: string): string => {
+    if (typeof reference !== "string") return undefined;
     const prefix = reference.slice(0, 1);
 
     const numericalPart = reference.slice(1);
     if (!/^\d+$/.test(numericalPart)) return undefined;
 
-    const incrementedDigits = String(parseInt(numericalPart) + 1).padStart(numericalPart.length, '0');
+    const incrementedDigits = String(parseInt(numericalPart) + 1).padStart(numericalPart.length, "0");
     const newReference = `${prefix}${incrementedDigits}`;
 
     return newReference;
-  }
+  };
 
-  const generateCombinations = (
-    columnValues: ReferenceValues, fixedValues: Record<string, string> = {}
-  ): Data => {
+  const generateCombinations = (columnValues: ReferenceValues, fixedValues: Record<string, string> = {}): Data => {
     const possibleKeyValues: Record<string, string[]> = Object.keys(columnValues).reduce((acc, key) => {
       if (!fixedValues[key]) {
         acc[key] = Object.keys(columnValues[key]);
@@ -154,17 +148,20 @@ export const useReferenceTablesViewModel = (
     }, {});
 
     const keys = Object.keys(possibleKeyValues);
-    const valueCombinations = cartesianProduct(keys.map(key => possibleKeyValues[key]));
+    const valueCombinations = cartesianProduct(keys.map((key) => possibleKeyValues[key]));
 
-    const keyValueCombinations = valueCombinations.map(values => {
-      return values.reduce((acc, value, index) => {
-        acc[keys[index]] = value;
-        return acc;
-      }, { ...fixedValues } as Record<string, string>);
+    const keyValueCombinations = valueCombinations.map((values) => {
+      return values.reduce(
+        (acc, value, index) => {
+          acc[keys[index]] = value;
+          return acc;
+        },
+        { ...fixedValues } as Record<string, string>
+      );
     });
 
     return keyValueCombinations;
-  }
+  };
 
   return {
     getTableDataFromRecords,
@@ -172,7 +169,7 @@ export const useReferenceTablesViewModel = (
     getColumnMaxValue,
     incrementReferenceStr,
     generateCombinations,
-  }
+  };
 };
 
 function cartesianProduct(arr: any[][]): any[][] {

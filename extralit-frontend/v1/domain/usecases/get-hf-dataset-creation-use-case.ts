@@ -2,7 +2,7 @@ import { DatasetCreationBuilder } from "../entities/hub/DatasetCreationBuilder";
 import { HubRepository } from "~/v1/infrastructure/repositories/HubRepository";
 
 export class GetHfDatasetCreationUseCase {
-  constructor(private readonly hubRepository: HubRepository) { }
+  constructor(private readonly hubRepository: HubRepository) {}
 
   async execute(repoId: string) {
     const datasetInfo = await this.hubRepository.getDatasetCreation(repoId);

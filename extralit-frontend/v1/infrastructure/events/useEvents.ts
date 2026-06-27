@@ -1,9 +1,8 @@
 import { DomainEvent, Handler } from "@codescouts/events";
-import { useResolve } from "ts-injecty";
-import { Ref } from "ts-injecty/dist/types";
+import { useResolve, Class } from "ts-injecty";
 import { onMounted, onUnmounted, ref } from "vue";
 
-export const useEvents = (...handlers: Ref<Handler<DomainEvent>>[]) => {
+export const useEvents = (...handlers: Class<Handler<DomainEvent>>[]) => {
   const resolved = ref([]);
 
   onMounted(() => {

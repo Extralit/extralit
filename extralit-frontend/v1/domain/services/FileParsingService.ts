@@ -74,7 +74,7 @@ export class BibTeXParser {
 
     const cleaned = field
       .toString()
-      .replace(/[\{\}]/g, "")
+      .replace(/[{}]/g, "")
       .replace(/^"+|"+$/g, "")
       .trim();
 
@@ -280,7 +280,6 @@ export class FileParsingService implements IFileParsingService {
   private csvParser = new CSVParser();
 
   async parseBibTeX(content: string): Promise<TableData> {
-
     const entries = this.bibTexParser.parse(content);
 
     return DataframeBuilder.build(entries);

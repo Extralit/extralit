@@ -1,4 +1,10 @@
-import { type Answer, type AnswerCombinations, type RankingAnswer, type SpanAnswer, type TableAnswer } from "../IAnswer";
+import {
+  type Answer,
+  type AnswerCombinations,
+  type RankingAnswer,
+  type SpanAnswer,
+  type TableAnswer,
+} from "../IAnswer";
 import { QuestionType } from "./QuestionType";
 
 type AnswerValue = string | number | RankingAnswer | SpanAnswer | TableAnswer;

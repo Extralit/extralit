@@ -1,13 +1,7 @@
 import { test, expect } from "@playwright/test";
-import {
-  loginUserAndWaitFor,
-  mockAllDatasets,
-  mockWithEmptyDatasets,
-} from "../common";
+import { loginUserAndWaitFor, mockAllDatasets, mockWithEmptyDatasets } from "../common";
 test.describe("Datasets page with datasets", () => {
-  test("login successful with correct credentials and get redirect", async ({
-    page,
-  }) => {
+  test("login successful with correct credentials and get redirect", async ({ page }) => {
     await loginUserAndWaitFor(page, "datasets");
   });
 
@@ -32,12 +26,7 @@ test.describe("Datasets page with datasets", () => {
 
     await page.getByRole("button", { name: "Workspace" }).click();
 
-    await page
-      .locator("li")
-      .filter({ hasText: "argilla-other" })
-      .locator("div")
-      .nth(1)
-      .click();
+    await page.locator("li").filter({ hasText: "argilla-other" }).locator("div").nth(1).click();
 
     await page.waitForTimeout(300);
 

@@ -18,11 +18,7 @@ const FAKE_TOKEN = "FAKE_ACCESS_TOKEN";
  *   is served at "/" (there is no "/datasets" route), so "datasets", "/" and ""
  *   are all treated as "home"; any other value is awaited as `**\/${value}`.
  */
-export const loginUserAndWaitFor = async (
-  page: Page,
-  waitForURL: string = "/",
-  role: Role = "admin"
-) => {
+export const loginUserAndWaitFor = async (page: Page, waitForURL: string = "/", role: Role = "admin") => {
   // POST /api/v1/token -> issue a fake bearer token (no backend).
   await page.route("*/**/api/v1/token", async (route) => {
     await route.fulfill({
@@ -54,8 +50,7 @@ export const loginUserAndWaitFor = async (
   await page.getByLabel("Password").fill("12345678");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
-  const landsOnHome =
-    waitForURL === "datasets" || waitForURL === "/" || waitForURL === "";
+  const landsOnHome = waitForURL === "datasets" || waitForURL === "/" || waitForURL === "";
 
   if (landsOnHome) {
     // Login succeeds once we leave the sign-in page for the home/datasets list.

@@ -1,20 +1,22 @@
 <template>
   <div class="sort-selector-item">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility" class="sort-selector-item__dropdown">
-      <template #dropdown-header><span class="sort-selector-item__dropdown__header">
-        <div class="sort-selector-item__dropdown__header__item">
-          <span class="sort-selector-item__dropdown__header__group" v-text="$t(`sorting.${category.group}`)" />
-          <span class="sort-selector-item__dropdown__header__text" title="category.title" v-text="category.title" />
-        </div>
-        <svgicon width="12" height="12" name="chevron-down" />
-      </span></template>
-      <template #dropdown-content><span>
-        <SortCategoriesList
-          v-if="availableCategories.length"
-          :categories="availableCategories"
-          @include-category="replaceCategory"
-        ></SortCategoriesList>
-      </span></template>
+      <template #dropdown-header
+        ><span class="sort-selector-item__dropdown__header">
+          <div class="sort-selector-item__dropdown__header__item">
+            <span class="sort-selector-item__dropdown__header__group" v-text="$t(`sorting.${category.group}`)" />
+            <span class="sort-selector-item__dropdown__header__text" title="category.title" v-text="category.title" />
+          </div>
+          <svgicon width="12" height="12" name="chevron-down" /> </span
+      ></template>
+      <template #dropdown-content
+        ><span>
+          <SortCategoriesList
+            v-if="availableCategories.length"
+            :categories="availableCategories"
+            @include-category="replaceCategory"
+          ></SortCategoriesList> </span
+      ></template>
     </BaseDropdown>
     <BaseButton
       title="sort direction"

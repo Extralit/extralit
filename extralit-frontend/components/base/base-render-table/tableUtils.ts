@@ -1,16 +1,22 @@
 import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent } from "tabulator-tables";
 import { type ReferenceValues } from "@/v1/domain/entities/table/TableData";
-import { type SuggestionCheck, type ValidationSchema, type Validator, type Validators } from "@/v1/domain/entities/table/Validation";
-
+import {
+  type SuggestionCheck,
+  type ValidationSchema,
+  type Validator,
+  type Validators,
+} from "@/v1/domain/entities/table/Validation";
 
 export function isValidJSON(value: string): boolean {
-  if (!value?.length || (!value.startsWith('{') && !value.startsWith('['))) { return false; }
+  if (!value?.length || (!value.startsWith("{") && !value.startsWith("["))) {
+    return false;
+  }
 
   try {
     JSON.parse(value);
     return true;
   } catch (e) {
-    console.log(e)
+    console.log(e);
     return false;
   }
 }
@@ -21,44 +27,56 @@ export function cellTooltip(e, cell: CellComponent, onRendered): string {
   let errors = (cell as any)._cell?.modules?.validate?.invalid;
 
   if (cell.getValue()?.length > 100) {
-    message = cell.getValue() + '\n\n';
+    message = cell.getValue() + "\n\n";
   }
 
   if (errors?.length > 0) {
-    message = errors.map(stringifyValidator).join(', ');
+    message = errors.map(stringifyValidator).join(", ");
   }
 
   return message;
 }
 
-
-
-export function groupHeader(index: string, count: number, data: any, group: GroupComponent, referenceValues: ReferenceValues, refColumns: string[]) {
-  const schema_ref = (group as any)._group.field
-  let header = index
-  let keyValues = '';
+export function groupHeader(
+  index: string,
+  count: number,
+  data: any,
+  group: GroupComponent,
+  referenceValues: ReferenceValues,
+  refColumns: string[]
+) {
+  const schema_ref = (group as any)._group.field;
+  let header = index;
+  let keyValues = "";
   if (referenceValues?.[schema_ref]?.hasOwnProperty(index)) {
     keyValues = Object.entries(referenceValues[schema_ref][index])
       // @ts-ignore
-      .filter(([key, v]) => !!key && key !== "_id" && !refColumns?.includes(key) && v != null && v !== 'NA')
+      .filter(([key, v]) => !!key && key !== "_id" && !refColumns?.includes(key) && v != null && v !== "NA")
       .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
-      .join(', ');
+      .join(", ");
   }
 
   if (keyValues.length > 0) {
     header = `<small text="${index}">${keyValues}</small>`;
   } else {
-    header = `<small style="color: red;">${index} (key not matched to ${schema_ref.replace(/_ref$/, '')})</small>`;
+    header = `<small style="color: red;">${index} (key not matched to ${schema_ref.replace(/_ref$/, "")})</small>`;
   }
 
-  if (count > 1) header = header + `<small style='font-weight:normal; color:black; margin-left:10px;'>(${count})</small>`;
+  if (count > 1)
+    header = header + `<small style='font-weight:normal; color:black; margin-left:10px;'>(${count})</small>`;
   return header;
 }
 
-export function headerTooltip(e, column: ColumnComponent, onRendered, validation: ValidationSchema, columnValidators: Validators) {
+export function headerTooltip(
+  e,
+  column: ColumnComponent,
+  onRendered,
+  validation: ValidationSchema,
+  columnValidators: Validators
+) {
   try {
     const fieldName = column?.getDefinition()?.field;
-    const desc = columnSchemaToDesc(fieldName, validation, columnValidators)
+    const desc = columnSchemaToDesc(fieldName, validation, columnValidators);
 
     if (!desc) return null;
     return desc;
@@ -71,7 +89,8 @@ export function headerTooltip(e, column: ColumnComponent, onRendered, validation
 export function columnSchemaToDesc(
   fieldName: string,
   validation: ValidationSchema,
-  columnValidators: Validators): string | undefined {
+  columnValidators: Validators
+): string | undefined {
   // returns a string describing the column schema and validators
   if (!validation || !fieldName) return;
 
@@ -86,15 +105,12 @@ export function columnSchemaToDesc(
   }
 
   if (columnValidators.hasOwnProperty(fieldName)) {
-    const criteriaSpecs = columnValidators[fieldName]
-      .map(stringifyValidator)
-      .filter((value) => value != null);
-    desc += `<br/><br/>Checks: ${criteriaSpecs.join(', ')}`
-      .replace(/,/g, ", ").replace(/:/g, ": ");
+    const criteriaSpecs = columnValidators[fieldName].map(stringifyValidator).filter((value) => value != null);
+    desc += `<br/><br/>Checks: ${criteriaSpecs.join(", ")}`.replace(/,/g, ", ").replace(/:/g, ": ");
   }
 
   if (validation.columns[fieldName]?.checks?.multiselect?.delimiter) {
-    desc += `, multivalues(delimiter="${validation.columns[fieldName]?.checks?.multiselect?.delimiter}")`
+    desc += `, multivalues(delimiter="${validation.columns[fieldName]?.checks?.multiselect?.delimiter}")`;
   }
 
   return desc;
@@ -103,34 +119,40 @@ export function columnSchemaToDesc(
 function stringifyValidator(validator: Validator): string | null {
   let s = null;
 
-  if (typeof validator === 'string') {
-    s = validator.replace('string', 'text');
-    if (validator.startsWith('regex:')) {
-      s = `regex: "${regexToHumanReadable(validator.replace("regex:", ''))}"`;
+  if (typeof validator === "string") {
+    s = validator.replace("string", "text");
+    if (validator.startsWith("regex:")) {
+      s = `regex: "${regexToHumanReadable(validator.replace("regex:", ""))}"`;
     }
-
-  } else if (typeof validator === 'function') {
-    s = `${validator.name}`.replace('nullable', 'optional');
-
-  } else if (typeof validator === 'object' && validator?.type?.name) {
+  } else if (typeof validator === "function") {
+    s = `${validator.name}`.replace("nullable", "optional");
+  } else if (typeof validator === "object" && validator?.type?.name) {
     s = `${validator.type.name}`;
-    if (validator?.parameters != null && typeof validator.parameters !== 'object') {
+    if (validator?.parameters != null && typeof validator.parameters !== "object") {
       s += `: ${validator.parameters}`;
-
-    } else if (!['integer', 'decimal'].includes(validator?.type?.name) && validator.parameters != null && typeof validator.parameters === 'object') {
+    } else if (
+      !["integer", "decimal"].includes(validator?.type?.name) &&
+      validator.parameters != null &&
+      typeof validator.parameters === "object"
+    ) {
       const parameters = JSON.stringify(validator.parameters)
-        .replace(/[{""}]/g, '').replace(/:/g, '=').replace(/,/g, ', ')
-        .replace('=true', '').replace('column=', '');
+        .replace(/[{""}]/g, "")
+        .replace(/:/g, "=")
+        .replace(/,/g, ", ")
+        .replace("=true", "")
+        .replace("column=", "");
       s += `(${parameters})`;
     }
-
-  } else if (typeof validator === 'object' && typeof validator?.type === 'string') {
+  } else if (typeof validator === "object" && typeof validator?.type === "string") {
     if (validator.type === "function") {
       s = JSON.stringify(validator.parameters)
-        .replace(/[{""}]/g, '').replace(/:/g, '=').replace(/,/g, ', ')
-        .replace('=true', '').replace('column=', '');;
+        .replace(/[{""}]/g, "")
+        .replace(/:/g, "=")
+        .replace(/,/g, ", ")
+        .replace("=true", "")
+        .replace("column=", "");
     } else {
-      if (validator?.parameters != null && typeof validator.parameters !== 'object') {
+      if (validator?.parameters != null && typeof validator.parameters !== "object") {
         s += `: ${validator.parameters}`;
       }
     }
@@ -140,13 +162,13 @@ function stringifyValidator(validator: Validator): string | null {
 }
 
 export function getRangeRowData(range: RangeComponent): Record<string, Record<string, any>> {
-    const rangeData = range.getRows().reduce((acc, row: RowComponent) => {
-        acc[row.getIndex()] = row.getData();
-        return acc;
-      }, {});
+  const rangeData = range.getRows().reduce((acc, row: RowComponent) => {
+    acc[row.getIndex()] = row.getData();
+    return acc;
+  }, {});
 
-    return rangeData;
-  };
+  return rangeData;
+}
 
 export function getRangeColumns(range: RangeComponent): string[] {
   const columns = range.getColumns().map((col) => col.getField());
@@ -157,35 +179,31 @@ function regexToHumanReadable(regex: string): string {
   // Replace regex patterns with example strings
   let example = regex;
 
-  example = example.replace(/\\d/g, '1');
-  example = example.replace(/\\w/g, 'a');
-  example = example.replace(/\\s/g, ' ');
+  example = example.replace(/\\d/g, "1");
+  example = example.replace(/\\w/g, "a");
+  example = example.replace(/\\s/g, " ");
 
-  example = example.replace(/[\^\$\.\*\+\?\{\}\[\]\\\(\)]/g, '');
+  example = example.replace(/[\^\$\.\*\+\?\{\}\[\]\\\(\)]/g, "");
 
   return example;
 }
-
 
 function getListAutocompleteValues(values: SuggestionCheck): any[] {
   let editorParamsValues: any[] = [];
 
   if (Array.isArray(values)) {
     editorParamsValues = values.map((value) => ({ label: value, value: value, data: {} }));
-
-  } else if (typeof values === 'object') {
-    editorParamsValues = Object.entries(values)
-      .map(([key, value]) => ({ label: key, value: key, data: value }));
+  } else if (typeof values === "object") {
+    editorParamsValues = Object.entries(values).map(([key, value]) => ({ label: key, value: key, data: value }));
   }
   return editorParamsValues;
 }
-
 
 export function getColumnEditorParams(
   fieldName: string,
   validation: ValidationSchema,
   refColumns: string[],
-  referenceValues: ReferenceValues,
+  referenceValues: ReferenceValues
 ): any {
   let config: any = { editorParams: {} };
 
@@ -207,23 +225,26 @@ export function getColumnEditorParams(
         const allowedValues = getListAutocompleteValues(isinValues);
         if (allowedValues.length) {
           config.editorParams.valuesLookup = (cell: CellComponent, filterTerm: string) => {
-            return allowedValues
-          }
+            return allowedValues;
+          };
         }
-
       } else if (suggestions) {
         let suggestionValues: any[] = getListAutocompleteValues(suggestions);
 
         if (suggestionValues.length) {
           config.editorParams.valuesLookup = (cell: CellComponent, filterTerm: string) => {
-            let values = cell.getColumn().getCells()
+            let values = cell
+              .getColumn()
+              .getCells()
               .map((c) => c.getValue())
-              .filter(value => value != null && value !== 'NA' && !suggestionValues.some(item => item.value === value))
+              .filter(
+                (value) => value != null && value !== "NA" && !suggestionValues.some((item) => item.value === value)
+              );
 
-            return [...new Set(values), ...suggestionValues]
-          }
+            return [...new Set(values), ...suggestionValues];
+          };
         } else {
-          config.editorParams.valuesLookup = 'active';
+          config.editorParams.valuesLookup = "active";
         }
       }
 
@@ -233,13 +254,11 @@ export function getColumnEditorParams(
           config.editorParams.autocomplete = false;
         }
       }
-
     } else if (columnValidators.dtype.includes("int") || columnValidators.dtype.includes("float")) {
       config.hozAlign = "right";
-      config.editorParams.valuesLookup = 'active';
+      config.editorParams.valuesLookup = "active";
       config.editorParams.valuesLookupField = fieldName;
     }
-
   } else if (refColumns?.includes(fieldName)) {
     config.editor = "list";
 
@@ -250,37 +269,38 @@ export function getColumnEditorParams(
         freetext: true,
         emptyValue: null,
         valuesLookup: false,
-        values: Object.entries(referenceValues[fieldName]).map(
-          ([key, value]) => ({ label: key, value: key, data: value })
-        ),
+        values: Object.entries(referenceValues[fieldName]).map(([key, value]) => ({
+          label: key,
+          value: key,
+          data: value,
+        })),
       };
-
     } else {
       // Default editor params for reference columns
       config.editorParams = {
         search: true,
-        valuesLookup: 'active',
+        valuesLookup: "active",
         listOnEmpty: true,
         freetext: true,
       };
     }
   }
 
-  const hasSuggestedValues = config.editorParams?.values || typeof config.editorParams?.valuesLookup == 'function';
+  const hasSuggestedValues = config.editorParams?.values || typeof config.editorParams?.valuesLookup == "function";
   if (hasSuggestedValues) {
     config.editorParams.itemFormatter = function (label, value, item, element) {
-      if (item.data && typeof item.data === 'object') {
+      if (item.data && typeof item.data === "object") {
         const keyValues = Object.entries(item.data)
-          .filter(([key, v]) => v !== 'NA' && v !== null)
+          .filter(([key, v]) => v !== "NA" && v !== null)
           .map(([key, v]) => `<span style="font-weight:normal; color:black; margin-left:0;">${key}:</span> ${v}`)
-          .join(', ');
+          .join(", ");
 
-        return `<strong>${label}</strong>${keyValues ? `: ${keyValues}` : ''}`;
+        return `<strong>${label}</strong>${keyValues ? `: ${keyValues}` : ""}`;
       }
       return label;
     };
 
-    config.editorParams.maxWidth = '500px'
+    config.editorParams.maxWidth = "500px";
 
     config.editorParams.filterFunc = function (term: string, label: string, value, item) {
       if (String(label).startsWith(term) || value.includes(term)) {
@@ -296,4 +316,3 @@ export function getColumnEditorParams(
 
   return config;
 }
-

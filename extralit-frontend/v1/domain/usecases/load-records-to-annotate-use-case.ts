@@ -108,6 +108,7 @@ export class LoadRecordsToAnnotateUseCase {
 
       this.recordsStorage.save(records);
     } catch {
+      /* best-effort prefetch; ignore failures and clear the buffering flag */
     } finally {
       this.isBuffering = false;
     }

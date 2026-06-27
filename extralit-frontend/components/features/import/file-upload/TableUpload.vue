@@ -3,18 +3,24 @@
     <div class="table-upload__section-header">
       <h3 class="table-upload__section-title">Bibliography / Metadata (Optional)</h3>
       <p class="table-upload__section-description">
-        Have a reference file from Zotero, EndNote, or Mendeley? Upload it to auto-match metadata. If not, you can edit the table in the next step.
+        Have a reference file from Zotero, EndNote, or Mendeley? Upload it to auto-match metadata. If not, you can edit
+        the table in the next step.
       </p>
     </div>
 
-    <div class="table-upload__dropzone" :class="{
-      'table-upload__dropzone--dragover': dragOver,
-      'table-upload__dropzone--error': hasError,
-      'table-upload__dropzone--success': uploaded,
-    }" @drop="handleDrop" @dragover="handleDragOver" @dragleave="handleDragLeave"
-      @click="triggerFileInput">
-      <input ref="fileInput" type="file" accept=".bib,.bibtex,.csv" style="display: none"
-        @change="handleFileSelect" />
+    <div
+      class="table-upload__dropzone"
+      :class="{
+        'table-upload__dropzone--dragover': dragOver,
+        'table-upload__dropzone--error': hasError,
+        'table-upload__dropzone--success': uploaded,
+      }"
+      @drop="handleDrop"
+      @dragover="handleDragOver"
+      @dragleave="handleDragLeave"
+      @click="triggerFileInput"
+    >
+      <input ref="fileInput" type="file" accept=".bib,.bibtex,.csv" style="display: none" @change="handleFileSelect" />
 
       <div class="table-upload__dropzone-content">
         <BaseIcon :icon-name="getDropzoneIcon" class="table-upload__dropzone-icon" />
@@ -28,7 +34,8 @@
     <!-- Success Display -->
     <div v-if="uploaded && !hasError" class="table-upload__upload-success">
       <span class="table-upload__upload-success-text">
-        Successfully uploaded {{ data.fileName }} ({{ data.dataframeData ? data.dataframeData.data.length : 0 }} entries found)
+        Successfully uploaded {{ data.fileName }} ({{ data.dataframeData ? data.dataframeData.data.length : 0 }} entries
+        found)
       </span>
     </div>
 

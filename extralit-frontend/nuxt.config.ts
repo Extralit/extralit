@@ -64,8 +64,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       clientVersion: pkg.version,
-      communityLink:
-        "https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw",
+      communityLink: "https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw",
       documentationSite: "https://docs.extralit.ai/",
       documentationPersistentStorage:
         "https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#persistent-storage",
@@ -95,13 +94,7 @@ export default defineNuxtConfig({
     // Without this, Vite discovers them at runtime on first navigation and forces
     // a re-optimize + full page reload, which flakes open tabs and the e2e suite.
     optimizeDeps: {
-      include: [
-        "marked",
-        "marked-highlight",
-        "marked-katex-extension",
-        "highlight.js",
-        "dompurify",
-      ],
+      include: ["marked", "marked-highlight", "marked-katex-extension", "highlight.js", "dompurify"],
     },
     css: {
       preprocessorOptions: {

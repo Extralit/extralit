@@ -425,7 +425,9 @@ export class Highlighting {
       range.setEnd(node.element, to);
 
       return range;
-    } catch {}
+    } catch {
+      /* invalid offsets for this node; return undefined so callers skip it */
+    }
   }
 
   private createTextSelection(clear = false): TextSelection | undefined {

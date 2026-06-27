@@ -14,45 +14,45 @@
         @mouseover="dropdownAddVisible = true"
         @mouseleave="dropdownAddVisible = false"
       >
-        <template #dropdown-header><span>
-          <BaseButton
-            class="dropdown-header"
-            @click.prevent="dropdownAddVisible = !dropdownAddVisible"
-          >
-            Add
-            <svgicon name="chevron-down" width="8" height="8" />
-          </BaseButton>
-        </span></template>
-        <template #dropdown-content><span>
-          <BaseButton
-            class="menubar__button"
-            @click.prevent="editor.chain().focus().addColumnBefore().run()"
-            :disabled="!editor.can().addColumnBefore()"
-          >
-            ➕ Column ←
-          </BaseButton>
-          <BaseButton
-            class="menubar__button"
-            @click.prevent="editor.chain().focus().addColumnAfter().run()"
-            :disabled="!editor.can().addColumnAfter()"
-          >
-            ➕ Column →
-          </BaseButton>
-          <BaseButton
-            class="menubar__button"
-            @click.prevent="editor.chain().focus().addRowBefore().run()"
-            :disabled="!editor.can().addRowBefore()"
-          >
-            ➕ Row ↑
-          </BaseButton>
-          <BaseButton
-            class="menubar__button"
-            @click.prevent="editor.chain().focus().addRowAfter().run()"
-            :disabled="!editor.can().addRowAfter()"
-          >
-            ➕ Row ↓
-          </BaseButton>
-        </span></template>
+        <template #dropdown-header
+          ><span>
+            <BaseButton class="dropdown-header" @click.prevent="dropdownAddVisible = !dropdownAddVisible">
+              Add
+              <svgicon name="chevron-down" width="8" height="8" />
+            </BaseButton> </span
+        ></template>
+        <template #dropdown-content
+          ><span>
+            <BaseButton
+              class="menubar__button"
+              @click.prevent="editor.chain().focus().addColumnBefore().run()"
+              :disabled="!editor.can().addColumnBefore()"
+            >
+              ➕ Column ←
+            </BaseButton>
+            <BaseButton
+              class="menubar__button"
+              @click.prevent="editor.chain().focus().addColumnAfter().run()"
+              :disabled="!editor.can().addColumnAfter()"
+            >
+              ➕ Column →
+            </BaseButton>
+            <BaseButton
+              class="menubar__button"
+              @click.prevent="editor.chain().focus().addRowBefore().run()"
+              :disabled="!editor.can().addRowBefore()"
+            >
+              ➕ Row ↑
+            </BaseButton>
+            <BaseButton
+              class="menubar__button"
+              @click.prevent="editor.chain().focus().addRowAfter().run()"
+              :disabled="!editor.can().addRowAfter()"
+            >
+              ➕ Row ↓
+            </BaseButton>
+          </span></template
+        >
       </BaseDropdown>
 
       <BaseDropdown
@@ -61,32 +61,32 @@
         @mouseover="dropdownRemoveVisible = true"
         @mouseleave="dropdownRemoveVisible = false"
       >
-        <template #dropdown-header><span>
-          <BaseButton
-            class="dropdown-header"
-            @click.prevent="dropdownRemoveVisible = !dropdownRemoveVisible"
-          >
-            Remove
-            <svgicon name="chevron-down" width="8" height="8" />
-          </BaseButton>
-        </span></template>
-        <template #dropdown-content><span>
-          <BaseButton
-            class="menubar__button"
-            @click.prevent="editor.chain().focus().deleteColumn().run()"
-            :disabled="!editor.can().deleteColumn()"
-          >
-            ➖ Column
-          </BaseButton>
-          <BaseButton
-            class="menubar__button"
-            @click.prevent="editor.chain().focus().deleteRow().run()"
-            :disabled="!editor.can().deleteRow()"
-          >
-            ➖ Row
-          </BaseButton>
-          <BaseButton class="menubar__button" @click.prevent="deleteTable"> Delete Table </BaseButton>
-        </span></template>
+        <template #dropdown-header
+          ><span>
+            <BaseButton class="dropdown-header" @click.prevent="dropdownRemoveVisible = !dropdownRemoveVisible">
+              Remove
+              <svgicon name="chevron-down" width="8" height="8" />
+            </BaseButton> </span
+        ></template>
+        <template #dropdown-content
+          ><span>
+            <BaseButton
+              class="menubar__button"
+              @click.prevent="editor.chain().focus().deleteColumn().run()"
+              :disabled="!editor.can().deleteColumn()"
+            >
+              ➖ Column
+            </BaseButton>
+            <BaseButton
+              class="menubar__button"
+              @click.prevent="editor.chain().focus().deleteRow().run()"
+              :disabled="!editor.can().deleteRow()"
+            >
+              ➖ Row
+            </BaseButton>
+            <BaseButton class="menubar__button" @click.prevent="deleteTable"> Delete Table </BaseButton>
+          </span></template
+        >
       </BaseDropdown>
 
       <BaseDropdown
@@ -95,67 +95,71 @@
         @mouseover="dropdownToggleVisible = true"
         @mouseleave="dropdownToggleVisible = false"
       >
-        <template #dropdown-header><span>
-          <BaseButton
-            class="dropdown-header"
-            @click.prevent="dropdownToggleVisible = !dropdownToggleVisible"
-          >
-            Toggle
-            <svgicon name="chevron-down" width="8" height="8" />
-          </BaseButton>
-        </span></template>
-        <template #dropdown-content><span>
-          <BaseButton
-            class="menubar__button"
-            @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
-            :disabled="!editor.can().toggleHeaderCell()"
-            title="Cmd + H"
-          >
-            Toggle Selected as Header
-          </BaseButton>
-          <BaseButton
-            class="menubar__button"
-            @click.prevent="editor.chain().focus().mergeCells().run()"
-            :disabled="!editor.can().mergeCells()"
-            title="Cmd + G"
-          >
-            Merge Cells
-          </BaseButton>
-          <BaseButton
-            class="menubar__button"
-            @click.prevent="editor.chain().focus().splitCell().run()"
-            :disabled="!editor.can().splitCell()"
-            title="Cmd + Shift + G"
-          >
-            Split Cell
-          </BaseButton>
-          <!-- <BaseButton class="menubar__button" @click.prevent="splitRow" :disabled="!editor.can().mergeCells()">
+        <template #dropdown-header
+          ><span>
+            <BaseButton class="dropdown-header" @click.prevent="dropdownToggleVisible = !dropdownToggleVisible">
+              Toggle
+              <svgicon name="chevron-down" width="8" height="8" />
+            </BaseButton> </span
+        ></template>
+        <template #dropdown-content
+          ><span>
+            <BaseButton
+              class="menubar__button"
+              @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
+              :disabled="!editor.can().toggleHeaderCell()"
+              title="Cmd + H"
+            >
+              Toggle Selected as Header
+            </BaseButton>
+            <BaseButton
+              class="menubar__button"
+              @click.prevent="editor.chain().focus().mergeCells().run()"
+              :disabled="!editor.can().mergeCells()"
+              title="Cmd + G"
+            >
+              Merge Cells
+            </BaseButton>
+            <BaseButton
+              class="menubar__button"
+              @click.prevent="editor.chain().focus().splitCell().run()"
+              :disabled="!editor.can().splitCell()"
+              title="Cmd + Shift + G"
+            >
+              Split Cell
+            </BaseButton>
+            <!-- <BaseButton class="menubar__button" @click.prevent="splitRow" :disabled="!editor.can().mergeCells()">
 						Split Row
 					</BaseButton> -->
-          <!-- <BaseButton @click.prevent="editor.chain().focus().fixTables().run()">
+            <!-- <BaseButton @click.prevent="editor.chain().focus().fixTables().run()">
 						Fix Table
 					</BaseButton> -->
-        </span></template>
+          </span></template
+        >
       </BaseDropdown>
 
       <BaseDropdown class="dropdown" :visible="dropdownSearchReplaceVisible">
-        <template #dropdown-header><span>
-          <BaseButton @click.prevent="dropdownSearchReplaceVisible = !dropdownSearchReplaceVisible">
-            Find & Replace
-          </BaseButton>
-        </span></template>
-        <template #dropdown-content><span class="dropdown-content">
-          <label for="searchTerm" class="dropdown-label">Search:</label>
-          <input id="searchTerm" v-model="searchTerm" type="text" class="dropdown-input" />
+        <template #dropdown-header
+          ><span>
+            <BaseButton @click.prevent="dropdownSearchReplaceVisible = !dropdownSearchReplaceVisible">
+              Find & Replace
+            </BaseButton>
+          </span></template
+        >
+        <template #dropdown-content
+          ><span class="dropdown-content">
+            <label for="searchTerm" class="dropdown-label">Search:</label>
+            <input id="searchTerm" v-model="searchTerm" type="text" class="dropdown-input" />
 
-          <label for="replaceTerm" class="dropdown-label">Replace:</label>
-          <input id="replaceTerm" v-model="replaceTerm" type="text" class="dropdown-input" />
+            <label for="replaceTerm" class="dropdown-label">Replace:</label>
+            <input id="replaceTerm" v-model="replaceTerm" type="text" class="dropdown-input" />
 
-          <label for="searchUseRegex" class="dropdown-label">Use Regex:</label>
-          <input id="searchUseRegex" v-model="searchUseRegex" type="checkbox" class="dropdown-input" />
+            <label for="searchUseRegex" class="dropdown-label">Use Regex:</label>
+            <input id="searchUseRegex" v-model="searchUseRegex" type="checkbox" class="dropdown-input" />
 
-          <BaseButton @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</BaseButton>
-        </span></template>
+            <BaseButton @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</BaseButton>
+          </span></template
+        >
       </BaseDropdown>
     </div>
 

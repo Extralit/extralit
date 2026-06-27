@@ -10,7 +10,9 @@ export const usePersistentStorageViewModel = () => {
   onMounted(async () => {
     try {
       showBanner.value = await hasPersistentStorageWarning();
-    } catch (error) {}
+    } catch {
+      /* best-effort: keep banner hidden if the check fails */
+    }
   });
 
   return {

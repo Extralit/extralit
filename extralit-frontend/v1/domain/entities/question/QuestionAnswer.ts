@@ -36,7 +36,10 @@ export abstract class QuestionAnswer {
 }
 export class TextQuestionAnswer extends QuestionAnswer {
   public originalValue: string;
-  constructor(public readonly type: QuestionType, public value: string) {
+  constructor(
+    public readonly type: QuestionType,
+    public value: string
+  ) {
     super(type);
   }
 
@@ -69,7 +72,11 @@ export class SpanQuestionAnswer extends QuestionAnswer {
   public readonly options: Option[] = [];
   public values: SpanAnswer[] = [];
 
-  constructor(public readonly type: QuestionType, questionName: string, options: Omit<Option, "isSelected" | "id">[]) {
+  constructor(
+    public readonly type: QuestionType,
+    questionName: string,
+    options: Omit<Option, "isSelected" | "id">[]
+  ) {
     super(type);
 
     const makeSafeForCSS = (str: string) => {
@@ -120,7 +127,11 @@ type SingleLabelValue = {
 export class SingleLabelQuestionAnswer extends QuestionAnswer {
   public readonly values: SingleLabelValue[];
 
-  constructor(public readonly type: QuestionType, questionName: string, value: SingleLabelValue[]) {
+  constructor(
+    public readonly type: QuestionType,
+    questionName: string,
+    value: SingleLabelValue[]
+  ) {
     super(type);
     this.values = value.map((label) => ({
       ...label,
@@ -161,7 +172,11 @@ type MultiLabelValue = {
 export class MultiLabelQuestionAnswer extends QuestionAnswer {
   public readonly values: MultiLabelValue[];
 
-  constructor(public readonly type: QuestionType, questionName: string, value: MultiLabelValue[]) {
+  constructor(
+    public readonly type: QuestionType,
+    questionName: string,
+    value: MultiLabelValue[]
+  ) {
     super(type);
     this.values = value.map((label) => ({
       ...label,
@@ -201,7 +216,11 @@ type RatingValue = {
 export class RatingLabelQuestionAnswer extends QuestionAnswer {
   public readonly values: RatingValue[];
 
-  constructor(public readonly type: QuestionType, questionName: string, value: RatingValue[]) {
+  constructor(
+    public readonly type: QuestionType,
+    questionName: string,
+    value: RatingValue[]
+  ) {
     super(type);
     this.values = value.map((rating) => ({
       id: `${questionName}_${rating.value}`,
@@ -242,7 +261,11 @@ type RankingValue = {
 export class RankingQuestionAnswer extends QuestionAnswer {
   public values: RankingValue[];
 
-  constructor(public readonly type: QuestionType, questionName: string, value: RankingValue[]) {
+  constructor(
+    public readonly type: QuestionType,
+    questionName: string,
+    value: RankingValue[]
+  ) {
     super(type);
     this.values = value.map((ranking) => ({
       ...ranking,

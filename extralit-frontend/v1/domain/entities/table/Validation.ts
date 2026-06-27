@@ -16,7 +16,7 @@ export type SuggestionCheck =
   | string[]
   | {
       [columnName: string]:
-        | {}
+        | Record<string, unknown>
         | {
             [otherColumnName: string]: [otherColumnValue: string];
           };
