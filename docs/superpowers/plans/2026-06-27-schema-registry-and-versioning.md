@@ -56,8 +56,8 @@
 
 - [ ] **Step 1: Add pandera (pulls pandas)**
 
-Run: `uv add pandera`
-Expected: resolves and installs `pandera` and `pandas`; `uv.lock` updated.
+Run: `uv add 'pandera[io]>=0.20'`
+Expected: resolves and installs `pandera` (with the `io` extra for `to_json`/`from_json`) and `pandas`; `uv.lock` updated. The version floor and `io` extra matter because Task 2 relies on `DataFrameSchema.to_json()`/`from_json()` round-tripping per-column `metadata` (the `review` widget). Task 2's metadata round-trip test is the gate — if it fails on the installed version, follow the fallback note in Task 2.
 
 - [ ] **Step 2: Verify pandera imports**
 
@@ -138,6 +138,8 @@ Pure functions, no DB/IO — the validation core. TDD-friendly.
 Create `tests/unit/contexts/v2/__init__.py` (empty) and `tests/unit/contexts/v2/test_schema_bodies.py`:
 
 ```python
+import json
+
 import pandera as pa
 import pytest
 
@@ -167,10 +169,29 @@ def test_derive_columns_cache_lists_columns_with_dtype_and_nullable():
     assert "int" in by_name["age"]["dtype"].lower()
 
 
-def test_validate_record_fields_coerces_and_returns():
+def test_derive_columns_cache_round_trips_review_metadata():
+    # Guards the whole review-widget pipeline: metadata must survive to_json/from_json.
+    schema = pa.DataFrameSchema(
+        columns={"rating": pa.Column(pa.Int, nullable=True, metadata={"review": {"type": "rating"}})}
+    )
+    cache = derive_columns_cache(schema.to_json())
+    assert cache[0]["review"] == {"type": "rating"}
+
+
+def test_validate_record_fields_returns_native_json_types():
     coerced = validate_record_fields(_body(), {"name": "Ada", "age": 36})
     assert coerced["name"] == "Ada"
     assert coerced["age"] == 36
+    # Must be native python types (not numpy scalars) and JSON-serializable for the
+    # record.fields JSONB column in Phase 2.
+    assert type(coerced["age"]) is int
+    json.dumps(coerced)  # raises if numpy scalars / NaN leaked through
+
+
+def test_validate_record_fields_converts_nulls_to_none():
+    coerced = validate_record_fields(_body(), {"name": "Ada", "age": None})
+    assert coerced["age"] is None
+    json.dumps(coerced)
 
 
 def test_validate_record_fields_raises_on_type_error():
@@ -196,6 +217,7 @@ No DB or object-store access — given a schema body string, derive a denormaliz
 column cache and validate a single record's `fields` dict against it.
 """
 
+import json
 from typing import Any
 
 import pandas as pd
@@ -256,8 +278,19 @@ def validate_record_fields(body_json: str, fields: dict[str, Any]) -> dict[str, 
             for row in failures.to_dict(orient="records")
         ]
         raise SchemaValidationError(errors) from exc
-    return validated.iloc[0].to_dict()
+    # Round-trip through pandas JSON so numpy scalars (int64/bool_/float64) become native
+    # python types and NaN/NaT nulls become None — required for the record.fields JSONB column.
+    return json.loads(validated.iloc[[0]].to_json(orient="records"))[0]
 ```
+
+> **Fallback (if the metadata round-trip test in Step 1 fails on the installed Pandera):**
+> Pandera's `to_json`/`from_json` does not reliably preserve per-`Column.metadata` on
+> all versions. If `test_derive_columns_cache_round_trips_review_metadata` fails, do NOT
+> store the `review` widget inside the Pandera body. Instead carry it in a side map:
+> change `SchemaVersionCreate` (Task 6) to accept an optional `review_widgets: dict[str, dict]`
+> (column name → widget config), persist it on `SchemaVersion` (add a `review_widgets` JSONB
+> column + migration), and have `derive_columns_cache` accept that map and merge it into each
+> column's `review`. Record this decision in spec §12 before proceeding.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
@@ -359,7 +392,7 @@ class Schema(DatabaseModel):
     current_version_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("schema_versions.id", ondelete="SET NULL", use_alter=True), nullable=True
     )
-    settings: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default={})
+    settings: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default=dict)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
 
     versions: Mapped[list["SchemaVersion"]] = relationship(
@@ -615,7 +648,7 @@ class SchemaVersionFactory(BaseFactory):
     object_key = factory.LazyAttribute(lambda o: f"schemas/{o.schema.id}/v{o.version}.json")
     etag = factory.Sequence(lambda n: f"etag-{n}")
     checksum = factory.Sequence(lambda n: f"checksum-{n}")
-    columns_cache = []
+    columns_cache = factory.LazyFunction(list)  # fresh list per row, not a shared mutable default
 ```
 
 Add the enum import near the top of `tests/factories.py` (alongside the existing `from extralit_server.enums import ...` line):
@@ -909,7 +942,10 @@ async def update_schema(
         values["settings"] = settings
     if not values:
         return schema
-    return await schema.update(db, **values)
+    # replace_dict=True gives PUT semantics: a provided `settings` payload replaces the
+    # stored dict wholesale. CRUDMixin.fill() otherwise merges dicts (mixins.py:47-50),
+    # which would make removing a settings key impossible.
+    return await schema.update(db, replace_dict=True, **values)
 
 
 async def delete_schema(db: AsyncSession, schema: Schema) -> Schema:
@@ -992,12 +1028,13 @@ git commit -m "feat(v2): schema context with object-store version publishing"
 ## Task 8: API router and `/api/v2` mount
 
 **Files:**
-- Create: `src/extralit_server/api/v2/__init__.py`, `src/extralit_server/api/v2/schemas.py`
-- Modify: `src/extralit_server/_app.py`
+- Create: `src/extralit_server/api/policies/v1/schema_policy.py`, `src/extralit_server/api/v2/__init__.py`, `src/extralit_server/api/v2/schemas.py`
+- Modify: `src/extralit_server/api/policies/v1/__init__.py` (export `SchemaPolicy`), `src/extralit_server/_app.py`
 - Test: `tests/integration/api/v2/__init__.py` (empty), `tests/integration/api/v2/test_schemas.py`
 
 **Interfaces:**
-- Consumes: `contexts.v2.schemas`, `contexts.files.get_s3_client`, `security.auth.get_current_user`, `database.get_async_db`.
+- Consumes: `contexts.v2.schemas`, `contexts.files.get_s3_client`, `security.auth.get_current_user`, `database.get_async_db`, `api.policies.v1.{authorize, SchemaPolicy}`.
+- Produces: `SchemaPolicy` with `list(workspace_id)`, `create(workspace_id)`, `get(schema)`, `update(schema)`, `delete(schema)`, `publish(schema)` — each returning a `PolicyAction`, mirroring `DatasetPolicy`.
 - Produces endpoints under `/api/v2`:
   - `POST /schemas` → `SchemaRead` (201)
   - `GET /schemas?workspace_id=` → `Schemas`
@@ -1080,18 +1117,92 @@ async def test_publish_version_and_columns(async_client, owner_auth_header, monk
     resp = await async_client.get(f"/api/v2/schemas/{schema_id}/columns", headers=owner_auth_header)
     assert resp.status_code == 200
     assert any(c["name"] == "name" for c in resp.json())
+
+
+async def test_non_member_cannot_create_or_read_schema(async_client, annotator_auth_header):
+    # The annotator behind annotator_auth_header is NOT a member of this workspace.
+    ws = await WorkspaceFactory.create()
+    resp = await async_client.post(
+        "/api/v2/schemas",
+        headers=annotator_auth_header,
+        json={"name": "secret", "kind": SchemaKind.table.value, "workspace_id": str(ws.id)},
+    )
+    assert resp.status_code == 403, resp.text
 ```
 
-> If your test suite's fixtures use different names than `async_client` / `owner_auth_header` / `OwnerFactory`, match the existing v1 API tests under `tests/integration/api/handlers/v1/`. Grep there first: `grep -rn "owner_auth_header\|async_client" tests/integration/api | head`.
+> If your test suite's fixtures use different names than `async_client` / `owner_auth_header` /
+> `annotator_auth_header` / `OwnerFactory`, match the existing v1 API tests under
+> `tests/integration/api/handlers/v1/`. Grep there first:
+> `grep -rn "owner_auth_header\|annotator_auth_header\|async_client" tests/integration/api | head`.
 
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `uv run pytest tests/integration/api/v2/test_schemas.py -v`
 Expected: FAIL with 404s (router not mounted) or fixture import error.
 
-- [ ] **Step 3: Implement the router**
+- [ ] **Step 3: Implement the authorization policy and router**
 
-Create `src/extralit_server/api/v2/schemas.py`:
+First create `src/extralit_server/api/policies/v1/schema_policy.py` (mirrors `DatasetPolicy`; owner always allowed, otherwise workspace membership — admin for writes):
+
+```python
+from uuid import UUID
+
+from extralit_server.api.policies.v1.commons import PolicyAction
+from extralit_server.models import User
+from extralit_server.models.v2 import Schema
+
+
+class SchemaPolicy:
+    @classmethod
+    def list(cls, workspace_id: UUID) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or await actor.is_member(workspace_id)
+
+        return is_allowed
+
+    @classmethod
+    def create(cls, workspace_id: UUID) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (actor.is_admin and await actor.is_member(workspace_id))
+
+        return is_allowed
+
+    @classmethod
+    def get(cls, schema: Schema) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or await actor.is_member(schema.workspace_id)
+
+        return is_allowed
+
+    @classmethod
+    def update(cls, schema: Schema) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (actor.is_admin and await actor.is_member(schema.workspace_id))
+
+        return is_allowed
+
+    @classmethod
+    def delete(cls, schema: Schema) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (actor.is_admin and await actor.is_member(schema.workspace_id))
+
+        return is_allowed
+
+    @classmethod
+    def publish(cls, schema: Schema) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (actor.is_admin and await actor.is_member(schema.workspace_id))
+
+        return is_allowed
+```
+
+Export it from `src/extralit_server/api/policies/v1/__init__.py` (append alongside the existing policy exports):
+
+```python
+from extralit_server.api.policies.v1.schema_policy import SchemaPolicy  # noqa: F401
+```
+
+Then create `src/extralit_server/api/v2/schemas.py`:
 
 ```python
 from typing import Annotated
@@ -1100,6 +1211,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Security, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from extralit_server.api.policies.v1 import SchemaPolicy, authorize
 from extralit_server.api.schemas.v2.schemas import (
     Schemas,
     SchemaCreate,
@@ -1118,6 +1230,13 @@ from extralit_server.security import auth
 router = APIRouter(tags=["v2: schemas"])
 
 
+async def _get_schema_or_404(db: AsyncSession, schema_id: UUID):
+    schema = await schemas_ctx.get_schema(db, schema_id)
+    if schema is None:
+        raise NotFoundError(f"Schema with id `{schema_id}` not found")
+    return schema
+
+
 @router.post("/schemas", response_model=SchemaRead, status_code=status.HTTP_201_CREATED)
 async def create_schema(
     *,
@@ -1125,6 +1244,7 @@ async def create_schema(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
+    await authorize(current_user, SchemaPolicy.create(payload.workspace_id))
     schema = await schemas_ctx.create_schema(
         db,
         name=payload.name,
@@ -1140,8 +1260,10 @@ async def list_schemas(
     *,
     db: Annotated[AsyncSession, Depends(get_async_db)],
     current_user: Annotated[User, Security(auth.get_current_user)],
-    workspace_id: Annotated[UUID | None, Query()] = None,
+    workspace_id: Annotated[UUID, Query(description="Workspace to list schemas for (required)")],
 ):
+    # workspace_id is required so every list is scoped + authorized (no cross-workspace listing).
+    await authorize(current_user, SchemaPolicy.list(workspace_id))
     items = await schemas_ctx.list_schemas(db, workspace_id=workspace_id)
     return Schemas(items=items)
 
@@ -1153,9 +1275,8 @@ async def get_schema(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
-    schema = await schemas_ctx.get_schema(db, schema_id)
-    if schema is None:
-        raise NotFoundError(f"Schema with id `{schema_id}` not found")
+    schema = await _get_schema_or_404(db, schema_id)
+    await authorize(current_user, SchemaPolicy.get(schema))
     return schema
 
 
@@ -1167,9 +1288,8 @@ async def update_schema(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
-    schema = await schemas_ctx.get_schema(db, schema_id)
-    if schema is None:
-        raise NotFoundError(f"Schema with id `{schema_id}` not found")
+    schema = await _get_schema_or_404(db, schema_id)
+    await authorize(current_user, SchemaPolicy.update(schema))
     return await schemas_ctx.update_schema(db, schema, name=payload.name, settings=payload.settings)
 
 
@@ -1180,9 +1300,8 @@ async def delete_schema(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
-    schema = await schemas_ctx.get_schema(db, schema_id)
-    if schema is None:
-        raise NotFoundError(f"Schema with id `{schema_id}` not found")
+    schema = await _get_schema_or_404(db, schema_id)
+    await authorize(current_user, SchemaPolicy.delete(schema))
     return await schemas_ctx.delete_schema(db, schema)
 
 
@@ -1199,9 +1318,8 @@ async def publish_schema_version(
     s3_client=Depends(files_ctx.get_s3_client),
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
-    schema = await schemas_ctx.get_schema(db, schema_id)
-    if schema is None:
-        raise NotFoundError(f"Schema with id `{schema_id}` not found")
+    schema = await _get_schema_or_404(db, schema_id)
+    await authorize(current_user, SchemaPolicy.publish(schema))
     workspace = await Workspace.get_or_raise(db, schema.workspace_id)
     return await schemas_ctx.publish_version(
         db, s3_client, schema, body=payload.body, bucket=workspace.name, created_by=current_user.id
@@ -1215,9 +1333,8 @@ async def list_schema_versions(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
-    schema = await schemas_ctx.get_schema(db, schema_id)
-    if schema is None:
-        raise NotFoundError(f"Schema with id `{schema_id}` not found")
+    schema = await _get_schema_or_404(db, schema_id)
+    await authorize(current_user, SchemaPolicy.get(schema))
     return sorted(await schema.awaitable_attrs.versions, key=lambda v: v.version)
 
 
@@ -1228,9 +1345,8 @@ async def get_schema_columns(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
-    schema = await schemas_ctx.get_schema(db, schema_id)
-    if schema is None:
-        raise NotFoundError(f"Schema with id `{schema_id}` not found")
+    schema = await _get_schema_or_404(db, schema_id)
+    await authorize(current_user, SchemaPolicy.get(schema))
     if schema.current_version_id is None:
         return []
     from extralit_server.models.v2 import SchemaVersion
@@ -1295,15 +1411,15 @@ Expected: PASS (2 passed). If fixture names differ, adjust per the Step-1 note a
 Run:
 ```bash
 uv run pytest tests/unit/test_enums_v2.py tests/unit/contexts/v2 tests/unit/api/schemas/v2 tests/integration/models/v2 tests/integration/contexts/v2 tests/integration/api/v2 -v
-uv run ruff check src/extralit_server/api/v2 src/extralit_server/contexts/v2 src/extralit_server/models/v2 src/extralit_server/api/schemas/v2
+uv run ruff check src/extralit_server/api/v2 src/extralit_server/contexts/v2 src/extralit_server/models/v2 src/extralit_server/api/schemas/v2 src/extralit_server/api/policies/v1/schema_policy.py
 ```
-Expected: all pass; ruff clean (fix any reported issues).
+Expected: all pass (including `test_non_member_cannot_create_or_read_schema`); ruff clean (fix any reported issues).
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/extralit_server/api/v2/ src/extralit_server/_app.py tests/integration/api/v2/
-git commit -m "feat(v2): /api/v2 schema router with CRUD + version publishing"
+git add src/extralit_server/api/v2/ src/extralit_server/api/policies/v1/ src/extralit_server/_app.py tests/integration/api/v2/
+git commit -m "feat(v2): /api/v2 schema router with CRUD, version publishing, and per-workspace authz"
 ```
 
 ---
@@ -1313,9 +1429,17 @@ git commit -m "feat(v2): /api/v2 schema router with CRUD + version publishing"
 **Spec coverage (Phase 1 scope only):** Schema-as-entity ✓ (Task 3); object-store-backed
 versioned body + thin DB registry + lineage ✓ (Tasks 3,4,7); `columns_cache` derived from
 Pandera body ✓ (Task 2,7); server-side validation primitive ✓ (Task 2, consumed by records in
-Phase 2); additive Alembic tables beside v1 ✓ (Task 4); isolated `/api/v2` module ✓ (Task 8).
-Out-of-phase items (records, LanceDB, annotation, queue, migrator, retirements) are explicitly
-deferred to Phases 2–6 below — not gaps.
+Phase 2); additive Alembic tables beside v1 ✓ (Task 4); isolated `/api/v2` module with
+per-workspace authorization mirroring v1 `DatasetPolicy` ✓ (Task 8). Out-of-phase items
+(records, LanceDB, annotation, queue, migrator, retirements) are explicitly deferred to
+Phases 2–6 below — not gaps.
+
+**Review findings addressed (roborev job 52):** HIGH missing authorization → `SchemaPolicy` +
+`authorize()` on every route, `workspace_id` made required on list (Task 8). MEDIUM Pandera
+metadata round-trip → dedicated test + version floor + documented fallback (Tasks 1,2). MEDIUM
+numpy-typed coerced values → native-type JSON round-trip + tests (Task 2). LOW PUT merge
+semantics → `replace_dict=True` (Task 7). LOW shared mutable defaults → `default=dict` /
+`factory.LazyFunction(list)` (Tasks 3,5).
 
 **Placeholder scan:** none — every code/test step contains full content; the only deferred
 value is the Alembic `revision`/`down_revision` header, which Alembic generates in Task 4 Step 1.
