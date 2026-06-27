@@ -1,0 +1,226 @@
+# Schema-Centric Data Model — Design Spec
+
+**Date:** 2026-06-27
+**Status:** Approved design (server data model + API; SDK/frontend follow)
+**Author:** brainstorming session (Jonny + Claude)
+
+## 1. Problem
+
+Extralit inherited Argilla's general-purpose-yet-static model. A dataset's "schema"
+is only an implicit bag of `Field` rows; records store extracted data as a flat
+`records.fields` JSON blob with **no formal binding to a schema or its version**. The
+Pandera `DataFrameSchema` that actually describes the extraction shape lives only in
+the SDK and as JSON files in workspace object storage — the server never validates
+against it. Search runs on an Elasticsearch/OpenSearch abstraction.
+
+We want the **data record to be a first-class citizen that maps to a group of columns
+defined by a user-defined, versioned Schema**, building toward a **project-level
+extraction table that every record maps toward**. Annotation (Questions / Responses /
+Suggestions) becomes a thin per-cell review layer on top of schema columns, not a
+parallel primitive. LanceDB (with native schema evolution + vector/FTS indexes)
+replaces Elasticsearch.
+
+## 2. Fixed constraints (decided)
+
+1. **Pivot depth — Schema-first, annotation as a thin layer.** Schema + its columns
+   are *the* core model. Questions / Responses / Suggestions are an optional per-cell
+   review/validation layer. Records are LLM-generated, so span / ranking / rating
+   surfaces and distribution/overlap remain important for human-in-the-loop.
+2. **Schema home — object-store body + thin DB registry pointer.** The Pandera
+   `DataFrameSchema` body lives in object storage with its native versioning
+   (`etag` / `version_id` / `last_modified`). A DB registry row carries schema
+   identity + version pointer + lineage. (Object store vs DB source-of-truth dynamics
+   stay flexible while LanceDB↔annotation↔schema dynamics settle.)
+3. **Delivery — parallel v2, migrated gradually.** New schema-centric tables/endpoints
+   are built alongside v1 using Alembic. Datasets migrate over gradually; **v1 is then
+   deleted — back-compat is explicitly NOT a goal** (keep v1 only as a migration source
+   and where a piece is independently useful).
+4. **First target — server data model + API.** Fix Schema-as-entity and the
+   `Record → schema_version` binding first. SDK and frontend follow.
+
+## 3. Core model decisions (from interview)
+
+- **Postgres is the source of truth** for record cell-values; **LanceDB is a derived
+  index** (rebuildable from Postgres), replacing ES entirely.
+- **Cell storage = structured JSONB + schema FK.** `record.fields` stays a JSONB map
+  keyed by column name, gains a formal `schema_version_id` FK, and is **validated
+  server-side against the Pandera schema on write**. No per-schema DDL churn.
+- **Schema ↔ Dataset is 1:1, collapsed into one primitive.** The `schema` row *is* the
+  extraction table. UI calls it a "Dataset"; the model calls it `Schema`. This removes
+  a redundant entity. (If schema-reuse-across-datasets is needed later, split into two
+  FK-linked rows then.)
+- **A Record pins its own `schema_version_id`.** The Dataset/Schema carries a
+  `current_version_id` pointer that advances; older records keep the shape they were
+  extracted under. The backing LanceDB table evolves to the column **superset** via
+  Lance schema evolution.
+- **`reference` (the document) is the cross-schema join key.** A document's full
+  "project-level extraction" = the union of its records across every schema that share
+  the `reference` (one document-level/singleton row + N table rows per schema).
+- **Question is the review-config primitive**, reframed as a binding to schema
+  **column(s)**: one column normally, **multiple columns when `type=table`** (a
+  sub-table). Suggestion/Response hang off a Question, which resolves to cell(s).
+- **The Queue is the first-class UI citizen**, not the Dataset. It is a **persisted**
+  entity: ordered walk over `reference`s, cross-Dataset scope, distribution/overlap and
+  assignment for human-in-the-loop on LLM output.
+
+## 4. Architecture (Approach A — isolated v2 module)
+
+New isolated module set sharing only `workspaces`, `users`, `documents`, and
+auth/security with v1:
+
+- `models/v2/` — SQLAlchemy models for the tables in §5.
+- `contexts/v2/` — business logic (schemas, records, validation, index sync, queues).
+- `api/v2/` — FastAPI routers mounted at `/api/v2`.
+- `index/` (new) — LanceDB index engine + sync; replaces `search_engine/`.
+
+Three stores, clear roles:
+
+- **Postgres** — source of truth: registry, record cell-values, annotation, queue.
+- **Object store (S3/MinIO)** — Pandera `DataFrameSchema` bodies, versioned via native
+  `version_id`/`etag` (reuse `contexts/files.py`).
+- **LanceDB** — one table per schema, derived from Postgres; owns vector + full-text +
+  scalar filtering. The `search_engine/` ES/OpenSearch stack is **deleted, not
+  reimplemented behind the old ABC.**
+
+## 5. Relational schema (new v2 tables, additive Alembic)
+
+Distinct/`v2_`-prefixed names during the parallel phase; renamed to canonical names on
+v1 retirement.
+
+| Table | Purpose | Key columns |
+|---|---|---|
+| `schema` | **Core entity** = extraction table (≙ "Dataset" in UI). Registry pointer to the Pandera body. | `id`, `workspace_id`→workspaces, `name`, `kind` (`singleton`\|`table`), `status` (`draft`\|`published`), `current_version_id`→schema_version (nullable until first publish), `settings` JSONB (guidelines, etc.), `inserted_at`, `updated_at`; uniq(`workspace_id`,`name`) |
+| `schema_version` | Immutable version → object-store body + lineage + denormalized column cache. | `id`, `schema_id`, `version`, `object_key`, `object_version_id`, `etag`, `checksum`, `parent_version_id` (lineage, nullable), `columns_cache` JSONB (per-column name/dtype/nullable/review-widget, derived from the S3 body for fast validation + UI), `created_by`→users, `inserted_at`; uniq(`schema_id`,`version`) |
+| `record` | One typed row; pins its version; carries the cross-schema join key. | `id`, `schema_id`, `schema_version_id` (pinned), `reference` (indexed), `external_id` (nullable), `fields` JSONB (cells keyed by column), `metadata` JSONB, `status` (`pending`\|`completed`\|`discarded`), `inserted_at`, `updated_at`; idx(`schema_id`,`reference`), idx(`reference`); uniq(`schema_id`,`external_id`) |
+| `question` | Review config bound to column(s): 1 normally, N if `type=table`. | `id`, `schema_id`, `name`, `title`, `description`, `type` (`text`\|`label`\|`multi_label`\|`rating`\|`ranking`\|`span`\|`table`), `columns` JSONB (bound column names), `settings` JSONB, `required`, `inserted_at`, `updated_at`; uniq(`schema_id`,`name`) |
+| `suggestion` | LLM output per (record, question). | `id`, `record_id`, `question_id`, `value` JSONB, `score` JSONB (float \| float[]), `agent`, `type`, `inserted_at`, `updated_at`; uniq(`record_id`,`question_id`) |
+| `response` | Human review per (record, user); `values` keyed by question/column → resolves to cells; multiple users per record = overlap. | `id`, `record_id`, `user_id`, `values` JSONB, `status` (`draft`\|`submitted`\|`discarded`), `inserted_at`, `updated_at`; uniq(`record_id`,`user_id`) |
+| `queue` | First-class review surface; spans schemas; owns distribution. | `id`, `workspace_id`, `name`, `scope` JSONB (schema ids + filters), `ordering` JSONB, `distribution` JSONB (annotators/reference, completion rule), `status`, `inserted_at`, `updated_at` |
+| `queue_item` | One **reference** (document) to review, ordered. | `id`, `queue_id`, `reference`, `position`, `status` (`pending`\|`in_progress`\|`completed`); uniq(`queue_id`,`reference`) |
+| `queue_assignment` | Distribution/overlap: who reviews which reference. | `id`, `queue_item_id`, `user_id`, `status`, `inserted_at`; uniq(`queue_item_id`,`user_id`) |
+
+**Reused as-is:** `workspaces`, `users`, `documents` (`documents.reference`/`pmid`/`doi`
+become the queue join key).
+**Dropped vs v1:** `vectors` + `vectors_settings` (LanceDB owns vectors inline);
+`fields` + `metadata_properties` as standalone entities (folded into the Pandera
+schema body + `columns_cache`).
+
+## 6. Storage, indexing & validation flow
+
+**Schema publish.** Client/SDK uploads a Pandera `DataFrameSchema` body → object store
+(versioned). Server creates a `schema_version` row capturing `object_key` +
+`object_version_id` + `etag` + `checksum`, derives `columns_cache` from the body, links
+`parent_version_id`, and advances `schema.current_version_id`. The schema's LanceDB
+table is created or **evolved** to the new column superset.
+
+**Record write (bulk upsert).** Resolve the record's `schema_version_id` (default =
+`current_version_id`). Validate `fields` against that version's Pandera schema
+(coerce + check) using `columns_cache` (fall back to fetching the S3 body when needed).
+Persist to Postgres (truth). Then **sync** the row into the schema's LanceDB table
+(record_id, reference, schema_version_id, status, column values, embeddings, metadata).
+
+**Index engine.** New `index/` package: a LanceDB engine exposing `upsert_records`,
+`delete_records`, `search` (scalar filter + FTS), `similarity_search` (vector), and
+`rebuild(schema_id)`. Postgres is authoritative; the Lance table is always rebuildable.
+Sync is inline on commit for the first cut (job-queue offload is a later optimization).
+
+**Reference grouping.** `GET /api/v2/references/{reference}` returns all records across
+every schema in the workspace sharing that `reference` — the document's project-level
+extraction view that the Queue UI renders.
+
+## 7. API surface (`/api/v2`)
+
+- **Schemas (= Datasets):** `POST /schemas`, `GET /schemas`, `GET /schemas/{id}`,
+  `PUT /schemas/{id}`, `DELETE /schemas/{id}`; `GET /schemas/{id}/columns`.
+- **Schema versions:** `POST /schemas/{id}/versions` (register body + evolve Lance
+  table), `GET /schemas/{id}/versions`, `GET /schemas/{id}/versions/{version}`.
+- **Records:** `POST /schemas/{id}/records:bulk-upsert`, `GET /schemas/{id}/records`
+  (filter/paginate), `DELETE /schemas/{id}/records`,
+  `POST /schemas/{id}/records:search` (LanceDB: text / vector / scalar filter).
+- **References:** `GET /references/{reference}` (cross-schema document view).
+- **Questions:** `POST|GET|PUT|DELETE /schemas/{id}/questions`.
+- **Annotation:** `PUT /records/{id}/suggestions`, `PUT /records/{id}/responses`.
+- **Queues:** `POST|GET|PUT|DELETE /queues`; `GET /queues/{id}/next` (next reference
+  for current user per distribution); `POST /queues/{id}/items` (build/refresh from
+  scope); `GET /queues/{id}/progress`; assignment endpoints.
+
+## 8. Migration (v1 → v2, gradual)
+
+A per-dataset migrator: for each v1 `Dataset` → synthesize a Pandera `DataFrameSchema`
+from its `Field` rows, upload as the first `schema_version`, create the `schema` row;
+copy `records` (`fields` JSON → v2 `record.fields`, derive `reference` from the
+document link / `external_id` / metadata); copy `questions` (map to column bindings),
+`responses`, `suggestions`; build the LanceDB table. Idempotent and re-runnable per
+dataset. Once a workspace's datasets are migrated and verified, delete the
+corresponding v1 rows/handlers.
+
+## 9. Retirement ledger (lean-up; v1 back-compat not a goal)
+
+### Server (`extralit-server`)
+
+**Delete (replaced by LanceDB / schema-centric model):**
+- `search_engine/elasticsearch.py`, `search_engine/opensearch.py`,
+  `search_engine/commons.py` (`BaseElasticAndOpenSearchEngine` + ES DSL builders),
+  ES-coupled methods in `search_engine/base.py`.
+- `cli/search_engine/reindex.py`, `cli/search_engine/__main__.py` (ES reindex CLI).
+- `models` `Vector` + `VectorSettings`; `api/handlers/v1/vectors_settings.py`;
+  `contexts/records_bulk.py::_upsert_records_vectors`.
+
+**Fold into schema/record v2 (then drop v1 handler):**
+- `api/handlers/v1/fields.py`, `metadata_properties.py` → schema `columns_cache`.
+- `api/handlers/v1/questions.py`, `suggestions.py`, `responses.py` → thin v2 annotation.
+- `contexts/datasets.py` (674 LOC) → split into `contexts/v2/{schemas,records,
+  annotation,index}.py`.
+- `contexts/distribution.py` → fold into queue distribution logic.
+
+**Audit / likely peripheral (decide per use case):** `api/handlers/v1/chat.py`
+(RAG → rewrite on LanceDB or externalize), `models.py` proxy, `webhooks/` +
+`webhook_jobs.py`, `imports.py`/`contexts/imports.py`, `contexts/hub.py`.
+**Keep:** auth/security, `workspaces`, `users`, `documents`, `files.py` (object store),
+`alembic/`, `validators/`, `utils/`, `errors/`.
+
+### Frontend (`extralit-frontend`) — later phase, recorded now
+
+**High (architectural):** `components/features/dataset-creation/*` (creation wizard +
+question/field builders), `pages/dataset/[id]/*` routing, `pages/index.vue` (dataset
+list home), `pages/new/*`; `v1/domain/entities/{dataset,record,page}`;
+`v1/infrastructure/repositories/{DatasetRepository,RecordRepository}.ts`;
+the criteria chain (`SortCriteria`, `MetadataCriteria`, `SimilarityCriteria`,
+`ResponseCriteria`, `SearchTextCriteria`).
+**Medium (Argilla annotation widgets → schema-driven forms):**
+`components/features/annotation/container/questions/form/*`
+(span, rating, ranking, single/multi-label, text-area), `header/filters/*`,
+`header/responses-filter/*`, `container/similarity/*`, `progress/*`,
+`v1/domain/entities/distribution`.
+**Low (naming/branding/test debt):** `*FeedbackTask*` naming, `e2e/` Argilla baselines,
+"dataset"-heavy translation keys, `nuxt.config.ts` argilla doc link.
+*(Replaced by: a Queue-first navigation, a schema editor, and schema-driven cell
+forms — designed in the frontend phase.)*
+
+## 10. Testing strategy
+
+- **Unit:** Pandera validation (coerce/reject), `columns_cache` derivation, version
+  lineage, reference grouping, queue distribution/assignment selection.
+- **Contexts (async pytest):** schema publish + version evolution, record bulk-upsert
+  with validation, annotation upsert resolving to cells.
+- **Index:** LanceDB engine against an ephemeral table — upsert/search/similarity/
+  rebuild; schema-evolution to superset; Postgres↔Lance parity after `rebuild`.
+- **API:** `/api/v2` happy-path + validation-failure + authz per router.
+- **Migration:** v1 fixture dataset → v2; record/annotation parity; idempotent re-run.
+
+## 11. Scope boundary (this build)
+
+**In:** v2 Alembic tables (§5); `models/v2` + `contexts/v2` + `api/v2`; Pandera
+server-side validation; LanceDB `index/` engine + inline sync + rebuild; reference
+grouping; persisted Queue with distribution; v1→v2 migrator; server-side retirements
+in §9 that are unblocked by the above.
+**Out (later phases):** SDK threading; frontend Queue UI + schema editor + frontend
+retirements; job-queue offload of index sync; RAG/chat rewrite.
+
+## 12. Open items to resolve during planning
+
+- Exact `version` format (monotonic int vs semver) and whether a draft version can be
+  edited in place before publish.
+- `reference` derivation rules during migration when no `documents` link exists.
+- Whether `response.values` stays keyed-by-question (v1-style) or moves per-question
+  rows — current design keeps the v1-style keyed map for minimal churn.
