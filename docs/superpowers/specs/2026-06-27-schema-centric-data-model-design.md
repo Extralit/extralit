@@ -224,3 +224,21 @@ retirements; job-queue offload of index sync; RAG/chat rewrite.
 - `reference` derivation rules during migration when no `documents` link exists.
 - Whether `response.values` stays keyed-by-question (v1-style) or moves per-question
   rows — current design keeps the v1-style keyed map for minimal churn.
+
+## 13. Resolved during Phase 1 implementation
+
+- **Review-widget storage — side map, not Pandera body metadata (RESOLVED 2026-06-27).**
+  The installed Pandera (0.32.0, with pandas 3.0.1) does **not** preserve per-`Column.metadata`
+  through `DataFrameSchema.to_json()` / `from_json()` — the metadata is silently dropped. Per the
+  Phase-1 plan's documented fallback, the per-column review widget is therefore **not** stored
+  inside the Pandera body. Instead it is carried in a side map `review_widgets: dict[str, dict]`
+  (column name → widget config): accepted on `SchemaVersionCreate`, persisted as a
+  `schema_versions.review_widgets` JSONB column, and merged into each column's `review` entry by
+  `derive_columns_cache(body_json, review_widgets=...)`. The Pandera body remains the source of
+  truth for column name/dtype/nullable; `review_widgets` is an out-of-band annotation overlay.
+- **Single-row record validation tolerates nulls in nullable numpy-int columns (RESOLVED
+  2026-06-27).** `pa.Int` maps to numpy `int64`, which cannot hold `None`; coercing a null in a
+  nullable Int column to `int64` fails. `validate_record_fields` therefore separates null-valued
+  fields out, raises only when a null lands in a non-nullable column, validates+coerces the
+  remaining non-null fields against a reduced sub-schema, and re-attaches nulls as `None` in the
+  returned mapping.
