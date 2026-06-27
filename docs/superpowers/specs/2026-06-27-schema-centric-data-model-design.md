@@ -241,4 +241,23 @@ retirements; job-queue offload of index sync; RAG/chat rewrite.
   nullable Int column to `int64` fails. `validate_record_fields` therefore separates null-valued
   fields out, raises only when a null lands in a non-nullable column, validates+coerces the
   remaining non-null fields against a reduced sub-schema, and re-attaches nulls as `None` in the
-  returned mapping.
+  returned mapping. It also rejects a required (non-nullable) column that is entirely omitted
+  from `fields` (a `missing` error), and converts coerced values to native JSON types without a
+  lossy `DataFrame.to_json` round-trip (numpy scalars via `.item()`, Timestamps as ISO strings)
+  so high-precision floats and datetimes survive into `record.fields`.
+
+### Review findings — accepted/deferred (roborev jobs 55–61)
+
+- **`put_object` now propagates the S3 `VersionId` (FIXED).** `contexts/files.py::put_object`
+  previously dropped `VersionId`, so `schema_versions.object_version_id` was always NULL on
+  versioned buckets; it now mirrors `get_object`.
+- **Concurrent same-schema publish race (ACCEPTED for Phase 1, Low).** `publish_version` computes
+  `max(version)+1` in Python; two simultaneous publishes can collide on the `(schema_id, version)`
+  unique constraint (uncaught → 500) and orphan an uploaded object. Same-schema concurrency is
+  rare; inline sync is already slated for job-queue offload later, where this is hardened.
+- **Fetch-then-authorize existence signal (ACCEPTED, Low).** v2 read/write handlers return 404 for
+  a missing id and 403 for an existing-but-unauthorized one, mirroring the v1 pattern. IDs are
+  UUIDs; the disclosure surface is negligible and kept consistent with v1.
+- **Models + their migration live in adjacent commits (NOTED).** The roborev per-commit review of
+  the models commit flagged the absence of the table migration in that same commit; the migration
+  lands in the immediately following commit, and the branch is internally consistent and green.

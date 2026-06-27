@@ -65,3 +65,25 @@ def test_validate_record_fields_raises_on_type_error():
         validate_record_fields(_body(), {"name": "Ada", "age": "not-a-number"})
     assert isinstance(exc.value.errors, list)
     assert len(exc.value.errors) >= 1
+
+
+def test_validate_record_fields_preserves_high_precision_float():
+    body = pa.DataFrameSchema(columns={"ratio": pa.Column(pa.Float, nullable=False)}).to_json()
+    coerced = validate_record_fields(body, {"ratio": 1.123456789012345})
+    # The lossy to_json detour truncated to 10 decimals; native conversion must not.
+    assert coerced["ratio"] == 1.123456789012345
+    json.dumps(coerced)
+
+
+def test_validate_record_fields_serializes_datetime_as_iso_string():
+    body = pa.DataFrameSchema(columns={"observed_at": pa.Column("datetime64[ns]", nullable=False)}).to_json()
+    coerced = validate_record_fields(body, {"observed_at": "2024-01-02T03:04:05"})
+    assert coerced["observed_at"].startswith("2024-01-02T03:04:05")
+    json.dumps(coerced)  # ISO string is JSON-serializable (epoch-int default would also be, but wrong)
+
+
+def test_validate_record_fields_rejects_missing_required_column():
+    # `name` is non-nullable; omitting it entirely (not just null) must be rejected.
+    with pytest.raises(SchemaValidationError) as exc:
+        validate_record_fields(_body(), {"age": 5})
+    assert any(e["check"] == "missing" and e["column"] == "name" for e in exc.value.errors)

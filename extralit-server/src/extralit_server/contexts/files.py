@@ -317,6 +317,9 @@ async def put_object(
             size=head_response["ContentLength"],
             last_modified=head_response["LastModified"],
             content_type=head_response.get("ContentType", content_type),
+            # Propagate the S3 object version (mirrors get_object) so callers can pin the
+            # immutable version; otherwise schema_versions.object_version_id is always NULL.
+            version_id=head_response.get("VersionId"),
             metadata=head_response.get("Metadata", {}),
         )
 

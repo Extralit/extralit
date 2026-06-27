@@ -54,6 +54,8 @@ async def test_publish_version_uploads_body_and_advances_pointer(db, monkeypatch
     assert isinstance(version, SchemaVersion)
     assert version.version == 1
     assert version.object_key == f"schemas/{schema.id}/v1.json"
+    # The S3 object version returned by put_object is pinned on the row.
+    assert version.object_version_id == "ver-1"
     assert any(c["name"] == "name" for c in version.columns_cache)
 
     refreshed = await Schema.get(db, schema.id)

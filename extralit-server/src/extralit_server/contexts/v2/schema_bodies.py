@@ -13,7 +13,6 @@ Two installed-version realities shape this module (see spec §13):
   the non-null fields and re-attaches nulls as ``None``.
 """
 
-import json
 import math
 from typing import Any
 
@@ -82,6 +81,12 @@ def validate_record_fields(body_json: str, fields: dict[str, Any]) -> dict[str, 
         else:
             non_null[name] = value
 
+    # A required (non-nullable) column entirely omitted from `fields` is a violation too —
+    # not just one explicitly set to null.
+    for name, column in schema.columns.items():
+        if not column.nullable and name not in fields:
+            errors.append({"column": name, "check": "missing", "error": "required column missing"})
+
     coerced: dict[str, Any] = {}
     present_columns = {name: col for name, col in schema.columns.items() if name in non_null}
     if present_columns:
@@ -99,9 +104,8 @@ def validate_record_fields(body_json: str, fields: dict[str, Any]) -> dict[str, 
                     }
                 )
             raise SchemaValidationError(errors) from exc
-        # Round-trip through pandas JSON so numpy scalars (int64/bool_/float64) become native
-        # python types — required for the record.fields JSONB column in Phase 2.
-        coerced = _records_from_frame(validated)
+        # Convert numpy scalars to native python types for the record.fields JSONB column.
+        coerced = _row_to_native(validated)
 
     if errors:
         raise SchemaValidationError(errors)
@@ -111,5 +115,23 @@ def validate_record_fields(body_json: str, fields: dict[str, Any]) -> dict[str, 
     return {**coerced, **extras, **null_fields}
 
 
-def _records_from_frame(frame: pd.DataFrame) -> dict[str, Any]:
-    return json.loads(frame.iloc[[0]].to_json(orient="records"))[0]
+def _row_to_native(frame: pd.DataFrame) -> dict[str, Any]:
+    """Convert the single validated row to native, JSON-serializable python types.
+
+    Avoids the lossy ``DataFrame.to_json`` detour, which truncates floats to 10 decimal
+    places and serializes datetimes as deprecated epoch integers. numpy scalars become
+    native python via ``.item()`` (exact for floats), Timestamps become ISO strings, and
+    NaN/NaT become ``None``.
+    """
+    row = frame.iloc[0]
+    out: dict[str, Any] = {}
+    for col, value in row.items():
+        if pd.isna(value):
+            out[col] = None
+        elif isinstance(value, pd.Timestamp):
+            out[col] = value.isoformat()
+        elif hasattr(value, "item"):
+            out[col] = value.item()
+        else:
+            out[col] = value
+    return out
