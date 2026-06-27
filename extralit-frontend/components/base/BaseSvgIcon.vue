@@ -47,9 +47,7 @@ const svg = computed(() => {
 
   // Strip the intrinsic width/height off the root <svg> so ours win (viewBox
   // keeps the aspect ratio), then inject the requested dimensions.
-  markup = markup
-    .replace(/(<svg\b[^>]*?)\swidth="[^"]*"/i, "$1")
-    .replace(/(<svg\b[^>]*?)\sheight="[^"]*"/i, "$1");
+  markup = markup.replace(/(<svg\b[^>]*?)\swidth="[^"]*"/i, "$1").replace(/(<svg\b[^>]*?)\sheight="[^"]*"/i, "$1");
   const sized: string[] = [];
   if (width) sized.push(`width="${width}"`);
   if (height) sized.push(`height="${height}"`);

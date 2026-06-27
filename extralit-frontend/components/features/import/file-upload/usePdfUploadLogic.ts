@@ -270,7 +270,7 @@ export const usePdfUploadLogic = (
       const hasValidBibNow = newBibEntries && newBibEntries.data && newBibEntries.data.length > 0;
 
       if (hasValidBibNow && hadNoBibBefore && data.value.totalFiles > 0) {
-        const allFiles = [...data.value.matchedFiles.map(mf => mf.file), ...data.value.unmatchedFiles];
+        const allFiles = [...data.value.matchedFiles.map((mf) => mf.file), ...data.value.unmatchedFiles];
         performFileMatching(allFiles);
         emitUpdate();
       }

@@ -1,12 +1,10 @@
-
-
 <template>
   <div>
     <Home>
       <template v-slot:header>
         <AppHeader
           class="home__header"
-          :breadcrumbs="breadcrumbs.map(b => ({ ...b, name: b.name === 'Home' ? $t('breadcrumbs.home') : b.name }))"
+          :breadcrumbs="breadcrumbs.map((b) => ({ ...b, name: b.name === 'Home' ? $t('breadcrumbs.home') : b.name }))"
           @breadcrumb-action="onBreadcrumbAction"
         />
         <PersistentStorageBanner class="home__banner" />
@@ -31,11 +29,7 @@
             <div v-if="!selectedWorkspace" class="home__no-workspace">
               <p>Please select a workspace to view documents.</p>
             </div>
-            <DocumentsList
-              v-else
-              :workspace-id="selectedWorkspace.id"
-              :key="selectedWorkspace.id"
-            />
+            <DocumentsList v-else :workspace-id="selectedWorkspace.id" :key="selectedWorkspace.id" />
           </template>
         </div>
       </template>
@@ -133,10 +127,10 @@ export default {
   data() {
     return {
       showImportDatasetInput: false,
-      activeTab: { id: 'datasets', name: this.$t('home.datasets') },
+      activeTab: { id: "datasets", name: this.$t("home.datasets") },
       tabs: [
-        { id: 'datasets', name: this.$t('home.datasets') },
-        { id: 'documents', name: this.$t('home.documents') },
+        { id: "datasets", name: this.$t("home.datasets") },
+        { id: "documents", name: this.$t("home.documents") },
       ],
       // Import details modal state
       isImportDetailsModalVisible: false,
@@ -159,7 +153,7 @@ export default {
     },
 
     onTabChange(tabId) {
-      const selectedTab = this.tabs.find(tab => tab.id === tabId);
+      const selectedTab = this.tabs.find((tab) => tab.id === tabId);
       if (selectedTab) {
         this.activeTab = selectedTab;
       }
@@ -177,7 +171,7 @@ export default {
     },
     handleRetryItem(item) {
       // Handle retry item functionality if needed
-      console.log('Retry item:', item);
+      console.log("Retry item:", item);
     },
   },
   components: {
@@ -192,8 +186,8 @@ export default {
         if (!this.selectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
           this.setSelectedWorkspace(newWorkspaces[0]);
         }
-      }
-    }
+      },
+    },
   },
 
   setup() {

@@ -1,36 +1,38 @@
 <template>
   <div class="responses-filter" v-if="questionFilters.hasFilters">
     <BaseDropdown boundary="viewport" :visible="visibleDropdown" @visibility="onToggleVisibility">
-      <template #dropdown-header><span>
-        <FilterButtonWithBadges
-          :is-active="visibleDropdown"
-          :badges="appliedCategoriesFilters"
-          :active-badge="selectedResponse"
-          @click-on-badge="openResponseFilter"
-          @click-on-clear="clearResponseFilter"
-          @click-on-clear-all="clearAllResponseFilter"
-          :name="$t('responses')"
-        />
-      </span></template>
-      <template #dropdown-content><span class="responses-filter__container">
-        <CategoriesSelector
-          v-if="!selectedResponse"
-          name="responsesCategories"
-          class="responses-filter__categories"
-          :categories="questionFilters.responses"
-          @select-category="selectResponse"
-        />
-        <template v-else>
-          <div class="responses-filter__header" @click="selectResponse(null)">
-            <span v-text="selectedResponse.name" />
-            <svgicon name="chevron-left" width="12" height="12" aria-hidden="true" />
-          </div>
-          <div class="responses-filter__content">
-            <LabelsSelector v-if="selectedResponse.isTerms" :filter="selectedResponse.options" />
-            <RangeSelector v-else :filter="selectedResponse.rangeValue" />
-          </div>
-        </template>
-      </span></template>
+      <template #dropdown-header
+        ><span>
+          <FilterButtonWithBadges
+            :is-active="visibleDropdown"
+            :badges="appliedCategoriesFilters"
+            :active-badge="selectedResponse"
+            @click-on-badge="openResponseFilter"
+            @click-on-clear="clearResponseFilter"
+            @click-on-clear-all="clearAllResponseFilter"
+            :name="$t('responses')"
+          /> </span
+      ></template>
+      <template #dropdown-content
+        ><span class="responses-filter__container">
+          <CategoriesSelector
+            v-if="!selectedResponse"
+            name="responsesCategories"
+            class="responses-filter__categories"
+            :categories="questionFilters.responses"
+            @select-category="selectResponse"
+          />
+          <template v-else>
+            <div class="responses-filter__header" @click="selectResponse(null)">
+              <span v-text="selectedResponse.name" />
+              <svgicon name="chevron-left" width="12" height="12" aria-hidden="true" />
+            </div>
+            <div class="responses-filter__content">
+              <LabelsSelector v-if="selectedResponse.isTerms" :filter="selectedResponse.options" />
+              <RangeSelector v-else :filter="selectedResponse.rangeValue" />
+            </div>
+          </template> </span
+      ></template>
     </BaseDropdown>
   </div>
 </template>

@@ -104,9 +104,7 @@ test.describe("Dataset setting page", () => {
 
         await page.getByRole("button", { name: "Questions" }).click();
 
-        await page
-          .locator("#title-045c18d5-57b6-408a-8db3-bc11b9f54541")
-          .fill("Changed");
+        await page.locator("#title-045c18d5-57b6-408a-8db3-bc11b9f54541").fill("Changed");
 
         await expect(page).toHaveScreenshot();
       });
@@ -116,23 +114,17 @@ test.describe("Dataset setting page", () => {
 
         await page.getByRole("button", { name: "Questions" }).click();
 
-        await page
-          .locator("#title-045c18d5-57b6-408a-8db3-bc11b9f54541")
-          .fill("");
+        await page.locator("#title-045c18d5-57b6-408a-8db3-bc11b9f54541").fill("");
 
         await expect(page).toHaveScreenshot();
       });
 
-      test("show error when the title is bigger than 200 characters", async ({
-        page,
-      }) => {
+      test("show error when the title is bigger than 200 characters", async ({ page }) => {
         await goToDatasetSettingPage(page);
 
         await page.getByRole("button", { name: "Questions" }).click();
 
-        await page
-          .locator("#title-045c18d5-57b6-408a-8db3-bc11b9f54541")
-          .fill(Array(201).fill("X").join(""));
+        await page.locator("#title-045c18d5-57b6-408a-8db3-bc11b9f54541").fill(Array(201).fill("X").join(""));
 
         await expect(page).toHaveScreenshot();
       });
@@ -142,23 +134,17 @@ test.describe("Dataset setting page", () => {
 
         await page.getByRole("button", { name: "Questions" }).click();
 
-        await page
-          .locator("#description-045c18d5-57b6-408a-8db3-bc11b9f54541")
-          .fill("Changed description");
+        await page.locator("#description-045c18d5-57b6-408a-8db3-bc11b9f54541").fill("Changed description");
 
         await expect(page).toHaveScreenshot();
       });
 
-      test("show error when the description is bigger than 500 characters", async ({
-        page,
-      }) => {
+      test("show error when the description is bigger than 500 characters", async ({ page }) => {
         await goToDatasetSettingPage(page);
 
         await page.getByRole("button", { name: "Questions" }).click();
 
-        await page
-          .locator("#description-045c18d5-57b6-408a-8db3-bc11b9f54541")
-          .fill(Array(501).fill("X").join(""));
+        await page.locator("#description-045c18d5-57b6-408a-8db3-bc11b9f54541").fill(Array(501).fill("X").join(""));
 
         await expect(page).toHaveScreenshot();
       });
@@ -185,9 +171,7 @@ test.describe("Dataset setting page", () => {
 
         await page.getByRole("button", { name: "Questions" }).click();
 
-        await page
-          .locator("#title-7a642861-5c68-418e-8e9f-3fb95d837b86")
-          .fill("Changed");
+        await page.locator("#title-7a642861-5c68-418e-8e9f-3fb95d837b86").fill("Changed");
 
         await expect(page).toHaveScreenshot();
       });
@@ -197,9 +181,7 @@ test.describe("Dataset setting page", () => {
 
         await page.getByRole("button", { name: "Questions" }).click();
 
-        await page
-          .locator("#description-7a642861-5c68-418e-8e9f-3fb95d837b86")
-          .fill("Changed description");
+        await page.locator("#description-7a642861-5c68-418e-8e9f-3fb95d837b86").fill("Changed description");
 
         await expect(page).toHaveScreenshot();
       });
@@ -211,17 +193,14 @@ test.describe("Dataset setting page", () => {
 
         await page.waitForTimeout(200);
 
-        await page
-          .locator("#contentId")
-          .fill('```js\nconsole.log("Hi 👋")\n```');
+        await page.locator("#contentId").fill('```js\nconsole.log("Hi 👋")\n```');
 
         await expect(page).toHaveScreenshot();
 
         await page
           .locator("form")
           .filter({
-            hasText:
-              "review-review text Title Description Use Markdown Cancel Update",
+            hasText: "review-review text Title Description Use Markdown Cancel Update",
           })
           .getByRole("button")
           .first()

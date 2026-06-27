@@ -69,7 +69,7 @@ export class DatasetRepository implements IDatasetRepository {
     }
   }
 
-  async import(datasetId: DatasetId, creation: DatasetCreation): Promise<JobId> {
+  async importDataset(datasetId: DatasetId, creation: DatasetCreation): Promise<JobId> {
     try {
       // Check if this is an ImportHistory-based dataset
       if (creation.importHistoryId) {

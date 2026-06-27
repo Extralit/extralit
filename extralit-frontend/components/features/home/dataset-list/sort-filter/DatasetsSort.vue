@@ -1,18 +1,19 @@
 <template>
   <div class="sort-filter">
     <BaseDropdown :visible="visibleDropdown" @visibility="onSortToggleVisibility">
-      <template #dropdown-header><span>
-        <DatasetsSortButton :is-active="visibleDropdown" />
-      </span></template>
-      <template #dropdown-content><span class="sort-filter__container">
-        <DatasetsSortSelectorItem
-          :selected-option="sortedByField"
-          :selected-direction="sortedOrder"
-          :options="sortOptions"
-          @change-sort-direction="$emit('on-change-direction', $event)"
-          @change-sort-field="$emit('on-change-field', $event)"
-        />
-      </span></template>
+      <template #dropdown-header
+        ><span> <DatasetsSortButton :is-active="visibleDropdown" /> </span
+      ></template>
+      <template #dropdown-content
+        ><span class="sort-filter__container">
+          <DatasetsSortSelectorItem
+            :selected-option="sortedByField"
+            :selected-direction="sortedOrder"
+            :options="sortOptions"
+            @change-sort-direction="$emit('on-change-direction', $event)"
+            @change-sort-field="$emit('on-change-field', $event)"
+          /> </span
+      ></template>
     </BaseDropdown>
   </div>
 </template>

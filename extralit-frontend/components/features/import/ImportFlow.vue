@@ -1,29 +1,71 @@
 <template>
-  <BaseFlowModal :visible="isVisible" :title="$t('import.title', { workspaceName: workspace?.name })" :steps="steps"
-    :current-step="currentStep" :can-go-back="canGoBack" :can-go-next="canGoNext" :can-complete="canComplete"
-    :loading="isProcessing" :step-data="stepData" :confirm-close="shouldConfirmClose" :submit-step-index="1"
-    @step-change="handleStepChange" @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose"
-    @cancel="handleCancel">
+  <BaseFlowModal
+    :visible="isVisible"
+    :title="$t('import.title', { workspaceName: workspace?.name })"
+    :steps="steps"
+    :current-step="currentStep"
+    :can-go-back="canGoBack"
+    :can-go-next="canGoNext"
+    :can-complete="canComplete"
+    :loading="isProcessing"
+    :step-data="stepData"
+    :confirm-close="shouldConfirmClose"
+    :submit-step-index="1"
+    @step-change="handleStepChange"
+    @validate-step="handleValidateStep"
+    @complete="handleComplete"
+    @close="handleClose"
+    @cancel="handleCancel"
+  >
     <template #default="{ currentStep: stepIndex }">
       <!-- Step 1: PDF First, then Optional Table Upload -->
-      <ImportFileUpload v-if="stepIndex === 0" ref="fileUploadComponent" :initial-bib-data="bibData"
-        :initial-pdf-data="pdfData" @bib-update="handleBibUpdate" @pdf-update="handlePdfUpdate" />
+      <ImportFileUpload
+        v-if="stepIndex === 0"
+        ref="fileUploadComponent"
+        :initial-bib-data="bibData"
+        :initial-pdf-data="pdfData"
+        @bib-update="handleBibUpdate"
+        @pdf-update="handlePdfUpdate"
+      />
 
       <!-- Step 2: Import Analysis -->
-      <ImportAnalysisTable v-if="stepIndex === 1" ref="analysisTableComponent" :dataframe-data="bibData.dataframeData"
-        :pdf-data="pdfData" :workspace="workspace" :loading="isAnalyzing" @update="handleAnalysisUpdate"
-        @analysis-complete="handleAnalysisComplete" />
+      <ImportAnalysisTable
+        v-if="stepIndex === 1"
+        ref="analysisTableComponent"
+        :dataframe-data="bibData.dataframeData"
+        :pdf-data="pdfData"
+        :workspace="workspace"
+        :loading="isAnalyzing"
+        @update="handleAnalysisUpdate"
+        @analysis-complete="handleAnalysisComplete"
+      />
 
       <!-- Step 3: Upload Progress -->
-      <ImportBatchProgress v-if="stepIndex === 2" ref="batchProgressComponent" :upload-data="uploadData"
-        :workspace="workspace" :dataframe-data="bibData.dataframeData" :bib-file-name="bibData.fileName"
-        :pdf-files="getAllPdfFiles()" @completed="handleUploadCompleted" @cancelled="handleUploadCancelled"
-        @error="handleUploadError" @progress="handleUploadProgress" />
+      <ImportBatchProgress
+        v-if="stepIndex === 2"
+        ref="batchProgressComponent"
+        :upload-data="uploadData"
+        :workspace="workspace"
+        :dataframe-data="bibData.dataframeData"
+        :bib-file-name="bibData.fileName"
+        :pdf-files="getAllPdfFiles()"
+        @completed="handleUploadCompleted"
+        @cancelled="handleUploadCancelled"
+        @error="handleUploadError"
+        @progress="handleUploadProgress"
+      />
 
       <!-- Step 4: Import Summary -->
-      <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :import-summary="importSummary"
-        :workspace="workspace" :bibFileName="bibData.fileName" :failed-documents="failedDocuments"
-        @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
+      <ImportSummary
+        v-if="stepIndex === 3"
+        ref="summaryComponent"
+        :import-summary="importSummary"
+        :workspace="workspace"
+        :bibFileName="bibData.fileName"
+        :failed-documents="failedDocuments"
+        @return-to-library="handleReturnToLibrary"
+        @view-import-history="handleViewImportHistory"
+      />
     </template>
   </BaseFlowModal>
 </template>
@@ -128,12 +170,7 @@ export default {
     canGoNext() {
       switch (this.currentStep) {
         case 0:
-          return (
-            this.pdfData &&
-            this.pdfData.totalFiles > 0 &&
-            !this.hasError &&
-            !!this.workspace
-          );
+          return this.pdfData && this.pdfData.totalFiles > 0 && !this.hasError && !!this.workspace;
         case 1:
           return Object.keys(this.uploadData.confirmedDocuments).length > 0 && !this.hasError && !!this.workspace;
         case 2:
@@ -194,11 +231,7 @@ export default {
 
       switch (step) {
         case 0:
-          isValid =
-            this.pdfData &&
-            this.pdfData.totalFiles > 0 &&
-            !this.hasError &&
-            !!this.workspace;
+          isValid = this.pdfData && this.pdfData.totalFiles > 0 && !this.hasError && !!this.workspace;
           break;
 
         case 1:
@@ -364,7 +397,6 @@ export default {
 
     retryCurrentStep() {
       this.clearError();
-
     },
 
     handleClose() {
@@ -444,7 +476,6 @@ export default {
       });
     },
 
-
     initializeUploadData() {
       // Initialize upload tracking data
       this.uploadData.totalBatches = Math.ceil(Object.keys(this.uploadData.confirmedDocuments).length / 20);
@@ -459,7 +490,7 @@ export default {
 
       // Add matched files
       if (this.pdfData.matchedFiles) {
-        this.pdfData.matchedFiles.forEach(matchedFile => {
+        this.pdfData.matchedFiles.forEach((matchedFile) => {
           if (matchedFile.file) {
             files.push(matchedFile.file);
           }
@@ -468,7 +499,7 @@ export default {
 
       // Add unmatched files
       if (this.pdfData.unmatchedFiles) {
-        this.pdfData.unmatchedFiles.forEach(unmatchedFile => {
+        this.pdfData.unmatchedFiles.forEach((unmatchedFile) => {
           // Unmatched files are stored directly as File objects
           if (unmatchedFile instanceof File) {
             files.push(unmatchedFile);

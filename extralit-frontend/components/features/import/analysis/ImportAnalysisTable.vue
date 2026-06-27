@@ -3,7 +3,7 @@
     <!-- Loading state -->
     <div v-if="loading || isAnalyzing" class="loading-state">
       <BaseSpinner />
-      <p>{{ isAnalyzing ? 'Analyzing import status...' : 'Loading...' }}</p>
+      <p>{{ isAnalyzing ? "Analyzing import status..." : "Loading..." }}</p>
     </div>
 
     <!-- Error state -->
@@ -12,9 +12,7 @@
       <div class="error-content">
         <h4>Analysis Failed</h4>
         <p>{{ errorMessage }}</p>
-        <BaseButton variant="outline" @click="retryAnalysis">
-          Retry Analysis
-        </BaseButton>
+        <BaseButton variant="outline" @click="retryAnalysis"> Retry Analysis </BaseButton>
       </div>
     </div>
 
@@ -83,13 +81,9 @@ import type {
   ImportAnalysisResponse,
   ImportStatus,
   DocumentImportAnalysis,
-} from '~/v1/domain/entities/import/ImportAnalysis';
-import {
-  type AnalysisTableRow,
-  type TableColumn,
-  type CellComponent,
-} from '../types';
-import { useImportAnalysisTableViewModel } from './useImportAnalysisTableViewModel';
+} from "~/v1/domain/entities/import/ImportAnalysis";
+import { type AnalysisTableRow, type TableColumn, type CellComponent } from "../types";
+import { useImportAnalysisTableViewModel } from "./useImportAnalysisTableViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 import { TableData } from "~/v1/domain/entities/table/TableData";
 
@@ -152,8 +146,8 @@ export default {
 
         // Get analysis info if available
         const analysisInfo = this.analysisResult?.documents?.[reference];
-        const currentStatus = documentActions[reference] || analysisInfo?.status || 'add';
-        const originalStatus = analysisInfo?.status || 'add';
+        const currentStatus = documentActions[reference] || analysisInfo?.status || "add";
+        const originalStatus = analysisInfo?.status || "add";
         const validationErrors = analysisInfo?.validation_errors || [];
 
         // Use pre-processed file paths from ImportFileUpload.vue
@@ -173,8 +167,8 @@ export default {
           canToggle: this.canToggleStatus(originalStatus) && !this.isAnalyzing,
         };
 
-        Object.keys(row).forEach(key => {
-          if (!['reference', 'title', 'authors', 'author', 'year', 'filePaths'].includes(key)) {
+        Object.keys(row).forEach((key) => {
+          if (!["reference", "title", "authors", "author", "year", "filePaths"].includes(key)) {
             rowData[key] = row[key];
           }
         });
@@ -184,17 +178,17 @@ export default {
     },
 
     tableData(): AnalysisTableRow[] {
-      const filteredData = this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0);
+      const filteredData = this.allTableData.filter((row) => row.filePaths && row.filePaths.length > 0);
 
       return filteredData;
     },
 
     referencesWithoutPdfsCount(): number {
-      return this.allTableData.filter(row => !row.filePaths || row.filePaths.length === 0).length;
+      return this.allTableData.filter((row) => !row.filePaths || row.filePaths.length === 0).length;
     },
 
     referencesWithPdfsCount(): number {
-      return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0).length;
+      return this.allTableData.filter((row) => row.filePaths && row.filePaths.length > 0).length;
     },
 
     filteredDataframeData(): TableData | null {
@@ -244,9 +238,9 @@ export default {
 
       // Add dynamic columns from dataframe schema
       if (this.dataframeData?.schema?.fields) {
-        const excludedFields = ['reference', 'title', 'authors', 'author', 'year', 'filePaths', 'type'];
+        const excludedFields = ["reference", "title", "authors", "author", "year", "filePaths", "type"];
 
-        this.dataframeData.schema.fields.forEach(field => {
+        this.dataframeData.schema.fields.forEach((field) => {
           if (!excludedFields.includes(field.name)) {
             columns.push({
               field: field.name,
@@ -277,12 +271,12 @@ export default {
           headerFilterParams: {
             values: {
               "": "All",
-              "add": "Add",
-              "update": "Update",
-              "skip": "Skip",
-              "ignore": "Ignore",
-              "failed": "Failed"
-            }
+              add: "Add",
+              update: "Update",
+              skip: "Skip",
+              ignore: "Ignore",
+              failed: "Failed",
+            },
           },
         }
       );
@@ -324,7 +318,7 @@ export default {
         // Count from dataframe data - only include references with PDFs
         this.dataframeData.data.forEach((row: Record<string, any>) => {
           const reference = row.reference || row.key;
-          const finalAction = documentActions[reference] || 'add';
+          const finalAction = documentActions[reference] || "add";
           const filePaths = row.filePaths || [];
           const hasFiles = filePaths.length > 0;
 
@@ -347,8 +341,7 @@ export default {
     },
 
     shouldShowEditableTable() {
-      return (!this.dataframeData || this.dataframeData.data.length === 0)
-        && this.allPdfFileNames.length > 0;
+      return (!this.dataframeData || this.dataframeData.data.length === 0) && this.allPdfFileNames.length > 0;
     },
 
     allPdfFileNames() {
@@ -360,8 +353,7 @@ export default {
     unmappedPdfFiles() {
       const assigned = new Set<string>();
       this.editableTableData.forEach((row: any) => {
-        (Array.isArray(row.files) ? row.files : row.files ? [row.files] : [])
-          .forEach((f: string) => assigned.add(f));
+        (Array.isArray(row.files) ? row.files : row.files ? [row.files] : []).forEach((f: string) => assigned.add(f));
       });
       return (this.allPdfFileNames as string[]).filter((n: string) => !assigned.has(n));
     },
@@ -406,8 +398,8 @@ export default {
             const current = cell.getValue() || [];
             const currentSet = new Set(Array.isArray(current) ? current : [current]);
             const values = [...allFiles]
-              .filter(f => !usedFiles.has(f) || currentSet.has(f))
-              .map(f => ({ label: f, value: f }));
+              .filter((f) => !usedFiles.has(f) || currentSet.has(f))
+              .map((f) => ({ label: f, value: f }));
             return {
               values,
               multiselect: true,
@@ -423,8 +415,11 @@ export default {
             }
             const files = Array.isArray(value) ? value : [value];
             const [first, ...rest] = files;
-            const suffix = rest.length > 0 ? ` <span style="color:var(--fg-secondary);white-space:nowrap">+${rest.length}</span>` : '';
-            return `<span title="${files.join(', ')}" style="display:flex;align-items:center;gap:4px;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${first}</span>${suffix}</span>`;
+            const suffix =
+              rest.length > 0
+                ? ` <span style="color:var(--fg-secondary);white-space:nowrap">+${rest.length}</span>`
+                : "";
+            return `<span title="${files.join(", ")}" style="display:flex;align-items:center;gap:4px;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${first}</span>${suffix}</span>`;
           },
         },
       ];
@@ -447,7 +442,7 @@ export default {
           // Reset local document actions when new analysis data arrives
           this.localDocumentActions = {};
           // Emit the analysis complete event
-          this.$emit('analysis-complete', newData);
+          this.$emit("analysis-complete", newData);
           // Emit initial update
           this.emitUpdate();
         }
@@ -479,7 +474,7 @@ export default {
         return `<span class="files-cell no-files">${files}</span>`;
       }
       const fileCount = files.split(", ").filter((f: string) => f.trim().length > 0).length;
-      return `<span class="files-cell" title="${files}">${fileCount} file${fileCount !== 1 ? 's' : ''}</span>`;
+      return `<span class="files-cell" title="${files}">${fileCount} file${fileCount !== 1 ? "s" : ""}</span>`;
     },
 
     statusFormatter(cell: CellComponent) {
@@ -489,10 +484,10 @@ export default {
 
       const statusClass = `status-${status}`;
       const statusText = this.getStatusText(status);
-      const toggleIcon = canToggle ? '<span class="status-toggle">▼</span>' : '';
+      const toggleIcon = canToggle ? '<span class="status-toggle">▼</span>' : "";
 
       return `
-        <div class="status-cell ${statusClass} ${canToggle ? 'clickable' : ''}">
+        <div class="status-cell ${statusClass} ${canToggle ? "clickable" : ""}">
           <span class="status-indicator"></span>
           <span class="status-text">${statusText}</span>
           ${toggleIcon}
@@ -521,7 +516,7 @@ export default {
         update: "Update",
         skip: "Skip",
         ignore: "Ignore",
-        failed: "Failed"
+        failed: "Failed",
       };
       return statusMap[status] || status;
     },
@@ -564,8 +559,8 @@ export default {
     formatColumnTitle(fieldName: string) {
       // Convert field names to readable titles
       return fieldName
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, str => str.toUpperCase())
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (str) => str.toUpperCase())
         .trim();
     },
 
@@ -577,7 +572,7 @@ export default {
       if (this.shouldShowEditableTable) {
         this.editableTableData.forEach((row: any) => {
           const reference = row.reference?.trim();
-          const filesArray = Array.isArray(row.files) ? row.files : (row.files ? [row.files] : []);
+          const filesArray = Array.isArray(row.files) ? row.files : row.files ? [row.files] : [];
           if (!reference || filesArray.length === 0) return;
           confirmedDocuments[reference] = {
             document_create: {
@@ -599,39 +594,45 @@ export default {
             })),
           };
         });
-      // Handle analysis data case (preferred)
-      } else if (this.analysisResult && this.analysisResult.documents && Object.keys(this.analysisResult.documents).length > 0) {
-        Object.entries(this.analysisResult.documents).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
-          const finalAction = documentActions[reference] || docInfo.status;
-          const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
+        // Handle analysis data case (preferred)
+      } else if (
+        this.analysisResult &&
+        this.analysisResult.documents &&
+        Object.keys(this.analysisResult.documents).length > 0
+      ) {
+        Object.entries(this.analysisResult.documents).forEach(
+          ([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+            const finalAction = documentActions[reference] || docInfo.status;
+            const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
 
-          // Only include references with PDFs
-          if (!hasFiles) {
-            return;
+            // Only include references with PDFs
+            if (!hasFiles) {
+              return;
+            }
+
+            // Only include documents that will be processed (add or update)
+            if (finalAction === "add" || finalAction === "update") {
+              // Ensure metadata is included in document_create
+              const documentCreate = {
+                ...docInfo.document_create,
+                metadata: {
+                  source: "bib_import",
+                  collections: [this.workspace?.name || "default"],
+                  ...docInfo.document_create.metadata,
+                },
+              };
+
+              confirmedDocuments[reference] = {
+                document_create: documentCreate,
+                associated_files: docInfo.associated_files || [],
+              };
+            }
           }
-
-          // Only include documents that will be processed (add or update)
-          if (finalAction === "add" || finalAction === "update") {
-            // Ensure metadata is included in document_create
-            const documentCreate = {
-              ...docInfo.document_create,
-              metadata: {
-                source: "bib_import",
-                collections: [this.workspace?.name || "default"],
-                ...docInfo.document_create.metadata,
-              },
-            };
-
-            confirmedDocuments[reference] = {
-              document_create: documentCreate,
-              associated_files: docInfo.associated_files || [],
-            };
-          }
-        });
+        );
       } else if (this.dataframeData && this.dataframeData.data.length > 0) {
         this.dataframeData.data.forEach((row: Record<string, any>) => {
           const reference = row.reference || row.key || `row_${Math.random()}`;
-          const finalAction = documentActions[reference] || 'add';
+          const finalAction = documentActions[reference] || "add";
           const filePaths = row.filePaths || [];
           const hasFiles = filePaths.length > 0;
 
@@ -646,7 +647,7 @@ export default {
               document_create: {
                 reference,
                 title: row.title,
-                authors: Array.isArray(row.authors) ? row.authors : (row.authors ? [row.authors] : undefined),
+                authors: Array.isArray(row.authors) ? row.authors : row.authors ? [row.authors] : undefined,
                 year: row.year ? String(row.year) : undefined,
                 journal: row.journal,
                 volume: row.volume,
@@ -654,7 +655,7 @@ export default {
                 doi: row.doi,
                 url: row.url,
                 abstract: row.abstract,
-                keywords: Array.isArray(row.keywords) ? row.keywords : (row.keywords ? [row.keywords] : undefined),
+                keywords: Array.isArray(row.keywords) ? row.keywords : row.keywords ? [row.keywords] : undefined,
                 pmid: row.pmid,
                 workspace_id: this.workspace?.id,
                 metadata: {
@@ -664,7 +665,7 @@ export default {
               },
               associated_files: filePaths.map((filename: string) => ({
                 filename,
-                size: this.getFileSize(filename) || 0
+                size: this.getFileSize(filename) || 0,
               })),
             };
           }
@@ -706,17 +707,18 @@ export default {
 
     initializeEditableTable() {
       const pdfFiles = this.allPdfFileNames as string[];
-      this.editableTableData = pdfFiles.length > 0
-        ? pdfFiles.map((filename: string) => ({
-            reference: null,
-            title: null,
-            files: [filename],
-          }))
-        : Array.from({ length: 3 }, () => ({
-            reference: null,
-            title: null,
-            files: [],
-          }));
+      this.editableTableData =
+        pdfFiles.length > 0
+          ? pdfFiles.map((filename: string) => ({
+              reference: null,
+              title: null,
+              files: [filename],
+            }))
+          : Array.from({ length: 3 }, () => ({
+              reference: null,
+              title: null,
+              files: [],
+            }));
       this.emitUpdate();
     },
 
@@ -779,9 +781,9 @@ export default {
               { name: "abstract", type: "string" },
               { name: "file", type: "string" },
             ],
-            primaryKey: ["reference"]
+            primaryKey: ["reference"],
           },
-          data: dataRows
+          data: dataRows,
         };
       }
 

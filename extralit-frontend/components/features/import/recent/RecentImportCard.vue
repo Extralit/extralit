@@ -1,5 +1,3 @@
-
-
 <template>
   <BaseButton class="recent-import-card" @click="$emit('click')">
     <div class="recent-import-card__content">

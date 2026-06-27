@@ -17,14 +17,7 @@ const metadataFromBackend = {
       title: "model-name-title",
       settings: {
         type: "terms",
-        values: [
-          "gpt3.5-turbo-instruct",
-          "gpt4",
-          "bard",
-          "gpt3.5-turbo",
-          "claude",
-          "llama2-7B",
-        ],
+        values: ["gpt3.5-turbo-instruct", "gpt4", "bard", "gpt3.5-turbo", "claude", "llama2-7B"],
       },
     },
     {
@@ -75,14 +68,11 @@ const recordsMatchingMetadata = {
 };
 
 export const metadataPropertiesCompleted = async (page, datasetId) => {
-  await page.route(
-    `*/**/api/v1/me/datasets/${datasetId}/metadata-properties`,
-    async (route) => {
-      await route.fulfill({
-        json: metadataFromBackend,
-      });
-    }
-  );
+  await page.route(`*/**/api/v1/me/datasets/${datasetId}/metadata-properties`, async (route) => {
+    await route.fulfill({
+      json: metadataFromBackend,
+    });
+  });
 };
 
 export const mockRecordForMetadataFilter = async (page, datasetId) => {

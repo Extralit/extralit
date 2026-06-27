@@ -16,7 +16,11 @@ const enum WORKSPACES_API_ERRORS {
 }
 
 export class WorkspaceRepositoryError extends Error {
-  constructor(public readonly type: WORKSPACES_API_ERRORS, public readonly originalError: any, message?: string) {
+  constructor(
+    public readonly type: WORKSPACES_API_ERRORS,
+    public readonly originalError: any,
+    message?: string
+  ) {
     super(message || `Workspace API error: ${type}`);
     this.name = "WorkspaceRepositoryError";
   }

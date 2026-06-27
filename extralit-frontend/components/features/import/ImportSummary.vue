@@ -3,9 +3,7 @@
     <!-- Summary Header -->
     <div class="summary-header">
       <h3>Import Complete</h3>
-      <p class="summary-subtitle">
-        Your document import has been processed successfully
-      </p>
+      <p class="summary-subtitle">Your document import has been processed successfully</p>
     </div>
 
     <!-- Import Statistics -->
@@ -72,9 +70,7 @@
           <span class="section-title">Failed Imports</span>
           <span class="section-count">{{ importSummary.failed || 0 }}</span>
         </div>
-        <p class="section-description">
-          Some documents could not be imported due to errors. Review the details below.
-        </p>
+        <p class="section-description">Some documents could not be imported due to errors. Review the details below.</p>
       </div>
     </div>
 
@@ -95,12 +91,8 @@
         <p class="retry-description">
           You can retry failed imports by fixing the issues and running the import process again.
         </p>
-        <BaseButton
-          variant="outline"
-          @click="retryFailedImports"
-          :disabled="isRetrying"
-        >
-          {{ isRetrying ? 'Retrying...' : 'Retry Failed Imports' }}
+        <BaseButton variant="outline" @click="retryFailedImports" :disabled="isRetrying">
+          {{ isRetrying ? "Retrying..." : "Retry Failed Imports" }}
         </BaseButton>
       </div>
     </div>
@@ -111,15 +103,15 @@
       <div class="metadata-grid">
         <div class="metadata-item">
           <span class="metadata-label">Import ID:</span>
-          <span class="metadata-value">{{ importSummary.importId || 'N/A' }}</span>
+          <span class="metadata-value">{{ importSummary.importId || "N/A" }}</span>
         </div>
         <div class="metadata-item">
           <span class="metadata-label">Source File:</span>
-          <span class="metadata-value">{{ bibFileName || 'Unknown' }}</span>
+          <span class="metadata-value">{{ bibFileName || "Unknown" }}</span>
         </div>
         <div class="metadata-item">
           <span class="metadata-label">Workspace:</span>
-          <span class="metadata-value">{{ workspace?.name || 'Unknown' }}</span>
+          <span class="metadata-value">{{ workspace?.name || "Unknown" }}</span>
         </div>
         <div class="metadata-item">
           <span class="metadata-label">Import Date:</span>
@@ -130,20 +122,12 @@
 
     <!-- Action Buttons -->
     <div class="summary-actions">
-      <BaseButton
-        variant="outline"
-        @click="viewImportLog"
-        class="action-button"
-      >
+      <BaseButton variant="outline" @click="viewImportLog" class="action-button">
         <BaseIcon icon-name="document" />
         View Import Log
       </BaseButton>
 
-      <BaseButton
-        variant="primary"
-        @click="returnToLibrary"
-        class="action-button primary-action"
-      >
+      <BaseButton variant="primary" @click="returnToLibrary" class="action-button primary-action">
         <BaseIcon icon-name="external-link" />
         Return to Library
       </BaseButton>
@@ -152,7 +136,6 @@
 </template>
 
 <script lang="ts">
-
 import type { ImportResultSummary, TableColumn } from "./types";
 
 interface FailedImportRow {
@@ -208,11 +191,11 @@ export default {
 
     failedImportsTableData(): FailedImportRow[] {
       return this.failedDocuments.map((doc: any) => ({
-        reference: doc.reference || 'Unknown',
-        title: doc.title || 'Unknown Title',
+        reference: doc.reference || "Unknown",
+        title: doc.title || "Unknown Title",
         authors: this.formatAuthors(doc.authors),
         error: this.getErrorMessage(doc),
-        actions: 'retry', // Placeholder for action buttons
+        actions: "retry", // Placeholder for action buttons
       }));
     },
 
@@ -282,9 +265,9 @@ export default {
 
   methods: {
     formatAuthors(authors: string | string[] | undefined): string {
-      if (!authors) return 'Unknown Authors';
+      if (!authors) return "Unknown Authors";
       if (Array.isArray(authors)) {
-        return authors.slice(0, 3).join(', ') + (authors.length > 3 ? ' et al.' : '');
+        return authors.slice(0, 3).join(", ") + (authors.length > 3 ? " et al." : "");
       }
       return String(authors);
     },
@@ -296,16 +279,16 @@ export default {
       if (doc.error) {
         return doc.error;
       }
-      return 'Unknown error occurred during import';
+      return "Unknown error occurred during import";
     },
 
     formatDate(date: Date): string {
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     },
 
@@ -323,9 +306,7 @@ export default {
     },
 
     async retryIndividualImport(rowData: FailedImportRow) {
-      const failedDoc = this.failedDocuments.find(
-        (doc: any) => doc.reference === rowData.reference
-      );
+      const failedDoc = this.failedDocuments.find((doc: any) => doc.reference === rowData.reference);
       if (failedDoc) {
         this.$emit("retry-failed", [failedDoc]);
       }

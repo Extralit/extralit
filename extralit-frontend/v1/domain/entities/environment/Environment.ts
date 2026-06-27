@@ -16,7 +16,9 @@ export class Environment {
   ) {}
 
   get shouldShowHuggingfaceSpacePersistentStorageWarning(): boolean {
-    return this.extralit.showHuggingfaceSpacePersistentStorageWarning && !this.huggingface.spacePersistentStorageEnabled;
+    return (
+      this.extralit.showHuggingfaceSpacePersistentStorageWarning && !this.huggingface.spacePersistentStorageEnabled
+    );
   }
 
   get shareYourProgressEnabled() {

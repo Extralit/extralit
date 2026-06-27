@@ -76,21 +76,12 @@ export default {
       const fields = this.columns.map((col: any) => ({
         name: col.field,
         type: col.type || "string",
-        ...col // <--- THIS IS THE MAGIC FIX
+        ...col, // <--- THIS IS THE MAGIC FIX
       }));
 
-      const schema = new DataFrameSchema(
-        fields,
-        [],
-        null,
-        "simple-table"
-      );
+      const schema = new DataFrameSchema(fields, [], null, "simple-table");
 
-      const tableData = new TableData(
-        [...this.data] as any[],
-        schema,
-        null
-      );
+      const tableData = new TableData([...this.data] as any[], schema, null);
 
       // FIX 2: Handle both 'validation' and 'validators' props
       // ImportFileUpload passes :validators, so we must prioritize that.
@@ -137,9 +128,7 @@ export default {
     },
 
     validateTable(options?: { scrollToError?: boolean; saveData?: boolean }) {
-      const renderTable = this.$refs.renderTable as
-        | { validateTable?: (opts?: typeof options) => boolean }
-        | undefined;
+      const renderTable = this.$refs.renderTable as { validateTable?: (opts?: typeof options) => boolean } | undefined;
       if (renderTable?.validateTable) {
         return renderTable.validateTable(options);
       }

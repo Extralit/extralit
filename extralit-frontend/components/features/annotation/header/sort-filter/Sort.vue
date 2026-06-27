@@ -1,23 +1,24 @@
 <template>
   <div class="sort-filter">
     <BaseDropdown :visible="visibleDropdown" @visibility="onSortToggleVisibility">
-      <template #dropdown-header><span>
-        <SortButton :is-active="visibleDropdown" :active-sort-items="selectedSortingItems" />
-      </span></template>
-      <template #dropdown-content><span class="sort-filter__container">
-        <SortCategoriesList
-          v-if="!selectedSortingItems.length"
-          class="sort-filter__selector"
-          :categories="nonSelectedSortingItems"
-          @include-category="includeSortCategory"
-        />
-        <SortSelector
-          v-else
-          :sorting-items="categoriesSort"
-          @clear-category="clearSortCategory"
-          @apply-sort="applySort"
-        />
-      </span></template>
+      <template #dropdown-header
+        ><span> <SortButton :is-active="visibleDropdown" :active-sort-items="selectedSortingItems" /> </span
+      ></template>
+      <template #dropdown-content
+        ><span class="sort-filter__container">
+          <SortCategoriesList
+            v-if="!selectedSortingItems.length"
+            class="sort-filter__selector"
+            :categories="nonSelectedSortingItems"
+            @include-category="includeSortCategory"
+          />
+          <SortSelector
+            v-else
+            :sorting-items="categoriesSort"
+            @clear-category="clearSortCategory"
+            @apply-sort="applySort"
+          /> </span
+      ></template>
     </BaseDropdown>
   </div>
 </template>

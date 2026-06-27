@@ -19,7 +19,7 @@ export default {
       required: true,
     },
     tabSize: {
-      type: String as () => 'small' | 'medium' | 'large',
+      type: String as () => "small" | "medium" | "large",
       default: "small",
     },
   },

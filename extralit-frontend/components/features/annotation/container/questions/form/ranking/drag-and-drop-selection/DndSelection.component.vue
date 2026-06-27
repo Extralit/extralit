@@ -94,7 +94,6 @@
 </template>
 
 <script>
-
 export default {
   name: "DndSelectionComponent",
   props: {

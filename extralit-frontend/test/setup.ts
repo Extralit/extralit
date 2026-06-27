@@ -7,9 +7,7 @@ process.env.TZ = "UTC";
 // Ported verbatim from jest.setup.ts so spec expectations on translation keys hold.
 const translationMock = (key: string, ...params: any[]) =>
   params.length
-    ? `#${key}${params
-        .map((l) => (Object.values(l).length ? Object.values(l) : l))
-        .map((s) => `.${s}`)}#`
+    ? `#${key}${params.map((l) => (Object.values(l).length ? Object.values(l) : l)).map((s) => `.${s}`)}#`
     : `#${key}#`;
 
 vi.mock("~/v1/infrastructure/services/useTranslate", () => ({
@@ -60,7 +58,5 @@ class IntersectionObserverMock {
     return null;
   }
 }
-// @ts-expect-error happy-dom lacks IntersectionObserver
 window.IntersectionObserver = IntersectionObserverMock;
-// @ts-expect-error mirror on global
 global.IntersectionObserver = IntersectionObserverMock;

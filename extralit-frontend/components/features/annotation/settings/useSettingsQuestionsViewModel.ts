@@ -23,9 +23,8 @@ export const useSettingsQuestionsViewModel = () => {
     const text = newLabelText.value[question.id]?.trim();
     if (!text) return;
 
-    const existingOption = question.settings.options.find(option =>
-      option.value.toLowerCase() === text.toLowerCase() ||
-      option.text.toLowerCase() === text.toLowerCase()
+    const existingOption = question.settings.options.find(
+      (option) => option.value.toLowerCase() === text.toLowerCase() || option.text.toLowerCase() === text.toLowerCase()
     );
 
     if (existingOption) {
@@ -34,19 +33,17 @@ export const useSettingsQuestionsViewModel = () => {
     }
 
     question.settings.options.push({
-      value: text.toLowerCase().replace(/\s+/g, '_'),
-      text
+      value: text.toLowerCase().replace(/\s+/g, "_"),
+      text,
     });
 
-    newLabelText.value[question.id] = '';
+    newLabelText.value[question.id] = "";
 
     question.reloadAnswerFromOptions();
   };
 
   const deleteOption = (question: Question, optionToDelete: any) => {
-    const index = question.settings.options.findIndex(option =>
-      option.value === optionToDelete.value
-    );
+    const index = question.settings.options.findIndex((option) => option.value === optionToDelete.value);
 
     if (index > -1) {
       question.settings.options.splice(index, 1);

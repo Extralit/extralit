@@ -7,8 +7,12 @@
             {{ $t("datasetCreation.fields") }}
             <div v-if="dataset.subsets.length > 1" class="config-form__subset">
               {{ $t("datasetCreation.subset") }}:
-              <DatasetConfigurationSelector class="config-form__selector" :options="dataset.subsets"
-                :model-value="dataset.selectedSubset.name" @update:model-value="$emit('change-subset', $event)">
+              <DatasetConfigurationSelector
+                class="config-form__selector"
+                :options="dataset.subsets"
+                :model-value="dataset.selectedSubset.name"
+                @update:model-value="$emit('change-subset', $event)"
+              >
                 <template #optionsIntro>
                   <span class="config-form__selector__intro">{{ $t("datasetCreation.selectSubset") }}</span>
                 </template>
@@ -16,15 +20,25 @@
             </div>
           </div>
           <div class="config-form__col__content">
-            <draggable class="config-form__draggable-area" :list="dataset.selectedSubset.fields"
-              :group="{ name: 'fields' }" ghost-class="config-form__ghost" :disabled="isFocused"
-              item-key="name" tag="transition-group"
-              :component-data="{ name: 'config-form__draggable-area-wrapper', type: 'transition', css: false }">
+            <draggable
+              class="config-form__draggable-area"
+              :list="dataset.selectedSubset.fields"
+              :group="{ name: 'fields' }"
+              ghost-class="config-form__ghost"
+              :disabled="isFocused"
+              item-key="name"
+              tag="transition-group"
+              :component-data="{ name: 'config-form__draggable-area-wrapper', type: 'transition', css: false }"
+            >
               <template #item="{ element: field }">
                 <DatasetConfigurationField
                   v-if="field.name !== dataset.mappings.external_id"
-                  :field="field" :available-types="availableFieldTypes.filter((a) => a.value === 'no mapping' || a.value === field.originalType.value)
-                    " @is-focused="isFocused = $event" />
+                  :field="field"
+                  :available-types="
+                    availableFieldTypes.filter((a) => a.value === 'no mapping' || a.value === field.originalType.value)
+                  "
+                  @is-focused="isFocused = $event"
+                />
               </template>
             </draggable>
           </div>
@@ -34,8 +48,11 @@
             {{ $t("datasetCreation.metadata") }}
           </div>
           <div class="config-form__col__content config-form__col__content--metadata">
-            <DatasetConfigurationMetadataSelector :available-fields="availableMetadataFields"
-              :selected-fields="selectedMetadataFields" @onSelectionChange="updateMetadataSelection" />
+            <DatasetConfigurationMetadataSelector
+              :available-fields="availableMetadataFields"
+              :selected-fields="selectedMetadataFields"
+              @onSelectionChange="updateMetadataSelection"
+            />
           </div>
         </div>
       </div>
@@ -45,17 +62,30 @@
             {{ $t("datasetCreation.questionsTitle") }}
             <DatasetConfigurationAddQuestion
               :options="['text', 'label_selection', 'multi_label_selection', 'rating', 'ranking', 'span']"
-              @add-question="addQuestion($event)" />
+              @add-question="addQuestion($event)"
+            />
           </div>
           <div v-if="!isUpdateWorkflow" class="config-form__col__content --questions">
-            <draggable v-if="dataset.selectedSubset.questions.length" class="config-form__draggable-area"
-              ghost-class="config-form__ghost" :list="dataset.selectedSubset.questions" :group="{ name: 'questions' }"
-              :disabled="isFocused" item-key="name" tag="transition-group"
-              :component-data="{ name: 'config-form__draggable-area-wrapper', type: 'transition', css: false }">
+            <draggable
+              v-if="dataset.selectedSubset.questions.length"
+              class="config-form__draggable-area"
+              ghost-class="config-form__ghost"
+              :list="dataset.selectedSubset.questions"
+              :group="{ name: 'questions' }"
+              :disabled="isFocused"
+              item-key="name"
+              tag="transition-group"
+              :component-data="{ name: 'config-form__draggable-area-wrapper', type: 'transition', css: false }"
+            >
               <template #item="{ element: question, index }">
-                <DatasetConfigurationQuestion :selectedSubset="dataset.selectedSubset" :question="question"
-                  :remove-is-allowed="true" :available-types="availableQuestionTypes"
-                  @change-type="onTypeIsChanged(index, $event)" @is-focused="isFocused = $event" />
+                <DatasetConfigurationQuestion
+                  :selectedSubset="dataset.selectedSubset"
+                  :question="question"
+                  :remove-is-allowed="true"
+                  :available-types="availableQuestionTypes"
+                  @change-type="onTypeIsChanged(index, $event)"
+                  @is-focused="isFocused = $event"
+                />
               </template>
             </draggable>
           </div>
@@ -79,7 +109,8 @@
             :dataset="dataset"
             :is-loading="isLoading"
             @close-dialog="visibleDatasetCreationDialog = false"
-            @create-dataset="createDataset" />
+            @create-dataset="createDataset"
+          />
 
           <!-- Update Dataset Dialog -->
           <DatasetUpdateDialog
@@ -87,7 +118,8 @@
             :dataset="dataset as DatasetCreation"
             :is-loading="isLoading"
             @close-dialog="closeUpdateDialog"
-            @update-dataset="updateDataset" />
+            @update-dataset="updateDataset"
+          />
         </div>
       </div>
     </div>
@@ -139,14 +171,14 @@ export default {
     },
     // Extract field schema information from the dataset for compatibility API
     datasetFieldSchema() {
-      return this.dataset.selectedSubset.fields.map(field => ({
+      return this.dataset.selectedSubset.fields.map((field) => ({
         name: field.name,
-        type: field.originalType?.value || field.type?.value || 'string'
+        type: field.originalType?.value || field.type?.value || "string",
       }));
     },
     // Get column names for compatibility checking
     columnNames() {
-      return this.dataset.selectedSubset.fields.map(f => f.name);
+      return this.dataset.selectedSubset.fields.map((f) => f.name);
     },
   },
   methods: {
@@ -216,7 +248,9 @@ export default {
   mounted() {
     if (this.dataset.importHistoryId) {
       const defaultMetadataFields = ["reference", "doi", "pmid"];
-      const availableDefaults = this.availableMetadataFields.filter((field: string) => defaultMetadataFields.includes(field));
+      const availableDefaults = this.availableMetadataFields.filter((field: string) =>
+        defaultMetadataFields.includes(field)
+      );
       this.updateMetadataSelection(availableDefaults);
     }
   },

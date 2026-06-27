@@ -19,14 +19,12 @@ export interface SchemaTableViewModel {
   groupbyColumns: Ref<string[] | null>;
 }
 
-export const useSchemaTableViewModel = (
-  props: {
-    tableJSON: TableData,
-    editable: boolean,
-    hasValidValues: boolean,
-    questions: Question[],
-  },
-) => {
+export const useSchemaTableViewModel = (props: {
+  tableJSON: TableData;
+  editable: boolean;
+  hasValidValues: boolean;
+  questions: Question[];
+}) => {
   const getSchema = useResolve(GetExtractionSchemaUseCase);
   const { state: dataset } = useDataset();
 
@@ -34,8 +32,14 @@ export const useSchemaTableViewModel = (
   const indexColumns = ref(props.tableJSON?.schema?.primaryKey || []);
   const refColumns = ref(
     props.tableJSON?.schema?.fields
-      .map(field => field.name)
-      .filter(name => typeof name === 'string' && (name.endsWith('_ref') || (name.endsWith('_ID') && !name.toLowerCase().startsWith(props.tableJSON?.schema?.schemaName?.toLowerCase())))) || []
+      .map((field) => field.name)
+      .filter(
+        (name) =>
+          typeof name === "string" &&
+          (name.endsWith("_ref") ||
+            (name.endsWith("_ID") &&
+              !name.toLowerCase().startsWith(props.tableJSON?.schema?.schemaName?.toLowerCase())))
+      ) || []
   );
   const groupbyColumns = ref(refColumns.value || null);
 
@@ -73,5 +77,5 @@ export const useSchemaTableViewModel = (
     refColumns,
     groupbyColumns,
     fetchValidation,
-  }
-}
+  };
+};

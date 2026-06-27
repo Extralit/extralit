@@ -8,7 +8,7 @@ const DOCUMENT_API_ERRORS = {
 };
 
 export class DocumentRepository {
-  constructor(private readonly axios: AxiosInstance) { }
+  constructor(private readonly axios: AxiosInstance) {}
 
   async getDocuments(params: {
     workspace_id: string;

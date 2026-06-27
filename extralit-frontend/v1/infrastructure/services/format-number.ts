@@ -7,12 +7,9 @@ declare global {
 
 const getLocales = (): string[] => {
   if (typeof navigator === "undefined") return [];
-  return [
-    ...(navigator.languages || []),
-    navigator.language,
-    navigator.userLanguage,
-    navigator.systemLanguage,
-  ].filter(Boolean) as string[];
+  return [...(navigator.languages || []), navigator.language, navigator.userLanguage, navigator.systemLanguage].filter(
+    Boolean
+  ) as string[];
 };
 
 /** Locale-grouped integer formatting (replaces the `formatNumber` Vue filter). */

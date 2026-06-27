@@ -1,25 +1,23 @@
 <template>
   <div class="datasets-filter" v-if="workspaces.length">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
-      <template #dropdown-header><span
-        ><WorkspacesFilterButton
-          :is-active="visibleDropdown || !!localSelectedWorkspace"
-          :selected-workspace="localSelectedWorkspace"
-        /></span></template>
-      <template #dropdown-content><span class="datasets-filter__container">
-        <div class="datasets-filter__content">
-          <WorkspaceSelector
-            :workspaces="workspaces"
-            v-model="localSelectedWorkspace"
-          />
-        </div>
-      </span></template>
+      <template #dropdown-header
+        ><span
+          ><WorkspacesFilterButton
+            :is-active="visibleDropdown || !!localSelectedWorkspace"
+            :selected-workspace="localSelectedWorkspace" /></span
+      ></template>
+      <template #dropdown-content
+        ><span class="datasets-filter__container">
+          <div class="datasets-filter__content">
+            <WorkspaceSelector :workspaces="workspaces" v-model="localSelectedWorkspace" />
+          </div> </span
+      ></template>
     </BaseDropdown>
   </div>
 </template>
 
 <script lang="ts">
-
 export default {
   props: {
     workspaces: {
@@ -51,8 +49,8 @@ export default {
         if (!this.localSelectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
           this.localSelectedWorkspace = newWorkspaces[0].name;
         }
-      }
-    }
+      },
+    },
   },
   methods: {
     onToggleVisibility(value) {

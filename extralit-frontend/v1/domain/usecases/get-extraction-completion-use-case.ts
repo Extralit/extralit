@@ -8,9 +8,7 @@ const LLM_EXTRACTION_API_ERRORS = {
 };
 
 export class GetLLMExtractionUseCase {
-  constructor(
-    private readonly axios: AxiosInstance,
-  ) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async getExtractionCompletion(
     reference: string,
@@ -21,20 +19,26 @@ export class GetLLMExtractionUseCase {
     columns?: Array<string>,
     headers?: Array<string>,
     types?: Array<string>,
-    prompt?: string,
+    prompt?: string
   ): Promise<BackendExtractionResponse> {
     try {
-      const json = this.createRequest(reference, schema_name, selectedRowData, extractions, columns, headers, types, prompt);
+      const json = this.createRequest(
+        reference,
+        schema_name,
+        selectedRowData,
+        extractions,
+        columns,
+        headers,
+        types,
+        prompt
+      );
       const params = { workspace: workspaceName };
 
-      const { data } = await this.axios.post<TableData>(
-        `/v1/models/extraction`, json, { params: params }
-      );
+      const { data } = await this.axios.post<TableData>(`/v1/models/extraction`, json, { params: params });
 
       return data;
-
     } catch (error) {
-      console.log('error', error)
+      console.log("error", error);
       let errorMessage = error.message;
       if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;
@@ -48,8 +52,8 @@ export class GetLLMExtractionUseCase {
 
       throw {
         response: LLM_EXTRACTION_API_ERRORS.ERROR_FETCHING_LLM_EXTRACTION,
-        message: errorMessage
-      }
+        message: errorMessage,
+      };
     }
   }
 
@@ -63,19 +67,16 @@ export class GetLLMExtractionUseCase {
     types?: Array<string>,
     prompt?: string
   ): BackendExtractionRequest {
-
-    var extractions: Record<string, Data> = {}
+    var extractions: Record<string, Data> = {};
 
     if (referenceValues) {
       extractions = Object.fromEntries(
-        Object.entries(referenceValues).map(([schema_ref_field, dataframe]: [string, Record<string, Data>]) =>
-          [
-            schema_ref_field.replace('_ref', ''),
-            Object.entries(dataframe)
-              .filter(([key, data]) => selectedRowData.some((row) => row[schema_ref_field] === key))
-              .map(([key, data]) => ({ reference: key, ...data }))
-          ]
-        )
+        Object.entries(referenceValues).map(([schema_ref_field, dataframe]: [string, Record<string, Data>]) => [
+          schema_ref_field.replace("_ref", ""),
+          Object.entries(dataframe)
+            .filter(([key, data]) => selectedRowData.some((row) => row[schema_ref_field] === key))
+            .map(([key, data]) => ({ reference: key, ...data })),
+        ])
       );
     }
 
@@ -83,7 +84,7 @@ export class GetLLMExtractionUseCase {
 
     if (prompt) {
       prompt = prompt.trim();
-      if (prompt === '') {
+      if (prompt === "") {
         prompt = null;
       }
     }
@@ -98,5 +99,4 @@ export class GetLLMExtractionUseCase {
       prompt,
     };
   }
-
 }

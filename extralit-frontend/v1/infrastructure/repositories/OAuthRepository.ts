@@ -18,7 +18,10 @@ interface BackendOAuthProvider {
 
 export class OAuthRepository implements IOAuthRepository {
   private readonly axios: AxiosInstance;
-  constructor(axios: PublicAxiosInstance, private readonly router: RouterService) {
+  constructor(
+    axios: PublicAxiosInstance,
+    private readonly router: RouterService
+  ) {
     this.axios = axios.makePublic();
   }
 

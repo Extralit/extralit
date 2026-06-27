@@ -8,7 +8,7 @@ export interface GetImportCompatibleDatasetsParams {
 }
 
 export class GetImportCompatibleDatasetsUseCase {
-  constructor(private readonly axios: AxiosInstance) { }
+  constructor(private readonly axios: AxiosInstance) {}
 
   async execute(params: GetImportCompatibleDatasetsParams): Promise<BackendDataset[]> {
     try {
@@ -17,7 +17,7 @@ export class GetImportCompatibleDatasetsUseCase {
         workspace_id: params.workspaceId,
       });
 
-      return data.items || []
+      return data.items || [];
     } catch (error) {
       throw new Error("Failed to fetch compatible datasets");
     }

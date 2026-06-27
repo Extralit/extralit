@@ -115,7 +115,6 @@
 </template>
 
 <script lang="ts">
-
 import { useDocumentsListViewModel } from "./useDocumentsListViewModel";
 
 export default {

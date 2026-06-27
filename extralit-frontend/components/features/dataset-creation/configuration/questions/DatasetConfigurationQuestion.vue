@@ -88,7 +88,7 @@ export default {
         // Rename the question in the subset - this will replace the question object
         this.selectedSubset.renameQuestion(this.question.name, newName);
       } catch (error) {
-        console.error('Failed to rename question:', error.message);
+        console.error("Failed to rename question:", error.message);
         // You could show a user-friendly error message here
       }
     },

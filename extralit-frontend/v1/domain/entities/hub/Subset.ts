@@ -23,7 +23,10 @@ export class Subset {
   private readonly splits: any[];
   public selectedSplit: any;
 
-  constructor(public readonly name: string, datasetInfo: any) {
+  constructor(
+    public readonly name: string,
+    datasetInfo: any
+  ) {
     this.splits = Object.entries(datasetInfo.splits).map(([name, value]) => {
       return {
         name,

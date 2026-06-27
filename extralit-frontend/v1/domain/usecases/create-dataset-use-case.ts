@@ -45,7 +45,7 @@ export class CreateDatasetUseCase {
 
       await this.datasetRepository.publish(datasetCreated);
 
-      await this.datasetRepository.import(datasetCreated, dataset);
+      await this.datasetRepository.importDataset(datasetCreated, dataset);
 
       let retries = 0;
       const debounce = Debounce.from(3000);

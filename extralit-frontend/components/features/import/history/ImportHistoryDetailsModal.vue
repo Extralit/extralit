@@ -6,15 +6,11 @@
         <div class="header-info">
           <h3>Import Details</h3>
           <p class="details-subtitle">
-            {{ importId ? `Import ID: ${importId}` : 'Unknown Import' }}
+            {{ importId ? `Import ID: ${importId}` : "Unknown Import" }}
           </p>
         </div>
         <div class="header-actions">
-          <BaseButton
-            variant="outline"
-            @click="close"
-            class="close-btn"
-          >
+          <BaseButton variant="outline" @click="close" class="close-btn">
             <BaseIcon icon-name="close" />
             Close
           </BaseButton>
@@ -33,9 +29,7 @@
       <BaseIcon icon-name="danger" class="error-icon" />
       <h4>Failed to Load Import Details</h4>
       <p>{{ error }}</p>
-      <BaseButton variant="outline" @click="loadDetails">
-        Retry
-      </BaseButton>
+      <BaseButton variant="outline" @click="loadDetails"> Retry </BaseButton>
     </div>
 
     <!-- Main Content -->
@@ -60,7 +54,6 @@
 </template>
 
 <script lang="ts">
-
 import { useResolve } from "ts-injecty";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 import { GetImportHistoryDetailsUseCase } from "~/v1/domain/usecases/get-import-history-details-use-case";
@@ -124,8 +117,8 @@ export default {
         // Convert raw data to ImportHistoryDetails instance
         this.importHistoryDetails = new ImportHistoryDetails(result);
       } catch (error: any) {
-        console.error('Error loading import details:', error);
-        this.error = error.message || 'Failed to load import details';
+        console.error("Error loading import details:", error);
+        this.error = error.message || "Failed to load import details";
       } finally {
         this.isLoading = false;
       }
@@ -133,12 +126,12 @@ export default {
 
     handleRowSelected(rowData: any) {
       // Handle row selection if needed
-      console.log('Row selected:', rowData);
+      console.log("Row selected:", rowData);
     },
 
     handleFieldSelected(fieldData: any) {
       // Handle field selection if needed
-      console.log('Field selected:', fieldData);
+      console.log("Field selected:", fieldData);
     },
 
     close() {

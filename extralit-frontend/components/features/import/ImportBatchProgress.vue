@@ -5,9 +5,7 @@
       <!-- Overall progress header -->
       <div class="progress-header">
         <h3>Importing Documents</h3>
-        <p class="progress-subtitle">
-          Processing {{ totalReferences }} references in {{ totalBatches }} batches
-        </p>
+        <p class="progress-subtitle">Processing {{ totalReferences }} references in {{ totalBatches }} batches</p>
       </div>
 
       <!-- Overall progress bar -->
@@ -76,7 +74,7 @@
       <!-- Cancel button -->
       <div class="upload-actions">
         <BaseButton variant="outline" @click="cancelUpload" :disabled="isCancelling">
-          {{ isCancelling ? 'Cancelling...' : 'Cancel Upload' }}
+          {{ isCancelling ? "Cancelling..." : "Cancel Upload" }}
         </BaseButton>
       </div>
     </div>
@@ -139,9 +137,7 @@
       </div>
 
       <div class="error-actions">
-        <BaseButton variant="outline" @click="retryUpload">
-          Retry Upload
-        </BaseButton>
+        <BaseButton variant="outline" @click="retryUpload"> Retry Upload </BaseButton>
       </div>
     </div>
 
@@ -158,7 +154,6 @@
 <script lang="ts">
 import type { ImportUploadData } from "./types";
 import { useImportBatchProgressViewModel } from "./useImportBatchProgressViewModel";
-
 
 export default {
   name: "ImportBatchProgress",

@@ -59,9 +59,7 @@ test.describe("Annotate page", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("hide spark icon when user change suggested answer", async ({
-    page,
-  }) => {
+  test("hide spark icon when user change suggested answer", async ({ page }) => {
     await goToAnnotationPage(page);
 
     await page.getByText("Very Positive").first().click();
@@ -69,9 +67,7 @@ test.describe("Annotate page", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("show spark icon when user change suggested answer and go back to default", async ({
-    page,
-  }) => {
+  test("show spark icon when user change suggested answer and go back to default", async ({ page }) => {
     await goToAnnotationPage(page);
 
     await page.getByText("Positive").first().click();
@@ -79,9 +75,7 @@ test.describe("Annotate page", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("disable submit when user no complete required answer", async ({
-    page,
-  }) => {
+  test("disable submit when user no complete required answer", async ({ page }) => {
     await goToAnnotationPage(page);
 
     await page.getByText("Positive").nth(1).click();
@@ -89,14 +83,10 @@ test.describe("Annotate page", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("disable submit when user complete partially ranking question", async ({
-    page,
-  }) => {
+  test("disable submit when user complete partially ranking question", async ({ page }) => {
     await goToAnnotationPage(page);
 
-    await page
-      .getByTitle("Option A")
-      .dragTo(page.locator(".draggable__questions-container"));
+    await page.getByTitle("Option A").dragTo(page.locator(".draggable__questions-container"));
 
     await expect(page).toHaveScreenshot();
   });
@@ -150,9 +140,7 @@ test.describe("Annotate page", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("focus on first question when click on form (where there is no in question)", async ({
-    page,
-  }) => {
+  test("focus on first question when click on form (where there is no in question)", async ({ page }) => {
     await goToAnnotationPage(page);
     const formBox = await page.getByText("Submit your feedback").boundingBox();
 
@@ -165,9 +153,7 @@ test.describe("Annotate page", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("focus on question clicked when user click outside of form and click in a question again", async ({
-    page,
-  }) => {
+  test("focus on question clicked when user click outside of form and click in a question again", async ({ page }) => {
     await goToAnnotationPage(page);
     const formBox = await page.getByText("Submit your feedback").boundingBox();
 
@@ -183,13 +169,9 @@ test.describe("Annotate page", () => {
 
 test.describe("Annotation page shortcuts", () => {
   test.describe("Global shortcuts", () => {
-    test("when focus is not in form, press Tab to focus on first question", async ({
-      page,
-    }) => {
+    test("when focus is not in form, press Tab to focus on first question", async ({ page }) => {
       await goToAnnotationPageWith12Ranking(page);
-      const formBox = await page
-        .getByText("Submit your feedback")
-        .boundingBox();
+      const formBox = await page.getByText("Submit your feedback").boundingBox();
 
       await page.mouse.click(formBox.x - 25, formBox.y - 25); // click outside form to loose focus
       await expect(page).toHaveScreenshot();
@@ -198,9 +180,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
     test.describe("Pagination", () => {
-      test("on first record, go to next record by pressing Ctrl+ArrowRight", async ({
-        page,
-      }) => {
+      test("on first record, go to next record by pressing Ctrl+ArrowRight", async ({ page }) => {
         await goToAnnotationPageWith12Ranking(page);
         await expect(page).toHaveScreenshot();
 
@@ -209,9 +189,7 @@ test.describe("Annotation page shortcuts", () => {
 
         await expect(page).toHaveScreenshot();
       });
-      test("on first record, can't go to prev record by pressing Ctrl+ArrowLeft", async ({
-        page,
-      }) => {
+      test("on first record, can't go to prev record by pressing Ctrl+ArrowLeft", async ({ page }) => {
         await goToAnnotationPageWith12Ranking(page);
         await expect(page).toHaveScreenshot();
 
@@ -220,9 +198,7 @@ test.describe("Annotation page shortcuts", () => {
 
         await expect(page).toHaveScreenshot();
       });
-      test("on last record, can't go to next record by pressing Ctrl+ArrowRight", async ({
-        page,
-      }) => {
+      test("on last record, can't go to next record by pressing Ctrl+ArrowRight", async ({ page }) => {
         await goToAnnotationPageWith12Ranking(page);
         await expect(page).toHaveScreenshot();
 
@@ -234,9 +210,7 @@ test.describe("Annotation page shortcuts", () => {
         await page.waitForTimeout(1000);
         await expect(page).toHaveScreenshot();
       });
-      test("on last record, can go to prev record by pressing Ctrl+ArrowLeft", async ({
-        page,
-      }) => {
+      test("on last record, can go to prev record by pressing Ctrl+ArrowLeft", async ({ page }) => {
         await goToAnnotationPageWith12Ranking(page);
         await expect(page).toHaveScreenshot();
 
@@ -287,9 +261,7 @@ test.describe("Annotation page shortcuts", () => {
 
           await expect(page).toHaveScreenshot();
         });
-        test("When focus is on a text component but is editing the user can not clear", async ({
-          page,
-        }) => {
+        test("When focus is on a text component but is editing the user can not clear", async ({ page }) => {
           await goToAnnotationPage(page);
           await page.waitForTimeout(500);
 
@@ -303,9 +275,7 @@ test.describe("Annotation page shortcuts", () => {
 
           await expect(page).toHaveScreenshot();
         });
-        test("When focus is on a text component and the user applied the read mode", async ({
-          page,
-        }) => {
+        test("When focus is on a text component and the user applied the read mode", async ({ page }) => {
           await goToAnnotationPage(page);
           await page.waitForTimeout(500);
 
@@ -365,9 +335,7 @@ test.describe("Annotation page shortcuts", () => {
 
           await expect(page).toHaveScreenshot();
         });
-        test("When focus is on a text component but is editing the user can not discard", async ({
-          page,
-        }) => {
+        test("When focus is on a text component but is editing the user can not discard", async ({ page }) => {
           await goToAnnotationPage(page);
           const record = await goToAnnotationPage(page);
           await mockRecordResponses(page, record.id, "discarded");
@@ -383,9 +351,7 @@ test.describe("Annotation page shortcuts", () => {
 
           await expect(page).toHaveScreenshot();
         });
-        test("When focus is on a text component and the user applied the read mode", async ({
-          page,
-        }) => {
+        test("When focus is on a text component and the user applied the read mode", async ({ page }) => {
           await goToAnnotationPage(page);
           const record = await goToAnnotationPage(page);
           await mockRecordResponses(page, record.id, "discarded");
@@ -447,9 +413,7 @@ test.describe("Annotation page shortcuts", () => {
 
           await expect(page).toHaveScreenshot();
         });
-        test("When focus is on a text component but is editing the user can not submit", async ({
-          page,
-        }) => {
+        test("When focus is on a text component but is editing the user can not submit", async ({ page }) => {
           await goToAnnotationPage(page);
           const record = await goToAnnotationPage(page);
           await mockRecordResponses(page, record.id, "submitted");
@@ -465,9 +429,7 @@ test.describe("Annotation page shortcuts", () => {
 
           await expect(page).toHaveScreenshot();
         });
-        test("When focus is on a text component and the user applied the read mode", async ({
-          page,
-        }) => {
+        test("When focus is on a text component and the user applied the read mode", async ({ page }) => {
           await goToAnnotationPage(page);
           const record = await goToAnnotationPage(page);
           await mockRecordResponses(page, record.id, "submitted");
@@ -498,18 +460,14 @@ test.describe("Annotation page shortcuts", () => {
     });
   });
   test.describe("Single component", () => {
-    test("user press just letter V and go automatically to search bar and filter data", async ({
-      page,
-    }) => {
+    test("user press just letter V and go automatically to search bar and filter data", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press("v");
 
       await expect(page).toHaveScreenshot();
     });
-    test("user press just letter V and go automatically to search bar and can update this text", async ({
-      page,
-    }) => {
+    test("user press just letter V and go automatically to search bar and can update this text", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press("v");
@@ -663,9 +621,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("go to previous question with shift and arrow up", async ({
-      page,
-    }) => {
+    test("go to previous question with shift and arrow up", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -740,9 +696,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("expand collapsable when the user try to find other label", async ({
-      page,
-    }) => {
+    test("expand collapsable when the user try to find other label", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -769,9 +723,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("the user move as a loop inside multilabel component", async ({
-      page,
-    }) => {
+    test("the user move as a loop inside multilabel component", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -839,9 +791,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("go to previous question with shift and arrow up", async ({
-      page,
-    }) => {
+    test("go to previous question with shift and arrow up", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -863,9 +813,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("when the user click in the option go automatically to next question", async ({
-      page,
-    }) => {
+    test("when the user click in the option go automatically to next question", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -880,9 +828,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("when user complete rating with keyboard automatically go to next question", async ({
-      page,
-    }) => {
+    test("when user complete rating with keyboard automatically go to next question", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -893,9 +839,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("choose a different rating value with Tab and press Space to select this value", async ({
-      page,
-    }) => {
+    test("choose a different rating value with Tab and press Space to select this value", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -908,9 +852,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("press Space to unselect the value previously selected", async ({
-      page,
-    }) => {
+    test("press Space to unselect the value previously selected", async ({ page }) => {
       await goToAnnotationPage(page);
       await page.keyboard.press(shortcuts.goToNextQuestion);
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -928,9 +870,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("choose a different rating value with Shift+Tab and press Space to select this value", async ({
-      page,
-    }) => {
+    test("choose a different rating value with Shift+Tab and press Space to select this value", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -981,9 +921,7 @@ test.describe("Annotation page shortcuts", () => {
 
       await expect(page).toHaveScreenshot();
     });
-    test("un rate question if the user press twice the same key", async ({
-      page,
-    }) => {
+    test("un rate question if the user press twice the same key", async ({ page }) => {
       await goToAnnotationPageWith10Rating(page);
 
       await page.keyboard.press("2");
@@ -1093,9 +1031,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("in edit mode the user can use any key without execute any global shortcut", async ({
-      page,
-    }) => {
+    test("in edit mode the user can use any key without execute any global shortcut", async ({ page }) => {
       await goToAnnotationPage(page);
 
       await page.keyboard.press(shortcuts.goToNextQuestion);
@@ -1135,9 +1071,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("go to previous question if the user is in ranking component with keyboard", async ({
-      page,
-    }) => {
+    test("go to previous question if the user is in ranking component with keyboard", async ({ page }) => {
       await goToRankingComponent(page);
 
       await page.keyboard.press(shortcuts.goToPrevQuestion);
@@ -1160,21 +1094,13 @@ test.describe("Annotation page shortcuts", () => {
     test("reset order ranking question options", async ({ page }) => {
       await goToRankingComponent(page);
 
-      await page
-        .getByTitle("Option A")
-        .dragTo(page.locator(".draggable__questions-container"));
+      await page.getByTitle("Option A").dragTo(page.locator(".draggable__questions-container"));
 
-      await page
-        .getByTitle("Option B")
-        .dragTo(page.locator(".draggable__questions-container"));
+      await page.getByTitle("Option B").dragTo(page.locator(".draggable__questions-container"));
 
-      await page
-        .getByTitle("Option C")
-        .dragTo(page.locator(".draggable__questions-container"));
+      await page.getByTitle("Option C").dragTo(page.locator(".draggable__questions-container"));
 
-      await page
-        .getByTitle("Option D")
-        .dragTo(page.locator(".draggable__questions-container"));
+      await page.getByTitle("Option D").dragTo(page.locator(".draggable__questions-container"));
 
       await expect(page).toHaveScreenshot();
     });
@@ -1219,9 +1145,7 @@ test.describe("Annotation page shortcuts", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("move as a loop in ranking component with some ranked and other unranked", async ({
-      page,
-    }) => {
+    test("move as a loop in ranking component with some ranked and other unranked", async ({ page }) => {
       await goToRankingComponent(page);
 
       await page.keyboard.press(shortcuts.ranking.goToNextRank);

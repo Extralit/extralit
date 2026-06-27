@@ -1,23 +1,26 @@
 <template>
   <div class="sort-selector-item">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility" class="sort-selector-item__dropdown">
-      <template #dropdown-header><span class="sort-selector-item__dropdown__header">
-        <div class="sort-selector-item__dropdown__header__item">
-          <span
-            class="sort-selector-item__dropdown__header__text"
-            title="category.title"
-            v-text="selectedOptionLabel"
-          />
-        </div>
-        <svgicon width="12" height="12" name="chevron-down" />
-      </span></template>
-      <template #dropdown-content><ul class="sort-selector-item__list">
-        <li v-for="option in filteredOptions" :key="option.value">
-          <BaseButton class="sort-selector-item__list__item" @click="changeField(option.value)">{{
-            option.label
-          }}</BaseButton>
-        </li>
-      </ul></template>
+      <template #dropdown-header
+        ><span class="sort-selector-item__dropdown__header">
+          <div class="sort-selector-item__dropdown__header__item">
+            <span
+              class="sort-selector-item__dropdown__header__text"
+              title="category.title"
+              v-text="selectedOptionLabel"
+            />
+          </div>
+          <svgicon width="12" height="12" name="chevron-down" /> </span
+      ></template>
+      <template #dropdown-content
+        ><ul class="sort-selector-item__list">
+          <li v-for="option in filteredOptions" :key="option.value">
+            <BaseButton class="sort-selector-item__list__item" @click="changeField(option.value)">{{
+              option.label
+            }}</BaseButton>
+          </li>
+        </ul></template
+      >
     </BaseDropdown>
     <BaseButton
       title="sort direction"
