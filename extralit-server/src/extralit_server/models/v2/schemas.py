@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import JSON, ForeignKey, String, Text, UniqueConstraint
@@ -7,6 +8,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from extralit_server.enums import SchemaKind, SchemaStatus
 from extralit_server.models.base import DatabaseModel
+
+if TYPE_CHECKING:
+    from extralit_server.models.database import Workspace
 
 SchemaKindEnum = SAEnum(SchemaKind, name="schema_kind_enum")
 SchemaStatusEnum = SAEnum(SchemaStatus, name="schema_status_enum")
@@ -23,6 +27,9 @@ class Schema(DatabaseModel):
     )
     settings: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON), default=dict)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+
+    # One-directional: no reverse `Workspace.schemas` collection in this phase.
+    workspace: Mapped["Workspace"] = relationship("Workspace")
 
     versions: Mapped[list["SchemaVersion"]] = relationship(
         back_populates="schema",
