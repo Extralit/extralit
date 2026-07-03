@@ -142,6 +142,7 @@ async def test_delete_records_validates_ids(async_client, owner_auth_header, db)
 
     resp = await async_client.delete(f"/api/v2/schemas/{schema.id}/records?ids=", headers=owner_auth_header)
     assert resp.status_code == 422
+    assert "No record IDs provided" in resp.json()["detail"]
 
     too_many = ",".join(str(uuid4()) for _ in range(101))
     resp = await async_client.delete(f"/api/v2/schemas/{schema.id}/records?ids={too_many}", headers=owner_auth_header)
