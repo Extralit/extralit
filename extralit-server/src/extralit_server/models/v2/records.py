@@ -48,6 +48,6 @@ class V2Record(DatabaseModel):
 
     def __repr__(self) -> str:
         return (
-            f"Record(id={self.id!s}, schema_id={self.schema_id!s}, "
+            f"V2Record(id={self.id!s}, schema_id={self.schema_id!s}, "
             f"reference={self.reference!r}, status={self.status!r})"
         )
