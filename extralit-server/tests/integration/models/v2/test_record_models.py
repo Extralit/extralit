@@ -47,7 +47,7 @@ async def test_duplicate_external_id_in_schema_raises(db):
             ),
         ]
     )
-    with pytest.raises(IntegrityError, match="v2_record_schema_id_external_id_uq|UNIQUE"):
+    with pytest.raises(IntegrityError, match=r"v2_record_schema_id_external_id_uq|UNIQUE"):
         await db.commit()
 
 

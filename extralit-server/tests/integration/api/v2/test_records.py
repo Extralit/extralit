@@ -138,7 +138,7 @@ async def test_delete_records(async_client, owner_auth_header, db):
 
 
 async def test_delete_records_validates_ids(async_client, owner_auth_header, db):
-    schema, version = await _published_schema(db)
+    schema, _ = await _published_schema(db)
 
     resp = await async_client.delete(f"/api/v2/schemas/{schema.id}/records?ids=", headers=owner_auth_header)
     assert resp.status_code == 422

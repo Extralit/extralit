@@ -142,7 +142,7 @@ async def test_bulk_upsert_requires_published_version(db, monkeypatch):
 async def test_bulk_upsert_rejects_foreign_schema_version_pin(db, monkeypatch):
     _patch_fetch(monkeypatch)
     schema, _ = await _published_schema(db)
-    other_schema, other_version = await _published_schema(db)
+    _, other_version = await _published_schema(db)
 
     with pytest.raises(UnprocessableEntityError, match="does not belong"):
         await records_ctx.bulk_upsert_records(
@@ -154,7 +154,7 @@ async def test_bulk_upsert_rejects_duplicate_external_ids_in_payload(db, monkeyp
     _patch_fetch(monkeypatch)
     schema, _ = await _published_schema(db)
 
-    with pytest.raises(UnprocessableEntityError, match="[Dd]uplicate"):
+    with pytest.raises(UnprocessableEntityError, match=r"[Dd]uplicate"):
         await records_ctx.bulk_upsert_records(
             db,
             AsyncMock(),
@@ -166,7 +166,7 @@ async def test_bulk_upsert_rejects_duplicate_external_ids_in_payload(db, monkeyp
 
 async def test_list_records_paginates_and_filters(db):
     schema, version = await _published_schema(db)
-    other_schema, other_version = await _published_schema(db)
+    _, other_version = await _published_schema(db)
 
     r1 = await V2RecordFactory.create(version=version, reference="pmid:1")
     r2 = await V2RecordFactory.create(version=version, reference="pmid:1", status=V2RecordStatus.completed)
