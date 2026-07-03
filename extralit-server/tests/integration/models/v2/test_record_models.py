@@ -51,6 +51,19 @@ async def test_duplicate_external_id_in_schema_raises(db):
         await db.commit()
 
 
+async def test_v2_record_factory_builds_valid_row(db):
+    from tests.factories import V2RecordFactory
+
+    record = await V2RecordFactory.create()
+    assert record.id is not None
+    assert record.schema_version_id is not None
+    assert record.schema_id is not None
+    assert record.status == V2RecordStatus.pending
+
+    version = await record.awaitable_attrs.version
+    assert record.schema_id == version.schema_id  # factory wires the record to the version's schema
+
+
 async def test_null_external_ids_do_not_collide(db):
     version = await SchemaVersionFactory.create()
     db.add_all(
