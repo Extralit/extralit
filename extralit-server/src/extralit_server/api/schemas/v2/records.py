@@ -16,6 +16,13 @@ Reference = constr(min_length=1, max_length=500)
 
 
 class RecordUpsert(BaseModel):
+    """One bulk-upsert item.
+
+    `fields` and `reference` are always written. `metadata` and `status` are patch-like:
+    when omitted (None) on an update they preserve the existing row's values (they cannot
+    be cleared via upsert); on insert they default to no metadata / `pending`.
+    """
+
     fields: dict[str, Any]
     reference: Reference
     external_id: str | None = None

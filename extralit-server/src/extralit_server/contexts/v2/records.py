@@ -40,6 +40,10 @@ async def bulk_upsert_records(
     Identity for updates is (schema_id, external_id); items without an external_id always
     insert. Each distinct schema version's body is fetched from the object store once per
     request, never per record.
+
+    Update semantics are patch-like for `metadata`/`status`: an omitted (None) value
+    preserves the existing row's value rather than clearing it (see RecordUpsert docs);
+    `fields`, `reference`, and the resolved schema_version_id are always overwritten.
     """
     default_version_id = schema.current_version_id
     if default_version_id is None:
