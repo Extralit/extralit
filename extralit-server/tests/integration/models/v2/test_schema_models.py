@@ -59,7 +59,7 @@ async def test_duplicate_schema_name_in_workspace_raises(db):
             Schema(name="dup", workspace_id=workspace.id),
         ]
     )
-    with pytest.raises(IntegrityError, match="schema_workspace_id_name_uq|UNIQUE"):
+    with pytest.raises(IntegrityError, match=r"schema_workspace_id_name_uq|UNIQUE"):
         await db.commit()
 
 
@@ -71,5 +71,5 @@ async def test_duplicate_schema_version_raises(db):
             SchemaVersion(schema_id=schema.id, version=1, object_key="b", etag="e", checksum="c"),
         ]
     )
-    with pytest.raises(IntegrityError, match="schema_version_schema_id_version_uq|UNIQUE"):
+    with pytest.raises(IntegrityError, match=r"schema_version_schema_id_version_uq|UNIQUE"):
         await db.commit()

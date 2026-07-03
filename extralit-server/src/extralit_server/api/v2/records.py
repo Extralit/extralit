@@ -92,7 +92,9 @@ async def delete_schema_records(
     await records_ctx.delete_records(db, schema, record_ids)
 
 
-@router.get("/references/{reference}", response_model=ReferenceView)
+# `:path` converter: references are free-form join keys and DOIs contain slashes
+# (e.g. 10.1000/j.foo.2020.01); the default converter would 404 on them.
+@router.get("/references/{reference:path}", response_model=ReferenceView)
 async def get_reference_view(
     *,
     reference: str,

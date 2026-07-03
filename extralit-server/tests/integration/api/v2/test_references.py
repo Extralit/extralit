@@ -46,6 +46,22 @@ async def test_reference_view_groups_records_per_schema_in_workspace(async_clien
     assert [r["id"] for r in by_name["outcomes"]["records"]] == [str(r3.id)]
 
 
+async def test_reference_view_supports_slash_containing_references(async_client, owner_auth_header):
+    # DOIs contain slashes; the route must use the `:path` converter to match them.
+    workspace = await WorkspaceFactory.create()
+    _, version = await _schema_with_version(workspace, "population")
+    record = await V2RecordFactory.create(version=version, reference="10.1000/j.foo.2020.01")
+
+    resp = await async_client.get(
+        f"/api/v2/references/10.1000/j.foo.2020.01?workspace_id={workspace.id}", headers=owner_auth_header
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["reference"] == "10.1000/j.foo.2020.01"
+    assert body["total_records"] == 1
+    assert body["groups"][0]["records"][0]["id"] == str(record.id)
+
+
 async def test_reference_view_unknown_reference_returns_empty(async_client, owner_auth_header):
     workspace = await WorkspaceFactory.create()
     resp = await async_client.get(
