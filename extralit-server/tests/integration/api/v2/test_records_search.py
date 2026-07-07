@@ -102,3 +102,15 @@ async def test_rebuild_index_requires_write_access(async_client, annotator_auth_
         headers=annotator_auth_header,
     )
     assert resp.status_code == 403, resp.text
+
+
+async def test_search_in_filter_with_scalar_value_returns_422(async_client, owner_auth_header, db):
+    # op="in" with a scalar string (not a list) must be rejected at the schema layer → 422,
+    # not a 500 from an unmapped TypeError in the engine.
+    schema, _ = await _published(db)
+    resp = await async_client.post(
+        f"/api/v2/schemas/{schema.id}/records:search",
+        headers=owner_auth_header,
+        json={"filters": [{"column": "year", "op": "in", "value": "2016"}]},
+    )
+    assert resp.status_code == 422, resp.text

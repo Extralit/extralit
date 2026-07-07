@@ -142,14 +142,30 @@ class LanceIndexEngine(IndexEngine):
             db = await self._conn()
             await db.drop_table(name)
 
-    async def upsert(self, schema_id: UUID, rows: list[dict[str, Any]], columns: list[dict[str, Any]]) -> None:
+    async def upsert(
+        self,
+        schema_id: UUID,
+        rows: list[dict[str, Any]],
+        columns: list[dict[str, Any]],
+        *,
+        optimize: bool = True,
+    ) -> None:
         if not rows:
             return
         db = await self._conn()
         table = await db.open_table(table_name_for(schema_id))
         data = pa.Table.from_pylist(rows, schema=arrow_schema_for(columns))
         await table.merge_insert("record_id").when_matched_update_all().when_not_matched_insert_all().execute(data)
-        await table.optimize()  # fold new rows into the FTS index
+        if optimize:
+            await table.optimize()  # fold new rows into the FTS index
+
+    async def optimize_table(self, schema_id: UUID) -> None:
+        """Compact the table and update the FTS index. Call once after a bulk rebuild."""
+        db = await self._conn()
+        name = table_name_for(schema_id)
+        if name in await self._list_tables():
+            table = await db.open_table(name)
+            await table.optimize()
 
     async def delete(self, schema_id: UUID, record_ids: Iterable[UUID]) -> None:
         ids = [str(rid) for rid in record_ids]

@@ -96,7 +96,7 @@ async def search_schema_records(
     return Records(items=[RecordRead.model_validate(r) for r in ordered], total=result.total)
 
 
-@router.post("/schemas/{schema_id}:rebuild-index")
+@router.post("/schemas/{schema_id}:rebuild-index", response_model=dict[str, int])
 async def rebuild_schema_index(
     *,
     schema_id: UUID,
@@ -107,7 +107,8 @@ async def rebuild_schema_index(
     """Drop and repopulate the schema's Lance table from Postgres (the recovery path).
 
     Unlike the write-time sync hooks, this surfaces engine errors to the caller — the
-    operator explicitly asked to rebuild.
+    operator explicitly asked to rebuild. For large schemas the rebuild may take tens of
+    seconds; consider running as a background job (via the CLI) if timeouts are a concern.
     """
     schema = await _get_schema_or_404(db, schema_id)
     await authorize(current_user, SchemaPolicy.upsert_records(schema))

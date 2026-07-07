@@ -51,8 +51,25 @@ class IndexEngine(ABC):
     async def drop_table(self, schema_id: UUID) -> None: ...
 
     @abstractmethod
-    async def upsert(self, schema_id: UUID, rows: list[dict[str, Any]], columns: list[dict[str, Any]]) -> None:
-        """Merge rows into the table keyed on `record_id` (update-or-insert)."""
+    async def upsert(
+        self,
+        schema_id: UUID,
+        rows: list[dict[str, Any]],
+        columns: list[dict[str, Any]],
+        *,
+        optimize: bool = True,
+    ) -> None:
+        """Merge rows into the table keyed on `record_id` (update-or-insert).
+
+        Pass ``optimize=False`` when batching many upserts (e.g. during a rebuild) and
+        call :meth:`optimize_table` once afterwards to fold all rows into the FTS index.
+        """
+
+    async def optimize_table(self, schema_id: UUID) -> None:
+        """Compact and update the FTS index after a bulk rebuild.
+
+        Default no-op — concrete engines override when the backend supports it.
+        """
 
     @abstractmethod
     async def delete(self, schema_id: UUID, record_ids: Iterable[UUID]) -> None: ...

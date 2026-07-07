@@ -74,7 +74,11 @@ async def sync_deleted_records(engine: IndexEngine, schema: Schema, record_ids: 
 
 
 async def rebuild_schema_index(engine: IndexEngine, db: AsyncSession, schema: Schema, *, batch_size: int = 500) -> int:
-    """Drop and repopulate the schema's Lance table from Postgres. Raises on failure."""
+    """Drop and repopulate the schema's Lance table from Postgres. Raises on failure.
+
+    Upserts are batched with FTS optimization deferred to a single call at the end, so
+    the index is not rebuilt O(batches) times during a large reindex.
+    """
     columns = await table_columns(db, schema)
     await engine.drop_table(schema.id)
     await engine.ensure_table(schema.id, columns)
@@ -98,7 +102,11 @@ async def rebuild_schema_index(engine: IndexEngine, db: AsyncSession, schema: Sc
         if not records:
             break
         rows = [record_to_row(record, columns) for record in records]
-        await engine.upsert(schema.id, rows, columns)
+        await engine.upsert(schema.id, rows, columns, optimize=False)
         total += len(records)
         offset += batch_size
+
+    # Single optimize pass after all batches — avoids O(batches) FTS rebuilds.
+    if total:
+        await engine.optimize_table(schema.id)
     return total
