@@ -40,6 +40,7 @@ from extralit_server.models import (
 from extralit_server.models.base import DatabaseModel
 from extralit_server.models.v2 import Schema as SchemaModel
 from extralit_server.models.v2 import SchemaVersion as SchemaVersionModel
+from extralit_server.models.v2 import V2Record as V2RecordModel
 from extralit_server.webhooks.v1.enums import WebhookEvent
 from tests.database import SyncTestSession, TestSession
 
@@ -671,3 +672,27 @@ class SchemaVersionFactory(BaseFactory):
     etag = factory.Sequence(lambda n: f"etag-{n}")
     checksum = factory.Sequence(lambda n: f"checksum-{n}")
     columns_cache = factory.LazyFunction(list)  # fresh list per row, not a shared mutable default
+
+
+class V2RecordFactory(BaseFactory):
+    class Meta:
+        model = V2RecordModel
+
+    version = factory.SubFactory(SchemaVersionFactory)
+    reference = factory.Sequence(lambda n: f"ref-{n}")
+    external_id = factory.Sequence(lambda n: f"v2-external-{n}")
+    fields = factory.LazyFunction(dict)  # fresh dict per row, not a shared mutable default
+
+    @classmethod
+    async def _create(cls, model_class, *args, **kwargs):
+        # LazyAttribute cannot derive the FK columns because the SubFactory result is still a
+        # coroutine during attribute evaluation (see SchemaVersionFactory.object_key); await it
+        # here and wire schema_id/schema_version_id to the version's schema.
+        version = kwargs.get("version")
+        if inspect.isawaitable(version):
+            version = await version
+            kwargs["version"] = version
+        if version is not None:
+            kwargs.setdefault("schema_version_id", version.id)
+            kwargs.setdefault("schema_id", version.schema_id)
+        return await super()._create(model_class, *args, **kwargs)
