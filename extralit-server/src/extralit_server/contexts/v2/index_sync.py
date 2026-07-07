@@ -22,9 +22,20 @@ _LOGGER = logging.getLogger("extralit_server.index")
 
 
 async def table_columns(db: AsyncSession, schema: Schema) -> list[dict[str, Any]]:
-    """The Lance table's column superset: union of every version's columns_cache."""
+    """The Lance table's column superset: union of every version's columns_cache.
+
+    Ordered by version ascending so that the earliest-version dtype wins when
+    the same column name appears in multiple versions with different types — making
+    the result stable and consistent across successive calls.
+    """
     caches = (
-        (await db.execute(select(SchemaVersion.columns_cache).where(SchemaVersion.schema_id == schema.id)))
+        (
+            await db.execute(
+                select(SchemaVersion.columns_cache)
+                .where(SchemaVersion.schema_id == schema.id)
+                .order_by(SchemaVersion.version.asc())
+            )
+        )
         .scalars()
         .all()
     )
@@ -76,7 +87,7 @@ async def rebuild_schema_index(engine: IndexEngine, db: AsyncSession, schema: Sc
                 await db.execute(
                     select(V2Record)
                     .where(V2Record.schema_id == schema.id)
-                    .order_by(V2Record.inserted_at.asc())
+                    .order_by(V2Record.inserted_at.asc(), V2Record.id.asc())
                     .offset(offset)
                     .limit(batch_size)
                 )
