@@ -24,6 +24,7 @@ from tenacity import retry, stop_after_delay, wait_exponential
 from extralit_server import helpers
 from extralit_server._version import __version__ as extralit_version
 from extralit_server.api.routes import api_v1
+from extralit_server.api.v2 import api_v2
 from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
 from extralit_server.contexts import accounts, files
 from extralit_server.database import get_async_db
@@ -210,6 +211,7 @@ def configure_common_middleware(app: FastAPI):
 def configure_api_router(app: FastAPI):
     """Configures and set the api router to app"""
     app.mount("/api/v1", api_v1)
+    app.mount("/api/v2", api_v2)
 
 
 def configure_telemetry(app: FastAPI):

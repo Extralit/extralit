@@ -9,7 +9,14 @@ from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
 from extralit_server.contexts.files import ObjectMetadata, get_s3_client
-from extralit_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
+from extralit_server.enums import (
+    DatasetDistributionStrategy,
+    FieldType,
+    MetadataPropertyType,
+    OptionsOrder,
+    SchemaKind,
+    SchemaStatus,
+)
 from extralit_server.models import (
     Dataset,
     DatasetUser,
@@ -31,6 +38,8 @@ from extralit_server.models import (
     WorkspaceUser,
 )
 from extralit_server.models.base import DatabaseModel
+from extralit_server.models.v2 import Schema as SchemaModel
+from extralit_server.models.v2 import SchemaVersion as SchemaVersionModel
 from extralit_server.webhooks.v1.enums import WebhookEvent
 from tests.database import SyncTestSession, TestSession
 
@@ -637,3 +646,28 @@ class MinioFileFactory(factory.Factory):
         client.get_object = mock_get_object
 
         return file
+
+
+class SchemaFactory(BaseFactory):
+    class Meta:
+        model = SchemaModel
+
+    name = factory.Sequence(lambda n: f"schema-{n}")
+    kind = SchemaKind.table
+    status = SchemaStatus.draft
+    workspace = factory.SubFactory(WorkspaceFactory)
+
+
+class SchemaVersionFactory(BaseFactory):
+    class Meta:
+        model = SchemaVersionModel
+
+    schema = factory.SubFactory(SchemaFactory)
+    version = factory.Sequence(lambda n: n + 1)
+    # The SubFactory result is a coroutine during attribute evaluation, so the object key
+    # is derived from `version` only here; the real `schemas/{id}/v{n}.json` key is computed
+    # by publish_version (the context owns persistence, not the factory).
+    object_key = factory.LazyAttribute(lambda o: f"schemas/v{o.version}.json")
+    etag = factory.Sequence(lambda n: f"etag-{n}")
+    checksum = factory.Sequence(lambda n: f"checksum-{n}")
+    columns_cache = factory.LazyFunction(list)  # fresh list per row, not a shared mutable default

@@ -95,3 +95,13 @@ class SimilarityOrder(StrEnum):
 class OptionsOrder(StrEnum):
     natural = "natural"
     suggestion = "suggestion"
+
+
+class SchemaKind(StrEnum):
+    singleton = "singleton"  # exactly one row per `reference` (document-level extraction)
+    table = "table"  # many rows per `reference` (table extraction)
+
+
+class SchemaStatus(StrEnum):
+    draft = "draft"
+    published = "published"
