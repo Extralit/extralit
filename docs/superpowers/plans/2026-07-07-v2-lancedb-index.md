@@ -656,6 +656,30 @@ async def test_ensure_table_evolves_to_superset(engine):
     evolved = COLUMNS + [{"name": "doi", "dtype": "string[pyarrow]", "nullable": True, "review": None}]
     await engine.ensure_table(sid, evolved)  # idempotent + adds `doi`
     assert engine  # no exception; table now carries the new column
+
+
+async def test_fts_total_counts_matches_not_table_rows(engine):
+    # `count_rows` cannot evaluate the FTS match, so `total` must come from the match
+    # set: 2 of 3 rows match "Deep"; the page respects `limit` but `total` reports 2.
+    sid = uuid4()
+    await engine.ensure_table(sid, COLUMNS)
+    recs = [_Rec("Deep Learning Foundations", 2016), _Rec("Shallow Ponds", 1999), _Rec("Deep Sea Biology", 2005)]
+    await engine.upsert(sid, [record_to_row(r, COLUMNS) for r in recs], COLUMNS)
+
+    result = await engine.search(sid, text="Deep", offset=0, limit=1)
+    assert len(result.hits) == 1
+    assert result.total == 2
+
+
+async def test_sql_type_covers_every_mapped_arrow_type():
+    # Create-path (`arrow_schema_for`) and evolve-path (`add_columns` cast) must agree:
+    # every Arrow type `arrow_type_for` can produce needs a SQL type entry, or an evolved
+    # column (e.g. datetime) would silently become `string`.
+    from extralit_server.index.lancedb_engine import _SQL_TYPE_BY_ARROW
+    from extralit_server.index.mapping import _ARROW_BY_DTYPE
+
+    for arrow_type in set(_ARROW_BY_DTYPE.values()):
+        assert arrow_type in _SQL_TYPE_BY_ARROW, f"no SQL type for Arrow type {arrow_type}"
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -687,6 +711,9 @@ from extralit_server.index.mapping import arrow_schema_for, arrow_type_for, tabl
 from extralit_server.settings import settings
 
 # Arrow type -> LanceDB SQL type name, for `add_columns` cast expressions during evolution.
+# Must cover every Arrow type `mapping.arrow_type_for` can produce, or an evolved column
+# would silently get a different type than the same column at create-table time
+# (see tests/unit/index/test_mapping.py::test_sql_type_covers_every_mapped_arrow_type).
 _SQL_TYPE_BY_ARROW = {
     pa.large_string(): "string",
     pa.int64(): "bigint",
@@ -694,11 +721,17 @@ _SQL_TYPE_BY_ARROW = {
     pa.float64(): "double",
     pa.float32(): "float",
     pa.bool_(): "boolean",
+    pa.timestamp("ns"): "timestamp",
 }
 
 
 def _sql_type_for(dtype: str) -> str:
     return _SQL_TYPE_BY_ARROW.get(arrow_type_for(dtype), "string")
+
+
+# Exact FTS totals are computed by materializing the match set; beyond this many matches
+# the reported total saturates at the ceiling (extraction tables are far smaller today).
+_FTS_TOTAL_CEILING = 10_000
 
 
 def _sql_literal(value: Any) -> str:
@@ -807,20 +840,27 @@ class LanceIndexEngine(IndexEngine):
         clause = _where_clause(filters)
 
         if text:
+            # `count_rows` only evaluates scalar predicates — it cannot apply the FTS
+            # match, so the total for a text query must come from the match set itself.
+            # Materialize matches up to a ceiling and page in Python; beyond the ceiling
+            # the total saturates at _FTS_TOTAL_CEILING (documented, bounded work).
             query = (await table.search(text, query_type="fts"))
             if clause:
                 query = query.where(clause, prefilter=True)
-        else:
-            query = table.query()
-            if clause:
-                query = query.where(clause)
+            arrow = await query.limit(_FTS_TOTAL_CEILING).to_arrow()
+            matches = arrow.to_pylist()
+            hits = [
+                IndexSearchHit(record_id=UUID(row["record_id"]), score=row.get("_score"))
+                for row in matches[offset : offset + limit]
+            ]
+            return IndexSearchResult(hits=hits, total=len(matches))
 
+        query = table.query()
+        if clause:
+            query = query.where(clause)
         arrow = await query.limit(offset + limit).to_arrow()
         rows = arrow.to_pylist()[offset:]
-        hits = [
-            IndexSearchHit(record_id=UUID(row["record_id"]), score=row.get("_score"))
-            for row in rows
-        ]
+        hits = [IndexSearchHit(record_id=UUID(row["record_id"]), score=None) for row in rows]
         total = await table.count_rows(clause) if clause else await table.count_rows()
         return IndexSearchResult(hits=hits, total=total)
 ```
@@ -828,7 +868,7 @@ class LanceIndexEngine(IndexEngine):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `cd extralit-server && uv run pytest tests/integration/index/test_lancedb_engine.py -v`
-Expected: 5 passed. (If `_score` is absent on the FTS result in the installed lancedb, read the actual column name from `arrow.schema.names` and adjust the `.get("_score")` key — the row-id assertions must still pass.)
+Expected: 7 passed. (If `_score` is absent on the FTS result in the installed lancedb, read the actual column name from `arrow.schema.names` and adjust the `.get("_score")` key — the row-id assertions must still pass.)
 
 - [ ] **Step 5: Commit**
 
