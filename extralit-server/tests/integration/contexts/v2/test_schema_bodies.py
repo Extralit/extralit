@@ -87,3 +87,19 @@ def test_validate_record_fields_rejects_missing_required_column():
     with pytest.raises(SchemaValidationError) as exc:
         validate_record_fields(_body(), {"age": 5})
     assert any(e["check"] == "missing" and e["column"] == "name" for e in exc.value.errors)
+
+
+def test_validate_record_fields_preserves_int_in_all_numeric_schema():
+    # No string/object column, so a row Series would upcast Int->float64. Per-column
+    # extraction must keep the int64 cell as a python int, not 3.0.
+    body = pa.DataFrameSchema(
+        columns={
+            "count": pa.Column(pa.Int, nullable=False),
+            "ratio": pa.Column(pa.Float, nullable=False),
+        }
+    ).to_json()
+    coerced = validate_record_fields(body, {"count": 3, "ratio": 0.5})
+    assert type(coerced["count"]) is int
+    assert coerced["count"] == 3
+    assert coerced["ratio"] == 0.5
+    json.dumps(coerced)

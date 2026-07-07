@@ -122,10 +122,14 @@ def _row_to_native(frame: pd.DataFrame) -> dict[str, Any]:
     places and serializes datetimes as deprecated epoch integers. numpy scalars become
     native python via ``.item()`` (exact for floats), Timestamps become ISO strings, and
     NaN/NaT become ``None``.
+
+    Each cell is read per-column (``frame[col].iloc[0]``) rather than via ``frame.iloc[0]``:
+    a row Series upcasts to the columns' common dtype, so an ``int64`` cell in a frame that
+    also has a ``float64`` column would silently become a python ``float``.
     """
-    row = frame.iloc[0]
     out: dict[str, Any] = {}
-    for col, value in row.items():
+    for col in frame.columns:
+        value = frame[col].iloc[0]
         if pd.isna(value):
             out[col] = None
         elif isinstance(value, pd.Timestamp):
