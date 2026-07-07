@@ -2,6 +2,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Security, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.policies.v1 import SchemaPolicy, authorize
@@ -15,6 +16,7 @@ from extralit_server.api.schemas.v2.records import (
     ReferenceGroup,
     ReferenceView,
 )
+from extralit_server.api.schemas.v2.search import RecordSearchQuery
 from extralit_server.contexts import files as files_ctx
 from extralit_server.contexts.v2 import index_sync
 from extralit_server.contexts.v2 import records as records_ctx
@@ -23,9 +25,9 @@ from extralit_server.database import get_async_db
 from extralit_server.enums import V2RecordStatus
 from extralit_server.errors.future import NotFoundError, UnprocessableEntityError
 from extralit_server.index import get_index_engine
-from extralit_server.index.base import IndexEngine
+from extralit_server.index.base import IndexEngine, IndexFilter
 from extralit_server.models import User, Workspace
-from extralit_server.models.v2 import Schema
+from extralit_server.models.v2 import Schema, V2Record
 from extralit_server.security import auth
 from extralit_server.utils import parse_uuids
 
@@ -56,6 +58,42 @@ async def bulk_upsert_schema_records(
     records = await records_ctx.bulk_upsert_records(db, s3_client, schema, items=payload.items, bucket=workspace.name)
     await index_sync.sync_upserted_records(index_engine, db, schema, records)
     return Records(items=records, total=len(records))
+
+
+@router.post("/schemas/{schema_id}/records:search", response_model=Records)
+async def search_schema_records(
+    *,
+    schema_id: UUID,
+    payload: RecordSearchQuery,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    index_engine: Annotated[IndexEngine, Depends(get_index_engine)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
+):
+    """Full-text (BM25) + scalar-filter search over a schema's records.
+
+    Lance supplies matching record ids and scores; payloads are hydrated from Postgres
+    (the source of truth) and returned in the engine's hit order. `total` is the engine's
+    total match count, which may exceed the returned page.
+    """
+    schema = await _get_schema_or_404(db, schema_id)
+    await authorize(current_user, SchemaPolicy.list_records(schema))
+
+    filters = [IndexFilter(column=f.column, op=f.op, value=f.value) for f in payload.filters]
+    result = await index_engine.search(
+        schema.id, text=payload.text, filters=filters, offset=payload.offset, limit=payload.limit
+    )
+    if not result.hits:
+        return Records(items=[], total=result.total)
+
+    hit_ids = [hit.record_id for hit in result.hits]
+    rows = (
+        (await db.execute(select(V2Record).where(V2Record.id.in_(hit_ids), V2Record.schema_id == schema.id)))
+        .scalars()
+        .all()
+    )
+    by_id = {row.id: row for row in rows}
+    ordered = [by_id[rid] for rid in hit_ids if rid in by_id]  # preserve Lance order; skip PG-missing (stale index)
+    return Records(items=[RecordRead.model_validate(r) for r in ordered], total=result.total)
 
 
 @router.get("/schemas/{schema_id}/records", response_model=Records)
