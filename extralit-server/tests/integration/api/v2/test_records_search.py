@@ -73,3 +73,32 @@ async def test_search_requires_membership(async_client, annotator_auth_header, d
         json={"text": "x"},
     )
     assert resp.status_code == 403, resp.text
+
+
+async def test_rebuild_index_reindexes_all_records(async_client, owner_auth_header, db, monkeypatch):
+    schema, version = await _published(db)
+    await V2RecordFactory.create(schema=schema, version=version, fields={"title": "A", "year": 2001})
+    await V2RecordFactory.create(schema=schema, version=version, fields={"title": "B", "year": 2002})
+
+    calls = {}
+
+    async def fake_rebuild(engine, db_, s, *, batch_size=500):
+        calls["schema_id"] = s.id
+        return 2
+
+    monkeypatch.setattr("extralit_server.contexts.v2.index_sync.rebuild_schema_index", fake_rebuild)
+
+    resp = await async_client.post(f"/api/v2/schemas/{schema.id}:rebuild-index", headers=owner_auth_header)
+    assert resp.status_code == 200, resp.text
+    assert resp.json() == {"indexed": 2}
+    assert calls["schema_id"] == schema.id
+
+
+async def test_rebuild_index_requires_write_access(async_client, annotator_auth_header, db):
+    # Non-member of the workspace → 403 (repo idiom; see test_records.py negative-authz tests).
+    schema, _ = await _published(db)
+    resp = await async_client.post(
+        f"/api/v2/schemas/{schema.id}:rebuild-index",
+        headers=annotator_auth_header,
+    )
+    assert resp.status_code == 403, resp.text
