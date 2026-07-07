@@ -16,11 +16,14 @@ from extralit_server.api.schemas.v2.records import (
     ReferenceView,
 )
 from extralit_server.contexts import files as files_ctx
+from extralit_server.contexts.v2 import index_sync
 from extralit_server.contexts.v2 import records as records_ctx
 from extralit_server.contexts.v2 import schemas as schemas_ctx
 from extralit_server.database import get_async_db
 from extralit_server.enums import V2RecordStatus
 from extralit_server.errors.future import NotFoundError, UnprocessableEntityError
+from extralit_server.index import get_index_engine
+from extralit_server.index.base import IndexEngine
 from extralit_server.models import User, Workspace
 from extralit_server.models.v2 import Schema
 from extralit_server.security import auth
@@ -44,12 +47,14 @@ async def bulk_upsert_schema_records(
     payload: RecordsBulkUpsert,
     db: Annotated[AsyncSession, Depends(get_async_db)],
     s3_client=Depends(files_ctx.get_s3_client),
+    index_engine: Annotated[IndexEngine, Depends(get_index_engine)],
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     schema = await _get_schema_or_404(db, schema_id)
     await authorize(current_user, SchemaPolicy.upsert_records(schema))
     workspace = await Workspace.get_or_raise(db, schema.workspace_id)
     records = await records_ctx.bulk_upsert_records(db, s3_client, schema, items=payload.items, bucket=workspace.name)
+    await index_sync.sync_upserted_records(index_engine, db, schema, records)
     return Records(items=records, total=len(records))
 
 
@@ -77,6 +82,7 @@ async def delete_schema_records(
     *,
     schema_id: UUID,
     db: Annotated[AsyncSession, Depends(get_async_db)],
+    index_engine: Annotated[IndexEngine, Depends(get_index_engine)],
     current_user: Annotated[User, Security(auth.get_current_user)],
     ids: Annotated[str, Query(description="Comma-separated record ids to delete")],
 ):
@@ -90,6 +96,7 @@ async def delete_schema_records(
     if len(record_ids) > DELETE_RECORDS_LIMIT:
         raise UnprocessableEntityError(f"Cannot delete more than {DELETE_RECORDS_LIMIT} records at once")
     await records_ctx.delete_records(db, schema, record_ids)
+    await index_sync.sync_deleted_records(index_engine, schema, record_ids)
 
 
 # `:path` converter: references are free-form join keys and DOIs contain slashes
