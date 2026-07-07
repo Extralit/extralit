@@ -84,14 +84,14 @@ Three stores, clear roles:
 
 ## 5. Relational schema (new v2 tables, additive Alembic)
 
-Distinct/`v2_`-prefixed names during the parallel phase; renamed to canonical names on
-v1 retirement.
+As built: tables `schemas`, `schema_versions`, `v2_records` (v1 owns `records`); renamed
+to canonical names on v1 retirement.
 
 | Table | Purpose | Key columns |
 |---|---|---|
-| `schema` | **Core entity** = extraction table (≙ "Dataset" in UI). Registry pointer to the Pandera body. | `id`, `workspace_id`→workspaces, `name`, `kind` (`singleton`\|`table`), `status` (`draft`\|`published`), `current_version_id`→schema_version (nullable until first publish), `settings` JSONB (guidelines, etc.), `inserted_at`, `updated_at`; uniq(`workspace_id`,`name`) |
-| `schema_version` | Immutable version → object-store body + lineage + denormalized column cache. | `id`, `schema_id`, `version`, `object_key`, `object_version_id`, `etag`, `checksum`, `parent_version_id` (lineage, nullable), `columns_cache` JSONB (per-column name/dtype/nullable/review-widget, derived from the S3 body for fast validation + UI), `created_by`→users, `inserted_at`; uniq(`schema_id`,`version`) |
-| `record` | One typed row; pins its version; carries the cross-schema join key. | `id`, `schema_id`, `schema_version_id` (pinned), `reference` (indexed), `external_id` (nullable), `fields` JSONB (cells keyed by column), `metadata` JSONB, `status` (`pending`\|`completed`\|`discarded`), `inserted_at`, `updated_at`; idx(`schema_id`,`reference`), idx(`reference`); uniq(`schema_id`,`external_id`) |
+| `schema` (`schemas`) | **Core entity** = extraction table (≙ "Dataset" in UI). Registry pointer to the Pandera body. Singleton-vs-table is *emergent* from question/column bindings, not a stored kind (§14). | `id`, `workspace_id`→workspaces, `name`, `status` (`draft`\|`published`), `current_version_id`→schema_version (nullable until first publish), `settings` JSONB (guidelines, etc.), `inserted_at`, `updated_at`; uniq(`workspace_id`,`name`) |
+| `schema_version` (`schema_versions`) | Immutable version → object-store body + lineage + denormalized column cache. | `id`, `schema_id`, `version` (monotonic int), `object_key`, `object_version_id`, `etag`, `checksum`, `parent_version_id` (lineage, nullable), `columns_cache` JSONB (per-column name/dtype/nullable/review-widget, derived from the S3 body — UI/inspection cache, not a validation source), `review_widgets` JSONB (out-of-band per-column widget overlay, §13), `created_by`→users, `inserted_at`; uniq(`schema_id`,`version`) |
+| `record` (`v2_records`, ORM `V2Record`) | One typed row; pins its version; carries the cross-schema join key. | `id`, `schema_id` (CASCADE), `schema_version_id` (pinned, CASCADE), `reference` (indexed), `external_id` (nullable), `fields` JSONB (cells keyed by column; permissive — unknown fields pass through, §14), `metadata` JSONB, `status` (`pending`\|`completed`\|`discarded`, PG enum `v2_record_status_enum`), `inserted_at`, `updated_at`; idx(`schema_id`,`reference`), idx(`reference`); uniq(`schema_id`,`external_id`) |
 | `question` | Review config bound to column(s): 1 normally, N if `type=table`. | `id`, `schema_id`, `name`, `title`, `description`, `type` (`text`\|`label`\|`multi_label`\|`rating`\|`ranking`\|`span`\|`table`), `columns` JSONB (bound column names), `settings` JSONB, `required`, `inserted_at`, `updated_at`; uniq(`schema_id`,`name`) |
 | `suggestion` | LLM output per (record, question). | `id`, `record_id`, `question_id`, `value` JSONB, `score` JSONB (float \| float[]), `agent`, `type`, `inserted_at`, `updated_at`; uniq(`record_id`,`question_id`) |
 | `response` | Human review per (record, user); `values` keyed by question/column → resolves to cells; multiple users per record = overlap. | `id`, `record_id`, `user_id`, `values` JSONB, `status` (`draft`\|`submitted`\|`discarded`), `inserted_at`, `updated_at`; uniq(`record_id`,`user_id`) |
@@ -113,11 +113,18 @@ schema body + `columns_cache`).
 `parent_version_id`, and advances `schema.current_version_id`. The schema's LanceDB
 table is created or **evolved** to the new column superset.
 
-**Record write (bulk upsert).** Resolve the record's `schema_version_id` (default =
-`current_version_id`). Validate `fields` against that version's Pandera schema
-(coerce + check) using `columns_cache` (fall back to fetching the S3 body when needed).
-Persist to Postgres (truth). Then **sync** the row into the schema's LanceDB table
-(record_id, reference, schema_version_id, status, column values, embeddings, metadata).
+**Record write (bulk upsert).** Resolve each record's `schema_version_id` (default =
+`current_version_id`). Validation always fetches the Pandera body from the object store
+(pinned to the stored S3 `object_version_id`), once per distinct version per request —
+Pandera checks (ranges, regexes) exist only in the body, so `columns_cache` is a
+UI/inspection cache, not a validation source. Every item is validated (coerce + check)
+*before any write*, so one invalid item fails the whole request (all-or-nothing 422).
+Non-null fields absent from the schema pass through to `record.fields` unvalidated —
+permissive JSONB is intentional (§14). Persist to Postgres (truth). Then **sync** the
+row into the schema's LanceDB table (record_id, reference, schema_version_id, status,
+column values, embeddings, metadata): Postgres commits first, Lance sync is best-effort,
+and `rebuild(schema_id)` is the recovery path — search is eventually consistent by
+design. Validation-throughput optimization is deferred (§14 future-work ledger).
 
 **Index engine.** New `index/` package: a LanceDB engine exposing `upsert_records`,
 `delete_records`, `search` (scalar filter + FTS), `similarity_search` (vector), and
@@ -133,11 +140,16 @@ extraction view that the Queue UI renders.
 - **Schemas (= Datasets):** `POST /schemas`, `GET /schemas`, `GET /schemas/{id}`,
   `PUT /schemas/{id}`, `DELETE /schemas/{id}`; `GET /schemas/{id}/columns`.
 - **Schema versions:** `POST /schemas/{id}/versions` (register body + evolve Lance
-  table), `GET /schemas/{id}/versions`, `GET /schemas/{id}/versions/{version}`.
-- **Records:** `POST /schemas/{id}/records:bulk-upsert`, `GET /schemas/{id}/records`
-  (filter/paginate), `DELETE /schemas/{id}/records`,
-  `POST /schemas/{id}/records:search` (LanceDB: text / vector / scalar filter).
-- **References:** `GET /references/{reference}` (cross-schema document view).
+  table), `GET /schemas/{id}/versions`, `GET /schemas/{id}/versions/{version}`
+  (single-version read: unimplemented; the Phase-4 annotation UI needs it to render
+  old-version shapes — see §14 future-work ledger).
+- **Records:** `POST /schemas/{id}/records:bulk-upsert` (AIP-136 custom method; ≤500
+  items), `GET /schemas/{id}/records?offset&limit&status&reference` (50 default /
+  1000 max, exact total), `DELETE /schemas/{id}/records?ids=<csv>` (≤100, 204),
+  `POST /schemas/{id}/records:search` (Phase 3, LanceDB: text / vector / scalar filter).
+- **References:** `GET /references/{reference:path}?workspace_id=` (cross-schema
+  document view; `:path` because DOIs contain slashes; unknown reference → empty 200 —
+  a reference is a join key, not an entity).
 - **Questions:** `POST|GET|PUT|DELETE /schemas/{id}/questions`.
 - **Annotation:** `PUT /records/{id}/suggestions`, `PUT /records/{id}/responses`.
 - **Queues:** `POST|GET|PUT|DELETE /queues`; `GET /queues/{id}/next` (next reference
@@ -219,8 +231,8 @@ retirements; job-queue offload of index sync; RAG/chat rewrite.
 
 ## 12. Open items to resolve during planning
 
-- Exact `version` format (monotonic int vs semver) and whether a draft version can be
-  edited in place before publish.
+- Whether a draft version can be edited in place before publish. (The `version` format
+  half of this item is resolved: monotonic int, implemented in Phase 1.)
 - `reference` derivation rules during migration when no `documents` link exists.
 - Whether `response.values` stays keyed-by-question (v1-style) or moves per-question
   rows — current design keeps the v1-style keyed map for minimal churn.
@@ -261,3 +273,41 @@ retirements; job-queue offload of index sync; RAG/chat rewrite.
 - **Models + their migration live in adjacent commits (NOTED).** The roborev per-commit review of
   the models commit flagged the absence of the table migration in that same commit; the migration
   lands in the immediately following commit, and the branch is internally consistent and green.
+
+## 14. Resolved during Phase 2 implementation & 2026-07-06 spec review
+
+- **`kind` (`singleton`|`table`) removed as a schema concept (DECIDED 2026-07-06).**
+  Singleton behavior is not a special schema type: a record whose questions are all
+  non-table is *implicitly* one row per `reference`. The distinction is emergent from
+  question/column bindings (Phase 4), not a stored discriminator, so nothing enforces
+  "one row per reference" at the record layer. Code follow-up: drop `schemas.kind` +
+  `SchemaKind` (small migration) before Phase 4 builds question bindings on top.
+- **Unknown-field passthrough is intentional (DECIDED 2026-07-06).** `record.fields`
+  keeps permissive-JSONB semantics: non-null fields absent from the Pandera schema pass
+  through unvalidated. No strict/reject mode.
+- **Concurrency races stay accepted (REAFFIRMED 2026-07-06).** Publish `max(version)+1`
+  and concurrent bulk-upserts on `(schema_id, external_id)` can 500 on unique-constraint
+  collision; hardened when record writes move to the job queue.
+- **As-built naming.** Tables `schemas` / `schema_versions` / `v2_records`; ORM class
+  `V2Record` (a second declarative class named `Record` breaks v1's string-based
+  `relationship("Record")` lookups in the shared registry); PG enum
+  `v2_record_status_enum`. Canonical names return at Phase 6 retirement. Full Phase 2
+  decision table: `docs/superpowers/plans/2026-07-03-v2-records.md`.
+- **Upsert update semantics.** Patch-like for `metadata`/`status` (omitted preserves the
+  existing value); `fields`/`reference`/version pin always overwritten.
+
+### Future work ledger (after the extraction-records model stabilizes)
+
+- **Documents import → `reference` mapping (needs its own spec + PRD).** How PDF(s) /
+  imported documents map to the `reference` join key, beyond what the current documents
+  import provides.
+- **`reference` normalization.** A canonicalization rule for the join key (trim, DOI
+  case-folding) applied on the write path — needed before the Queue (Phase 5) walks
+  references, since `10.1000/ABC` vs `10.1000/abc` are currently distinct documents.
+- **Question↔column binding validation.** Publish-time validation of `question.columns`
+  against the new version's `columns_cache`; bindings dangle on column rename/drop.
+- **Validation throughput.** Per-request S3 body fetch is fine for now; later options:
+  Pandera lazy/batched validation or ibis + DuckDB backend with incremental loading
+  (an immutable-version body cache is the cheap intermediate step).
+- **`GET /schemas/{id}/versions/{version}`.** Specced, unimplemented; the Phase-4
+  annotation UI will need it to render records pinned to old versions.
