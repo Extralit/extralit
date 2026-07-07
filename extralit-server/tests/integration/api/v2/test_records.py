@@ -179,3 +179,61 @@ async def test_non_member_cannot_read_records(async_client, annotator_auth_heade
 
     resp = await async_client.get(f"/api/v2/schemas/{schema.id}/records", headers=annotator_auth_header)
     assert resp.status_code == 403, resp.text
+
+
+async def test_bulk_upsert_syncs_index(async_client, owner_auth_header, db, monkeypatch):
+    from unittest.mock import AsyncMock
+
+    sync = AsyncMock()
+    monkeypatch.setattr("extralit_server.contexts.v2.index_sync.sync_upserted_records", sync)
+    _patch_fetch(monkeypatch)
+    schema, _ = await _published_schema(db)
+
+    resp = await async_client.post(
+        f"/api/v2/schemas/{schema.id}/records:bulk-upsert",
+        headers=owner_auth_header,
+        json={"items": [{"fields": {"name": "Ada", "age": 36}, "reference": "pmid:1"}]},
+    )
+    assert resp.status_code == 200, resp.text
+    sync.assert_awaited_once()
+
+
+async def test_bulk_upsert_survives_index_failure(async_client, owner_auth_header, db, monkeypatch):
+    from unittest.mock import AsyncMock
+
+    # Real best-effort path: engine raises, request must still be 200.
+    monkeypatch.setattr(
+        "extralit_server.index.lancedb_engine.LanceIndexEngine.upsert",
+        AsyncMock(side_effect=RuntimeError("lance down")),
+    )
+    monkeypatch.setattr(
+        "extralit_server.index.lancedb_engine.LanceIndexEngine.ensure_table",
+        AsyncMock(side_effect=RuntimeError("lance down")),
+    )
+    _patch_fetch(monkeypatch)
+    schema, _ = await _published_schema(db)
+
+    resp = await async_client.post(
+        f"/api/v2/schemas/{schema.id}/records:bulk-upsert",
+        headers=owner_auth_header,
+        json={"items": [{"fields": {"name": "Ada", "age": 36}, "reference": "pmid:1"}]},
+    )
+    assert resp.status_code == 200, resp.text
+
+
+async def test_delete_syncs_index(async_client, owner_auth_header, db, monkeypatch):
+    from unittest.mock import AsyncMock
+
+    sync = AsyncMock()
+    monkeypatch.setattr("extralit_server.contexts.v2.index_sync.sync_deleted_records", sync)
+    _patch_fetch(monkeypatch)
+    schema, version = await _published_schema(db)
+    from tests.factories import V2RecordFactory
+
+    record = await V2RecordFactory.create(schema=schema, version=version, fields={"name": "X"})
+    resp = await async_client.delete(
+        f"/api/v2/schemas/{schema.id}/records?ids={record.id}",
+        headers=owner_auth_header,
+    )
+    assert resp.status_code == 204, resp.text
+    sync.assert_awaited_once()

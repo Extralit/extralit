@@ -124,6 +124,14 @@ class Settings(BaseSettings):
     s3_secret_key: str | None = Field(default=None, description="The secret key for the S3 storage")
     s3_region: str | None = Field(default=None, description="The region for the S3 storage")
 
+    lancedb_uri: str | None = Field(
+        default=None,
+        validate_default=True,
+        description="URI for the LanceDB index store (v2). Defaults to `{home_path}/lance`. "
+        "A local path works on the compose named volume and HF-Spaces persistent storage; "
+        "an s3:// URI is accepted by lancedb.connect but unsupported/unvalidated for now.",
+    )
+
     extralit_url: str | None = Field(default=None, description="The extralit server url for LLM serving endpoint")
 
     elasticsearch: str = "http://localhost:9200"
@@ -193,6 +201,14 @@ class Settings(BaseSettings):
     @classmethod
     def set_home_path_default(cls, home_path: str):
         return home_path or os.path.join(Path.home(), ".extralit")
+
+    @field_validator("lancedb_uri", mode="before")
+    @classmethod
+    def set_lancedb_uri_default(cls, lancedb_uri: str | None, info: ValidationInfo) -> str:
+        if lancedb_uri:
+            return lancedb_uri
+        home_path = info.data.get("home_path") or os.path.join(Path.home(), ".extralit")
+        return os.path.join(home_path, "lance")
 
     @field_validator("base_url")
     @classmethod
