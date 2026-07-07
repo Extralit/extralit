@@ -83,7 +83,20 @@ async def test_ensure_table_evolves_to_superset(engine):
     await engine.ensure_table(sid, COLUMNS)
     evolved = [*COLUMNS, {"name": "doi", "dtype": "string[pyarrow]", "nullable": True, "review": None}]
     await engine.ensure_table(sid, evolved)  # idempotent + adds `doi`
-    assert engine  # no exception; table now carries the new column
+
+    # Confirm the new column is present in the live schema.
+    from extralit_server.index.mapping import table_name_for
+
+    db = engine._db
+    table = await db.open_table(table_name_for(sid))
+    live_names = (await table.schema()).names
+    assert "doi" in live_names
+
+    # Confirm the evolved column is usable in a filter.
+    from extralit_server.index.base import IndexFilter
+
+    result = await engine.search(sid, filters=[IndexFilter(column="doi", op="eq", value=None)], limit=10)
+    assert isinstance(result.total, int)  # no exception; doi is a valid filter column
 
 
 async def test_fts_total_counts_matches_not_table_rows(engine):
@@ -97,6 +110,37 @@ async def test_fts_total_counts_matches_not_table_rows(engine):
     result = await engine.search(sid, text="Deep", offset=0, limit=1)
     assert len(result.hits) == 1
     assert result.total == 2
+
+
+async def test_unknown_filter_column_raises(engine):
+    sid = uuid4()
+    await engine.ensure_table(sid, COLUMNS)
+    recs = [_Rec("A", 2016)]
+    await engine.upsert(sid, [record_to_row(r, COLUMNS) for r in recs], COLUMNS)
+
+    with pytest.raises(ValueError, match="disallowed filter column"):
+        await engine.search(sid, filters=[IndexFilter(column="injected) OR (1=1", op="eq", value=1)], limit=10)
+
+
+async def test_filter_op_in_rejects_scalar_string(engine):
+    sid = uuid4()
+    await engine.ensure_table(sid, COLUMNS)
+    recs = [_Rec("A", 2016)]
+    await engine.upsert(sid, [record_to_row(r, COLUMNS) for r in recs], COLUMNS)
+
+    with pytest.raises(TypeError, match="list/tuple"):
+        await engine.search(sid, filters=[IndexFilter(column="year", op="in", value="2016")], limit=10)
+
+
+async def test_filter_eq_none_matches_null_rows(engine):
+    sid = uuid4()
+    await engine.ensure_table(sid, COLUMNS)
+    # external_id is a SYSTEM_FIELDS column; rows with external_id=None should match IS NULL
+    rec = _Rec("A", 2016, external_id=None)
+    await engine.upsert(sid, [record_to_row(rec, COLUMNS)], COLUMNS)
+
+    result = await engine.search(sid, filters=[IndexFilter(column="external_id", op="eq", value=None)], limit=10)
+    assert rec.id in [h.record_id for h in result.hits]
 
 
 async def test_sql_type_covers_every_mapped_arrow_type():

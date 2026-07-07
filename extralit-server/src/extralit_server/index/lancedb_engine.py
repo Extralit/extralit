@@ -13,13 +13,13 @@ import pyarrow as pa
 from lancedb.index import FTS
 
 from extralit_server.index.base import IndexEngine, IndexFilter, IndexSearchHit, IndexSearchResult
-from extralit_server.index.mapping import arrow_schema_for, arrow_type_for, table_name_for
+from extralit_server.index.mapping import SYSTEM_FIELDS, arrow_schema_for, arrow_type_for, table_name_for
 from extralit_server.settings import settings
 
 # Arrow type -> LanceDB SQL type name, for `add_columns` cast expressions during evolution.
 # Must cover every Arrow type `mapping.arrow_type_for` can produce, or an evolved column
 # would silently get a different type than the same column at create-table time
-# (see tests/unit/index/test_mapping.py::test_sql_type_covers_every_mapped_arrow_type).
+# (see tests/integration/index/test_lancedb_engine.py::test_sql_type_covers_every_mapped_arrow_type).
 _SQL_TYPE_BY_ARROW = {
     pa.large_string(): "string",
     pa.int64(): "bigint",
@@ -40,7 +40,22 @@ def _sql_type_for(dtype: str) -> str:
 _FTS_TOTAL_CEILING = 10_000
 
 
+_VALID_IDENTIFIER_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
+
+
+def _validate_column(column: str, allowed: set[str]) -> None:
+    """Reject column identifiers that are not in the known-safe set.
+
+    This prevents SQL injection via crafted column names since Datafusion does not
+    support parameterised identifiers — only values can be safely escaped.
+    """
+    if column not in allowed:
+        raise ValueError(f"Unknown or disallowed filter column {column!r}. Allowed columns: {sorted(allowed)}")
+
+
 def _sql_literal(value: Any) -> str:
+    if value is None:
+        return "NULL"
     if isinstance(value, bool):
         return "true" if value else "false"
     if isinstance(value, (int, float)):
@@ -49,18 +64,25 @@ def _sql_literal(value: Any) -> str:
     return f"'{escaped}'"
 
 
-def _where_clause(filters: list[IndexFilter] | None) -> str | None:
+def _where_clause(filters: list[IndexFilter] | None, allowed_columns: set[str] | None = None) -> str | None:
     if not filters:
         return None
     clauses = []
     for f in filters:
+        if allowed_columns is not None:
+            _validate_column(f.column, allowed_columns)
         if f.op == "eq":
-            clauses.append(f"{f.column} = {_sql_literal(f.value)}")
+            if f.value is None:
+                clauses.append(f"{f.column} IS NULL")
+            else:
+                clauses.append(f"{f.column} = {_sql_literal(f.value)}")
         elif f.op == "ge":
             clauses.append(f"{f.column} >= {_sql_literal(f.value)}")
         elif f.op == "le":
             clauses.append(f"{f.column} <= {_sql_literal(f.value)}")
         elif f.op == "in":
+            if isinstance(f.value, str) or not hasattr(f.value, "__iter__"):
+                raise TypeError(f"IndexFilter op='in' requires a list/tuple of values, got {type(f.value).__name__!r}")
             values = ", ".join(_sql_literal(v) for v in f.value)
             clauses.append(f"{f.column} IN ({values})")
     return " AND ".join(clauses) if clauses else None
@@ -141,7 +163,9 @@ class LanceIndexEngine(IndexEngine):
         if name not in await db.table_names():
             return IndexSearchResult(hits=[], total=0)
         table = await db.open_table(name)
-        clause = _where_clause(filters)
+        live_columns = set((await table.schema()).names)
+        allowed_columns = live_columns | set(SYSTEM_FIELDS)
+        clause = _where_clause(filters, allowed_columns)
 
         if text:
             # `count_rows` only evaluates scalar predicates — it cannot apply the FTS
