@@ -20,7 +20,7 @@ async def _published(db):
 
 
 async def test_table_columns_unions_versions(db):
-    schema, v1 = await _published(db)
+    schema, _v1 = await _published(db)
     await SchemaVersionFactory.create(
         schema=schema,
         version=2,
@@ -31,6 +31,31 @@ async def test_table_columns_unions_versions(db):
     )
     columns = await index_sync.table_columns(db, schema)
     assert {c["name"] for c in columns} == {"title", "year"}
+
+
+async def test_table_columns_dtype_first_wins(db):
+    """Earliest version's dtype must win when two versions disagree on a column's type.
+
+    v1 defines `title` as string[pyarrow]; v2 redefines it as int64 and adds `year`.
+    Because versions are ordered ASC, `title` must keep the v1 dtype (string[pyarrow]).
+    """
+    schema, _v1 = await _published(db)  # v1: title=string[pyarrow]
+    await SchemaVersionFactory.create(
+        schema=schema,
+        version=2,
+        columns_cache=[
+            {"name": "title", "dtype": "int64", "nullable": True, "review": None},  # conflicting dtype
+            {"name": "year", "dtype": "int64", "nullable": True, "review": None},
+        ],
+    )
+    columns = await index_sync.table_columns(db, schema)
+    col_by_name = {c["name"]: c for c in columns}
+    # Name union is correct.
+    assert set(col_by_name) == {"title", "year"}
+    # Earliest-version dtype wins for `title` — v1's string[pyarrow] beats v2's int64.
+    assert col_by_name["title"]["dtype"] == "string[pyarrow]", (
+        f"Expected v1 dtype 'string[pyarrow]', got {col_by_name['title']['dtype']!r}"
+    )
 
 
 async def test_sync_schema_table_calls_ensure(db):
@@ -46,7 +71,7 @@ async def test_sync_upserted_records_builds_rows(db):
     engine = AsyncMock()
     await index_sync.sync_upserted_records(engine, db, schema, [record])
     engine.upsert.assert_awaited_once()
-    args, kwargs = engine.upsert.call_args
+    args, _kwargs = engine.upsert.call_args
     rows = args[1]
     assert rows[0]["title"] == "Hi"
 

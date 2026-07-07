@@ -152,3 +152,30 @@ async def test_sql_type_covers_every_mapped_arrow_type():
 
     for arrow_type in set(_ARROW_BY_DTYPE.values()):
         assert arrow_type in _SQL_TYPE_BY_ARROW, f"no SQL type for Arrow type {arrow_type}"
+
+
+async def test_list_tables_pagination():
+    """_list_tables must follow page_token links until page_token is exhausted."""
+    import types
+    from unittest.mock import AsyncMock, patch
+
+    engine = LanceIndexEngine(uri="/tmp/fake-lance-uri")
+
+    page1 = types.SimpleNamespace(tables=["a", "b"], page_token="tok")
+    page2 = types.SimpleNamespace(tables=["c"], page_token=None)
+
+    async def _fake_list_tables(**kwargs):
+        if kwargs.get("page_token") == "tok":
+            return page2
+        return page1
+
+    fake_db = AsyncMock()
+    fake_db.list_tables = _fake_list_tables
+
+    async def _fake_conn():
+        return fake_db
+
+    with patch.object(engine, "_conn", _fake_conn):
+        result = await engine._list_tables()
+
+    assert result == ["a", "b", "c"]
