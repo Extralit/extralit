@@ -122,14 +122,17 @@ UI/inspection cache, not a validation source. Every item is validated (coerce + 
 Non-null fields absent from the schema pass through to `record.fields` unvalidated —
 permissive JSONB is intentional (§14). Persist to Postgres (truth). Then **sync** the
 row into the schema's LanceDB table (record_id, reference, schema_version_id, status,
-column values, embeddings, metadata): Postgres commits first, Lance sync is best-effort,
+column values, metadata; embeddings deferred, §15): Postgres commits first, Lance sync is best-effort,
 and `rebuild(schema_id)` is the recovery path — search is eventually consistent by
 design. Validation-throughput optimization is deferred (§14 future-work ledger).
 
 **Index engine.** New `index/` package: a LanceDB engine exposing `upsert_records`,
-`delete_records`, `search` (scalar filter + FTS), `similarity_search` (vector), and
-`rebuild(schema_id)`. Postgres is authoritative; the Lance table is always rebuildable.
-Sync is inline on commit for the first cut (job-queue offload is a later optimization).
+`delete_records`, `search` (scalar filter + FTS), and `rebuild(schema_id)`. Postgres is
+authoritative; the Lance table is always rebuildable. Sync is inline on commit for the
+first cut (job-queue offload is a later optimization), mirroring v1's proven sync
+architecture (same hook points, DI-injected engine, reindex CLI) with a new v2-shaped
+engine — not the old `SearchEngine` ABC. `similarity_search` (vector) is deferred to a
+separate PDF-chunk-retrieval design session. Phase 3 decisions: §15.
 
 **Reference grouping.** `GET /api/v2/references/{reference}` returns all records across
 every schema in the workspace sharing that `reference` — the document's project-level
@@ -146,7 +149,8 @@ extraction view that the Queue UI renders.
 - **Records:** `POST /schemas/{id}/records:bulk-upsert` (AIP-136 custom method; ≤500
   items), `GET /schemas/{id}/records?offset&limit&status&reference` (50 default /
   1000 max, exact total), `DELETE /schemas/{id}/records?ids=<csv>` (≤100, 204),
-  `POST /schemas/{id}/records:search` (Phase 3, LanceDB: text / vector / scalar filter).
+  `POST /schemas/{id}/records:search` (Phase 3, LanceDB: text FTS + scalar filter;
+  vector deferred to the chunk-retrieval session, §15).
 - **References:** `GET /references/{reference:path}?workspace_id=` (cross-schema
   document view; `:path` because DOIs contain slashes; unknown reference → empty 200 —
   a reference is a join key, not an entity).
@@ -215,8 +219,10 @@ forms — designed in the frontend phase.)*
   lineage, reference grouping, queue distribution/assignment selection.
 - **Contexts (async pytest):** schema publish + version evolution, record bulk-upsert
   with validation, annotation upsert resolving to cells.
-- **Index:** LanceDB engine against an ephemeral table — upsert/search/similarity/
-  rebuild; schema-evolution to superset; Postgres↔Lance parity after `rebuild`.
+- **Index:** LanceDB engine against an ephemeral (tmp-dir) table — upsert/search/
+  rebuild; schema-evolution to superset; Postgres↔Lance parity after `rebuild`;
+  best-effort sync failure never fails the write request. (Similarity tests arrive
+  with the chunk-retrieval phase.)
 - **API:** `/api/v2` happy-path + validation-failure + authz per router.
 - **Migration:** v1 fixture dataset → v2; record/annotation parity; idempotent re-run.
 
@@ -296,6 +302,55 @@ retirements; job-queue offload of index sync; RAG/chat rewrite.
 - **Upsert update semantics.** Patch-like for `metadata`/`status` (omitted preserves the
   existing value); `fields`/`reference`/version pin always overwritten.
 
+## 15. Resolved during Phase 3 design (2026-07-07)
+
+- **Embeddings deferred out of Phase 3 (DECIDED 2026-07-07).** Record-level embeddings
+  are *not* built in Phase 3: the primary retrieval target is **PDF-extracted chunks**
+  (a separate Lance table fed by the OCR/ingest pipeline), which needs its own design
+  session. Mechanism pre-decisions recorded for that session:
+  - **Compute = deferred server-side, RQ + litellm.** Embedding runs as an RQ job (never
+    in the write request path) via a configurable `EXTRALIT_EMBEDDING_MODEL` (any litellm
+    provider — the pattern `chat.py` already uses). Model unset → vector search cleanly
+    disabled (422); FTS/scalar search unaffected, so keyless HF-Spaces deployments
+    degrade gracefully.
+  - **Vector column is lazy.** Tables are created without a vector column; the first
+    embedding job learns the dimension from the litellm response and adds the column via
+    Lance schema evolution. No dim setting; changing models requires a rebuild.
+  - The compose `worker` service will need the `extralitdata` volume mount once workers
+    write Lance files (not needed in Phase 3).
+- **Lance storage = local URI with override (DECIDED 2026-07-07).** New setting
+  `EXTRALIT_LANCEDB_URI`, defaulting to `${EXTRALIT_HOME_PATH}/lance`. Works out of the
+  box on the compose named volume and HF-Spaces persistent `/data`; ops can point it at
+  `s3://` later through the same `lancedb.connect` API (documented as
+  unsupported-for-now — MinIO commit-concurrency and per-query latency unvalidated).
+  Multi-process writes on the shared local volume rely on Lance's optimistic commit
+  protocol.
+- **ES coexistence: Phase 3 is additive only (DECIDED 2026-07-07).** v1 keeps running on
+  `search_engine/` (ES/OpenSearch) untouched until Phase 6 retirement; v2 contexts never
+  import it. This supersedes the Phase-2 plan's downstream note that put "delete
+  `search_engine/`" in Phase 3.
+- **Sync architecture mirrors v1; failure semantics per §6 (DECIDED 2026-07-07).** Keep
+  v1's *shape* — create/evolve index on schema publish, `upsert_records` inline after
+  record commit, delete on delete, engine injected as a FastAPI dependency, rebuild via
+  a reindex CLI (`extralit_server index reindex`, v2 twin of
+  `cli/search_engine/reindex.py`) — but as a new v2-shaped `LanceIndexEngine` taking
+  `Schema`/`V2Record` (spec §4's "not behind the old ABC" stands). Failure semantics
+  differ from v1 deliberately: a failed Lance sync **logs a warning (schema + record
+  ids) and never fails the API request** (v1 propagates and 500s); no staleness
+  bookkeeping, no per-failure retry — `rebuild` is the recovery path.
+- **Search hydrates from Postgres.** `POST /schemas/{id}/records:search` consults Lance
+  only for matching/ranking (`record_id`s + scores) and builds response payloads from
+  Postgres rows — results always reflect the source of truth even when the index is
+  stale, and `RecordRead` serialization is reused. Request shape (Phase 3):
+  `{query: {text}, filters, offset, limit}`; the vector query variant lands with the
+  chunk-retrieval design.
+- **Lance row layout.** One table per schema (`schema_{id.hex}`): identity/system
+  columns (`record_id`, `reference`, `schema_version_id`, `status`, `external_id`,
+  timestamps) + one typed column per schema column (Arrow types derived from
+  `columns_cache` dtypes; superset across versions via Lance `add_columns` evolution) +
+  a derived `text` column (concatenated string-dtype cells) carrying the BM25 FTS index.
+  `metadata` is stored as a JSON string column, not filterable in Phase 3.
+
 ### Future work ledger (after the extraction-records model stabilizes)
 
 - **Documents import → `reference` mapping (needs its own spec + PRD).** How PDF(s) /
@@ -311,3 +366,11 @@ retirements; job-queue offload of index sync; RAG/chat rewrite.
   (an immutable-version body cache is the cheap intermediate step).
 - **`GET /schemas/{id}/versions/{version}`.** Specced, unimplemented; the Phase-4
   annotation UI will need it to render records pinned to old versions.
+- **PDF-chunk retrieval (needs its own design session).** Embeddings + vector search
+  over PDF-extracted chunks in a dedicated Lance table (feeds the RAG/chat rewrite,
+  §9/§11). Mechanism pre-decisions already made in §15: RQ + litellm compute, lazy
+  vector column via schema evolution, worker volume mount.
+- **Record-level `similarity_search`.** Deferred with the above; the engine interface
+  gains it when a use case (and an embedding target) exists.
+- **`metadata` filtering in `:search`.** Stored as a JSON string column in Lance for
+  now; promote to typed/filterable columns if a filtering use case appears.
