@@ -104,9 +104,18 @@ class LanceIndexEngine(IndexEngine):
         self._db = None
 
     async def _list_tables(self) -> list[str]:
-        """Return the current table names from the LanceDB connection."""
+        """Return all table names from the LanceDB connection, paginating to exhaustion."""
         db = await self._conn()
-        return (await db.list_tables()).tables
+        names: list[str] = []
+        page_token: str | None = None
+        while True:
+            kwargs = {"page_token": page_token} if page_token else {}
+            response = await db.list_tables(**kwargs)
+            names.extend(response.tables)
+            page_token = response.page_token or None
+            if not page_token:
+                break
+        return names
 
     async def table_names(self) -> list[str]:
         return await self._list_tables()
