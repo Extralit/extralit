@@ -374,3 +374,54 @@ retirements; job-queue offload of index sync; RAG/chat rewrite.
   gains it when a use case (and an embedding target) exists.
 - **`metadata` filtering in `:search`.** Stored as a JSON string column in Lance for
   now; promote to typed/filterable columns if a filtering use case appears.
+
+## 16. Resolved during Phase 3 implementation (2026-07-07)
+
+Phase 3 built the LanceDB index engine per §15 with no design reversals. As-built
+outcomes and the deviations added during implementation/review (roborev jobs 80–98):
+
+- **As-built package layout.** `index/` = `mapping.py` (pure Arrow/row helpers, no
+  LanceDB/DB import), `base.py` (`IndexEngine` ABC + `IndexFilter`/`IndexSearchHit`/
+  `IndexSearchResult`, deliberately *not* the v1 `SearchEngine` ABC), `lancedb_engine.py`
+  (`LanceIndexEngine` on the async LanceDB API), `__init__.py` (`get_index_engine` DI
+  provider mirroring `get_search_engine`). Sync glue lives in
+  `contexts/v2/index_sync.py`; reindex CLI in `cli/index/`. v1 `search_engine/` untouched
+  (verified: branch diff is empty over that path).
+- **Best-effort semantics as-built.** `sync_schema_table` (publish), `sync_upserted_records`
+  (bulk-upsert), `sync_deleted_records` (delete) each `try/except Exception` → log WARNING
+  with schema + record ids → swallow; the API request still 200s/204s (tested by forcing
+  the real engine to raise and asserting 200). Only `:rebuild-index`, `rebuild_schema_index`,
+  and the reindex CLI surface errors.
+- **Search hydration as-built.** `POST /schemas/{id}/records:search` takes
+  `{text, filters, offset, limit}`, consults Lance for `record_id`s + scores, then fetches
+  `V2Record` rows from Postgres by `id IN (...)` scoped to the schema and **re-orders to
+  Lance's hit order**, skipping ids missing from PG (stale-index tolerance). `total` is the
+  engine's match total (FTS totals materialize the match set, saturating at a 10k ceiling,
+  since `count_rows` cannot evaluate an FTS predicate).
+- **SQL-safety hardening (beyond the plan draft).** Filter column identifiers are validated
+  against an allow-list built from the live Lance schema ∪ system fields (Datafusion has no
+  parameterized identifiers); values go through a typed literal builder with `'`→`''`
+  escaping. `eq` + `None` → `IS NULL`; `op="in"` with a scalar is rejected twice —
+  a `RecordFilter` pydantic validator → **422** at the API boundary, and a `TypeError`
+  guard in the engine for direct (CLI/SDK) callers.
+- **Column-union determinism.** `table_columns` orders versions `version ASC` so
+  `union_columns` first-wins keeps the earliest version's dtype; rebuild pagination adds a
+  unique `id ASC` tiebreaker (equal `inserted_at` rows would otherwise skip/dup across
+  OFFSET pages). `arrow_schema_for` raises `ValueError` if a user column name collides with
+  a reserved system field.
+- **Rebuild efficiency.** `LanceIndexEngine.upsert` gained a keyword-only `optimize=True`;
+  the ABC adds a concrete no-op `optimize_table(schema_id)`. Write-time sync upserts
+  eagerly optimize (search freshness); `rebuild_schema_index` upserts every batch with
+  `optimize=False` and calls `optimize_table` once at the end — O(1) FTS rebuilds instead
+  of O(batches). `_list_tables` paginates the LanceDB `list_tables()` response to
+  exhaustion via `page_token`.
+- **LanceDB API notes (installed `lancedb>=0.34.0`).** Async API throughout
+  (`connect_async`, `merge_insert(...).when_matched_update_all().when_not_matched_insert_all()`,
+  `create_index("text", config=FTS())`, `add_columns`, `optimize`, `count_rows`). The
+  deprecated `Connection.table_names()` was replaced with `list_tables()`. FTS relevance is
+  the `_score` column.
+- **Review outcome.** Per-task spec+quality reviews and a whole-branch review passed;
+  roborev branch review (job 98) returned **no issues**. Deferred as follow-ups (non-blocking):
+  no test asserts the deferred-optimize call count; `ge`/`le` filters with a `None` value
+  produce an always-false `>= NULL` (no 422 guard on ordered ops); `lancedb_uri: str | None`
+  is always `str` at runtime and treats `""` as unset.
