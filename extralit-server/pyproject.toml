@@ -77,6 +77,7 @@ dependencies = [
     "pdf2image>=1.17.0",
     "opencv-python-headless>=4.11.0.86",
     "pandera[io]>=0.20",
+    "lancedb>=0.34.0",
 ]
 
 [project.optional-dependencies]
