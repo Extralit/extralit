@@ -105,3 +105,12 @@ class SchemaKind(StrEnum):
 class SchemaStatus(StrEnum):
     draft = "draft"
     published = "published"
+
+
+class V2RecordStatus(StrEnum):
+    """v2 record status. Distinct from v1 RecordStatus: adds `discarded` and maps to its
+    own PG enum type (v2_record_status_enum) so v1's record_status_enum is untouched."""
+
+    pending = "pending"
+    completed = "completed"
+    discarded = "discarded"

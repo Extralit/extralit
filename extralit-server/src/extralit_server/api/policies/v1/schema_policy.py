@@ -47,3 +47,27 @@ class SchemaPolicy:
             return actor.is_owner or (actor.is_admin and await actor.is_member(schema.workspace_id))
 
         return is_allowed
+
+    # Record actions live here rather than on a new RecordPolicy: v2 records have no authz
+    # axis beyond their schema's workspace, and the RecordPolicy name is taken by v1.
+
+    @classmethod
+    def upsert_records(cls, schema: Schema) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (actor.is_admin and await actor.is_member(schema.workspace_id))
+
+        return is_allowed
+
+    @classmethod
+    def list_records(cls, schema: Schema) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or await actor.is_member(schema.workspace_id)
+
+        return is_allowed
+
+    @classmethod
+    def delete_records(cls, schema: Schema) -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (actor.is_admin and await actor.is_member(schema.workspace_id))
+
+        return is_allowed
