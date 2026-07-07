@@ -82,3 +82,43 @@ async def test_non_member_cannot_create_or_read_schema(async_client, annotator_a
         json={"name": "secret", "kind": SchemaKind.table.value, "workspace_id": str(ws.id)},
     )
     assert resp.status_code == 403, resp.text
+
+
+async def test_publish_version_creates_index_table(async_client, owner_auth_header, db, monkeypatch):
+    from datetime import datetime
+    from unittest.mock import AsyncMock
+
+    from extralit_server.contexts.files import ObjectMetadata
+
+    monkeypatch.setattr(
+        "extralit_server.contexts.v2.schemas.files_ctx.put_object",
+        AsyncMock(
+            return_value=ObjectMetadata(
+                bucket_name="b",
+                object_name="k",
+                etag="etag-1",
+                size=1,
+                last_modified=datetime(2026, 1, 1),
+                content_type="application/json",
+                version_id="ver-1",
+                metadata={},
+            )
+        ),
+    )
+
+    ensure = AsyncMock()
+    monkeypatch.setattr("extralit_server.contexts.v2.index_sync.sync_schema_table", ensure)
+
+    from tests.factories import SchemaFactory
+
+    schema = await SchemaFactory.create()
+    import pandera.pandas as pa
+
+    body = pa.DataFrameSchema(columns={"title": pa.Column(pa.String, nullable=False)}).to_json()
+    resp = await async_client.post(
+        f"/api/v2/schemas/{schema.id}/versions",
+        headers=owner_auth_header,
+        json={"body": body},
+    )
+    assert resp.status_code in (200, 201), resp.text
+    ensure.assert_awaited_once()

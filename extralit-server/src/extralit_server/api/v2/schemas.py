@@ -14,9 +14,12 @@ from extralit_server.api.schemas.v2.schemas import (
     SchemaVersionRead,
 )
 from extralit_server.contexts import files as files_ctx
+from extralit_server.contexts.v2 import index_sync
 from extralit_server.contexts.v2 import schemas as schemas_ctx
 from extralit_server.database import get_async_db
 from extralit_server.errors.future import NotFoundError
+from extralit_server.index import get_index_engine
+from extralit_server.index.base import IndexEngine
 from extralit_server.models import User, Workspace
 from extralit_server.models.v2 import Schema, SchemaVersion
 from extralit_server.security import auth
@@ -109,12 +112,13 @@ async def publish_schema_version(
     payload: SchemaVersionCreate,
     db: Annotated[AsyncSession, Depends(get_async_db)],
     s3_client=Depends(files_ctx.get_s3_client),
+    index_engine: Annotated[IndexEngine, Depends(get_index_engine)],
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     schema = await _get_schema_or_404(db, schema_id)
     await authorize(current_user, SchemaPolicy.publish(schema))
     workspace = await Workspace.get_or_raise(db, schema.workspace_id)
-    return await schemas_ctx.publish_version(
+    version = await schemas_ctx.publish_version(
         db,
         s3_client,
         schema,
@@ -123,6 +127,9 @@ async def publish_schema_version(
         review_widgets=payload.review_widgets,
         created_by=current_user.id,
     )
+    # Best-effort: ensure/evolve the Lance table to the new column superset.
+    await index_sync.sync_schema_table(index_engine, db, schema)
+    return version
 
 
 @router.get("/schemas/{schema_id}/versions", response_model=list[SchemaVersionRead])
