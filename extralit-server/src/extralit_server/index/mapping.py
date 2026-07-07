@@ -62,7 +62,16 @@ def arrow_schema_for(columns: list[dict[str, Any]]) -> pa.Schema:
     All fields are nullable in Lance regardless of the Pandera `nullable` flag —
     Postgres enforces validation; the index must hold superset rows where older-version
     records legitimately lack newer columns.
+
+    Raises ValueError if any user column name collides with a system field, since such
+    a collision would produce a duplicate Arrow field or silently overwrite system data.
     """
+    _system = set(SYSTEM_FIELDS)
+    collisions = [c["name"] for c in columns if c["name"] in _system]
+    if collisions:
+        raise ValueError(
+            f"Schema column name(s) collide with reserved system fields: {collisions}. Reserved names: {SYSTEM_FIELDS}"
+        )
     fields = [
         pa.field("record_id", pa.large_string()),
         pa.field("reference", pa.large_string()),

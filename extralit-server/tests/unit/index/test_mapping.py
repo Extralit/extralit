@@ -30,6 +30,18 @@ def test_arrow_type_unknown_dtype_falls_back_to_string():
     assert mapping.arrow_type_for("category") == pa.large_string()
 
 
+def test_arrow_schema_raises_on_system_field_collision():
+    import pytest
+
+    colliding = [{"name": "text", "dtype": "string[pyarrow]", "nullable": True, "review": None}]
+    with pytest.raises(ValueError, match="reserved system fields"):
+        mapping.arrow_schema_for(colliding)
+
+    colliding2 = [{"name": "record_id", "dtype": "string[pyarrow]", "nullable": True, "review": None}]
+    with pytest.raises(ValueError, match="reserved system fields"):
+        mapping.arrow_schema_for(colliding2)
+
+
 def test_arrow_schema_has_system_fields_and_typed_columns():
     schema = mapping.arrow_schema_for(COLUMNS)
     names = schema.names
