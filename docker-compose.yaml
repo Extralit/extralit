@@ -1,3 +1,8 @@
+# Services tagged with the `no-auto-start` profile (extralit server/worker,
+# postgres, kibana) do NOT start with a plain `docker compose up -d` — only
+# minio, elasticsearch, and redis do. This suits local dev where the server and
+# database run outside compose. To run the full stack in Docker:
+#   docker compose --profile no-auto-start up -d
 x-common-variables: &common-variables
   EXTRALIT_HOME_PATH: /var/lib/extralit
   EXTRALIT_ELASTICSEARCH: http://elasticsearch:9200
