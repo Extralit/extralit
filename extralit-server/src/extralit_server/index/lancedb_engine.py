@@ -40,9 +40,6 @@ def _sql_type_for(dtype: str) -> str:
 _FTS_TOTAL_CEILING = 10_000
 
 
-_VALID_IDENTIFIER_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
-
-
 def _validate_column(column: str, allowed: set[str]) -> None:
     """Reject column identifiers that are not in the known-safe set.
 
@@ -106,19 +103,24 @@ class LanceIndexEngine(IndexEngine):
         # AsyncConnection has no explicit close in the current API; drop the reference.
         self._db = None
 
-    async def table_names(self) -> list[str]:
+    async def _list_tables(self) -> list[str]:
+        """Return the current table names from the LanceDB connection."""
         db = await self._conn()
-        return list(await db.table_names())
+        return (await db.list_tables()).tables
+
+    async def table_names(self) -> list[str]:
+        return await self._list_tables()
 
     async def ensure_table(self, schema_id: UUID, columns: list[dict[str, Any]]) -> None:
-        db = await self._conn()
         name = table_name_for(schema_id)
         schema = arrow_schema_for(columns)
-        if name not in await db.table_names():
+        if name not in await self._list_tables():
+            db = await self._conn()
             table = await db.create_table(name, schema=schema)
             await table.create_index("text", config=FTS())
             return
         # Evolve: add any columns present in `columns` but missing from the live table.
+        db = await self._conn()
         table = await db.open_table(name)
         existing = set((await table.schema()).names)
         to_add = {c["name"]: f"cast(NULL as {_sql_type_for(c['dtype'])})" for c in columns if c["name"] not in existing}
@@ -126,9 +128,9 @@ class LanceIndexEngine(IndexEngine):
             await table.add_columns(to_add)
 
     async def drop_table(self, schema_id: UUID) -> None:
-        db = await self._conn()
         name = table_name_for(schema_id)
-        if name in await db.table_names():
+        if name in await self._list_tables():
+            db = await self._conn()
             await db.drop_table(name)
 
     async def upsert(self, schema_id: UUID, rows: list[dict[str, Any]], columns: list[dict[str, Any]]) -> None:
@@ -160,7 +162,7 @@ class LanceIndexEngine(IndexEngine):
     ) -> IndexSearchResult:
         db = await self._conn()
         name = table_name_for(schema_id)
-        if name not in await db.table_names():
+        if name not in await self._list_tables():
             return IndexSearchResult(hits=[], total=0)
         table = await db.open_table(name)
         live_columns = set((await table.schema()).names)
