@@ -11,6 +11,7 @@ GUARDED = [
     ROOT / "contexts" / "v2" / "projection.py",
     ROOT / "api" / "v2" / "annotation.py",
     ROOT / "api" / "v2" / "questions.py",
+    ROOT / "api" / "v2" / "projection.py",
 ]
 
 

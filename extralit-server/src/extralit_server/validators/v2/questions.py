@@ -13,7 +13,7 @@ class QuestionBindingValidator:
     def validate(cls, *, type: QuestionType, columns: list[str], columns_cache: list[dict]) -> None:
         if type in DEFERRED_TYPES:
             raise UnprocessableEntityError(
-                f"question type {type.value!r} (span) is not supported in this release; "
+                f"question type {type.value!r} is not supported in this release; "
                 "it is deferred to the PDF-chunk annotation design"
             )
         if not columns:

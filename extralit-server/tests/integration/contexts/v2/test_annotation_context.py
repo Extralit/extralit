@@ -170,3 +170,57 @@ async def test_submitted_response_requires_required_question(db):
             user,
             upsert=ResponseUpsert(status=ResponseStatus.submitted, values={"notes": {"value": "n"}}),
         )
+
+
+async def test_submitted_response_rejects_empty_values(db):
+    schema = await _published_schema(db)
+    await V2QuestionFactory.create(
+        schema=schema, name="dx", type=QuestionType.text, columns=["disease"], settings={"type": "text"}
+    )
+    record = await V2RecordFactory.create(version__schema=schema)
+    user = await UserFactory.create()
+
+    with pytest.raises(UnprocessableEntityError, match="missing response values"):
+        await annotation_ctx.upsert_response(
+            db, record, user, upsert=ResponseUpsert(status=ResponseStatus.submitted, values={})
+        )
+
+    with pytest.raises(UnprocessableEntityError, match="missing response values"):
+        await annotation_ctx.upsert_response(
+            db, record, user, upsert=ResponseUpsert(status=ResponseStatus.submitted, values=None)
+        )
+
+
+async def test_response_rejects_non_configured_question(db):
+    schema = await _published_schema(db)
+    await V2QuestionFactory.create(
+        schema=schema, name="dx", type=QuestionType.text, columns=["disease"], settings={"type": "text"}
+    )
+    record = await V2RecordFactory.create(version__schema=schema)
+    user = await UserFactory.create()
+
+    with pytest.raises(UnprocessableEntityError, match="non-configured"):
+        await annotation_ctx.upsert_response(
+            db,
+            record,
+            user,
+            upsert=ResponseUpsert(status=ResponseStatus.submitted, values={"not_a_question": {"value": "x"}}),
+        )
+
+
+async def test_upsert_response_is_idempotent_per_record_user(db):
+    schema = await _published_schema(db)
+    await V2QuestionFactory.create(
+        schema=schema, name="dx", type=QuestionType.text, columns=["disease"], settings={"type": "text"}
+    )
+    record = await V2RecordFactory.create(version__schema=schema)
+    user = await UserFactory.create()
+
+    r1 = await annotation_ctx.upsert_response(
+        db, record, user, upsert=ResponseUpsert(status=ResponseStatus.submitted, values={"dx": {"value": "flu"}})
+    )
+    r2 = await annotation_ctx.upsert_response(
+        db, record, user, upsert=ResponseUpsert(status=ResponseStatus.submitted, values={"dx": {"value": "covid"}})
+    )
+    assert r1.id == r2.id
+    assert r2.values == {"dx": {"value": "covid"}}

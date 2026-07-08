@@ -39,8 +39,6 @@ class V2ResponseValueValidator:
             RankingQuestionResponseValueValidator(value).validate_for(_parsed(settings))
         elif type == QuestionType.table:
             cls._validate_table(value, columns)
-        else:
-            raise UnprocessableEntityError(f"unknown question type {type!r}")
 
     @staticmethod
     def _validate_table(value, columns: list[str]) -> None:

@@ -51,3 +51,18 @@ async def test_cell_resolves_to_response_over_suggestion(db):
     view = await projection_ctx.build_reference_view(db, workspace_id=schema.workspace_id, reference="doc-2", user=user)
     cell = view.records[0].cells[0]
     assert cell.value == "covid" and cell.source == "response"
+
+
+async def test_cell_is_none_when_no_response_or_suggestion(db):
+    schema, version, q1 = await _schema_with_question(db)
+    await V2QuestionFactory.create(
+        schema=schema, name="notes", type=QuestionType.text, columns=["disease"], settings={"type": "text"}
+    )
+    record = await V2RecordFactory.create(version=version, reference="doc-3")
+    await V2SuggestionFactory.create(record=record, question=q1, value="flu")
+    user = await UserFactory.create()
+
+    view = await projection_ctx.build_reference_view(db, workspace_id=schema.workspace_id, reference="doc-3", user=user)
+    cells = {c.question_name: c for c in view.records[0].cells}
+    assert cells["dx"].value == "flu" and cells["dx"].source == "suggestion"
+    assert cells["notes"].value is None and cells["notes"].source is None
