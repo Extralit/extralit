@@ -172,6 +172,24 @@ async def test_second_annotator_gets_only_their_own_response(async_client, annot
     assert get_resp.json() is None  # the second annotator has not submitted their own response yet
 
 
+async def test_non_member_annotator_cannot_read_or_upsert_response(async_client, annotator_auth_header, db):
+    # The annotator behind annotator_auth_header is NOT a member of this schema's workspace.
+    # V2ResponsePolicy.read/upsert_own both require owner-or-member, so authorization is
+    # denied before question/value validation runs regardless of the request payload.
+    schema = await _published_schema(db)
+    record = await V2RecordFactory.create(version__schema=schema)
+
+    get_resp = await async_client.get(f"/api/v2/records/{record.id}/responses", headers=annotator_auth_header)
+    assert get_resp.status_code == 403, get_resp.text
+
+    put_resp = await async_client.put(
+        f"/api/v2/records/{record.id}/responses",
+        headers=annotator_auth_header,
+        json={"status": "submitted", "values": {"dx": {"value": "flu"}}},
+    )
+    assert put_resp.status_code == 403, put_resp.text
+
+
 async def test_response_upsert_does_not_sync_lance(async_client, annotator, annotator_auth_header, db):
     schema = await _published_schema(db)
     await V2QuestionFactory.create(
