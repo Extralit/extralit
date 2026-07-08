@@ -425,3 +425,186 @@ outcomes and the deviations added during implementation/review (roborev jobs 80�
   no test asserts the deferred-optimize call count; `ge`/`le` filters with a `None` value
   produce an always-false `>= NULL` (no 422 guard on ordered ops); `lancedb_uri: str | None`
   is always `str` at runtime and treats `""` as unset.
+
+## 17. Resolved during Phase 4 design (2026-07-08) — annotation v2
+
+Phase 4 builds the annotation layer: the human-in-the-loop review surface over LLM
+extractions. This section **supersedes §5's annotation rows and §3's Question framing**
+where they conflict; the decisions below are the authority for Phase 4.
+
+### 17.0 Mental model: field ⊋ question ⊋ reviewable cell (DECIDED)
+
+The v1 trinity (Question/Suggestion/Response) is kept, but its meaning is corrected for
+the schema-centric model. The prior draft conflated *field*, *column*, and *question*;
+they are nested, not equal:
+
+- **`record.fields`** is the **superset** — context-relevant extractions the annotator
+  needs to do their job. Most fields are read-only context.
+- A **question** binds the **reviewable subset** of columns. A field may *reference* a
+  question, in which case its authoritative value is **not stored** in `record.fields` —
+  it lives in the suggestion→response for that question. So a stored field and a
+  question are (mostly) mutually exclusive sources for a column's value.
+- The **projection view** (§17.4) is over **questions** — the reviewable cells. Plain
+  non-question fields ride along as read-only context.
+- A field neither implies a question nor a response.
+
+The **field↔question unification** (a field whose value is *defined by* a question, so a
+schema becomes a chain of extraction/annotation steps whose later steps consume earlier
+steps' annotated values) is a real generalization of this model but is **out of scope for
+Phase 4** — it gets its own design session (§17.6). Phase 4's job is to not preclude it.
+
+### 17.1 Three entities, reached leanly (DECIDED)
+
+Keep `question` + `suggestion` + `response`, but implement them by **reusing v1's
+validation logic** (§9's "fold v1 annotation into thin v2"), not by porting handlers
+wholesale. The alternatives considered and rejected:
+
+- **Collapse to responses-only** (questions→`columns_cache`/`review_widgets`,
+  suggestions→`record.fields`). Rejected: (a) `v2_questions` is useful as the entity that
+  **defines per-cell validators** (its settings drive response/suggestion validation, and
+  it is the natural anchor for the future field↔question pydantic/Pandera binding); (b) a
+  **suggestion is a distinct lifecycle layer**, not a synonym for the stored field — it is
+  the LLM-**pre-populated** proposed value, and **submitting a response converts the
+  suggestion into a response**. Folding it into `record.fields` loses that loop and its
+  `score`/`agent` provenance.
+- **Wholesale v1 port** (three tables + duplicated handlers/validators). Rejected to avoid
+  maintaining two parallel annotation code stacks; the validators and settings pydantic
+  are imported from v1, not re-authored.
+
+### 17.2 Tables (additive Alembic; v2_-prefixed, same footnote as `V2Record`)
+
+v1 owns `questions`/`suggestions`/`responses`, and a second declarative class of the same
+name breaks v1's string-based `relationship()` registry lookups (§14). So the ORM classes
+are `V2Question`/`V2Suggestion`/`V2Response` on `v2_questions`/`v2_suggestions`/
+`v2_responses`; PG enums are `v2_*`-named. Canonical names return at Phase 6 retirement.
+
+| Table / ORM | Key columns |
+|---|---|
+| `v2_questions` / `V2Question` | `id`, `schema_id`→schemas CASCADE, `name`, `title`, `description?`, `type` (PG enum `v2_question_type_enum`: `text`\|`label`\|`multi_label`\|`rating`\|`ranking`\|`span`\|`table`), `columns` JSONB (bound column names), `settings` JSONB (v1 `QuestionSettings` shape), `required` bool, timestamps; uniq(`schema_id`,`name`) |
+| `v2_suggestions` / `V2Suggestion` | `id`, `record_id`→v2_records CASCADE, `question_id`→v2_questions CASCADE, `value` JSONB, `score` JSONB (float\|float[]\|null), `agent?`, `type?` (PG enum `v2_suggestion_type_enum`, v1 `SuggestionType` values), timestamps; uniq(`record_id`,`question_id`) |
+| `v2_responses` / `V2Response` | `id`, `record_id`→v2_records CASCADE, `user_id`→users CASCADE, `values` JSONB (`{question_name: {value}}`, Decision §17.3), `status` (PG enum `v2_response_status_enum`: `draft`\|`submitted`\|`discarded`), timestamps; uniq(`record_id`,`user_id`) |
+
+### 17.3 Decided items
+
+- **`response.values` = keyed-by-question map, one row per `(record, user)` (DECIDED).**
+  `values` is `{question_name: {value}}`; the question resolves to column(s). Rationale:
+  Phase 5 queue-progress counts **responses per (reference→record, user)** — response-row
+  granularity, unaffected by the values shape — and the `(record_id, user_id)` unique
+  constraint is the overlap unit distribution needs. Per-question rows would only serve
+  per-question analytics on *responses*, which in the schema-centric model is the record
+  cells (Lance) + suggestions, not the review overlay. Submit is a single-row upsert,
+  matching the UX (the annotator submits the whole form). A `table` question's
+  multi-column answer stays one JSONB value under its key.
+
+- **`span` question type deferred out of Phase 4 (DECIDED).** The enum value is reserved,
+  but question-create **rejects `type=span` with a documented 422**. v2 cells are short
+  structured values; the compelling span target is document/PDF text, which is the
+  chunk-retrieval design's domain (§15 ledger). Defining a v1-style char-offset anchor
+  into `str(record.fields[column])` now would likely be throwaway against the real
+  document/chunk anchor. The other six types fully cover the cell-review layer.
+  Migration of any v1 `span` questions is decided in the migrator phase (§8) — parked or
+  skipped, not annotatable until the chunk-retrieval design lands.
+
+- **No `record.status` transitions on response submit in Phase 4 (DECIDED).** Submitting a
+  response writes only the `v2_responses` row. `v2_records.status` is set solely by record
+  writes (bulk-upsert). The v1 flip (`responses_submitted >= min_submitted` →
+  `completed`) *is* distribution logic (§9 folds `contexts/distribution.py` into the
+  queue); **Phase 5 owns it** with the queue. Consequence: nothing moves a record to
+  `completed` in Phase 4 — correct, completion is a distribution concept.
+
+- **`question.columns` binding validated at create/update against the current
+  `columns_cache` (DECIDED).** Every bound name must exist in
+  `schema.current_version_id`'s `columns_cache`; **non-table binds exactly 1 column,
+  `table` binds ≥1**. Questions can only be created against a **published** schema
+  (`current_version_id` non-null) → 422 otherwise. **Publish-time revalidation** (a later
+  version renaming/dropping a bound column dangles the binding) and **dtype-compatibility**
+  checks stay in the §15 ledger. Old-version rendering tolerance: when a record pins an
+  older version whose `columns_cache` lacks a bound column, the UI renders it as
+  not-applicable — a display concern, not a validation error.
+
+- **Value validation is settings-level only (DECIDED).** Reuse v1's per-type validators
+  (`validators/response_values.py`): text is str, label/rating in options, ranking
+  ranks/values valid+unique, multi_label unique+available; `table` value is a dict whose
+  keys ⊆ `question.columns` (structure only — **no Pandera re-run** on the cells). This
+  keeps annotation **Postgres-only**: responses/suggestions never fetch the S3 Pandera
+  body. `SuggestionCreateValidator`'s score-cardinality checks (value/score length +
+  list/scalar match) are ported as-is. Record-cell correctness remains the record-write
+  path's responsibility.
+
+### 17.4 The projection view (the "single view" — the product surface)
+
+The first-class read surface. Not a stored table in Phase 4 — a **read-model** over the
+three tables.
+
+- **Grain:** record × question → one resolved cell, grouped by `reference` (composes with
+  §6 reference grouping).
+- **Resolution precedence:** submitted **response** (requesting user) → **suggestion**.
+  (No `?? field` term: a reviewable column's value lives in the suggestion→response; plain
+  non-question fields are separate context, not resolved cells.) The payload also returns
+  the underlying suggestion + response so the UI shows provenance and lets the annotator
+  override.
+- **Suggestion→response conversion:** on submit, the annotator confirms or edits the
+  suggestion value; the response stores the human value; the suggestion row remains
+  (provenance) and is superseded by the response in the view.
+- **Backing:** **query-time Postgres** for a single reference/record (a point query, not
+  OLAP). The endpoint contract is **stable and shipped in Phase 4**; a **materialized OLAP
+  method** (DuckDB/ibis/Lance across references) is a future iteration that swaps the
+  backing without changing the contract. The **frontend consumes this endpoint in the
+  later frontend phase** (§11) — Phase 4 delivers the server contract only.
+
+### 17.5 API surface (`/api/v2`) and authorization
+
+- **Questions:** `POST|GET|PUT|DELETE /schemas/{id}/questions`, `GET /questions/{id}`.
+- **Suggestions:** `PUT /records/{id}/suggestions` (upsert on `(record, question)`),
+  `GET /records/{id}/suggestions`.
+- **Responses:** `PUT /records/{id}/responses` (upsert the **current user's own**
+  response), `GET /records/{id}/responses`.
+- **Projection view:** `GET /references/{reference:path}/view?workspace_id=` (or an
+  extension of the existing `GET /references/{reference}`), returning per-record resolved
+  cells + provenance grouped by reference.
+- **Version read (pulled into Phase 4):** `GET /schemas/{id}/versions/{version}` — the
+  §15 ledger item, needed so the annotation UI can render records pinned to old versions.
+- **No Lance sync for annotation.** Questions/suggestions/responses live **only in
+  Postgres**; annotation contexts never import the index engine. Lance indexes record
+  cells for search; the review overlay is queried from Postgres.
+- **Policies** (alongside `SchemaPolicy` in `api/policies/v1/`, which already targets
+  `models.v2`): `QuestionPolicy` and `SuggestionPolicy` mirror `SchemaPolicy`
+  (list/get: workspace member; create/update/delete: owner or admin+member), scoped via
+  the question's / record's `schema.workspace_id`. **`V2ResponsePolicy` ports v1's
+  own-response authz**: `owner OR actor.id == response.user_id OR (admin AND
+  member(workspace))`, workspace resolved via `record.schema.workspace_id` — annotators
+  write and read their own response, not others'.
+
+### 17.6 Out of scope (each with a pointer)
+
+- **Field↔question unification / schema-as-chain-of-steps** — a field whose authoritative
+  value is *defined by* a question (value not stored), enabling multi-step schemas whose
+  later steps consume earlier annotated values across `reference`. Phase 4 is compatible
+  (a question binds a column without requiring a stored field) but does not implement the
+  cross-schema resolution. **Its own design session.**
+- **Chain-of-steps resolution in the view** — following a field's question reference
+  through suggestion→response across schemas needs the OLAP join above; deferred with the
+  field↔question spec.
+- **Consensus / multi-annotator reconciliation** — the view resolves to the requesting
+  user's response; cross-annotator agreement (overlap → reconciled cell) is a later spec.
+  Phase 5 distribution produces the overlap; reconciliation consumes it.
+- **OLAP materialization method** for the projection view — query-time per-reference for
+  now (§17.4).
+- **Per-cell suggestion `score`/`agent` surfaced beyond the suggestion row** — if a
+  review-UI need appears, a `{column: {score, agent}}` map in `record.metadata` is the
+  cheap step.
+
+### 17.7 Testing strategy (Phase 4 additions to §10)
+
+- **Unit:** binding validation (existence + arity, published-schema requirement, span
+  422); ported per-type value validators + score cardinality; own-response authz;
+  projection resolution precedence (response→suggestion, conversion on submit).
+- **Contexts (async pytest):** question CRUD; suggestion upsert on `(record, question)`;
+  response upsert on `(record, user)` with **no `record.status` side-effect** and **no
+  index-engine call** (assert the engine is untouched); projection assembly for a
+  reference.
+- **API:** `/api/v2` annotation routers happy-path + 422 (span, unbound column, unpublished
+  schema, bad value shape) + authz (own-response, cross-user 403); single-version read;
+  projection-view endpoint.
+- **Migration (§8):** v1 questions→`v2_questions` column bindings, suggestions, responses
+  parity; v1 span questions handled per the migrator decision.
