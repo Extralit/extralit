@@ -39,6 +39,11 @@ async def get_schema(db: AsyncSession, schema_id: UUID) -> Schema | None:
     return await Schema.get(db, schema_id)
 
 
+async def get_version_by_number(db: AsyncSession, schema_id: UUID, version: int) -> SchemaVersion | None:
+    stmt = select(SchemaVersion).where(SchemaVersion.schema_id == schema_id, SchemaVersion.version == version)
+    return (await db.execute(stmt)).scalar_one_or_none()
+
+
 async def list_schemas(db: AsyncSession, *, workspace_id: UUID | None = None) -> list[Schema]:
     stmt = select(Schema)
     if workspace_id is not None:
