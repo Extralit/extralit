@@ -1,10 +1,11 @@
 import pytest
 
+from extralit_server.api.schemas.v2.annotation import SuggestionUpsert
 from extralit_server.api.schemas.v2.questions import QuestionCreate
 from extralit_server.contexts.v2 import annotation as annotation_ctx
 from extralit_server.enums import QuestionType, SchemaStatus
 from extralit_server.errors.future import UnprocessableEntityError
-from tests.factories import SchemaFactory, SchemaVersionFactory
+from tests.factories import SchemaFactory, SchemaVersionFactory, V2QuestionFactory, V2RecordFactory
 
 pytestmark = pytest.mark.asyncio
 
@@ -54,3 +55,19 @@ async def test_create_question_requires_published_schema(db):
             schema,
             create=QuestionCreate(name="q", title="Q", type=QuestionType.text, columns=["disease"]),
         )
+
+
+async def test_upsert_suggestion_is_idempotent_per_record_question(db):
+    schema = await _published_schema(db)
+    question = await V2QuestionFactory.create(
+        schema=schema, type=QuestionType.text, columns=["disease"], settings={"type": "text"}
+    )
+    record = await V2RecordFactory.create(version__schema=schema)
+
+    s1 = await annotation_ctx.upsert_suggestion(
+        db, record, question, upsert=SuggestionUpsert(question_id=question.id, value="a")
+    )
+    s2 = await annotation_ctx.upsert_suggestion(
+        db, record, question, upsert=SuggestionUpsert(question_id=question.id, value="b")
+    )
+    assert s1.id == s2.id and s2.value == "b"

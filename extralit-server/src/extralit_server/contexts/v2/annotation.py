@@ -8,10 +8,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.base import ExecutableOption
 
+from extralit_server.api.schemas.v2.annotation import SuggestionUpsert
 from extralit_server.api.schemas.v2.questions import QuestionCreate, QuestionUpdate
 from extralit_server.errors.future import UnprocessableEntityError
-from extralit_server.models.v2 import Schema, SchemaVersion, V2Question
+from extralit_server.models.v2 import Schema, SchemaVersion, V2Question, V2Record, V2Suggestion
 from extralit_server.validators.v2.questions import QuestionBindingValidator
+from extralit_server.validators.v2.values import V2SuggestionValidator
 
 
 async def _current_columns_cache(db: AsyncSession, schema: Schema) -> list[dict]:
@@ -68,3 +70,27 @@ async def update_question(db: AsyncSession, question: V2Question, *, update: Que
 
 async def delete_question(db: AsyncSession, question: V2Question) -> V2Question:
     return await question.delete(db)
+
+
+async def upsert_suggestion(
+    db: AsyncSession, record: V2Record, question: V2Question, *, upsert: SuggestionUpsert
+) -> V2Suggestion:
+    V2SuggestionValidator.validate(
+        upsert.value, upsert.score, type=question.type, settings=question.settings, columns=question.columns
+    )
+    stmt = select(V2Suggestion).where(V2Suggestion.record_id == record.id, V2Suggestion.question_id == question.id)
+    suggestion = (await db.execute(stmt)).scalar_one_or_none()
+    if suggestion is None:
+        suggestion = V2Suggestion(record_id=record.id, question_id=question.id)
+        db.add(suggestion)
+    suggestion.value = upsert.value
+    suggestion.score = upsert.score
+    suggestion.agent = upsert.agent
+    suggestion.type = upsert.type
+    await db.commit()
+    return suggestion
+
+
+async def list_suggestions(db: AsyncSession, record: V2Record) -> list[V2Suggestion]:
+    stmt = select(V2Suggestion).where(V2Suggestion.record_id == record.id).order_by(V2Suggestion.inserted_at.asc())
+    return (await db.execute(stmt)).scalars().all()

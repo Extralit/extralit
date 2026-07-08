@@ -1,6 +1,6 @@
 from extralit_server.api.policies.v1.commons import PolicyAction
 from extralit_server.models import User
-from extralit_server.models.v2 import Schema, V2Question
+from extralit_server.models.v2 import Schema, V2Question, V2Record
 
 
 class V2QuestionPolicy:
@@ -31,3 +31,21 @@ class V2QuestionPolicy:
 
     update = _write
     delete = _write
+
+
+class V2SuggestionPolicy:
+    @classmethod
+    def read(cls, record: "V2Record") -> PolicyAction:
+        # `record.schema` must be eagerly loaded (see the router's `selectinload` option) —
+        # AsyncSession does not support implicit lazy-loading outside an active greenlet.
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or await actor.is_member(record.schema.workspace_id)
+
+        return is_allowed
+
+    @classmethod
+    def write(cls, record: "V2Record") -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or (actor.is_admin and await actor.is_member(record.schema.workspace_id))
+
+        return is_allowed
