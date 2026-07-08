@@ -26,3 +26,7 @@ def downgrade() -> None:
     schema_kind = sa.Enum("singleton", "table", name="schema_kind_enum")
     schema_kind.create(op.get_bind(), checkfirst=True)
     op.add_column("schemas", sa.Column("kind", schema_kind, nullable=False, server_default="table"))
+    # The original column had no DB-level server_default (only a Python-side model default);
+    # drop it post-backfill so downgrade restores the exact prior DDL.
+    with op.batch_alter_table("schemas") as batch_op:
+        batch_op.alter_column("kind", server_default=None)
