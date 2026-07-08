@@ -559,9 +559,11 @@ three tables.
   `GET /records/{id}/suggestions`.
 - **Responses:** `PUT /records/{id}/responses` (upsert the **current user's own**
   response), `GET /records/{id}/responses`.
-- **Projection view:** `GET /references/{reference:path}/view?workspace_id=` (or an
-  extension of the existing `GET /references/{reference}`), returning per-record resolved
-  cells + provenance grouped by reference.
+- **Projection view:** `GET /projection/references/{reference:path}?workspace_id=`,
+  returning per-record resolved cells + provenance grouped by reference. A distinct
+  `/projection/...` prefix (not a `/view` suffix on `/references/{reference:path}`): the
+  greedy `:path` converter would otherwise shadow the endpoint, and a real reference ending
+  in `/view` would collide.
 - **Version read (pulled into Phase 4):** `GET /schemas/{id}/versions/{version}` — the
   §15 ledger item, needed so the annotation UI can render records pinned to old versions.
 - **No Lance sync for annotation.** Questions/suggestions/responses live **only in

@@ -435,7 +435,14 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from extralit_server.enums import QuestionType, ResponseStatus
-from tests.factories import V2QuestionFactory, V2ResponseFactory, V2SuggestionFactory
+from tests.factories import (
+    SchemaFactory,
+    UserFactory,
+    V2QuestionFactory,
+    V2RecordFactory,
+    V2ResponseFactory,
+    V2SuggestionFactory,
+)
 
 
 @pytest.mark.asyncio
@@ -448,24 +455,34 @@ async def test_question_persists_with_type_and_columns(db):
 
 @pytest.mark.asyncio
 async def test_question_name_unique_per_schema(db):
-    q = await V2QuestionFactory.create(name="dup")
+    # Same schema OBJECT passed twice (not schema_id) so the (schema_id, name) constraint trips.
+    schema = await SchemaFactory.create()
+    await V2QuestionFactory.create(schema=schema, name="dup")
     with pytest.raises(IntegrityError):
-        await V2QuestionFactory.create(schema_id=q.schema_id, name="dup")
+        await V2QuestionFactory.create(schema=schema, name="dup")
 
 
 @pytest.mark.asyncio
 async def test_suggestion_unique_per_record_question(db):
-    s = await V2SuggestionFactory.create()
+    # Pass the parent OBJECTS (not *_id): the factories declare record/question as SubFactory
+    # defaults, so passing only ids would let factory-boy create fresh parents and the
+    # relationship would win on flush — the (record_id, question_id) constraint would never trip.
+    record = await V2RecordFactory.create()
+    question = await V2QuestionFactory.create()
+    await V2SuggestionFactory.create(record=record, question=question)
     with pytest.raises(IntegrityError):
-        await V2SuggestionFactory.create(record_id=s.record_id, question_id=s.question_id)
+        await V2SuggestionFactory.create(record=record, question=question)
 
 
 @pytest.mark.asyncio
 async def test_response_unique_per_record_user(db):
-    r = await V2ResponseFactory.create(status=ResponseStatus.submitted, values={"q": {"value": "x"}})
+    record = await V2RecordFactory.create()
+    user = await UserFactory.create()
+    r = await V2ResponseFactory.create(record=record, user=user, status=ResponseStatus.submitted,
+                                       values={"q": {"value": "x"}})
     assert r.is_submitted
     with pytest.raises(IntegrityError):
-        await V2ResponseFactory.create(record_id=r.record_id, user_id=r.user_id)
+        await V2ResponseFactory.create(record=record, user=user)
 ```
 
 - [ ] **Step 5: Run the tests**
@@ -1442,12 +1459,18 @@ async def test_submitted_response_requires_required_question(db):
     schema = await _published_schema(db)
     await V2QuestionFactory.create(schema=schema, name="dx", type=QuestionType.text, columns=["disease"],
                                    settings={"type": "text"}, required=True)
+    # A second, optional question (also bound to "disease" — binding validation allows reuse) so the
+    # payload can be non-empty while omitting the required one. Submitting empty values would trip the
+    # earlier "missing response values" guard instead of the required-question path under test.
+    await V2QuestionFactory.create(schema=schema, name="notes", type=QuestionType.text, columns=["disease"],
+                                   settings={"type": "text"}, required=False)
     record = await V2RecordFactory.create(version__schema=schema)
     user = await UserFactory.create()
 
     with pytest.raises(UnprocessableEntityError, match="required"):
         await annotation_ctx.upsert_response(
-            db, record, user, upsert=ResponseUpsert(status=ResponseStatus.submitted, values={}))
+            db, record, user,
+            upsert=ResponseUpsert(status=ResponseStatus.submitted, values={"notes": {"value": "n"}}))
 ```
 
 - [ ] **Step 2: Run to verify it fails**
@@ -1714,7 +1737,7 @@ The product read-surface (spec §17.4): per reference, resolve each reviewable c
 
 **Interfaces:**
 - Consumes: `records_ctx.list_records_by_reference`; `annotation` question/suggestion/response reads; `V2Question`, `V2Suggestion`, `V2Response`.
-- Produces: `projection.build_reference_view(db, *, workspace_id, reference, user) -> ProjectionView`; route `GET /references/{reference:path}/view`.
+- Produces: `projection.build_reference_view(db, *, workspace_id, reference, user) -> ProjectionView`; route `GET /projection/references/{reference:path}`.
 
 - [ ] **Step 1: Write the projection schemas**
 
@@ -1899,7 +1922,10 @@ from extralit_server.security import auth
 router = APIRouter(tags=["v2: projection"])
 
 
-@router.get("/references/{reference:path}/view", response_model=ProjectionView)
+# Distinct `/projection/...` prefix, NOT `/references/{reference:path}/view`: the greedy `:path`
+# converter on the existing GET /references/{reference:path} (Phase 3) would otherwise shadow a
+# `/view` suffix, and a real reference ending in "/view" would collide. See spec §17.4.
+@router.get("/projection/references/{reference:path}", response_model=ProjectionView)
 async def get_reference_projection(
     *,
     reference: str,
@@ -1913,11 +1939,11 @@ async def get_reference_projection(
     )
 ```
 
-Add `from extralit_server.api.v2 import projection as projection_v2` and `api_v2.include_router(projection_v2.router)` in `api/v2/__init__.py`. **Ordering:** include `projection_v2.router` *before* `records_v2.router` if a routing conflict arises between `/references/{reference:path}/view` and `/references/{reference:path}` — verify by test; FastAPI matches in include order.
+Add `from extralit_server.api.v2 import projection as projection_v2` and `api_v2.include_router(projection_v2.router)` in `api/v2/__init__.py`. The `/projection/...` prefix does not overlap the Phase 3 `/references/{reference:path}` route, so include order is irrelevant.
 
 - [ ] **Step 7: Write the projection API test**
 
-Create `tests/integration/api/v2/test_projection.py`: owner GETs `/api/v2/references/doc-1/view?workspace_id=<id>` after seeding a suggestion, asserts 200 + the resolved cell; and an unknown reference returns 200 with `total_records == 0`.
+Create `tests/integration/api/v2/test_projection.py`: owner GETs `/api/v2/projection/references/doc-1?workspace_id=<id>` after seeding a suggestion, asserts 200 + the resolved cell; and an unknown reference returns 200 with `total_records == 0`.
 
 - [ ] **Step 8: Run the tests**
 
