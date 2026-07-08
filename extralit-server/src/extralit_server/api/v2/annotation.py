@@ -5,8 +5,14 @@ from fastapi import APIRouter, Depends, Security
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from extralit_server.api.policies.v1 import V2SuggestionPolicy, authorize
-from extralit_server.api.schemas.v2.annotation import SuggestionRead, Suggestions, SuggestionUpsert
+from extralit_server.api.policies.v1 import V2ResponsePolicy, V2SuggestionPolicy, authorize
+from extralit_server.api.schemas.v2.annotation import (
+    ResponseRead,
+    ResponseUpsert,
+    SuggestionRead,
+    Suggestions,
+    SuggestionUpsert,
+)
 from extralit_server.contexts.v2 import annotation as annotation_ctx
 from extralit_server.database import get_async_db
 from extralit_server.errors.future import NotFoundError, UnprocessableEntityError
@@ -53,3 +59,28 @@ async def list_suggestions(
     record = await _get_record_or_404(db, record_id)
     await authorize(current_user, V2SuggestionPolicy.read(record))
     return Suggestions(items=await annotation_ctx.list_suggestions(db, record))
+
+
+@router.put("/records/{record_id}/responses", response_model=ResponseRead)
+async def upsert_response(
+    *,
+    record_id: UUID,
+    payload: ResponseUpsert,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
+):
+    record = await _get_record_or_404(db, record_id)
+    await authorize(current_user, V2ResponsePolicy.upsert_own(record))
+    return await annotation_ctx.upsert_response(db, record, current_user, upsert=payload)
+
+
+@router.get("/records/{record_id}/responses", response_model=ResponseRead | None)
+async def get_own_response(
+    *,
+    record_id: UUID,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
+):
+    record = await _get_record_or_404(db, record_id)
+    await authorize(current_user, V2ResponsePolicy.read(record))
+    return await annotation_ctx.get_response(db, record, current_user)

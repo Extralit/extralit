@@ -1,11 +1,11 @@
 import pytest
 
-from extralit_server.api.schemas.v2.annotation import SuggestionUpsert
+from extralit_server.api.schemas.v2.annotation import ResponseUpsert, SuggestionUpsert
 from extralit_server.api.schemas.v2.questions import QuestionCreate, QuestionUpdate
 from extralit_server.contexts.v2 import annotation as annotation_ctx
-from extralit_server.enums import QuestionType, SchemaStatus
+from extralit_server.enums import QuestionType, ResponseStatus, SchemaStatus, V2RecordStatus
 from extralit_server.errors.future import UnprocessableEntityError
-from tests.factories import SchemaFactory, SchemaVersionFactory, V2QuestionFactory, V2RecordFactory
+from tests.factories import SchemaFactory, SchemaVersionFactory, UserFactory, V2QuestionFactory, V2RecordFactory
 
 pytestmark = pytest.mark.asyncio
 
@@ -127,3 +127,46 @@ async def test_upsert_suggestion_is_idempotent_per_record_question(db):
         db, record, question, upsert=SuggestionUpsert(question_id=question.id, value="b")
     )
     assert s1.id == s2.id and s2.value == "b"
+
+
+async def test_upsert_response_keyed_by_question_no_record_status_change(db):
+    schema = await _published_schema(db)
+    await V2QuestionFactory.create(
+        schema=schema, name="dx", type=QuestionType.text, columns=["disease"], settings={"type": "text"}, required=True
+    )
+    record = await V2RecordFactory.create(version__schema=schema, status=V2RecordStatus.pending)
+    user = await UserFactory.create()
+
+    resp = await annotation_ctx.upsert_response(
+        db, record, user, upsert=ResponseUpsert(status=ResponseStatus.submitted, values={"dx": {"value": "flu"}})
+    )
+    assert resp.values == {"dx": {"value": "flu"}}
+    assert record.status == V2RecordStatus.pending  # spec §17.3: no status side-effect
+
+
+async def test_submitted_response_requires_required_question(db):
+    schema = await _published_schema(db)
+    await V2QuestionFactory.create(
+        schema=schema, name="dx", type=QuestionType.text, columns=["disease"], settings={"type": "text"}, required=True
+    )
+    # A second, optional question (also bound to "disease" — binding validation allows reuse) so the
+    # payload can be non-empty while omitting the required one. Submitting empty values would trip the
+    # earlier "missing response values" guard instead of the required-question path under test.
+    await V2QuestionFactory.create(
+        schema=schema,
+        name="notes",
+        type=QuestionType.text,
+        columns=["disease"],
+        settings={"type": "text"},
+        required=False,
+    )
+    record = await V2RecordFactory.create(version__schema=schema)
+    user = await UserFactory.create()
+
+    with pytest.raises(UnprocessableEntityError, match="required"):
+        await annotation_ctx.upsert_response(
+            db,
+            record,
+            user,
+            upsert=ResponseUpsert(status=ResponseStatus.submitted, values={"notes": {"value": "n"}}),
+        )

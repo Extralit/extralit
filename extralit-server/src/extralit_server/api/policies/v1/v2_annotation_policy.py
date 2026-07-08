@@ -49,3 +49,24 @@ class V2SuggestionPolicy:
             return actor.is_owner or (actor.is_admin and await actor.is_member(record.schema.workspace_id))
 
         return is_allowed
+
+
+class V2ResponsePolicy:
+    """Own-response authz (spec §17.5), ported from v1 ResponsePolicy with the workspace
+    resolved via record.schema.workspace_id."""
+
+    @classmethod
+    def read(cls, record: "V2Record") -> PolicyAction:
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or await actor.is_member(record.schema.workspace_id)
+
+        return is_allowed
+
+    @classmethod
+    def upsert_own(cls, record: "V2Record") -> PolicyAction:
+        # PUT writes the current user's own response; any workspace member (incl. annotators)
+        # may write their own, matching v1 (actor.id == response.user_id).
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or await actor.is_member(record.schema.workspace_id)
+
+        return is_allowed

@@ -8,12 +8,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.base import ExecutableOption
 
-from extralit_server.api.schemas.v2.annotation import SuggestionUpsert
+from extralit_server.api.schemas.v2.annotation import ResponseUpsert, SuggestionUpsert
 from extralit_server.api.schemas.v2.questions import QuestionCreate, QuestionUpdate
+from extralit_server.enums import ResponseStatus
 from extralit_server.errors.future import UnprocessableEntityError
-from extralit_server.models.v2 import Schema, SchemaVersion, V2Question, V2Record, V2Suggestion
+from extralit_server.models.v2 import Schema, SchemaVersion, V2Question, V2Record, V2Response, V2Suggestion
 from extralit_server.validators.v2.questions import QuestionBindingValidator
-from extralit_server.validators.v2.values import V2SuggestionValidator
+from extralit_server.validators.v2.values import V2ResponseValueValidator, V2SuggestionValidator
 
 
 async def _current_columns_cache(db: AsyncSession, schema: Schema) -> list[dict]:
@@ -94,3 +95,50 @@ async def upsert_suggestion(
 async def list_suggestions(db: AsyncSession, record: V2Record) -> list[V2Suggestion]:
     stmt = select(V2Suggestion).where(V2Suggestion.record_id == record.id).order_by(V2Suggestion.inserted_at.asc())
     return (await db.execute(stmt)).scalars().all()
+
+
+async def _schema_questions(db: AsyncSession, schema_id) -> list[V2Question]:
+    stmt = select(V2Question).where(V2Question.schema_id == schema_id)
+    return (await db.execute(stmt)).scalars().all()
+
+
+def _validate_response_values(upsert: ResponseUpsert, questions: list[V2Question]) -> None:
+    values = upsert.values or {}
+    submitted = upsert.status == ResponseStatus.submitted
+    if submitted and not values:
+        raise UnprocessableEntityError("missing response values for submitted response")
+
+    by_name = {q.name: q for q in questions}
+    for name in values:
+        if name not in by_name:
+            raise UnprocessableEntityError(f"response value for non-configured question {name!r}")
+    for question in questions:
+        if submitted and question.required and question.name not in values:
+            raise UnprocessableEntityError(f"missing response value for required question {question.name!r}")
+    for name, wrapped in values.items():
+        question = by_name[name]
+        V2ResponseValueValidator.validate(
+            wrapped.get("value"), type=question.type, settings=question.settings, columns=question.columns
+        )
+
+
+async def upsert_response(db: AsyncSession, record: V2Record, user, *, upsert: ResponseUpsert) -> V2Response:
+    # NOTE (spec §17.3, §17.5): must never mutate `record.status` and must never touch the
+    # LanceDB index engine — this module is Postgres-only (see the module docstring).
+    questions = await _schema_questions(db, record.schema_id)
+    _validate_response_values(upsert, questions)
+
+    stmt = select(V2Response).where(V2Response.record_id == record.id, V2Response.user_id == user.id)
+    response = (await db.execute(stmt)).scalar_one_or_none()
+    if response is None:
+        response = V2Response(record_id=record.id, user_id=user.id)
+        db.add(response)
+    response.values = upsert.values
+    response.status = upsert.status
+    await db.commit()
+    return response
+
+
+async def get_response(db: AsyncSession, record: V2Record, user) -> V2Response | None:
+    stmt = select(V2Response).where(V2Response.record_id == record.id, V2Response.user_id == user.id)
+    return (await db.execute(stmt)).scalar_one_or_none()

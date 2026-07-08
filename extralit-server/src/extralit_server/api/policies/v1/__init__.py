@@ -11,7 +11,7 @@ from extralit_server.api.policies.v1.response_policy import ResponsePolicy
 from extralit_server.api.policies.v1.schema_policy import SchemaPolicy
 from extralit_server.api.policies.v1.suggestion_policy import SuggestionPolicy
 from extralit_server.api.policies.v1.user_policy import UserPolicy
-from extralit_server.api.policies.v1.v2_annotation_policy import V2QuestionPolicy, V2SuggestionPolicy
+from extralit_server.api.policies.v1.v2_annotation_policy import V2QuestionPolicy, V2ResponsePolicy, V2SuggestionPolicy
 from extralit_server.api.policies.v1.vector_settings_policy import VectorSettingsPolicy
 from extralit_server.api.policies.v1.webhook_policy import WebhookPolicy
 from extralit_server.api.policies.v1.workspace_policy import WorkspacePolicy
@@ -31,6 +31,7 @@ __all__ = [
     "SuggestionPolicy",
     "UserPolicy",
     "V2QuestionPolicy",
+    "V2ResponsePolicy",
     "V2SuggestionPolicy",
     "VectorSettingsPolicy",
     "WebhookPolicy",
