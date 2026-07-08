@@ -1,7 +1,13 @@
 import pytest
 
 from extralit_server.enums import QuestionType, SchemaStatus
-from tests.factories import SchemaFactory, SchemaVersionFactory, V2QuestionFactory, V2RecordFactory
+from tests.factories import (
+    SchemaFactory,
+    SchemaVersionFactory,
+    V2QuestionFactory,
+    V2RecordFactory,
+    WorkspaceUserFactory,
+)
 
 pytestmark = pytest.mark.asyncio
 
@@ -92,4 +98,22 @@ async def test_non_member_annotator_cannot_read_suggestions(async_client, annota
     record = await V2RecordFactory.create(version__schema=schema)
 
     resp = await async_client.get(f"/api/v2/records/{record.id}/suggestions", headers=annotator_auth_header)
+    assert resp.status_code == 403, resp.text
+
+
+async def test_member_non_admin_annotator_cannot_upsert_suggestion(async_client, annotator, annotator_auth_header, db):
+    # V2SuggestionPolicy.write requires owner or admin+member; a plain (non-admin) member
+    # must still be forbidden from writing suggestions even though they can read them.
+    schema = await _published_schema(db)
+    question = await V2QuestionFactory.create(
+        schema=schema, type=QuestionType.text, columns=["disease"], settings={"type": "text"}
+    )
+    record = await V2RecordFactory.create(version__schema=schema)
+    await WorkspaceUserFactory.create(workspace_id=schema.workspace_id, user_id=annotator.id)
+
+    resp = await async_client.put(
+        f"/api/v2/records/{record.id}/suggestions",
+        headers=annotator_auth_header,
+        json={"question_id": str(question.id), "value": "a"},
+    )
     assert resp.status_code == 403, resp.text
