@@ -14,8 +14,6 @@ from extralit_server.models.v2 import Schema, SchemaVersion
 if TYPE_CHECKING:
     from types_aiobotocore_s3.client import S3Client
 
-    from extralit_server.enums import SchemaKind
-
 
 def object_key_for(schema_id: UUID, version: int) -> str:
     return f"schemas/{schema_id}/v{version}.json"
@@ -25,14 +23,12 @@ async def create_schema(
     db: AsyncSession,
     *,
     name: str,
-    kind: "SchemaKind",
     workspace_id: UUID,
     settings: dict[str, Any] | None = None,
 ) -> Schema:
     return await Schema.create(
         db,
         name=name,
-        kind=kind,
         workspace_id=workspace_id,
         settings=settings or {},
         status=SchemaStatus.draft,

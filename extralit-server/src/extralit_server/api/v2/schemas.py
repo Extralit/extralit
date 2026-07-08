@@ -45,7 +45,6 @@ async def create_schema(
     return await schemas_ctx.create_schema(
         db,
         name=payload.name,
-        kind=payload.kind,
         workspace_id=payload.workspace_id,
         settings=payload.settings,
     )

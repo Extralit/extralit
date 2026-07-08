@@ -6,7 +6,7 @@ import pytest
 
 from extralit_server.contexts.files import ObjectMetadata
 from extralit_server.contexts.v2 import schemas as schemas_ctx
-from extralit_server.enums import SchemaKind, SchemaStatus
+from extralit_server.enums import SchemaStatus
 from extralit_server.models.v2 import Schema, SchemaVersion
 from tests.factories import WorkspaceFactory
 
@@ -36,7 +36,7 @@ def _patch_put_object(monkeypatch, bucket: str) -> AsyncMock:
 
 async def test_create_and_list_schema(db):
     ws = await WorkspaceFactory.create()
-    schema = await schemas_ctx.create_schema(db, name="population", kind=SchemaKind.table, workspace_id=ws.id)
+    schema = await schemas_ctx.create_schema(db, name="population", workspace_id=ws.id)
     assert isinstance(schema, Schema)
 
     listed = await schemas_ctx.list_schemas(db, workspace_id=ws.id)
@@ -46,7 +46,7 @@ async def test_create_and_list_schema(db):
 async def test_publish_version_uploads_body_and_advances_pointer(db, monkeypatch):
     ws = await WorkspaceFactory.create()
     _patch_put_object(monkeypatch, ws.name)
-    schema = await schemas_ctx.create_schema(db, name="population", kind=SchemaKind.table, workspace_id=ws.id)
+    schema = await schemas_ctx.create_schema(db, name="population", workspace_id=ws.id)
 
     s3 = AsyncMock()
     version = await schemas_ctx.publish_version(db, s3, schema, body=_body(), bucket=ws.name, created_by=None)
@@ -71,7 +71,7 @@ async def test_publish_version_uploads_body_and_advances_pointer(db, monkeypatch
 async def test_publish_version_merges_review_widgets_into_columns_cache(db, monkeypatch):
     ws = await WorkspaceFactory.create()
     _patch_put_object(monkeypatch, ws.name)
-    schema = await schemas_ctx.create_schema(db, name="ratings", kind=SchemaKind.table, workspace_id=ws.id)
+    schema = await schemas_ctx.create_schema(db, name="ratings", workspace_id=ws.id)
 
     s3 = AsyncMock()
     version = await schemas_ctx.publish_version(

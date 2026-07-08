@@ -14,7 +14,6 @@ from extralit_server.enums import (
     FieldType,
     MetadataPropertyType,
     OptionsOrder,
-    SchemaKind,
     SchemaStatus,
 )
 from extralit_server.models import (
@@ -654,7 +653,6 @@ class SchemaFactory(BaseFactory):
         model = SchemaModel
 
     name = factory.Sequence(lambda n: f"schema-{n}")
-    kind = SchemaKind.table
     status = SchemaStatus.draft
     workspace = factory.SubFactory(WorkspaceFactory)
 
