@@ -55,6 +55,12 @@ class QuestionSettingsValidator:
 
     @classmethod
     def validate(cls, *, type: QuestionType, settings: dict) -> None:
+        explicit_type = settings.get("type")
+        if explicit_type is not None and explicit_type != type.value:
+            raise UnprocessableEntityError(
+                f"settings 'type' {explicit_type!r} does not match question type {type.value!r}"
+            )
+
         if type not in SETTINGS_VALIDATED_TYPES:
             return
         try:

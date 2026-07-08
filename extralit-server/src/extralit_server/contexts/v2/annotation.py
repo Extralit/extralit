@@ -37,7 +37,10 @@ async def create_question(db: AsyncSession, schema: Schema, *, create: QuestionC
         description=create.description,
         type=create.type,
         columns=list(create.columns),
-        settings=dict(create.settings),
+        # Normalize the discriminator on store so stored settings always agree with `type` —
+        # QuestionSettingsValidator injects it for validation only; annotation-time `_parsed`
+        # (validators/v2/values.py) requires it to already be present on the persisted blob.
+        settings={**create.settings, "type": create.type.value},
         required=create.required,
     )
     db.add(question)
@@ -65,8 +68,11 @@ async def update_question(db: AsyncSession, question: V2Question, *, update: Que
 
     effective_settings = update.settings if update.settings is not None else question.settings
     QuestionSettingsValidator.validate(type=question.type, settings=effective_settings)
+    if update.settings is not None:
+        # Normalize with the question's own (immutable) type, never a client-supplied one.
+        question.settings = {**effective_settings, "type": question.type.value}
 
-    for attr in ("title", "description", "settings", "required"):
+    for attr in ("title", "description", "required"):
         value = getattr(update, attr)
         if value is not None:
             setattr(question, attr, value)

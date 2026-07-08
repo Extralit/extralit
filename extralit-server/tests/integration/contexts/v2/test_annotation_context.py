@@ -89,6 +89,74 @@ async def test_create_question_text_type_allows_empty_settings(db):
     assert q.id is not None
 
 
+async def test_create_question_without_type_key_normalizes_settings_and_is_usable_end_to_end(db):
+    # Regression test (roborev job 121): settings-driven questions created with valid settings
+    # that OMIT the "type" discriminator must still be usable at annotation time — create_question
+    # must normalize the discriminator into the stored settings, not just inject it transiently
+    # for validation.
+    schema = await _published_schema(db)
+    question = await annotation_ctx.create_question(
+        db,
+        schema,
+        create=QuestionCreate(
+            name="dx",
+            title="Diagnosis",
+            type=QuestionType.label_selection,
+            columns=["disease"],
+            settings={"options": [{"value": "yes", "text": "Yes"}]},  # no "type" key
+        ),
+    )
+    assert question.settings["type"] == QuestionType.label_selection.value
+
+    record = await V2RecordFactory.create(version__schema=schema)
+    suggestion = await annotation_ctx.upsert_suggestion(
+        db, record, question, upsert=SuggestionUpsert(question_id=question.id, value="yes")
+    )
+    assert suggestion.value == "yes"
+
+    user = await UserFactory.create()
+    response = await annotation_ctx.upsert_response(
+        db, record, user, upsert=ResponseUpsert(status=ResponseStatus.submitted, values={"dx": {"value": "yes"}})
+    )
+    assert response.values == {"dx": {"value": "yes"}}
+
+
+async def test_create_question_rejects_contradictory_type_in_settings(db):
+    schema = await _published_schema(db)
+    with pytest.raises(UnprocessableEntityError, match="does not match question type"):
+        await annotation_ctx.create_question(
+            db,
+            schema,
+            create=QuestionCreate(
+                name="score",
+                title="Score",
+                type=QuestionType.rating,
+                columns=["disease"],
+                settings={"type": "text", "options": [{"value": 1}, {"value": 2}]},
+            ),
+        )
+
+
+async def test_update_question_rejects_contradictory_type_in_settings(db):
+    schema = await _published_schema(db)
+    question = await annotation_ctx.create_question(
+        db,
+        schema,
+        create=QuestionCreate(
+            name="score",
+            title="Score",
+            type=QuestionType.rating,
+            columns=["disease"],
+            settings={"type": "rating", "options": [{"value": 1}, {"value": 2}]},
+        ),
+    )
+
+    with pytest.raises(UnprocessableEntityError, match="does not match question type"):
+        await annotation_ctx.update_question(
+            db, question, update=QuestionUpdate(settings={"type": "label_selection", "options": []})
+        )
+
+
 async def test_update_question_rejects_settings_that_no_longer_match_type(db):
     schema = await _published_schema(db)
     question = await annotation_ctx.create_question(
