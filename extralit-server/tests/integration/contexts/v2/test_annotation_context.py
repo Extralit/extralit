@@ -1,7 +1,7 @@
 import pytest
 
 from extralit_server.api.schemas.v2.annotation import SuggestionUpsert
-from extralit_server.api.schemas.v2.questions import QuestionCreate
+from extralit_server.api.schemas.v2.questions import QuestionCreate, QuestionUpdate
 from extralit_server.contexts.v2 import annotation as annotation_ctx
 from extralit_server.enums import QuestionType, SchemaStatus
 from extralit_server.errors.future import UnprocessableEntityError
@@ -55,6 +55,62 @@ async def test_create_question_requires_published_schema(db):
             schema,
             create=QuestionCreate(name="q", title="Q", type=QuestionType.text, columns=["disease"]),
         )
+
+
+async def test_update_question_columns_revalidates_binding(db):
+    schema = await SchemaFactory.create(status=SchemaStatus.published)
+    version = await SchemaVersionFactory.create(
+        schema=schema,
+        columns_cache=[
+            {"name": "disease", "dtype": "str", "nullable": True, "review": None},
+            {"name": "outcome", "dtype": "str", "nullable": True, "review": None},
+        ],
+    )
+    schema.current_version_id = version.id
+    await db.commit()
+
+    question = await annotation_ctx.create_question(
+        db,
+        schema,
+        create=QuestionCreate(name="dx", title="Dx", type=QuestionType.text, columns=["disease"]),
+    )
+
+    updated = await annotation_ctx.update_question(db, question, update=QuestionUpdate(columns=["outcome"]))
+    assert updated.columns == ["outcome"]
+
+
+async def test_update_question_rejects_unknown_column(db):
+    schema = await _published_schema(db)
+    question = await annotation_ctx.create_question(
+        db,
+        schema,
+        create=QuestionCreate(name="dx", title="Dx", type=QuestionType.text, columns=["disease"]),
+    )
+
+    with pytest.raises(UnprocessableEntityError, match="unknown"):
+        await annotation_ctx.update_question(db, question, update=QuestionUpdate(columns=["nope"]))
+
+
+async def test_update_question_rejects_arity_mismatch_for_non_table_type(db):
+    schema = await SchemaFactory.create(status=SchemaStatus.published)
+    version = await SchemaVersionFactory.create(
+        schema=schema,
+        columns_cache=[
+            {"name": "disease", "dtype": "str", "nullable": True, "review": None},
+            {"name": "outcome", "dtype": "str", "nullable": True, "review": None},
+        ],
+    )
+    schema.current_version_id = version.id
+    await db.commit()
+
+    question = await annotation_ctx.create_question(
+        db,
+        schema,
+        create=QuestionCreate(name="dx", title="Dx", type=QuestionType.text, columns=["disease"]),
+    )
+
+    with pytest.raises(UnprocessableEntityError, match="exactly one column"):
+        await annotation_ctx.update_question(db, question, update=QuestionUpdate(columns=["disease", "outcome"]))
 
 
 async def test_upsert_suggestion_is_idempotent_per_record_question(db):
