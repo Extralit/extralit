@@ -39,6 +39,13 @@ def test_span_value_is_rejected():
         V2ResponseValueValidator.validate([], type=QuestionType.span, settings={"type": "span"}, columns=["c"])
 
 
+def test_unknown_question_type_fails_closed():
+    # Guards against a future QuestionType member being wired through without a branch in
+    # V2ResponseValueValidator.validate — the dispatch must reject, not silently accept.
+    with pytest.raises(UnprocessableEntityError, match="unknown question type"):
+        V2ResponseValueValidator.validate("x", type="bogus_type", settings={}, columns=["c"])
+
+
 MULTI_LABEL_SETTINGS = {
     "type": "multi_label_selection",
     "options": [{"value": "yes", "text": "Yes"}],

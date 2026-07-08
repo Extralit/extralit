@@ -39,6 +39,11 @@ class V2ResponseValueValidator:
             RankingQuestionResponseValueValidator(value).validate_for(_parsed(settings))
         elif type == QuestionType.table:
             cls._validate_table(value, columns)
+        else:
+            # Defensive: this dispatch is exhaustive for today's QuestionType, but a future
+            # enum member wired through without a branch here must fail closed (reject),
+            # not silently accept an unvalidated value.
+            raise UnprocessableEntityError(f"unknown question type {type!r}; cannot validate value")
 
     @staticmethod
     def _validate_table(value, columns: list[str]) -> None:

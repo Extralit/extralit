@@ -13,7 +13,7 @@ from extralit_server.api.schemas.v2.questions import QuestionCreate, QuestionUpd
 from extralit_server.enums import ResponseStatus
 from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.models.v2 import Schema, SchemaVersion, V2Question, V2Record, V2Response, V2Suggestion
-from extralit_server.validators.v2.questions import QuestionBindingValidator
+from extralit_server.validators.v2.questions import QuestionBindingValidator, QuestionSettingsValidator
 from extralit_server.validators.v2.values import V2ResponseValueValidator, V2SuggestionValidator
 
 
@@ -29,6 +29,7 @@ async def _current_columns_cache(db: AsyncSession, schema: Schema) -> list[dict]
 async def create_question(db: AsyncSession, schema: Schema, *, create: QuestionCreate) -> V2Question:
     columns_cache = await _current_columns_cache(db, schema)
     QuestionBindingValidator.validate(type=create.type, columns=create.columns, columns_cache=columns_cache)
+    QuestionSettingsValidator.validate(type=create.type, settings=create.settings)
     question = V2Question(
         schema_id=schema.id,
         name=create.name,
@@ -61,6 +62,10 @@ async def update_question(db: AsyncSession, question: V2Question, *, update: Que
         columns_cache = await _current_columns_cache(db, schema)
         QuestionBindingValidator.validate(type=question.type, columns=update.columns, columns_cache=columns_cache)
         question.columns = list(update.columns)
+
+    effective_settings = update.settings if update.settings is not None else question.settings
+    QuestionSettingsValidator.validate(type=question.type, settings=effective_settings)
+
     for attr in ("title", "description", "settings", "required"):
         value = getattr(update, attr)
         if value is not None:

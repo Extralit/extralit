@@ -31,7 +31,7 @@ async def test_create_question_validates_binding(db):
             title="Diagnosis",
             type=QuestionType.label_selection,
             columns=["disease"],
-            settings={"type": "label_selection", "options": [{"value": "x"}]},
+            settings={"type": "label_selection", "options": [{"value": "x", "text": "X"}]},
         ),
     )
     assert q.id is not None and q.columns == ["disease"]
@@ -45,6 +45,66 @@ async def test_create_question_rejects_unknown_column(db):
             schema,
             create=QuestionCreate(name="bad", title="Bad", type=QuestionType.text, columns=["nope"]),
         )
+
+
+async def test_create_question_rejects_empty_settings_for_settings_driven_type(db):
+    schema = await _published_schema(db)
+    with pytest.raises(UnprocessableEntityError, match="invalid settings for question type 'rating'"):
+        await annotation_ctx.create_question(
+            db,
+            schema,
+            create=QuestionCreate(
+                name="score",
+                title="Score",
+                type=QuestionType.rating,
+                columns=["disease"],
+                settings={},
+            ),
+        )
+
+
+async def test_create_question_accepts_valid_settings_for_settings_driven_type(db):
+    schema = await _published_schema(db)
+    q = await annotation_ctx.create_question(
+        db,
+        schema,
+        create=QuestionCreate(
+            name="score",
+            title="Score",
+            type=QuestionType.rating,
+            columns=["disease"],
+            settings={"type": "rating", "options": [{"value": 1}, {"value": 2}]},
+        ),
+    )
+    assert q.id is not None and q.settings["options"] == [{"value": 1}, {"value": 2}]
+
+
+async def test_create_question_text_type_allows_empty_settings(db):
+    schema = await _published_schema(db)
+    q = await annotation_ctx.create_question(
+        db,
+        schema,
+        create=QuestionCreate(name="notes", title="Notes", type=QuestionType.text, columns=["disease"], settings={}),
+    )
+    assert q.id is not None
+
+
+async def test_update_question_rejects_settings_that_no_longer_match_type(db):
+    schema = await _published_schema(db)
+    question = await annotation_ctx.create_question(
+        db,
+        schema,
+        create=QuestionCreate(
+            name="score",
+            title="Score",
+            type=QuestionType.rating,
+            columns=["disease"],
+            settings={"type": "rating", "options": [{"value": 1}, {"value": 2}]},
+        ),
+    )
+
+    with pytest.raises(UnprocessableEntityError, match="invalid settings for question type 'rating'"):
+        await annotation_ctx.update_question(db, question, update=QuestionUpdate(settings={"type": "rating"}))
 
 
 async def test_create_question_requires_published_schema(db):
