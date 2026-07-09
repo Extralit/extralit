@@ -690,3 +690,33 @@ spec+quality reviews, a whole-branch review, and roborev jobs 101–122):
   commit's review (job 122) returned **no issues**. Deferred as non-blocking follow-ups: the
   guard's substring `"index"` match would over-block a hypothetical future `reindex`-named module
   (direction-safe); submitted-ranking completeness (above) is a Phase-5 item.
+
+## 19. Frontend vertical slice design (2026-07-09) — separate spec
+
+The v2 frontend (schemas → records → search → annotation) is designed in its own spec:
+**`2026-07-09-v2-frontend-vertical-slice-design.md`**. Summary of the decisions it
+records:
+
+- **Isolated `v2/` frontend module** mirroring v1's DDD layout (domain / infrastructure /
+  di / Pinia stores via the shared `useStoreFor`); v1 entities and repositories are
+  never imported by v2.
+- **Routes `/schemas/*` + `/references/[...reference]`; the v2 UI says "Schema" —
+  supersedes §3's "UI calls it a Dataset"** for the v1/v2 coexistence window (two
+  entities sharing the label "Dataset" in one nav is worse; UI↔API↔SDK name coherence;
+  i18n keys make a post-retirement rename cheap).
+- **API client:** `openapi-typescript` types generated from a checked-in
+  `/api/v2/openapi.json` snapshot (CI drift gate), consumed by hand-written v1-pattern
+  repositories on the shared axios instance — no client codegen runtime.
+- **Widgets:** extract 4 v1 leaf inputs (label-selection, rating, ranking DnD, text
+  contenteditable) to controlled v1-free components with v1 re-pointed at them
+  (reuse-don't-fork); rebuild the form container as `ProjectionReviewForm` around
+  `ProjectionRecord`; rebuild a lean tabulator cell editor for `table` questions
+  (the v1 2.2k-LOC RenderTable subsystem is v1-entity-coupled and does not port).
+- **`review_widgets` mapping:** `question.type`+`settings` select form widgets
+  (authoritative); `columns_cache[].review` covers table sub-column editors, read-only
+  context-field renderers (dtype fallback), and future question-authoring defaults —
+  it never overrides a question's widget.
+- **Reference-agnostic review form:** pure component (props in / `submit`/`save-draft`
+  emits out, no route/queue knowledge); a `ReferenceReview` entity composes projection +
+  questions + records + versions + suggestions/responses client-side; Pinia state keyed
+  by `reference` so the Phase 5 Queue UI wraps the same form via `GET /queues/{id}/next`.
