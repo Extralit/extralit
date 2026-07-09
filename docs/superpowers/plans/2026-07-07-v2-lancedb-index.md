@@ -713,7 +713,7 @@ from extralit_server.settings import settings
 # Arrow type -> LanceDB SQL type name, for `add_columns` cast expressions during evolution.
 # Must cover every Arrow type `mapping.arrow_type_for` can produce, or an evolved column
 # would silently get a different type than the same column at create-table time
-# (see tests/unit/index/test_mapping.py::test_sql_type_covers_every_mapped_arrow_type).
+# (see tests/integration/index/test_lancedb_engine.py::test_sql_type_covers_every_mapped_arrow_type).
 _SQL_TYPE_BY_ARROW = {
     pa.large_string(): "string",
     pa.int64(): "bigint",
