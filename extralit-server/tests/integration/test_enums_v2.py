@@ -1,10 +1,4 @@
-from extralit_server.enums import SchemaKind, SchemaStatus, V2RecordStatus
-
-
-def test_schema_kind_values():
-    assert SchemaKind.singleton == "singleton"
-    assert SchemaKind.table == "table"
-    assert {k.value for k in SchemaKind} == {"singleton", "table"}
+from extralit_server.enums import SchemaStatus, V2RecordStatus
 
 
 def test_schema_status_values():

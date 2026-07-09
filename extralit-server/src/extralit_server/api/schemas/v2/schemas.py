@@ -4,14 +4,13 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, constr
 
-from extralit_server.enums import SchemaKind, SchemaStatus
+from extralit_server.enums import SchemaStatus
 
 SchemaName = constr(min_length=1, max_length=200)
 
 
 class SchemaCreate(BaseModel):
     name: SchemaName
-    kind: SchemaKind = SchemaKind.table
     workspace_id: UUID
     settings: dict[str, Any] = Field(default_factory=dict)
 
@@ -49,7 +48,6 @@ class SchemaRead(BaseModel):
 
     id: UUID
     name: str
-    kind: SchemaKind
     status: SchemaStatus
     current_version_id: UUID | None
     settings: dict[str, Any]

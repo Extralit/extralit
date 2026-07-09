@@ -6,13 +6,12 @@ from sqlalchemy import Enum as SAEnum
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from extralit_server.enums import SchemaKind, SchemaStatus
+from extralit_server.enums import SchemaStatus
 from extralit_server.models.base import DatabaseModel
 
 if TYPE_CHECKING:
     from extralit_server.models.database import Workspace
 
-SchemaKindEnum = SAEnum(SchemaKind, name="schema_kind_enum")
 SchemaStatusEnum = SAEnum(SchemaStatus, name="schema_status_enum")
 
 
@@ -20,7 +19,6 @@ class Schema(DatabaseModel):
     __tablename__ = "schemas"
 
     name: Mapped[str] = mapped_column(String, index=True)
-    kind: Mapped[SchemaKind] = mapped_column(SchemaKindEnum, default=SchemaKind.table)
     status: Mapped[SchemaStatus] = mapped_column(SchemaStatusEnum, default=SchemaStatus.draft, index=True)
     current_version_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("schema_versions.id", ondelete="SET NULL", use_alter=True), nullable=True
@@ -41,7 +39,7 @@ class Schema(DatabaseModel):
     __table_args__ = (UniqueConstraint("workspace_id", "name", name="schema_workspace_id_name_uq"),)
 
     def __repr__(self) -> str:
-        return f"Schema(id={self.id!s}, name={self.name!r}, kind={self.kind!r}, status={self.status!r})"
+        return f"Schema(id={self.id!s}, name={self.name!r}, status={self.status!r})"
 
 
 class SchemaVersion(DatabaseModel):

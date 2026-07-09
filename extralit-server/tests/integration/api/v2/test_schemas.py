@@ -1,7 +1,6 @@
 import pandera.pandas as pa
 import pytest
 
-from extralit_server.enums import SchemaKind
 from tests.factories import WorkspaceFactory
 
 pytestmark = pytest.mark.asyncio
@@ -16,7 +15,7 @@ async def test_create_get_list_schema(async_client, owner_auth_header):
     resp = await async_client.post(
         "/api/v2/schemas",
         headers=owner_auth_header,
-        json={"name": "population", "kind": SchemaKind.table.value, "workspace_id": str(ws.id)},
+        json={"name": "population", "workspace_id": str(ws.id)},
     )
     assert resp.status_code == 201, resp.text
     schema_id = resp.json()["id"]
@@ -56,7 +55,7 @@ async def test_publish_version_and_columns(async_client, owner_auth_header, monk
     resp = await async_client.post(
         "/api/v2/schemas",
         headers=owner_auth_header,
-        json={"name": "outcomes", "kind": SchemaKind.table.value, "workspace_id": str(ws.id)},
+        json={"name": "outcomes", "workspace_id": str(ws.id)},
     )
     schema_id = resp.json()["id"]
 
@@ -79,7 +78,7 @@ async def test_non_member_cannot_create_or_read_schema(async_client, annotator_a
     resp = await async_client.post(
         "/api/v2/schemas",
         headers=annotator_auth_header,
-        json={"name": "secret", "kind": SchemaKind.table.value, "workspace_id": str(ws.id)},
+        json={"name": "secret", "workspace_id": str(ws.id)},
     )
     assert resp.status_code == 403, resp.text
 

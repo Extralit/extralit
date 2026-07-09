@@ -45,7 +45,6 @@ async def create_schema(
     return await schemas_ctx.create_schema(
         db,
         name=payload.name,
-        kind=payload.kind,
         workspace_id=payload.workspace_id,
         settings=payload.settings,
     )
@@ -142,6 +141,22 @@ async def list_schema_versions(
     schema = await _get_schema_or_404(db, schema_id)
     await authorize(current_user, SchemaPolicy.get(schema))
     return sorted(await schema.awaitable_attrs.versions, key=lambda v: v.version)
+
+
+@router.get("/schemas/{schema_id}/versions/{version}", response_model=SchemaVersionRead)
+async def get_schema_version(
+    *,
+    schema_id: UUID,
+    version: int,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
+):
+    schema = await _get_schema_or_404(db, schema_id)
+    await authorize(current_user, SchemaPolicy.get(schema))
+    version_row = await schemas_ctx.get_version_by_number(db, schema_id, version)
+    if version_row is None:
+        raise NotFoundError(f"Version `{version}` not found for schema `{schema_id}`")
+    return version_row
 
 
 @router.get("/schemas/{schema_id}/columns", response_model=list[dict])

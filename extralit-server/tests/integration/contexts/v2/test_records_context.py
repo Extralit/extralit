@@ -4,7 +4,7 @@ import pandera.pandas as pa
 import pytest
 
 from extralit_server.contexts.v2 import records as records_ctx
-from extralit_server.enums import SchemaKind, V2RecordStatus
+from extralit_server.enums import V2RecordStatus
 from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.models.v2 import Schema, SchemaVersion, V2Record
 from tests.factories import SchemaFactory, SchemaVersionFactory, V2RecordFactory, WorkspaceFactory
@@ -26,7 +26,7 @@ def _patch_fetch(monkeypatch, body: str = BODY) -> AsyncMock:
 
 
 async def _published_schema(db) -> tuple[Schema, SchemaVersion]:
-    schema = await SchemaFactory.create(kind=SchemaKind.table)
+    schema = await SchemaFactory.create()
     version = await SchemaVersionFactory.create(schema=schema, version=1)
     await schema.update(db, current_version_id=version.id)
     return schema, version

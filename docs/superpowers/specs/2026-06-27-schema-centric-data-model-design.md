@@ -610,3 +610,83 @@ three tables.
   projection-view endpoint.
 - **Migration (§8):** v1 questions→`v2_questions` column bindings, suggestions, responses
   parity; v1 span questions handled per the migrator decision.
+
+## 18. Resolved during Phase 4 implementation (2026-07-08)
+
+Phase 4 built the annotation layer per §17 with no design reversals. As-built outcomes
+and the deviations/decisions added during implementation and review (per-task
+spec+quality reviews, a whole-branch review, and roborev jobs 101–122):
+
+- **As-built surface.** ORM: `V2Question`/`V2Suggestion`/`V2Response` on `v2_questions`/
+  `v2_suggestions`/`v2_responses` with PG enums `v2_question_type_enum`/
+  `v2_suggestion_type_enum`/`v2_response_status_enum` (reusing v1 `QuestionType`/
+  `SuggestionType`/`ResponseStatus` *values*), one-directional `relationship()`s only (no
+  backrefs → v1's `User`/`Schema` mappers untouched, no registry collision). Validators in
+  `validators/v2/` (`QuestionBindingValidator`, `QuestionSettingsValidator`,
+  `V2ResponseValueValidator`, `V2SuggestionValidator`). Business logic in
+  `contexts/v2/annotation.py` (questions/suggestions/responses) + `contexts/v2/projection.py`.
+  Policies `V2QuestionPolicy`/`V2SuggestionPolicy`/`V2ResponsePolicy` in
+  `api/policies/v1/v2_annotation_policy.py`. Routers `api/v2/questions.py`,
+  `api/v2/annotation.py` (suggestions + responses), `api/v2/projection.py`, plus the
+  single-version route added to `api/v2/schemas.py`.
+- **`schemas.kind` dropped (§14).** Migration `6393b1a01aa0` removes the column + enum;
+  the emergent kind is now implied by bindings. Zero residual `SchemaKind`/`schema.kind`
+  references across server/SDK/frontend.
+- **Migrations are SQLite-safe (deviation from the plan's draft snippets).** The plan drafts
+  showed `op.execute("DROP TYPE IF EXISTS …")`, which errors on SQLite (the test suite runs
+  Alembic against SQLite). Both migrations (`6393b1a01aa0` drop-kind, `c1510e93882a` create
+  annotation tables) instead drop PG enums via `sa.Enum(name=…).drop(op.get_bind(),
+  checkfirst=True)` and guard Postgres-only DDL with `!= "sqlite"`, matching the canonical
+  `9f3010c649c8` pattern. Both round-trip (upgrade→downgrade→upgrade) cleanly; the create
+  migration was stripped of unrelated autogenerate reflection drift so it creates only the
+  three annotation tables.
+- **Reuse of v1 value validation as-built.** `V2ResponseValueValidator` dispatches to v1's
+  per-type `…ResponseValueValidator` classes via `TypeAdapter(QuestionSettings)`; `table` is
+  structure-only (dict + keys ⊆ bound columns, no Pandera); `span` is rejected (deferred).
+  The dispatch is **fail-closed** (terminal `else: raise`) so a future unmapped
+  `QuestionType` cannot silently accept a value (restored after a final-review cleanup had
+  removed it — roborev jobs 119/120).
+- **Settings validated at question create/update (added during review, roborev job 120).**
+  `QuestionBindingValidator` (existence/arity/span) runs first, then `QuestionSettingsValidator`
+  validates `settings` against `type` for the settings-driven types (`label_selection`/
+  `multi_label_selection`/`rating`/`ranking`) using v1's `QuestionSettings`, so a question that
+  could never accept a value fails loudly at create time instead of being persisted-but-unusable.
+  Stored settings are **normalized to carry the correct `"type"` discriminator** and an explicit
+  contradictory `settings["type"]` is rejected — keeping create-validation, storage, and
+  annotation-time `_parsed()` in agreement (roborev job 121).
+- **Response semantics hold.** `values` keyed by question **name** on both write validation and
+  projection read; `(record, user)` idempotent upsert; **no `record.status` transition** on
+  submit (§17.3, tested); required-question enforcement on submit (empty values / non-configured
+  name / missing-required all 422). Own-response authz: any workspace member (incl. annotators)
+  writes only their own row via `current_user`.
+- **Submitted-ranking completeness NOT enforced (deliberate §17.3 scope).** v2 calls v1's
+  ranking `validate_for` without `response_status`, so a submitted ranking that omits options
+  passes where v1 would reject it — matching §17.3's enumerated "values valid + unique" checks
+  (settings-level only). The values that ARE present are still validated. Recorded as a Phase-5
+  tracking item, not a fix.
+- **Projection view as-built (§17.4).** `build_reference_view` resolves each cell as
+  requesting-user's **submitted** response (by question name) → suggestion (by
+  `(record_id, question_id)`) → `None`; batched (one records query + three `IN (…)` queries,
+  no N+1); Postgres-only. Exposed at a **distinct** `GET /projection/references/{reference:path}`
+  prefix (NOT `/references/{…}/view`) so the Phase-3 greedy `:path` route on
+  `/references/{reference:path}` cannot shadow it; `workspace_id` is a required query param,
+  authorized via `SchemaPolicy.list`.
+- **No Lance sync for annotation (§17.5), durably guarded.** No annotation context/handler
+  imports `extralit_server.index`/`contexts.v2.index_sync`; a response-upsert API test asserts
+  `sync_upserted_records` is never called. The AST guard test (`tests/unit/
+  test_annotation_no_index_import.py`) was hardened to (a) catch every real import idiom —
+  including `from extralit_server.contexts.v2 import index_sync` (a blind spot in the first
+  draft, found by review + roborev job 117) — via a shared detector self-tested against 8
+  violating + 4 innocent forms, and (b) cover `api/v2/projection.py` in addition to the context
+  modules and the other two handlers.
+- **Async eager-load discipline.** Every path where a policy reads `*.schema.workspace_id`
+  eager-loads the relationship (`selectinload(V2Question.schema)`/`selectinload(V2Record.schema)`)
+  so no lazy-load crosses the greenlet boundary at runtime — mirroring v1's handler precedent.
+- **Review outcome.** All 11 tasks passed per-task spec+quality review; the whole-branch review
+  returned no Critical/Important (verdict: mergeable) and its recommended items were applied
+  (guard-file completeness + edge-branch tests + validator-message polish). The roborev branch
+  review (job 120) surfaced two Low findings (settings-vs-type at create; fail-open dispatch),
+  both fixed; the follow-up fix's residual discriminator gap (job 121) was fixed; the final
+  commit's review (job 122) returned **no issues**. Deferred as non-blocking follow-ups: the
+  guard's substring `"index"` match would over-block a hypothetical future `reindex`-named module
+  (direction-safe); submitted-ranking completeness (above) is a Phase-5 item.
