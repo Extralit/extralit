@@ -41,6 +41,11 @@ jobs:
         run: |
           npm install
 
+      - name: Check generated v2 API types are current 🔒
+        run: |
+          npm run gen:api:types
+          git diff --exit-code -- v2/infrastructure/api/generated
+
       - name: Run lint 🧹
         continue-on-error: true
         run: |
