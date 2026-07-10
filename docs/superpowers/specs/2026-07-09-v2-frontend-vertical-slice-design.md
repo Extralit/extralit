@@ -329,7 +329,9 @@ production untested until this slice's E2E runs them.
 
 - **compose `worker` service mounts no `extralitdata` volume** — its Lance dir is a
   throwaway container FS; a reindex run in the worker builds an invisible index.
-  Must be fixed before Phase 5 job-queue offload (parent spec §15 flagged the mount).
+  **FIXED 2026-07-10:** `docker-compose.yaml` worker now mounts
+  `extralitdata:/var/lib/extralit`, sharing the server's Lance dir (the mount
+  parent spec §15 said Phase 5 would need).
 - **MinIO `object_version_id` pinning degrades silently on unversioned buckets**
   (pre-existing/HF-Spaces buckets); version-pin correctness needs a server-side E2E
   (publish v1 → publish stricter v2 → upsert pinned to v1 must pass).

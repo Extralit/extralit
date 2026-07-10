@@ -48,6 +48,8 @@ services:
       BACKGROUND_NUM_WORKERS: 2
     networks:
       - extralit
+    volumes:
+      - extralitdata:/var/lib/extralit
     depends_on:
       - postgres
       - elasticsearch
