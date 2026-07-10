@@ -204,6 +204,24 @@ page can drive it with references from `GET /queues/{id}/next` and wrap the same
 form with progress/assignment chrome. The `/references/[...reference]` page (§3) is
 itself just the first thin wrapper: route param in, composable + form, nothing else.
 
+**Contract gotchas the `ReferenceReview` assembly must handle** (verified against the
+merged Phase 2–4 code, §10):
+
+- **Asymmetric keying:** projection cells and `response.values` are keyed by question
+  **name**; suggestions are keyed by question **id**. The assembly joins through the
+  questions list (`name ↔ id`) — get this join wrong and provenance silently detaches.
+- **Asymmetric wrapping:** `ProjectionCell.value` is bare; `response.values` is
+  double-wrapped `{question_name: {"value": …}}` on both PUT and GET. The form's
+  emit payloads must re-wrap.
+- **Nullable response read:** `GET /records/{id}/responses` returns a bare object
+  **or literal `null`** with 200 (never 404) when the user has no response yet.
+- **Two 422 body shapes on every endpoint:** domain errors are
+  `{"detail": "<string>"}`; pydantic request errors are FastAPI's
+  `{"detail": [{loc, msg, type}]}`. The error-rendering layer handles both.
+- **Records list details:** `metadata`/`status` are patch-like on upsert (metadata
+  cannot be cleared); timestamps are naive ISO strings (treat as UTC); unknown
+  reference → 200 empty, never 404; always `encodeURIComponent` the reference.
+
 *Ledger item:* if the multi-endpoint composition proves chatty in practice, enrich
 the projection payload server-side (single round-trip) — an additive change behind
 the same endpoint contract (§17.4 already reserves backing swaps).
@@ -220,11 +238,12 @@ the same endpoint contract (§17.4 already reserves backing swaps).
   and shows suggestion provenance; schema list/detail pages against mocked
   `SchemaRepository`.
 - **Contract:** the `gen:api` drift gate (§4) is the API contract test.
-- **e2e (Playwright, remote chromium via ccui):** one happy path — sign in → schema
-  list → records+search → open a reference → confirm a suggestion → submit. Runs
-  against `npm run dev` on `0.0.0.0` with the browser at the ccui container; local
-  chromium launch is broken on this host, and the stale Argilla `e2e/` specs are
-  explicitly not a gate. New specs live in `e2e/v2/`.
+- **e2e (Playwright, remote chromium via ccui):** the prioritized scenario set in
+  §10.2 — not just one happy path; a review of merged PRs #225/#227/#228/#229 found
+  the frontend will be the first client to exercise several server seams end-to-end.
+  Runs against `npm run dev` on `0.0.0.0` with the browser at the ccui container;
+  local chromium launch is broken on this host, and the stale Argilla `e2e/` specs
+  are explicitly not a gate. New specs live in `e2e/v2/`.
 - **Lint:** the existing eslint 10 flat config + prettier 3 cover `v2/` with no new
   config surface.
 
@@ -235,3 +254,87 @@ the same endpoint contract (§17.4 already reserves backing swaps).
 - Whether the schema list becomes the app home (`/` currently lists v1 datasets) or
   a nav sibling during coexistence — recommend nav sibling now, home swap at Phase 6.
 - i18n: new `schemas.*` / `review.*` key families; no reuse of "dataset"-keyed copy.
+- Whether the schema detail page exposes a "rebuild index" affordance
+  (`POST /schemas/{id}:rebuild-index` → `{indexed: n}`, may take tens of seconds) —
+  the only recovery from a silently-swallowed sync failure (§10.1-D).
+- How the review form renders response values orphaned by a deleted/recreated
+  question (values keyed by a name no question owns — tolerate + surface, §10.1-E).
+
+## 10. E2E review addendum (2026-07-10) — from merged PRs #225/#227/#228/#229
+
+A subagent review of the merged server phases (Phase 2 records = #225/#227, Phase 3
+LanceDB = #228, Phase 4 annotation = #229) mapped what the pytest integration suites
+already cover versus what only a real-stack E2E exercises. Integration coverage is
+strong (real Postgres, real app object over ASGI, real lancedb on tmp dirs, real
+Pandera validation), but every API test authenticates with an `X-API-Key` header,
+mocks the S3 body fetch, and drives ASGI in-process — so the seams below reach
+production untested until this slice's E2E runs them.
+
+### 10.1 Spec sections to review carefully (highest-risk assumptions)
+
+- **A — §4 API client / auth: the frontend is the first bearer-token client of
+  `/api/v2`.** No server test sends `Authorization: Bearer` or a CORS `Origin` to a
+  v2 route (v1's auth router is mounted on v2 but only API-key auth is exercised).
+  The axios-interceptor-parity argument in §4 therefore rests on an untested server
+  path — the token flow must be the *first* E2E scenario, not an assumed given.
+- **B — §3 routes: DOI-with-slash encoding through the real chain.** Server tests
+  send literal slashes via ASGI; `encodeURIComponent`'d `%2F` through uvicorn — and
+  through the Nuxt dev proxy, which already bit the Vue 3 migration once with `/api`
+  path-stripping — is untested, and the `/projection/references/{reference:path}`
+  route has no slash test at all (only the Phase-3 records route does).
+- **C — §7 draft support: the draft/discarded response lifecycle has ZERO server
+  tests at any level.** The form's `save-draft` emit depends on: a draft response
+  must NOT surface in the projection (its `status==submitted` filter), and a
+  discarded response must revert the cell to the suggestion. Verify server behavior
+  early in implementation — before building draft UX on it.
+- **D — schema detail page (§1/§8) search: eventual consistency is the contract.**
+  Search may miss a just-written record (best-effort sync), `total` can exceed
+  returned items even within a page (stale Lance ids skipped on PG hydration), FTS
+  totals saturate at 10,000, an unknown filter column raises a 500-class error (not
+  422) so the UI must only offer known columns, and `ge`/`le` with `null` silently
+  matches nothing. Pagination math must treat `total` as approximate.
+- **E — §6/§7 question-name keying fragility.** Questions can't be renamed
+  (`QuestionUpdate` has no `name`), but delete+recreate changes the name and
+  orphans stored `response.values` keys — they vanish from the projection and
+  re-submitting them 422s ("non-configured"). The form must tolerate orphaned keys
+  (see §9 open item).
+
+### 10.2 E2E scenario set (priority order; 1–5 gate the slice, 6–8 follow)
+
+1. **Auth + smoke:** sign in (bearer token via the v1 auth router on `/api/v2`) →
+   schema list → schema detail renders records. Covers seam A + CORS preflight from
+   the dev origin.
+2. **Slashed-DOI reference:** open `/references/10.1000/j.x`-style reference; assert
+   both `GET /api/v2/references/…` and `GET /api/v2/projection/references/…` succeed
+   with the encoded param (seam B).
+3. **Suggestion→response conversion loop:** seed a suggestion (SDK/fixture) → open
+   review form (cell shows `source: suggestion` + provenance) → edit → submit →
+   projection re-read flips to `source: response`. The core product loop, never
+   chained through HTTP anywhere in the server suites.
+4. **Draft lifecycle:** save draft → reload: form restores draft, projection still
+   shows the suggestion → submit → projection shows response (seam C).
+5. **Search round-trip:** upsert a record (fixture) → FTS search finds it → filtered
+   search (status/scalar) → assert graceful rendering when the index is empty/stale
+   (seam D; also the first real write→search freshness check anywhere).
+6. **Multi-annotator isolation:** users A and B submit different values for the same
+   record; each sees only their own value in the projection (server filters by
+   requesting user — untested with two users at the projection level).
+7. **Old-version rendering:** record pinned to version 1 whose `columns_cache` lacks
+   a currently-bound column → form renders "not applicable" via the versions
+   endpoint (§7).
+8. **Required-question 422 rendering:** submit with a required question empty →
+   both 422 body shapes render as actionable form errors.
+
+### 10.3 Out of frontend scope (reported upstream, recorded here so they're not lost)
+
+- **compose `worker` service mounts no `extralitdata` volume** — its Lance dir is a
+  throwaway container FS; a reindex run in the worker builds an invisible index.
+  Must be fixed before Phase 5 job-queue offload (parent spec §15 flagged the mount).
+- **MinIO `object_version_id` pinning degrades silently on unversioned buckets**
+  (pre-existing/HF-Spaces buckets); version-pin correctness needs a server-side E2E
+  (publish v1 → publish stricter v2 → upsert pinned to v1 must pass).
+- **`:bulk-upsert` custom verb + `base_url` sub-mount through HF-Spaces ingress** —
+  SDK/deployment E2E, not this slice (the slice never bulk-upserts).
+- Cheap integration-test gaps worth adding server-side: the "Lance hit id missing
+  from PG is skipped" branch; float/datetime field JSON round-trip through Pandera
+  coercion.
