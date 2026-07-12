@@ -23,19 +23,34 @@ export default defineConfig({
   },
 
   projects: [
+    // Legacy Argilla specs — kept out of the v2 suite (they are not a v2 gate).
     {
       name: "chromium",
+      testIgnore: "v2/**",
       use: { ...devices["Desktop Chrome"] },
     },
 
     {
       name: "firefox",
+      testIgnore: "v2/**",
       use: { ...devices["Desktop Firefox"] },
     },
 
     {
       name: "webkit",
+      testIgnore: "v2/**",
       use: { ...devices["Desktop Safari"] },
+    },
+
+    // v2 vertical slice, real backend, no network mocks. Run with `playwright test --project=v2`.
+    {
+      name: "v2",
+      testMatch: "v2/**/*.spec.ts",
+      retries: 0, // real backend: retries mask seeding/state bugs
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: process.env.E2E_BASE_URL ?? process.env.BASE_URL ?? "http://localhost:3000",
+      },
     },
   ],
 
