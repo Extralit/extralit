@@ -1,6 +1,7 @@
 <template>
   <div class="schema-settings">
     <BaseLoading v-if="isLoading" />
+    <p v-else-if="loadFailed" class="schema-settings__error" v-text="$t('schemas.loadError')" />
     <template v-else-if="settings">
       <h1>{{ settings.schema.name }} — {{ $t("schemas.settings") }}</h1>
 
@@ -111,6 +112,10 @@ export default {
   &__hint {
     color: var(--fg-tertiary);
     font-size: 0.85em;
+  }
+
+  &__error {
+    color: var(--fg-tertiary);
   }
 }
 </style>

@@ -41,6 +41,22 @@ describe("useSchemaSettingsViewModel", () => {
     expect(vm.settings.value?.schema.name).toBe("sample_size");
   });
 
+  it("sets loadFailed when the settings fetch rejects", async () => {
+    useResolveMock(GetSchemaSettingsUseCase, {
+      execute: vi.fn(async () => {
+        throw new Error("boom");
+      }),
+    });
+    useResolveMock(RebuildSchemaIndexUseCase, { execute: vi.fn() });
+
+    const vm = useSchemaSettingsViewModel("s-1");
+    await vm.load();
+
+    expect(vm.loadFailed.value).toBe(true);
+    expect(vm.settings.value).toBeNull();
+    expect(vm.isLoading.value).toBe(false);
+  });
+
   it("rebuild flag toggles around the (possibly slow) rebuild call", async () => {
     useResolveMock(GetSchemaSettingsUseCase, { execute: vi.fn(async () => SETTINGS) });
     let resolveRebuild!: (n: number) => void;

@@ -13,12 +13,16 @@ export const useSchemaSettingsViewModel = (schemaId: string) => {
 
   const settings = ref<SchemaSettings | null>(null);
   const isLoading = ref(false);
+  const loadFailed = ref(false);
   const isRebuilding = ref(false);
 
   const load = async () => {
     isLoading.value = true;
+    loadFailed.value = false;
     try {
       settings.value = await getSettingsUseCase.execute(schemaId);
+    } catch {
+      loadFailed.value = true; // AxiosErrorHandler already notified
     } finally {
       isLoading.value = false;
     }
@@ -36,5 +40,5 @@ export const useSchemaSettingsViewModel = (schemaId: string) => {
 
   onBeforeMount(load);
 
-  return { settings, isLoading, isRebuilding, load, rebuildIndex };
+  return { settings, isLoading, loadFailed, isRebuilding, load, rebuildIndex };
 };
