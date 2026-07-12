@@ -4,9 +4,13 @@ import Container, { register } from "ts-injecty";
 import { useAxiosExtension } from "@/v1/infrastructure/services/useAxiosExtension";
 
 import { SchemaRepository } from "~/v2/infrastructure/repositories/SchemaRepository";
+import { V2RecordRepository } from "~/v2/infrastructure/repositories/V2RecordRepository";
 import { useSchemas } from "~/v2/infrastructure/storage/SchemasStorage";
 import { GetSchemasUseCase } from "~/v2/domain/usecases/get-schemas-use-case";
 import { GetSchemaSettingsUseCase } from "~/v2/domain/usecases/get-schema-settings-use-case";
+import { GetSchemaRecordsUseCase } from "~/v2/domain/usecases/get-schema-records-use-case";
+import { SearchRecordsUseCase } from "~/v2/domain/usecases/search-records-use-case";
+import { RebuildSchemaIndexUseCase } from "~/v2/domain/usecases/rebuild-schema-index-use-case";
 
 type NuxtAppLike = {
   $axios: AxiosInstance;
@@ -23,6 +27,11 @@ export const loadV2DependencyContainer = (nuxtApp: NuxtAppLike) => {
     register(SchemaRepository).withDependency(useAxios).build(),
     register(GetSchemasUseCase).withDependencies(SchemaRepository, useSchemas).build(),
     register(GetSchemaSettingsUseCase).withDependency(SchemaRepository).build(),
+
+    register(V2RecordRepository).withDependency(useAxios).build(),
+    register(GetSchemaRecordsUseCase).withDependency(V2RecordRepository).build(),
+    register(SearchRecordsUseCase).withDependency(V2RecordRepository).build(),
+    register(RebuildSchemaIndexUseCase).withDependency(V2RecordRepository).build(),
   ];
 
   Container.register(dependencies);
