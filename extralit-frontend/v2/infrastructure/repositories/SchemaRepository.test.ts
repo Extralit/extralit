@@ -28,6 +28,18 @@ describe("SchemaRepository", () => {
     expect(schemas[0].currentVersionId).toBe("v-1");
   });
 
+  it("fetches a single schema and maps it to a domain entity", async () => {
+    const axios = axiosMock(() => BACKEND_SCHEMA);
+    const repository = new SchemaRepository(axios);
+
+    const schema = await repository.getSchema("s-1");
+
+    expect(axios.get).toHaveBeenCalledWith("/v2/schemas/s-1");
+    expect(schema.id).toBe("s-1");
+    expect(schema.name).toBe("sample_size");
+    expect(schema.currentVersionId).toBe("v-1");
+  });
+
   it("maps versions including columns_cache to ColumnMeta", async () => {
     const axios = axiosMock(() => [
       {
