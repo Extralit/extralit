@@ -21,16 +21,24 @@
     </form>
 
     <BaseLoading v-if="isLoading" />
-    <p v-else-if="!page.items.length" class="schema-detail__empty" v-text="$t('schemas.noResults')" />
     <template v-else>
-      <p class="schema-detail__total">
+      <p v-if="page.items.length" class="schema-detail__total">
         <template v-if="isApproximateTotal">{{ $t("schemas.totalApproximate", { total: page.total }) }}</template>
         <template v-else>{{ page.total }}</template>
       </p>
-      <V2RecordsTable :records="page.items" :columns="columns" :workspace-id="schema?.workspaceId ?? ''" />
-      <div class="schema-detail__pager">
+      <V2RecordsTable
+        v-if="page.items.length"
+        :records="page.items"
+        :columns="columns"
+        :workspace-id="schema?.workspaceId ?? ''"
+      />
+      <p v-else class="schema-detail__empty" v-text="$t('schemas.noResults')" />
+
+      <!-- Pager stays outside the results branch so advancing onto an empty page (approximate
+           totals let "next" run one page too far) still shows a way back instead of a dead-end. -->
+      <div v-if="currentOffset > 0 || page.items.length >= pageSize" class="schema-detail__pager">
         <button :disabled="currentOffset === 0" @click="goToOffset(currentOffset - pageSize)">‹</button>
-        <!-- total is approximate: allow next whenever a full page came back -->
+        <!-- total is approximate: allow next only while a full page keeps coming back -->
         <button :disabled="page.items.length < pageSize" @click="goToOffset(currentOffset + pageSize)">›</button>
       </div>
     </template>
