@@ -74,6 +74,10 @@ export class TabulatorFull {
     return this;
   }
 
+  destroy() {
+    return true;
+  }
+
   redraw() {
     return true;
   }
