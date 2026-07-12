@@ -147,4 +147,99 @@ describe("GetReferenceReviewUseCase", () => {
 
     expect(review.records[0].draft).toBeNull();
   });
+
+  it("resolves each record against its own schema for a multi-schema reference", async () => {
+    // Local mocks that branch on schemaId/recordId — the whole point of the schemaId-keyed
+    // contexts/records/version maps is that a reference spanning schemas resolves each record
+    // against its own schema's questions, columns and version.
+    const s1 = new Schema("s-1", "sample_size", "published", WORKSPACE, "v-1", {}, "", "");
+    const s2 = new Schema("s-2", "outcomes", "published", WORKSPACE, "v-2", {}, "", "");
+    const q1 = new Question("q-size", "s-1", "size", "Sample size", null, "text", ["size"], {}, true);
+    const q2 = new Question("q-year", "s-2", "year", "Year", null, "text", ["year"], {}, true);
+    const v1 = new SchemaVersion(
+      "v-1",
+      "s-1",
+      1,
+      [new ColumnMeta("size", "str", false, null), new ColumnMeta("country", "str", true, null)],
+      {},
+      ""
+    );
+    const v2 = new SchemaVersion(
+      "v-2",
+      "s-2",
+      1,
+      [new ColumnMeta("year", "str", false, null), new ColumnMeta("region", "str", true, null)],
+      {},
+      ""
+    );
+    const rec1 = new V2Record(
+      "r-1",
+      "s-1",
+      "v-1",
+      REFERENCE,
+      null,
+      { size: "12", country: "KE" },
+      null,
+      "pending",
+      "",
+      ""
+    );
+    const rec2 = new V2Record(
+      "r-2",
+      "s-2",
+      "v-2",
+      REFERENCE,
+      null,
+      { year: "2021", region: "EA" },
+      null,
+      "pending",
+      "",
+      ""
+    );
+
+    const projection = {
+      getProjection: vi.fn(async () => ({
+        reference: REFERENCE,
+        totalRecords: 2,
+        records: [
+          {
+            recordId: "r-1",
+            schemaId: "s-1",
+            reference: REFERENCE,
+            cells: [{ questionName: "size", value: "12", source: "suggestion" as const }],
+          },
+          {
+            recordId: "r-2",
+            schemaId: "s-2",
+            reference: REFERENCE,
+            cells: [{ questionName: "year", value: "2021", source: "response" as const }],
+          },
+        ],
+      })),
+    };
+    const schema = {
+      getSchema: vi.fn(async (id: string) => (id === "s-1" ? s1 : s2)),
+      getQuestions: vi.fn(async (id: string) => (id === "s-1" ? [q1] : [q2])),
+      getVersions: vi.fn(async (id: string) => (id === "s-1" ? [v1] : [v2])),
+    };
+    const records = { getRecords: vi.fn(async (id: string) => new RecordsPage(id === "s-1" ? [rec1] : [rec2], 1)) };
+    const annotation = { getSuggestions: vi.fn(async () => []), getResponse: vi.fn(async () => null) };
+
+    const review = await new GetReferenceReviewUseCase(
+      projection as never,
+      schema as never,
+      records as never,
+      annotation as never,
+      useReferenceReviews
+    ).execute(REFERENCE, WORKSPACE);
+
+    const r1 = review.records.find((r) => r.recordId === "r-1")!;
+    const r2 = review.records.find((r) => r.recordId === "r-2")!;
+    expect(r1.schemaName).toBe("sample_size");
+    expect(r1.cells.map((c) => c.question.name)).toEqual(["size"]);
+    expect(r1.contextFields).toEqual([{ column: expect.objectContaining({ name: "country" }), value: "KE" }]);
+    expect(r2.schemaName).toBe("outcomes");
+    expect(r2.cells.map((c) => c.question.name)).toEqual(["year"]);
+    expect(r2.contextFields).toEqual([{ column: expect.objectContaining({ name: "region" }), value: "EA" }]);
+  });
 });
