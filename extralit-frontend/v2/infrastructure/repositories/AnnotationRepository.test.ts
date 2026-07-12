@@ -37,6 +37,19 @@ describe("AnnotationRepository", () => {
     });
   });
 
+  it("sends null values on the discard path instead of wrapping", async () => {
+    const put = vi.fn(async () => ({
+      data: { id: "resp-1", record_id: "r-1", user_id: "u-1", values: null, status: "discarded" },
+    }));
+    const axios = { put } as unknown as AxiosInstance;
+
+    const response = await new AnnotationRepository(axios).upsertResponse("r-1", null, "discarded");
+
+    expect(put).toHaveBeenCalledWith("/v2/records/r-1/responses", { values: null, status: "discarded" });
+    expect(response.values).toEqual({});
+    expect(response.status).toBe("discarded");
+  });
+
   it("maps suggestions keeping question_id keying and provenance", async () => {
     const axios = {
       get: vi.fn(async () => ({
