@@ -44,7 +44,11 @@ export default defineComponent({
   setup(props, { emit }) {
     const tableEl = ref<HTMLElement>();
     let tabulator: Tabulator | null = null;
-    let emitting = false;
+    // Signature of the value we last emitted. When the parent echoes that same value
+    // back into modelValue, skip the rebuild so we don't tear down the live editor
+    // (losing focus/selection) on every committed cell edit. Flush-timing independent —
+    // unlike a boolean flag reset synchronously before the async watcher fires.
+    let lastEmittedSignature: string | null = null;
 
     const build = () => {
       tabulator?.destroy();
@@ -54,19 +58,26 @@ export default defineComponent({
         layout: "fitDataStretch",
       });
       tabulator.on("cellEdited", (cell) => {
-        emitting = true;
-        emit("update:modelValue", valueFromRowData(cell.getRow().getData(), props.columns));
-        emitting = false;
+        const next = valueFromRowData(cell.getRow().getData(), props.columns);
+        lastEmittedSignature = JSON.stringify(next);
+        emit("update:modelValue", next);
       });
     };
 
     onMounted(build);
     onBeforeUnmount(() => tabulator?.destroy());
 
+    // Column/editability changes always rebuild.
+    watch(() => [props.columns, props.editable], build, { deep: true });
+
+    // Value changes rebuild too (draft restore / discard) — except when the incoming
+    // value is the echo of our own emit, which the live tabulator already reflects.
     watch(
-      () => [props.modelValue, props.columns],
+      () => props.modelValue,
       () => {
-        if (!emitting) build(); // external change (e.g. draft restore): rebuild
+        if (JSON.stringify(props.modelValue) === lastEmittedSignature) return;
+        lastEmittedSignature = null;
+        build();
       },
       { deep: true }
     );
