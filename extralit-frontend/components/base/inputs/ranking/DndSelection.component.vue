@@ -12,9 +12,9 @@
       <template #item="{ element: item }">
         <div
           :id="item.value"
+          ref="questions"
           :title="item.text"
           tabindex="0"
-          ref="questions"
           @keydown="rankWithKeyboard($event, item)"
           @focus="onFocus"
         >
@@ -24,15 +24,15 @@
             :text="getSuggestedAgent(item)"
             minimalist
           >
-            <svgicon width="6" name="draggable" :id="`${item.value}-icon`" aria-label="Dragging Icon" />
-            <span class="draggable__rank-card__title" v-text="item.text" :id="`${item.value}-span`" />
+            <svgicon :id="`${item.value}-icon`" width="6" name="draggable" aria-label="Dragging Icon" />
+            <span :id="`${item.value}-span`" class="draggable__rank-card__title" v-text="item.text" />
 
             <span v-if="isSuggested(item)" class="draggable__suggestion">
               <span v-text="getSuggestedRank(item)" />
               <svgicon name="suggestion" width="10" height="10" />
               <span
-                class="draggable__suggestion__score"
                 v-if="getSuggestedScore(item)"
+                class="draggable__suggestion__score"
                 v-text="getSuggestedScore(item)"
               />
             </span>
@@ -42,10 +42,10 @@
     </draggable>
     <div class="draggable__slots-container">
       <div
-        class="draggable__slot"
-        :class="{ '--active-slot': items.length }"
         v-for="{ index, rank, items } in ranking.slots"
         :key="index"
+        class="draggable__slot"
+        :class="{ '--active-slot': items.length }"
       >
         <span class="draggable__slot-box--ranking" v-text="rank" />
         <draggable
@@ -60,9 +60,9 @@
           <template #item="{ element: item }">
             <div
               :id="item.value"
+              ref="items"
               :title="item.text"
               tabindex="0"
-              ref="items"
               @keydown="rankWithKeyboard($event, item)"
               @focus="onFocus"
             >
@@ -72,15 +72,15 @@
                 minimalist
                 class="draggable__rank-card--ranked"
               >
-                <svgicon width="6" name="draggable" :id="`${item.value}-icon`" />
-                <span class="draggable__rank-card__title" v-text="item.text" :id="`${item.value}-span`" />
+                <svgicon :id="`${item.value}-icon`" width="6" name="draggable" />
+                <span :id="`${item.value}-span`" class="draggable__rank-card__title" v-text="item.text" />
 
                 <span v-if="isSuggested(item)" class="draggable__suggestion">
                   <span v-text="getSuggestedRank(item)" />
                   <svgicon name="suggestion" width="10" height="10" />
                   <span
-                    class="draggable__suggestion__score"
                     v-if="getSuggestedScore(item)"
+                    class="draggable__suggestion__score"
                     v-text="getSuggestedScore(item)"
                   />
                 </span>

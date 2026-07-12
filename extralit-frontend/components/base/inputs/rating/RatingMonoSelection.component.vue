@@ -2,12 +2,12 @@
   <div class="container">
     <div class="inputs-area" role="radiogroup" aria-label="Label-Options">
       <div
-        class="input-button"
         v-for="option in modelValue"
         :key="option.id"
-        @keydown.enter.prevent
+        class="input-button"
         role="button"
         :aria-label="option.text"
+        @keydown.enter.prevent
       >
         <BaseTooltip
           :title="isSuggested(option) ? $t('suggestion.name') : ''"
@@ -15,11 +15,11 @@
           minimalist
         >
           <input
+            :id="option.id"
             ref="options"
+            v-model="option.isSelected"
             type="checkbox"
             :name="option.value"
-            :id="option.id"
-            v-model="option.isSelected"
             @change="onSelect(option)"
             @focus="onFocus"
           />
@@ -43,9 +43,6 @@
 <script>
 export default {
   name: "RatingMonoSelectionComponent",
-  // v-model consumer (rating/Rating.component.vue): same Vue 3 migration as
-  // LabelSelection — rename `options` → `modelValue` and emit `update:modelValue`.
-  emits: ["update:modelValue", "on-focus", "on-selected"],
   props: {
     modelValue: {
       type: Array,
@@ -59,6 +56,9 @@ export default {
       type: Object,
     },
   },
+  // v-model consumer (rating/Rating.component.vue): same Vue 3 migration as
+  // LabelSelection — rename `options` → `modelValue` and emit `update:modelValue`.
+  emits: ["update:modelValue", "on-focus", "on-selected"],
   watch: {
     isFocused: {
       immediate: true,
