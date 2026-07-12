@@ -5,6 +5,8 @@ import { useAxiosExtension } from "@/v1/infrastructure/services/useAxiosExtensio
 
 import { SchemaRepository } from "~/v2/infrastructure/repositories/SchemaRepository";
 import { V2RecordRepository } from "~/v2/infrastructure/repositories/V2RecordRepository";
+import { AnnotationRepository } from "~/v2/infrastructure/repositories/AnnotationRepository";
+import { ProjectionRepository } from "~/v2/infrastructure/repositories/ProjectionRepository";
 import { useSchemas } from "~/v2/infrastructure/storage/SchemasStorage";
 import { GetSchemasUseCase } from "~/v2/domain/usecases/get-schemas-use-case";
 import { GetSchemaSettingsUseCase } from "~/v2/domain/usecases/get-schema-settings-use-case";
@@ -32,6 +34,9 @@ export const loadV2DependencyContainer = (nuxtApp: NuxtAppLike) => {
     register(GetSchemaRecordsUseCase).withDependency(V2RecordRepository).build(),
     register(SearchRecordsUseCase).withDependency(V2RecordRepository).build(),
     register(RebuildSchemaIndexUseCase).withDependency(V2RecordRepository).build(),
+
+    register(AnnotationRepository).withDependency(useAxios).build(),
+    register(ProjectionRepository).withDependency(useAxios).build(),
   ];
 
   Container.register(dependencies);
