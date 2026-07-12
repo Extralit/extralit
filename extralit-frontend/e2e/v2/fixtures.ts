@@ -1,4 +1,4 @@
-import { test as base, chromium, type Browser } from "@playwright/test";
+import { test as base, chromium, type APIRequestContext, type Browser } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -18,6 +18,41 @@ export const credentials = () => ({
   username: process.env.E2E_USERNAME ?? "extralit",
   password: process.env.E2E_PASSWORD ?? "12345678",
 });
+
+const apiUrl = () => process.env.E2E_API_URL ?? "http://localhost:6900";
+
+export const apiToken = async (request: APIRequestContext): Promise<string> => {
+  const { username, password } = credentials();
+  const res = await request.post(`${apiUrl()}/api/v2/token`, { form: { username, password } });
+  return (await res.json()).access_token;
+};
+
+// Create a fresh record under the seeded schema with its OWN reference plus a seeded
+// suggestion on the `size` question. Response-mutating specs (review-loop, draft-lifecycle)
+// each seed one of these in beforeEach so they never share the single seed record — which
+// otherwise races in parallel and, in serial order, leaves a submitted response that breaks
+// the next spec's clean "Suggestion" precondition (roborev job 154). A reseed wipes the schema.
+export const createIsolatedRecord = async (
+  request: APIRequestContext,
+  reference: string
+): Promise<{ reference: string; recordId: string }> => {
+  const seed = loadSeed();
+  const headers = { Authorization: `Bearer ${await apiToken(request)}` };
+
+  const upsert = await request.post(`${apiUrl()}/api/v2/schemas/${seed.schemaId}/records:bulk-upsert`, {
+    headers,
+    data: { items: [{ fields: { size: "120", label: "control", country: "KE" }, reference }] },
+  });
+  const recordId = (await upsert.json()).items[0].id;
+
+  await request.put(`${apiUrl()}/api/v2/records/${recordId}/suggestions`, {
+    headers,
+    data: { question_id: seed.questions.size.id, value: "120", score: 0.87, agent: "e2e-seeder" },
+  });
+  await request.post(`${apiUrl()}/api/v2/schemas/${seed.schemaId}:rebuild-index`, { headers });
+
+  return { reference, recordId };
+};
 
 // Local chromium cannot launch on the Orin dev host — connect to the remote ccui
 // chromium over CDP when E2E_CDP_URL is set; fall back to a plain launch (CI).
