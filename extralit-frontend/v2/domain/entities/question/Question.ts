@@ -1,3 +1,7 @@
+// The server's QuestionType enum also includes "span", but span questions are rejected
+// on write (spec §7) and are out of scope for the v2 review slice, so the domain type
+// omits it. SchemaRepository.toQuestion casts the API value knowing "span" will never
+// reach this entity in practice.
 export type QuestionType = "text" | "rating" | "label_selection" | "multi_label_selection" | "ranking" | "table";
 
 export interface QuestionOption {

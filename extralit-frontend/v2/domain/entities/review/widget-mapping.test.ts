@@ -11,6 +11,8 @@ describe("dtypeDefaultEditor", () => {
     ["bool", "checkbox"],
     ["datetime64[ns]", "date"],
     ["object", "text"], // unknown dtype falls back to text
+    ["interval[int64]", "text"], // "int" prefix must not classify interval as number
+    ["uint8", "number"],
   ])("maps dtype %s to %s", (dtype, editor) => {
     expect(dtypeDefaultEditor(dtype)).toBe(editor);
   });

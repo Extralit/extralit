@@ -7,7 +7,9 @@ export type CellEditor = "text" | "number" | "checkbox" | "date";
 const KNOWN_EDITORS: CellEditor[] = ["text", "number", "checkbox", "date"];
 
 export const dtypeDefaultEditor = (dtype: string): CellEditor => {
-  if (dtype.startsWith("int") || dtype.startsWith("float")) return "number";
+  // Require a digit after int/float so numpy widths (int64, uint8, float32) match but
+  // pandas `interval[...]` does not fall through to the number editor.
+  if (/^u?int\d/.test(dtype) || /^float\d/.test(dtype)) return "number";
   if (dtype === "bool") return "checkbox";
   if (dtype.startsWith("datetime")) return "date";
   return "text"; // str and anything unknown
