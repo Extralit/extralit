@@ -8,6 +8,9 @@ import { V2RecordRepository } from "~/v2/infrastructure/repositories/V2RecordRep
 import { AnnotationRepository } from "~/v2/infrastructure/repositories/AnnotationRepository";
 import { ProjectionRepository } from "~/v2/infrastructure/repositories/ProjectionRepository";
 import { GetReferenceReviewUseCase } from "~/v2/domain/usecases/get-reference-review-use-case";
+import { SubmitReferenceReviewUseCase } from "~/v2/domain/usecases/submit-reference-review-use-case";
+import { SaveReviewDraftUseCase } from "~/v2/domain/usecases/save-review-draft-use-case";
+import { DiscardReviewUseCase } from "~/v2/domain/usecases/discard-review-use-case";
 import { useReferenceReviews } from "~/v2/infrastructure/storage/ReferenceReviewsStorage";
 import { useSchemas } from "~/v2/infrastructure/storage/SchemasStorage";
 import { GetSchemasUseCase } from "~/v2/domain/usecases/get-schemas-use-case";
@@ -49,6 +52,9 @@ export const loadV2DependencyContainer = (nuxtApp: NuxtAppLike) => {
         useReferenceReviews
       )
       .build(),
+    register(SubmitReferenceReviewUseCase).withDependency(AnnotationRepository).build(),
+    register(SaveReviewDraftUseCase).withDependency(AnnotationRepository).build(),
+    register(DiscardReviewUseCase).withDependency(AnnotationRepository).build(),
   ];
 
   Container.register(dependencies);
