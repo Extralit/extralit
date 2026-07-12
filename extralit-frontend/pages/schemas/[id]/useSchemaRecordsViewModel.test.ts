@@ -10,6 +10,7 @@ import { V2Record } from "~/v2/domain/entities/record/V2Record";
 import { Schema } from "~/v2/domain/entities/schema/Schema";
 import { SchemaVersion } from "~/v2/domain/entities/schema/SchemaVersion";
 import { ColumnMeta } from "~/v2/domain/entities/schema/ColumnMeta";
+import { SearchCriteria } from "~/v2/domain/entities/search/SearchCriteria";
 import { useSchemaRecordsViewModel } from "./useSchemaRecordsViewModel";
 
 const RECORD = new V2Record("r-1", "s-1", "v-1", "10.1000/j.x", null, { title: "A study" }, null, "pending", "", "");
@@ -42,7 +43,7 @@ describe("useSchemaRecordsViewModel", () => {
     vm.searchText.value = "malaria";
     await vm.search();
     expect(search).toHaveBeenCalled();
-    expect(search.mock.calls[0][1].toQueryBody().text).toBe("malaria");
+    expect((search.mock.calls[0] as unknown as [string, SearchCriteria])[1].toQueryBody().text).toBe("malaria");
     expect(vm.isApproximateTotal.value).toBe(true);
   });
 
@@ -56,6 +57,8 @@ describe("useSchemaRecordsViewModel", () => {
     vm.statusFilter.value = "pending";
     await vm.search();
 
-    expect(search.mock.calls[0][1].toQueryBody().filters).toEqual([{ column: "status", op: "eq", value: "pending" }]);
+    expect((search.mock.calls[0] as unknown as [string, SearchCriteria])[1].toQueryBody().filters).toEqual([
+      { column: "status", op: "eq", value: "pending" },
+    ]);
   });
 });

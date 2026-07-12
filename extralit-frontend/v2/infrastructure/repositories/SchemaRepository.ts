@@ -28,8 +28,10 @@ const toVersion = (backend: BackendVersion): SchemaVersion =>
     backend.id,
     backend.schema_id,
     backend.version,
+    // columns_cache is an opaque JSONB array in the generated types (Record<string, never>[]);
+    // bridge through unknown to the concrete per-column shape the server actually emits.
     (
-      (backend.columns_cache ?? []) as {
+      (backend.columns_cache ?? []) as unknown as {
         name: string;
         dtype: string;
         nullable: boolean;

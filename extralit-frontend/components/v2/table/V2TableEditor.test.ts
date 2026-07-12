@@ -5,6 +5,13 @@ import { TabulatorFull } from "tabulator-tables";
 import { ColumnMeta } from "~/v2/domain/entities/schema/ColumnMeta";
 import V2TableEditor, { tabulatorColumns, valueFromRowData } from "./V2TableEditor.vue";
 
+// The vitest alias resolves tabulator-tables to __mocks__/tabulator-tables.js, which adds
+// these static test hooks; the real @types don't declare them, so view them through a cast.
+const MockTabulator = TabulatorFull as unknown as {
+  constructed: number;
+  latest: { emit(event: string, ...args: unknown[]): void } | null;
+};
+
 describe("V2TableEditor column derivation", () => {
   it("derives one tabulator column per bound ColumnMeta with dtype-driven editors", () => {
     const columns = tabulatorColumns(
@@ -50,8 +57,8 @@ describe("valueFromRowData", () => {
 
 describe("V2TableEditor rebuild behavior", () => {
   beforeEach(() => {
-    TabulatorFull.constructed = 0;
-    TabulatorFull.latest = null;
+    MockTabulator.constructed = 0;
+    MockTabulator.latest = null;
   });
 
   // A v-model parent so a committed cell edit echoes back into modelValue, exercising
@@ -72,15 +79,15 @@ describe("V2TableEditor rebuild behavior", () => {
   it("does not rebuild the table when the parent echoes back a committed cell edit", async () => {
     const wrapper = mount(Parent);
     await flushPromises();
-    expect(TabulatorFull.constructed).toBe(1);
+    expect(MockTabulator.constructed).toBe(1);
 
     // Simulate a committed cell edit: the stored handler emits the new row value,
     // the parent writes it back into modelValue.
-    TabulatorFull.latest.emit("cellEdited", { getRow: () => ({ getData: () => ({ name: "b" }) }) });
+    MockTabulator.latest.emit("cellEdited", { getRow: () => ({ getData: () => ({ name: "b" }) }) });
     await flushPromises();
 
     // The value round-tripped, but the editor was not torn down and recreated.
-    expect(TabulatorFull.constructed).toBe(1);
+    expect(MockTabulator.constructed).toBe(1);
     wrapper.unmount();
   });
 
@@ -89,12 +96,12 @@ describe("V2TableEditor rebuild behavior", () => {
     const columns = [new ColumnMeta("name", "str", false, null)];
     const wrapper = mount(V2TableEditor, { props: { modelValue: value.value, columns } });
     await flushPromises();
-    expect(TabulatorFull.constructed).toBe(1);
+    expect(MockTabulator.constructed).toBe(1);
 
     await wrapper.setProps({ modelValue: { name: "external" } });
     await flushPromises();
 
-    expect(TabulatorFull.constructed).toBe(2);
+    expect(MockTabulator.constructed).toBe(2);
     wrapper.unmount();
   });
 });

@@ -21,7 +21,8 @@ export const tabulatorColumns = (columns: ColumnMeta[], editable: boolean): Colu
   columns.map((column) => ({
     title: column.name,
     field: column.name,
-    editor: editable ? EDITOR_BY_KIND[columnCellEditor(column)] : false,
+    // `false` disables editing at runtime; @types only types `editor` as `Editor | undefined`.
+    editor: (editable ? EDITOR_BY_KIND[columnCellEditor(column)] : false) as ColumnDefinition["editor"],
     headerSort: false,
   }));
 
