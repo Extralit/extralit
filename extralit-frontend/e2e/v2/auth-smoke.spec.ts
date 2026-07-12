@@ -5,6 +5,13 @@ import { expect, loadSeed, signIn, test } from "./fixtures";
 test("signs in with a bearer token, lists schemas, opens records", async ({ page }) => {
   const seed = loadSeed();
 
+  // The /schemas list renders for the *selected* workspace, and the app auto-selects the
+  // first one — non-deterministic across backends. Pin the persisted selection to the
+  // seeded workspace so saveWorkspaces() restores it regardless of workspace ordering.
+  await page.addInitScript((workspaceId) => {
+    localStorage.setItem("extralit-selected-workspace-id", workspaceId);
+  }, seed.workspaceId);
+
   const schemasRequest = page.waitForResponse(
     (r) => r.url().includes("/api/v2/schemas") && r.request().method() === "GET"
   );
