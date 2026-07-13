@@ -29,7 +29,7 @@ intended consumers:
 | Coexistence | Parallel `extralit.v2` package; v1 untouched; one wheel |
 | Contract | Committed `openapi-dump` snapshot → generated Pydantic DTOs (Approach A) |
 | Transport | Async-native (`httpx.AsyncClient`) + sync facade |
-| CLI | `extralit v2 …` subtree, JSON-first, lazy-imported |
+| CLI | Top-level verbs (`extralit schemas`, `extralit records`, …) — v2 owns the CLI surface; JSON-first, lazy-imported |
 | Primary workflow | LLM extraction pipeline (publish schema → bulk-upsert → suggestions → projections) |
 | Scope | Vertical slice (below); responses-write, exports, admin verbs deferred |
 
@@ -52,7 +52,7 @@ src/extralit/v2/
 ├── _sync.py              # sync facade (background-thread event-loop portal)
 ├── models/               # hand-written domain classes (Schema, SchemaVersion, Record, …)
 ├── resources/            # Schemas, Records, Questions, Suggestions, Projections
-└── cli/                  # `extralit v2 …` subcommands (lazy-registered)
+└── cli/                  # top-level CLI verbs (lazy-registered into cli/app.py)
 ```
 
 Python namespacing removes the frontend's need for `V2`-prefixed names:
@@ -64,7 +64,9 @@ from the top-level `extralit` namespace.
 nothing from v1 modules, with one documented exception: a shared credentials helper
 (env vars + `~/.extralit/credentials.json`), which survives v1 retirement anyway.
 v1 never imports v2. The boundary is grep-checkable and gated in CI. Phase 6
-retirement deletes v1 packages mechanically.
+retirement deletes v1 packages mechanically. `cli/app.py` is the composition root
+(like the frontend's `plugins/3.di.ts`): it may import `extralit.v2.cli` to register
+commands without counting as a boundary violation.
 
 ## 2. Contract layer
 
@@ -150,16 +152,24 @@ frontend proved testable without a live backend.
 
 ## 5. Agentic CLI
 
-`extralit v2` subcommand tree over the sync facade:
+v2 commands register at the **top level** of the existing `extralit` app — no `v2`
+prefix in the interface — built over the sync facade:
 
 ```
-extralit v2 schemas     list | get | create | publish | versions
-extralit v2 records     upsert | search | list | delete
-extralit v2 questions   list
-extralit v2 suggestions upsert
-extralit v2 projection  get
-extralit v2 references  get
+extralit schemas     list | get | create | publish | versions
+extralit records     upsert | search | list | delete
+extralit questions   list
+extralit suggestions upsert
+extralit projection  get
+extralit references  get
 ```
+
+The v2 model owns the CLI surface going forward. Consequence: the existing v1
+`extralit schemas` subcommand (workspace-file Pandera management) is **replaced** by
+the v2 implementation — a deliberate breaking change; the CLI leads the v1→v2
+transition even while the SDK library keeps the v1 surface intact. All other v1
+subcommands (`datasets`, `users`, `workspaces`, `extraction`, …) remain untouched
+until Phase 6.
 
 - **JSON-first.** Every command accepts `--json`; when stdout is not a TTY, JSON is
   the default automatically. JSON shapes are the serialized DTOs — stable because
@@ -173,10 +183,10 @@ extralit v2 references  get
   ever emitted when stdin is not a TTY.
 - **Piping.** `records upsert` reads JSONL from stdin or `--file`; `records search
   --limit/--offset` page through cleanly for chaining.
-- **Startup budget.** The v2 subtree registers into `cli/app.py` via a lazy callback;
+- **Startup budget.** The v2 commands register into `cli/app.py` via lazy callbacks;
   heavy deps (pandas, pandera, datasets) import only inside the commands that use
-  them. Budget: `extralit v2 --help` completes in < 300 ms on the Orin dev host,
-  verified with `python -X importtime` in a CI check.
+  them. Budget: `extralit schemas --help` completes in < 300 ms on the Orin dev
+  host, verified with `python -X importtime` in a CI check.
 
 ## 6. Error handling
 
@@ -203,9 +213,11 @@ pretending exactness.
 ## Scope
 
 **In this slice:** everything above — contract layer, transport + sync facade,
-the five resources, the CLI subtree with JSON-first output, unit tests + CI gates.
+the five resources, the top-level CLI verbs with JSON-first output (including the
+replacement of the v1 `schemas` subcommand), unit tests + CI gates.
 
 **Deferred by design:** responses *write* (submit/draft/discard — the review loop
 belongs to a follow-up once the frontend's Phase 5 queue lands), DataFrame/parquet/HF
 export, `rebuild-index` and other admin verbs, webhooks, span questions, and the
-v1 CLI/SDK retirement (Phase 6) this boundary exists to enable.
+retirement of the remaining v1 CLI subcommands and SDK surface (Phase 6) this
+boundary exists to enable.
