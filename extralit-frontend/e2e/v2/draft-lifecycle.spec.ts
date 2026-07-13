@@ -6,7 +6,7 @@ import { createIsolatedRecord, expect, loadSeed, signIn, test } from "./fixtures
 // submit at the end never contaminates another spec's clean-suggestion precondition.
 test("draft persists in the form without touching the projection, then submits", async ({ page, request }) => {
   const seed = loadSeed();
-  const { reference, recordId } = await createIsolatedRecord(request, `${seed.reference}-draft-lifecycle`);
+  const { reference, recordId } = await createIsolatedRecord(request, "10.2000/e2e-draft-lifecycle");
 
   await signIn(page);
   await page.goto(`/references/${encodeURIComponent(reference)}?workspace_id=${seed.workspaceId}`);

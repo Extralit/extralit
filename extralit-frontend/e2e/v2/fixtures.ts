@@ -32,6 +32,9 @@ export const apiToken = async (request: APIRequestContext): Promise<string> => {
 // each seed one of these in beforeEach so they never share the single seed record — which
 // otherwise races in parallel and, in serial order, leaves a submitted response that breaks
 // the next spec's clean "Suggestion" precondition (roborev job 154). A reseed wipes the schema.
+// The reference must NOT contain seed.reference as a substring: other specs assert on the
+// shared record via non-exact getByText(seed.reference), and a superstring reference in the
+// same schema substring-matches those assertions into strict-mode violations (roborev job 157).
 export const createIsolatedRecord = async (
   request: APIRequestContext,
   reference: string

@@ -5,7 +5,7 @@ import { createIsolatedRecord, expect, loadSeed, signIn, test } from "./fixtures
 // Uses its own isolated record so it never shares mutable response state with other specs.
 test("converts a suggestion into a submitted response", async ({ page, request }) => {
   const seed = loadSeed();
-  const { reference, recordId } = await createIsolatedRecord(request, `${seed.reference}-review-loop`);
+  const { reference, recordId } = await createIsolatedRecord(request, "10.2000/e2e-review-loop");
 
   await signIn(page);
   await page.goto(`/references/${encodeURIComponent(reference)}?workspace_id=${seed.workspaceId}`);
