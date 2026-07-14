@@ -67,7 +67,7 @@ def test_parse_filter_json_decodes_value():
 def test_upsert_reads_jsonl_from_stdin(fake_client):
     lines = '{"size": "120"}\n{"size": "135"}\n'
     result = runner.invoke(app, ["upsert", SCHEMA_ID, "--reference", "10.1000/xyz"], input=lines)
-    assert result.exit_code == 0, result.stderr
+    assert result.exit_code == 0, result.output
     _schema_id, items, reference = fake_client["upsert"]
     assert items == [{"size": "120"}, {"size": "135"}]
     assert reference == "10.1000/xyz"

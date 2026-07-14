@@ -26,7 +26,7 @@ def _parse_filter(raw: str) -> tuple:
 
 
 def _read_jsonl(file: Optional[str]) -> list[dict]:
-    stream = sys.stdin if file in (None, "-") else open(file)
+    stream = sys.stdin if file in (None, "-") else open(file, encoding="utf-8")
     try:
         return [json.loads(line) for line in stream if line.strip()]
     finally:
@@ -94,6 +94,7 @@ def delete_records(
     ids: str = typer.Option(..., "--ids", help="Comma-separated record ids"),
     json_flag: bool = JSON_FLAG,
 ):
+    record_ids = ids.split(",")
     with get_client() as client:
-        client.records.delete(UUID(schema_id), ids.split(","))
-    emit({"deleted": len(ids.split(","))}, json_flag)
+        client.records.delete(UUID(schema_id), record_ids)
+    emit({"deleted": len(record_ids)}, json_flag)
