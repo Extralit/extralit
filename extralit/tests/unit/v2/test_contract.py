@@ -95,10 +95,13 @@ def test_snapshot_matches_server():
     proc = subprocess.run(
         ["uv", "run", "python", "-m", "extralit_server", "openapi-dump"],
         cwd=SERVER_DIR,
-        check=True,
         capture_output=True,
         text=True,
     )
-    assert json.loads(proc.stdout) == json.loads(SNAPSHOT.read_text()), (
+    assert proc.returncode == 0, f"openapi-dump failed (rc={proc.returncode}):\n{proc.stderr}"
+    # Slice from the first '{' to guard against any stdout preamble (banners, deprecation notices)
+    # that would cause json.loads to fail with JSONDecodeError unrelated to snapshot drift.
+    stdout = proc.stdout[proc.stdout.index("{") :]
+    assert json.loads(stdout) == json.loads(SNAPSHOT.read_text()), (
         "openapi.json snapshot drifted from the server — re-dump it (see plan Task 1 Step 2)"
     )
