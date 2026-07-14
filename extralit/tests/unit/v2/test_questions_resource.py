@@ -58,11 +58,7 @@ async def test_id_for_refetches_once_then_raises(httpx_mock, questions):
         url=f"{API}/api/v2/schemas/{SCHEMA_ID}/questions",
         json={"items": [_question(Q_SIZE, "size"), _question(q_new, "dosage")]},
     )
-    assert (
-        str(await questions.id_for(SCHEMA_ID, "dosage")) == q_new
-    )  # miss -> refetch -> hit
-    httpx_mock.add_response(
-        url=f"{API}/api/v2/schemas/{SCHEMA_ID}/questions", json={"items": []}
-    )
+    assert str(await questions.id_for(SCHEMA_ID, "dosage")) == q_new  # miss -> refetch -> hit
+    httpx_mock.add_response(url=f"{API}/api/v2/schemas/{SCHEMA_ID}/questions", json={"items": []})
     with pytest.raises(NotFoundError):
         await questions.id_for(SCHEMA_ID, "ghost")

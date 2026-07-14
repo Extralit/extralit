@@ -53,9 +53,7 @@ def schemas():
 
 
 async def test_create_and_get(httpx_mock, schemas):
-    httpx_mock.add_response(
-        method="POST", url=f"{API}/api/v2/schemas", status_code=201, json=_schema()
-    )
+    httpx_mock.add_response(method="POST", url=f"{API}/api/v2/schemas", status_code=201, json=_schema())
     created = await schemas.create(WS, "trials")
     assert created.name == "trials"
     body = httpx_mock.get_requests()[0].read()
@@ -63,15 +61,11 @@ async def test_create_and_get(httpx_mock, schemas):
 
 
 async def test_get_by_name_found_and_missing(httpx_mock, schemas):
-    listing = {
-        "items": [_schema("other") | {"id": str(uuid.uuid4())}, _schema("trials")]
-    }
+    listing = {"items": [_schema("other") | {"id": str(uuid.uuid4())}, _schema("trials")]}
     httpx_mock.add_response(url=f"{API}/api/v2/schemas?workspace_id={WS}", json=listing)
     found = await schemas.get_by_name(WS, "trials")
     assert str(found.id) == SCHEMA_ID
-    httpx_mock.add_response(
-        url=f"{API}/api/v2/schemas?workspace_id={WS}", json={"items": []}
-    )
+    httpx_mock.add_response(url=f"{API}/api/v2/schemas?workspace_id={WS}", json={"items": []})
     with pytest.raises(NotFoundError):
         await schemas.get_by_name(WS, "trials")
 
@@ -88,9 +82,7 @@ async def test_publish_accepts_pandera_object_or_string(httpx_mock, schemas):
         def to_json(self):
             return '{"columns": {"size": {}}}'
 
-    version = await schemas.publish(
-        SCHEMA_ID, FakePandera(), review_widgets={"size": {"widget": "text"}}
-    )
+    version = await schemas.publish(SCHEMA_ID, FakePandera(), review_widgets={"size": {"widget": "text"}})
     assert version.version == 1
     sent = json.loads(httpx_mock.get_requests()[0].read())
     assert set(sent) == {
@@ -98,19 +90,13 @@ async def test_publish_accepts_pandera_object_or_string(httpx_mock, schemas):
         "review_widgets",
     }  # review_widgets ride out-of-band, not merged into body
     assert sent["review_widgets"] == {"size": {"widget": "text"}}
-    assert (
-        '"columns"' in sent["body"]
-    )  # body is the pandera JSON string, kept as a string value
+    assert '"columns"' in sent["body"]  # body is the pandera JSON string, kept as a string value
 
 
 async def test_get_version_cached(httpx_mock, schemas):
-    httpx_mock.add_response(
-        url=f"{API}/api/v2/schemas/{SCHEMA_ID}/versions/1", json=_version()
-    )
+    httpx_mock.add_response(url=f"{API}/api/v2/schemas/{SCHEMA_ID}/versions/1", json=_version())
     v1 = await schemas.get_version(SCHEMA_ID, 1)
-    v1_again = await schemas.get_version(
-        SCHEMA_ID, 1
-    )  # served from cache: no second request
+    v1_again = await schemas.get_version(SCHEMA_ID, 1)  # served from cache: no second request
     assert v1_again is v1
     assert len(httpx_mock.get_requests()) == 1
 
@@ -120,8 +106,6 @@ async def test_versions_and_columns(httpx_mock, schemas):
         url=f"{API}/api/v2/schemas/{SCHEMA_ID}/versions",
         json=[_version(1), _version(2)],
     )
-    httpx_mock.add_response(
-        url=f"{API}/api/v2/schemas/{SCHEMA_ID}/columns", json=[{"name": "size"}]
-    )
+    httpx_mock.add_response(url=f"{API}/api/v2/schemas/{SCHEMA_ID}/columns", json=[{"name": "size"}])
     assert [v.version for v in await schemas.versions(SCHEMA_ID)] == [1, 2]
     assert await schemas.columns(SCHEMA_ID) == [{"name": "size"}]
