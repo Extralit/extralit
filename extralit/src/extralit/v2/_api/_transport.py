@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any, Optional
 
 import httpx
@@ -37,6 +38,7 @@ class AsyncTransport:
         self._password = password
         self._access_token: Optional[str] = None
         self._refresh_token: Optional[str] = None
+        self._auth_lock: Optional[asyncio.Lock] = None  # lazily created on first use (loop-safe)
         self._http = httpx.AsyncClient(
             base_url=self.api_url,
             timeout=timeout,
@@ -72,6 +74,25 @@ class AsyncTransport:
         self._refresh_token = payload.get("refresh_token", self._refresh_token)
         return True
 
+    def _get_auth_lock(self) -> asyncio.Lock:
+        """Return the per-instance auth lock, creating it lazily inside the running loop."""
+        if self._auth_lock is None:
+            self._auth_lock = asyncio.Lock()
+        return self._auth_lock
+
+    async def _ensure_logged_in(self) -> None:
+        """Login exactly once even under concurrent callers."""
+        if self._access_token:
+            return
+        async with self._get_auth_lock():
+            if not self._access_token:  # re-check after acquiring lock
+                await self._login()
+
+    async def _refresh_if_stale(self) -> bool:
+        """Coalesce concurrent 401s so only one refresh fires."""
+        async with self._get_auth_lock():
+            return await self._refresh()
+
     async def request(
         self,
         method: str,
@@ -80,12 +101,12 @@ class AsyncTransport:
         params: Optional[dict] = None,
         json: Optional[Any] = None,
     ) -> Any:
-        if self._username and not self._access_token and not self._api_key:
-            await self._login()
+        if self._username and not self._api_key:
+            await self._ensure_logged_in()
         response = await self._http.request(
             method, f"{_API_PREFIX}{path}", params=params, json=json, headers=self._auth_headers()
         )
-        if response.status_code == 401 and self._access_token and await self._refresh():
+        if response.status_code == 401 and self._access_token and await self._refresh_if_stale():
             response = await self._http.request(
                 method, f"{_API_PREFIX}{path}", params=params, json=json, headers=self._auth_headers()
             )
