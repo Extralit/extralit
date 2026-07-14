@@ -135,6 +135,42 @@ async def test_concurrent_401s_refresh_once(httpx_mock):
     await t.aclose()
 
 
+async def test_concurrent_401s_failed_refresh_coalesces(httpx_mock):
+    # Login succeeds (AT1); the token is then rejected (401) and the refresh ALSO fails (401),
+    # so the token is never rotated. All waiters must still coalesce into a SINGLE /token/refresh
+    # before raising AuthError, not stampede the auth endpoint once per concurrent request.
+    httpx_mock.add_response(
+        method="POST",
+        url=f"{API}/api/v2/token",
+        status_code=201,
+        json={"access_token": "AT1", "refresh_token": "RT1"},
+    )
+
+    def refresh_fails(request):
+        import httpx
+
+        return httpx.Response(401, json={"detail": "refresh dead"})
+
+    httpx_mock.add_callback(refresh_fails, method="POST", url=f"{API}/api/v2/token/refresh")
+
+    def schemas_401(request):
+        import httpx
+
+        return httpx.Response(401, json={"detail": "exp"})
+
+    httpx_mock.add_callback(schemas_401, method="GET", url=f"{API}/api/v2/schemas?workspace_id=w1")
+
+    t = AsyncTransport(API, username="u", password="p")
+    results = await asyncio.gather(
+        *(t.request("GET", "/schemas", params={"workspace_id": "w1"}) for _ in range(5)),
+        return_exceptions=True,
+    )
+    assert all(isinstance(r, AuthError) for r in results)  # every request raises after the dead refresh
+    refresh_posts = [r for r in httpx_mock.get_requests() if r.url.path == "/api/v2/token/refresh"]
+    assert len(refresh_posts) == 1  # the failed refresh is coalesced, not stampeded per waiter
+    await t.aclose()
+
+
 async def test_error_mapping_and_204(httpx_mock):
     httpx_mock.add_response(url=f"{API}/api/v2/schemas/x", status_code=404, json={"detail": "gone"})
     httpx_mock.add_response(method="POST", url=f"{API}/api/v2/schemas", status_code=422, json={"detail": "bad"})

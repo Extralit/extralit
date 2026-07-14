@@ -39,6 +39,7 @@ class AsyncTransport:
         self._access_token: Optional[str] = None
         self._refresh_token: Optional[str] = None
         self._auth_lock: Optional[asyncio.Lock] = None  # lazily created on first use (loop-safe)
+        self._refresh_failed_for: Optional[str] = None  # stale token whose refresh already failed
         self._http = httpx.AsyncClient(
             base_url=self.api_url,
             timeout=timeout,
@@ -89,11 +90,17 @@ class AsyncTransport:
                 await self._login()
 
     async def _refresh_if_stale(self, stale_token: str) -> bool:
-        """Coalesce concurrent 401s: only the first waiter refreshes; the rest reuse the rotated token."""
+        """Coalesce concurrent 401s: only the first waiter refreshes; the rest reuse the rotated
+        token. If that single refresh fails, later waiters don't re-hammer the auth endpoint."""
         async with self._get_auth_lock():
             if self._access_token != stale_token:
                 return True  # another coroutine already refreshed while we waited for the lock
-            return await self._refresh()
+            if self._refresh_failed_for == stale_token:
+                return False  # a prior waiter already tried and failed to refresh this token
+            ok = await self._refresh()
+            if not ok:
+                self._refresh_failed_for = stale_token
+            return ok
 
     async def request(
         self,
