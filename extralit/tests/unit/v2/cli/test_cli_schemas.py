@@ -75,8 +75,6 @@ def test_top_level_registration():
     from extralit.cli.app import app as root_app
 
     names = [t.name for t in root_app.registered_groups]
-    # Task 14 Step 4 extends this tuple to all six verbs once they exist:
-    # ("schemas", "records", "questions", "suggestions", "projection", "references")
-    for verb in ("schemas",):
+    for verb in ("schemas", "records", "questions", "suggestions", "projection", "references"):
         assert verb in names, f"{verb} not registered at top level"
     assert names.count("schemas") == 1, "v1 schemas subcommand must be unregistered"
