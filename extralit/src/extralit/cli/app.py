@@ -9,7 +9,6 @@ from extralit.cli import (
     info,
     login,
     logout,
-    schemas,
     training,
     users,
     whoami,
@@ -50,12 +49,16 @@ def register_subcommands():
     app.add_typer(info.app, name="info")
     app.add_typer(login.app, name="login")
     app.add_typer(logout.app, name="logout")
-    app.add_typer(schemas.app, name="schemas")
     app.add_typer(training.app, name="training")
     app.add_typer(users.app, name="users")
     app.add_typer(whoami.app, name="whoami")
     app.add_typer(workflows.app, name="workflows")
     app.add_typer(workspaces.app, name="workspaces")
+
+    # v2 owns the top-level verbs: schemas, records, questions, suggestions, projection, references.
+    from extralit.v2.cli import add_v2_commands  # composition-root exception to the v1/v2 wall
+
+    add_v2_commands(app)
 
 
 register_subcommands()
