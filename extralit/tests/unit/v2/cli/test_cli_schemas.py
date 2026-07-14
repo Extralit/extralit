@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime, timezone
 from types import SimpleNamespace
 
+import click
 import pytest
 from typer.testing import CliRunner
 
@@ -11,7 +12,10 @@ from extralit.v2._api._errors import ValidationError
 from extralit.v2.cli.schemas import app
 from extralit.v2.models import Schema
 
-runner = CliRunner()  # click >= 8.2: stderr is separated by default (mix_stderr was removed)
+# click >= 8.2 separates stderr by default; 8.1 (Python 3.9) requires mix_stderr=False.
+runner = (
+    CliRunner() if tuple(int(x) for x in click.__version__.split(".")[:2]) >= (8, 2) else CliRunner(mix_stderr=False)
+)
 WS = str(uuid.uuid4())
 NOW = datetime.now(timezone.utc).isoformat()
 
