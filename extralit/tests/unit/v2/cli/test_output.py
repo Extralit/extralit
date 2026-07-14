@@ -47,16 +47,34 @@ def test_fail_api_error_exits_1(capsys):
     assert json.loads(capsys.readouterr().err)["error"]["detail"] == "kaboom"
 
 
-def test_handle_errors_routes_value_error_to_structured_fail():
-    """Malformed UUID / JSON input must produce exit code 1 + structured stderr, not a traceback."""
+def test_handle_errors_routes_value_error_to_structured_fail(monkeypatch):
+    """Malformed UUID must produce exit code 1 + structured stderr via handle_errors, not a traceback.
 
+    get_client is monkeypatched so credentials resolution succeeds and the ValueError
+    provably originates from UUID('not-a-uuid') inside upsert_records (after JSONL is read).
+    """
+    from types import SimpleNamespace
+
+    import extralit.v2.cli.records as records_mod
     from extralit.v2.cli.records import app as records_app
 
+    class _FakeClient(SimpleNamespace):
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            pass
+
+    monkeypatch.setattr(
+        records_mod, "get_client", lambda: _FakeClient(records=SimpleNamespace(bulk_upsert=lambda *a, **k: []))
+    )
     runner = _runner
-    result = runner.invoke(records_app, ["list", "not-a-uuid"])
+    # Pass valid JSONL via stdin; the UUID is what's malformed
+    result = runner.invoke(records_app, ["upsert", "not-a-uuid"], input='{"size": "10"}\n')
     assert result.exit_code == 1
     err = json.loads(result.stderr)
     assert err["error"]["type"] == "ValueError"
+    assert "UUID" in err["error"]["detail"] or "hexadecimal" in err["error"]["detail"]
 
 
 def test_handle_errors_routes_oserror_to_structured_fail():
