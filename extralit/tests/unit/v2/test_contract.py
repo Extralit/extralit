@@ -56,7 +56,8 @@ def test_generated_models_importable():
 def test_generated_matches_snapshot(tmp_path):
     """No-drift gate: regenerating from the committed snapshot must be byte-identical."""
     out = tmp_path / "regen.py"
-    subprocess.run(
+    # Pin: datamodel-code-generator>=0.68.1,<0.69 — a bump requires re-running codegen
+    proc = subprocess.run(
         [
             sys.executable,
             "-m",
@@ -78,9 +79,10 @@ def test_generated_matches_snapshot(tmp_path):
             "black",
             "isort",
         ],
-        check=True,
         capture_output=True,
+        text=True,
     )
+    assert proc.returncode == 0, f"datamodel-codegen failed (rc={proc.returncode}):\n{proc.stderr}"
     assert out.read_text() == GENERATED.read_text(), (
         "src/extralit/v2/_api/_generated.py drifted from openapi.json — rerun datamodel-codegen (see plan Task 1 Step 3)"
     )

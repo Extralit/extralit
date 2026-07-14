@@ -1058,7 +1058,7 @@ requires-dist = [
 dev = [
     { name = "build", specifier = ">=1.0.3" },
     { name = "cairosvg", specifier = ">=2.7.1" },
-    { name = "datamodel-code-generator", specifier = ">=0.26" },
+    { name = "datamodel-code-generator", specifier = ">=0.26,<0.69" },
     { name = "flake8", specifier = ">=5.0.4" },
     { name = "ipython", specifier = ">=8.12.3" },
     { name = "material-plausible-plugin", specifier = ">=0.2.0" },
