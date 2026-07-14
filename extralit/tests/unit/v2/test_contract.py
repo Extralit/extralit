@@ -56,7 +56,7 @@ def test_generated_models_importable():
 def test_generated_matches_snapshot(tmp_path):
     """No-drift gate: regenerating from the committed snapshot must be byte-identical."""
     out = tmp_path / "regen.py"
-    # Pin: datamodel-code-generator>=0.68.1,<0.69 — a bump requires re-running codegen
+    # Pin: datamodel-code-generator>=0.26,<0.69 (pyproject.toml); generated with 0.68.1 — a minor bump requires re-running codegen
     proc = subprocess.run(
         [
             sys.executable,
