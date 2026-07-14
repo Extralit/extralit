@@ -1,0 +1,4816 @@
+{
+  "components": {
+    "schemas": {
+      "Body_create_token_token_post": {
+        "properties": {
+          "password": {
+            "title": "Password",
+            "type": "string"
+          },
+          "username": {
+            "title": "Username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_create_token_token_post",
+        "type": "object"
+      },
+      "ProjectionCell": {
+        "properties": {
+          "question_name": {
+            "title": "Question Name",
+            "type": "string"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "enum": [
+                  "response",
+                  "suggestion"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "value": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "question_name"
+        ],
+        "title": "ProjectionCell",
+        "type": "object"
+      },
+      "ProjectionRecord": {
+        "properties": {
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectionCell"
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "record_id": {
+            "format": "uuid",
+            "title": "Record Id",
+            "type": "string"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "schema_id": {
+            "format": "uuid",
+            "title": "Schema Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_id",
+          "schema_id",
+          "reference",
+          "cells"
+        ],
+        "title": "ProjectionRecord",
+        "type": "object"
+      },
+      "ProjectionView": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectionRecord"
+            },
+            "title": "Records",
+            "type": "array"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "total_records": {
+            "title": "Total Records",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "reference",
+          "records",
+          "total_records"
+        ],
+        "title": "ProjectionView",
+        "type": "object"
+      },
+      "QuestionCreate": {
+        "properties": {
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Columns",
+            "type": "array"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "required": {
+            "default": false,
+            "title": "Required",
+            "type": "boolean"
+          },
+          "settings": {
+            "title": "Settings",
+            "type": "object"
+          },
+          "title": {
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/QuestionType"
+          }
+        },
+        "required": [
+          "name",
+          "title",
+          "type",
+          "columns"
+        ],
+        "title": "QuestionCreate",
+        "type": "object"
+      },
+      "QuestionRead": {
+        "properties": {
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "inserted_at": {
+            "format": "date-time",
+            "title": "Inserted At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "required": {
+            "title": "Required",
+            "type": "boolean"
+          },
+          "schema_id": {
+            "format": "uuid",
+            "title": "Schema Id",
+            "type": "string"
+          },
+          "settings": {
+            "title": "Settings",
+            "type": "object"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/QuestionType"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "schema_id",
+          "name",
+          "title",
+          "description",
+          "type",
+          "columns",
+          "settings",
+          "required",
+          "inserted_at",
+          "updated_at"
+        ],
+        "title": "QuestionRead",
+        "type": "object"
+      },
+      "QuestionType": {
+        "enum": [
+          "text",
+          "rating",
+          "label_selection",
+          "multi_label_selection",
+          "ranking",
+          "span",
+          "table"
+        ],
+        "title": "QuestionType",
+        "type": "string"
+      },
+      "QuestionUpdate": {
+        "properties": {
+          "columns": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Columns"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "required": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required"
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Settings"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "QuestionUpdate",
+        "type": "object"
+      },
+      "Questions": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/QuestionRead"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Questions",
+        "type": "object"
+      },
+      "RecordFilter": {
+        "properties": {
+          "column": {
+            "title": "Column",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "eq",
+              "in",
+              "ge",
+              "le"
+            ],
+            "title": "Op",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "required": [
+          "column",
+          "op",
+          "value"
+        ],
+        "title": "RecordFilter",
+        "type": "object"
+      },
+      "RecordRead": {
+        "properties": {
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          },
+          "fields": {
+            "title": "Fields",
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "inserted_at": {
+            "format": "date-time",
+            "title": "Inserted At",
+            "type": "string"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "schema_id": {
+            "format": "uuid",
+            "title": "Schema Id",
+            "type": "string"
+          },
+          "schema_version_id": {
+            "format": "uuid",
+            "title": "Schema Version Id",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/V2RecordStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "schema_id",
+          "schema_version_id",
+          "reference",
+          "external_id",
+          "fields",
+          "status",
+          "inserted_at",
+          "updated_at"
+        ],
+        "title": "RecordRead",
+        "type": "object"
+      },
+      "RecordSearchQuery": {
+        "properties": {
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/RecordFilter"
+            },
+            "title": "Filters",
+            "type": "array"
+          },
+          "limit": {
+            "default": 50,
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Offset",
+            "type": "integer"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          }
+        },
+        "title": "RecordSearchQuery",
+        "type": "object"
+      },
+      "RecordUpsert": {
+        "description": "One bulk-upsert item.\n\n`fields` and `reference` are always written. `metadata` and `status` are patch-like:\nwhen omitted (None) on an update they preserve the existing row's values (they cannot\nbe cleared via upsert); on insert they default to no metadata / `pending`.",
+        "properties": {
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          },
+          "fields": {
+            "title": "Fields",
+            "type": "object"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "reference": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reference",
+            "type": "string"
+          },
+          "schema_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Pin to a specific version; defaults to the schema's current_version_id",
+            "title": "Schema Version Id"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/V2RecordStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "fields",
+          "reference"
+        ],
+        "title": "RecordUpsert",
+        "type": "object"
+      },
+      "Records": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RecordRead"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "Records",
+        "type": "object"
+      },
+      "RecordsBulkUpsert": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RecordUpsert"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "RecordsBulkUpsert",
+        "type": "object"
+      },
+      "ReferenceGroup": {
+        "properties": {
+          "records": {
+            "items": {
+              "$ref": "#/components/schemas/RecordRead"
+            },
+            "title": "Records",
+            "type": "array"
+          },
+          "schema_id": {
+            "format": "uuid",
+            "title": "Schema Id",
+            "type": "string"
+          },
+          "schema_name": {
+            "title": "Schema Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_id",
+          "schema_name",
+          "records"
+        ],
+        "title": "ReferenceGroup",
+        "type": "object"
+      },
+      "ReferenceView": {
+        "properties": {
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/ReferenceGroup"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "reference": {
+            "title": "Reference",
+            "type": "string"
+          },
+          "total_records": {
+            "title": "Total Records",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "reference",
+          "groups",
+          "total_records"
+        ],
+        "title": "ReferenceView",
+        "type": "object"
+      },
+      "RefreshTokenRequest": {
+        "description": "Refresh token request model",
+        "properties": {
+          "refresh_token": {
+            "title": "Refresh Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh_token"
+        ],
+        "title": "RefreshTokenRequest",
+        "type": "object"
+      },
+      "ResponseRead": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "inserted_at": {
+            "format": "date-time",
+            "title": "Inserted At",
+            "type": "string"
+          },
+          "record_id": {
+            "format": "uuid",
+            "title": "Record Id",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "values": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Values"
+          }
+        },
+        "required": [
+          "id",
+          "record_id",
+          "user_id",
+          "values",
+          "status",
+          "inserted_at",
+          "updated_at"
+        ],
+        "title": "ResponseRead",
+        "type": "object"
+      },
+      "ResponseStatus": {
+        "enum": [
+          "draft",
+          "submitted",
+          "discarded"
+        ],
+        "title": "ResponseStatus",
+        "type": "string"
+      },
+      "ResponseUpsert": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ResponseStatus"
+          },
+          "values": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Values"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "ResponseUpsert",
+        "type": "object"
+      },
+      "SchemaCreate": {
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "settings": {
+            "title": "Settings",
+            "type": "object"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "workspace_id"
+        ],
+        "title": "SchemaCreate",
+        "type": "object"
+      },
+      "SchemaRead": {
+        "properties": {
+          "current_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Version Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "inserted_at": {
+            "format": "date-time",
+            "title": "Inserted At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "settings": {
+            "title": "Settings",
+            "type": "object"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SchemaStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "current_version_id",
+          "settings",
+          "workspace_id",
+          "inserted_at",
+          "updated_at"
+        ],
+        "title": "SchemaRead",
+        "type": "object"
+      },
+      "SchemaStatus": {
+        "enum": [
+          "draft",
+          "published"
+        ],
+        "title": "SchemaStatus",
+        "type": "string"
+      },
+      "SchemaUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Settings"
+          }
+        },
+        "title": "SchemaUpdate",
+        "type": "object"
+      },
+      "SchemaVersionCreate": {
+        "properties": {
+          "body": {
+            "description": "Pandera DataFrameSchema serialized via .to_json()",
+            "title": "Body",
+            "type": "string"
+          },
+          "review_widgets": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "title": "Review Widgets",
+            "type": "object"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "title": "SchemaVersionCreate",
+        "type": "object"
+      },
+      "SchemaVersionRead": {
+        "properties": {
+          "checksum": {
+            "title": "Checksum",
+            "type": "string"
+          },
+          "columns_cache": {
+            "items": {
+              "type": "object"
+            },
+            "title": "Columns Cache",
+            "type": "array"
+          },
+          "etag": {
+            "title": "Etag",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "inserted_at": {
+            "format": "date-time",
+            "title": "Inserted At",
+            "type": "string"
+          },
+          "object_key": {
+            "title": "Object Key",
+            "type": "string"
+          },
+          "object_version_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Object Version Id"
+          },
+          "parent_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Version Id"
+          },
+          "review_widgets": {
+            "additionalProperties": {
+              "type": "object"
+            },
+            "title": "Review Widgets",
+            "type": "object"
+          },
+          "schema_id": {
+            "format": "uuid",
+            "title": "Schema Id",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "schema_id",
+          "version",
+          "object_key",
+          "object_version_id",
+          "etag",
+          "checksum",
+          "parent_version_id",
+          "columns_cache",
+          "review_widgets",
+          "inserted_at"
+        ],
+        "title": "SchemaVersionRead",
+        "type": "object"
+      },
+      "Schemas": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SchemaRead"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Schemas",
+        "type": "object"
+      },
+      "SuggestionRead": {
+        "properties": {
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "inserted_at": {
+            "format": "date-time",
+            "title": "Inserted At",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "record_id": {
+            "format": "uuid",
+            "title": "Record Id",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SuggestionType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "required": [
+          "id",
+          "record_id",
+          "question_id",
+          "value",
+          "score",
+          "agent",
+          "type",
+          "inserted_at",
+          "updated_at"
+        ],
+        "title": "SuggestionRead",
+        "type": "object"
+      },
+      "SuggestionType": {
+        "enum": [
+          "model",
+          "human",
+          "selection"
+        ],
+        "title": "SuggestionType",
+        "type": "string"
+      },
+      "SuggestionUpsert": {
+        "properties": {
+          "agent": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SuggestionType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "required": [
+          "question_id",
+          "value"
+        ],
+        "title": "SuggestionUpsert",
+        "type": "object"
+      },
+      "Suggestions": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestionRead"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Suggestions",
+        "type": "object"
+      },
+      "Token": {
+        "description": "Token response model",
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          },
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          },
+          "token_type": {
+            "default": "bearer",
+            "title": "Token Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "access_token"
+        ],
+        "title": "Token",
+        "type": "object"
+      },
+      "V2RecordStatus": {
+        "description": "v2 record status. Distinct from v1 RecordStatus: adds `discarded` and maps to its\nown PG enum type (v2_record_status_enum) so v1's record_status_enum is untouched.",
+        "enum": [
+          "pending",
+          "completed",
+          "discarded"
+        ],
+        "title": "V2RecordStatus",
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "in": "header",
+        "name": "X-Extralit-Api-Key",
+        "type": "apiKey"
+      },
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "Extralit Server API v2 (schema-centric)",
+    "title": "Extralit v2",
+    "version": "0.6.1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/projection/references/{reference}": {
+      "get": {
+        "operationId": "get_reference_projection_projection_references__reference__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reference",
+            "required": true,
+            "schema": {
+              "title": "Reference",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Workspace to scope the view (required)",
+            "in": "query",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "description": "Workspace to scope the view (required)",
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectionView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Reference Projection",
+        "tags": [
+          "v2: projection"
+        ]
+      }
+    },
+    "/questions/{question_id}": {
+      "delete": {
+        "operationId": "delete_question_questions__question_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Question",
+        "tags": [
+          "v2: questions"
+        ]
+      },
+      "get": {
+        "operationId": "get_question_questions__question_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Question",
+        "tags": [
+          "v2: questions"
+        ]
+      },
+      "put": {
+        "operationId": "update_question_questions__question_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "question_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Question Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Question",
+        "tags": [
+          "v2: questions"
+        ]
+      }
+    },
+    "/records/{record_id}/responses": {
+      "get": {
+        "operationId": "get_own_response_records__record_id__responses_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Record Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ResponseRead"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Own Response Records  Record Id  Responses Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Own Response",
+        "tags": [
+          "v2: annotation"
+        ]
+      },
+      "put": {
+        "operationId": "upsert_response_records__record_id__responses_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Record Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponseUpsert"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upsert Response",
+        "tags": [
+          "v2: annotation"
+        ]
+      }
+    },
+    "/records/{record_id}/suggestions": {
+      "get": {
+        "operationId": "list_suggestions_records__record_id__suggestions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Record Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Suggestions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Suggestions",
+        "tags": [
+          "v2: annotation"
+        ]
+      },
+      "put": {
+        "operationId": "upsert_suggestion_records__record_id__suggestions_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "record_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Record Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuggestionUpsert"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Upsert Suggestion",
+        "tags": [
+          "v2: annotation"
+        ]
+      }
+    },
+    "/references/{reference}": {
+      "get": {
+        "description": "The document's project-level extraction view: all v2 records across every schema in\nthe workspace that share this `reference` (spec \u00a76), grouped per schema.\n\nAn unknown reference returns an empty view (200): the reference is a free-form join\nkey, not an entity, so \"no extractions yet\" is not an error.",
+        "operationId": "get_reference_view_references__reference__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reference",
+            "required": true,
+            "schema": {
+              "title": "Reference",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Workspace to scope the cross-schema view (required)",
+            "in": "query",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "description": "Workspace to scope the cross-schema view (required)",
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Reference View",
+        "tags": [
+          "v2: records"
+        ]
+      }
+    },
+    "/schemas": {
+      "get": {
+        "operationId": "list_schemas_schemas_get",
+        "parameters": [
+          {
+            "description": "Workspace to list schemas for (required)",
+            "in": "query",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "description": "Workspace to list schemas for (required)",
+              "format": "uuid",
+              "title": "Workspace Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Schemas"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Schemas",
+        "tags": [
+          "v2: schemas"
+        ]
+      },
+      "post": {
+        "operationId": "create_schema_schemas_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchemaCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Schema",
+        "tags": [
+          "v2: schemas"
+        ]
+      }
+    },
+    "/schemas/{schema_id}": {
+      "delete": {
+        "operationId": "delete_schema_schemas__schema_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Schema",
+        "tags": [
+          "v2: schemas"
+        ]
+      },
+      "get": {
+        "operationId": "get_schema_schemas__schema_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Schema",
+        "tags": [
+          "v2: schemas"
+        ]
+      },
+      "put": {
+        "operationId": "update_schema_schemas__schema_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchemaUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Schema",
+        "tags": [
+          "v2: schemas"
+        ]
+      }
+    },
+    "/schemas/{schema_id}/columns": {
+      "get": {
+        "operationId": "get_schema_columns_schemas__schema_id__columns_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "object"
+                  },
+                  "title": "Response Get Schema Columns Schemas  Schema Id  Columns Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Schema Columns",
+        "tags": [
+          "v2: schemas"
+        ]
+      }
+    },
+    "/schemas/{schema_id}/questions": {
+      "get": {
+        "operationId": "list_questions_schemas__schema_id__questions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Questions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Questions",
+        "tags": [
+          "v2: questions"
+        ]
+      },
+      "post": {
+        "operationId": "create_question_schemas__schema_id__questions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Question",
+        "tags": [
+          "v2: questions"
+        ]
+      }
+    },
+    "/schemas/{schema_id}/records": {
+      "delete": {
+        "operationId": "delete_schema_records_schemas__schema_id__records_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated record ids to delete",
+            "in": "query",
+            "name": "ids",
+            "required": true,
+            "schema": {
+              "description": "Comma-separated record ids to delete",
+              "title": "Ids",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Schema Records",
+        "tags": [
+          "v2: records"
+        ]
+      },
+      "get": {
+        "operationId": "list_schema_records_schemas__schema_id__records_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/V2RecordStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "reference",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reference"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Records"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Schema Records",
+        "tags": [
+          "v2: records"
+        ]
+      }
+    },
+    "/schemas/{schema_id}/records:bulk-upsert": {
+      "post": {
+        "operationId": "bulk_upsert_schema_records_schemas__schema_id__records_bulk_upsert_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordsBulkUpsert"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Records"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Bulk Upsert Schema Records",
+        "tags": [
+          "v2: records"
+        ]
+      }
+    },
+    "/schemas/{schema_id}/records:search": {
+      "post": {
+        "description": "Full-text (BM25) + scalar-filter search over a schema's records.\n\nLance supplies matching record ids and scores; payloads are hydrated from Postgres\n(the source of truth) and returned in the engine's hit order. `total` is the engine's\ntotal match count, which may exceed the returned page.",
+        "operationId": "search_schema_records_schemas__schema_id__records_search_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordSearchQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Records"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Search Schema Records",
+        "tags": [
+          "v2: records"
+        ]
+      }
+    },
+    "/schemas/{schema_id}/versions": {
+      "get": {
+        "operationId": "list_schema_versions_schemas__schema_id__versions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SchemaVersionRead"
+                  },
+                  "title": "Response List Schema Versions Schemas  Schema Id  Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Schema Versions",
+        "tags": [
+          "v2: schemas"
+        ]
+      },
+      "post": {
+        "operationId": "publish_schema_version_schemas__schema_id__versions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SchemaVersionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaVersionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Publish Schema Version",
+        "tags": [
+          "v2: schemas"
+        ]
+      }
+    },
+    "/schemas/{schema_id}/versions/{version}": {
+      "get": {
+        "operationId": "get_schema_version_schemas__schema_id__versions__version__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaVersionRead"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Schema Version",
+        "tags": [
+          "v2: schemas"
+        ]
+      }
+    },
+    "/schemas/{schema_id}:rebuild-index": {
+      "post": {
+        "description": "Drop and repopulate the schema's Lance table from Postgres (the recovery path).\n\nUnlike the write-time sync hooks, this surfaces engine errors to the caller \u2014 the\noperator explicitly asked to rebuild. For large schemas the rebuild may take tens of\nseconds; consider running as a background job (via the CLI) if timeouts are a concern.",
+        "operationId": "rebuild_schema_index_schemas__schema_id__rebuild_index_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "schema_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Schema Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "integer"
+                  },
+                  "title": "Response Rebuild Schema Index Schemas  Schema Id  Rebuild Index Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rebuild Schema Index",
+        "tags": [
+          "v2: records"
+        ]
+      }
+    },
+    "/token": {
+      "post": {
+        "operationId": "create_token_token_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_token_token_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Create Token",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/token/refresh": {
+      "post": {
+        "description": "Refresh an access token using a valid refresh token.\nThis endpoint does not require database access, improving reliability.",
+        "operationId": "refresh_token_token_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "summary": "Refresh Token",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    }
+  }
+}
