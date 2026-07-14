@@ -1,3 +1,4 @@
+from extralit.v2._sync import Client
 from extralit.v2.client import AsyncClient
 from extralit.v2.models import (
     ProjectionCell,
@@ -16,6 +17,7 @@ from extralit.v2.models import (
 
 __all__ = [
     "AsyncClient",
+    "Client",
     "ProjectionCell",
     "ProjectionRecord",
     "ProjectionView",
