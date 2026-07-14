@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from extralit.v2._api._errors import AuthError, NotFoundError, ValidationError
@@ -78,6 +80,58 @@ async def test_api_key_401_raises_without_refresh(httpx_mock):
     with pytest.raises(AuthError):
         await t.request("GET", "/schemas", params={"workspace_id": "w1"})
     assert len(httpx_mock.get_requests()) == 1  # no refresh attempt in api-key mode
+    await t.aclose()
+
+
+async def test_concurrent_requests_login_once(httpx_mock):
+    # Only one /token response is registered; a login stampede would need extra /token
+    # responses and error out. The count assertion pins the single-login behavior.
+    httpx_mock.add_response(
+        method="POST",
+        url=f"{API}/api/v2/token",
+        status_code=201,
+        json={"access_token": "AT1", "refresh_token": "RT1"},
+    )
+    for _ in range(5):
+        httpx_mock.add_response(url=f"{API}/api/v2/schemas?workspace_id=w1", json={"items": []})
+    t = AsyncTransport(API, username="u", password="p")
+    await asyncio.gather(*(t.request("GET", "/schemas", params={"workspace_id": "w1"}) for _ in range(5)))
+    token_posts = [r for r in httpx_mock.get_requests() if r.url.path == "/api/v2/token"]
+    assert len(token_posts) == 1  # single login despite 5 concurrent requests
+    await t.aclose()
+
+
+async def test_concurrent_401s_refresh_once(httpx_mock):
+    # Fresh client logs in once, then 5 concurrent requests all 401 on the same token.
+    # _refresh_if_stale must coalesce them into a single /token/refresh; the rest reuse AT2.
+    httpx_mock.add_response(
+        method="POST",
+        url=f"{API}/api/v2/token",
+        status_code=201,
+        json={"access_token": "AT1", "refresh_token": "RT1"},
+    )
+    httpx_mock.add_response(
+        method="POST",
+        url=f"{API}/api/v2/token/refresh",
+        status_code=201,
+        json={"access_token": "AT2", "refresh_token": "RT2"},
+    )
+
+    def schemas_by_token(request):
+        # Model the server by TOKEN, not registration order: the stale token 401s (forcing a
+        # single refresh), the rotated token 200s. Order-independent, so the concurrent
+        # interleaving of initial-vs-retry requests can't consume the wrong canned response.
+        import httpx
+
+        if request.headers.get("Authorization") == "Bearer AT1":
+            return httpx.Response(401, json={"detail": "exp"})
+        return httpx.Response(200, json={"items": []})
+
+    httpx_mock.add_callback(schemas_by_token, method="GET", url=f"{API}/api/v2/schemas?workspace_id=w1")
+    t = AsyncTransport(API, username="u", password="p")
+    await asyncio.gather(*(t.request("GET", "/schemas", params={"workspace_id": "w1"}) for _ in range(5)))
+    refresh_posts = [r for r in httpx_mock.get_requests() if r.url.path == "/api/v2/token/refresh"]
+    assert len(refresh_posts) == 1  # concurrent 401s coalesce into a single refresh
     await t.aclose()
 
 

@@ -88,9 +88,11 @@ class AsyncTransport:
             if not self._access_token:  # re-check after acquiring lock
                 await self._login()
 
-    async def _refresh_if_stale(self) -> bool:
-        """Coalesce concurrent 401s so only one refresh fires."""
+    async def _refresh_if_stale(self, stale_token: str) -> bool:
+        """Coalesce concurrent 401s: only the first waiter refreshes; the rest reuse the rotated token."""
         async with self._get_auth_lock():
+            if self._access_token != stale_token:
+                return True  # another coroutine already refreshed while we waited for the lock
             return await self._refresh()
 
     async def request(
@@ -106,7 +108,7 @@ class AsyncTransport:
         response = await self._http.request(
             method, f"{_API_PREFIX}{path}", params=params, json=json, headers=self._auth_headers()
         )
-        if response.status_code == 401 and self._access_token and await self._refresh_if_stale():
+        if response.status_code == 401 and self._access_token and await self._refresh_if_stale(self._access_token):
             response = await self._http.request(
                 method, f"{_API_PREFIX}{path}", params=params, json=json, headers=self._auth_headers()
             )
