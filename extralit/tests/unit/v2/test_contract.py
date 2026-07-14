@@ -101,7 +101,9 @@ def test_snapshot_matches_server():
     assert proc.returncode == 0, f"openapi-dump failed (rc={proc.returncode}):\n{proc.stderr}"
     # Slice from the first '{' to guard against any stdout preamble (banners, deprecation notices)
     # that would cause json.loads to fail with JSONDecodeError unrelated to snapshot drift.
-    stdout = proc.stdout[proc.stdout.index("{") :]
+    idx = proc.stdout.find("{")
+    assert idx != -1, f"no JSON object found in openapi-dump stdout:\n{proc.stdout}"
+    stdout = proc.stdout[idx:]
     assert json.loads(stdout) == json.loads(SNAPSHOT.read_text()), (
         "openapi.json snapshot drifted from the server — re-dump it (see plan Task 1 Step 2)"
     )
