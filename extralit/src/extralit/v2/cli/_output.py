@@ -47,8 +47,9 @@ def handle_errors(fn):
             return fn(*args, **kwargs)
         except V2APIError as error:
             fail(error)
-        except ValueError as error:
-            # Catches malformed UUID / JSON input that bypasses CLI argument validation
+        except (ValueError, OSError) as error:
+            # Catches malformed UUID/JSON input (ValueError, JSONDecodeError) and
+            # missing/unreadable --file paths (OSError/FileNotFoundError)
             fail(error)
 
     return wrapper

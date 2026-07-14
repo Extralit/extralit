@@ -1,11 +1,18 @@
 import json
 
+import click
 import pytest
 import typer
+from typer.testing import CliRunner
 
 from extralit.v2._api._errors import V2APIError, ValidationError
 from extralit.v2.cli._output import emit, fail, to_jsonable
 from extralit.v2.models import SearchPage
+
+# click >= 8.2 separates stderr by default; 8.1 (Python 3.9) requires mix_stderr=False.
+_runner = (
+    CliRunner() if tuple(int(x) for x in click.__version__.split(".")[:2]) >= (8, 2) else CliRunner(mix_stderr=False)
+)
 
 
 def test_to_jsonable_handles_models_lists_dicts():
@@ -38,3 +45,29 @@ def test_fail_api_error_exits_1(capsys):
         fail(V2APIError(500, "kaboom"))
     assert excinfo.value.exit_code == 1
     assert json.loads(capsys.readouterr().err)["error"]["detail"] == "kaboom"
+
+
+def test_handle_errors_routes_value_error_to_structured_fail():
+    """Malformed UUID / JSON input must produce exit code 1 + structured stderr, not a traceback."""
+
+    from extralit.v2.cli.records import app as records_app
+
+    runner = _runner
+    result = runner.invoke(records_app, ["list", "not-a-uuid"])
+    assert result.exit_code == 1
+    err = json.loads(result.stderr)
+    assert err["error"]["type"] == "ValueError"
+
+
+def test_handle_errors_routes_oserror_to_structured_fail():
+    """Missing --file path must produce exit code 1 + structured stderr, not a traceback."""
+    import uuid
+
+    from extralit.v2.cli.records import app as records_app
+
+    runner = _runner
+    schema_id = str(uuid.uuid4())
+    result = runner.invoke(records_app, ["upsert", schema_id, "--file", "/nonexistent/path/to/file.jsonl"])
+    assert result.exit_code == 1
+    err = json.loads(result.stderr)
+    assert err["error"]["type"] in ("FileNotFoundError", "OSError")
