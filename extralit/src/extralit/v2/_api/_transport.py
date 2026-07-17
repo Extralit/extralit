@@ -1,0 +1,129 @@
+from __future__ import annotations
+
+import asyncio
+from typing import Any, Optional
+
+import httpx
+
+from extralit.v2._api._errors import AuthError, error_from_response
+
+_API_PREFIX = "/api/v2"
+
+
+def _safe_json(response: httpx.Response) -> Any:
+    try:
+        return response.json()
+    except ValueError:
+        return response.text
+
+
+class AsyncTransport:
+    """One httpx.AsyncClient per client instance. Auth modes: api_key header (default,
+    no token lifecycle) or username/password -> bearer JWT with a single transparent
+    refresh on 401 (then AuthError)."""
+
+    def __init__(
+        self,
+        api_url: str,
+        api_key: Optional[str] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+        timeout: float = 60.0,
+        retries: int = 5,
+        extra_headers: Optional[dict] = None,
+    ):
+        self.api_url = api_url.rstrip("/")
+        self._api_key = api_key
+        self._username = username
+        self._password = password
+        self._access_token: Optional[str] = None
+        self._refresh_token: Optional[str] = None
+        self._auth_lock: Optional[asyncio.Lock] = None  # lazily created on first use (loop-safe)
+        self._refresh_failed_for: Optional[str] = None  # stale token whose refresh already failed
+        self._http = httpx.AsyncClient(
+            base_url=self.api_url,
+            timeout=timeout,
+            transport=httpx.AsyncHTTPTransport(retries=retries),
+            headers=extra_headers or {},
+        )
+
+    def _auth_headers(self) -> dict:
+        if self._access_token:
+            return {"Authorization": f"Bearer {self._access_token}"}
+        if self._api_key:
+            return {"X-Extralit-Api-Key": self._api_key}
+        return {}
+
+    async def _login(self) -> None:
+        response = await self._http.post(
+            f"{_API_PREFIX}/token", data={"username": self._username, "password": self._password}
+        )
+        if response.status_code >= 400:
+            raise AuthError(response.status_code, _safe_json(response))
+        payload = response.json()
+        self._access_token = payload["access_token"]
+        self._refresh_token = payload.get("refresh_token")
+
+    async def _refresh(self) -> bool:
+        if not self._refresh_token:
+            return False
+        response = await self._http.post(f"{_API_PREFIX}/token/refresh", json={"refresh_token": self._refresh_token})
+        if response.status_code >= 400:
+            return False
+        payload = response.json()
+        self._access_token = payload["access_token"]
+        self._refresh_token = payload.get("refresh_token", self._refresh_token)
+        return True
+
+    def _get_auth_lock(self) -> asyncio.Lock:
+        """Return the per-instance auth lock, creating it lazily inside the running loop."""
+        if self._auth_lock is None:
+            self._auth_lock = asyncio.Lock()
+        return self._auth_lock
+
+    async def _ensure_logged_in(self) -> None:
+        """Login exactly once even under concurrent callers."""
+        if self._access_token:
+            return
+        async with self._get_auth_lock():
+            if not self._access_token:  # re-check after acquiring lock
+                await self._login()
+
+    async def _refresh_if_stale(self, stale_token: str) -> bool:
+        """Coalesce concurrent 401s: only the first waiter refreshes; the rest reuse the rotated
+        token. If that single refresh fails, later waiters don't re-hammer the auth endpoint."""
+        async with self._get_auth_lock():
+            if self._access_token != stale_token:
+                return True  # another coroutine already refreshed while we waited for the lock
+            if self._refresh_failed_for == stale_token:
+                return False  # a prior waiter already tried and failed to refresh this token
+            ok = await self._refresh()
+            if not ok:
+                self._refresh_failed_for = stale_token
+            return ok
+
+    async def request(
+        self,
+        method: str,
+        path: str,
+        *,
+        params: Optional[dict] = None,
+        json: Optional[Any] = None,
+    ) -> Any:
+        if self._username and not self._api_key:
+            await self._ensure_logged_in()
+        response = await self._http.request(
+            method, f"{_API_PREFIX}{path}", params=params, json=json, headers=self._auth_headers()
+        )
+        if response.status_code == 401 and self._access_token and await self._refresh_if_stale(self._access_token):
+            response = await self._http.request(
+                method, f"{_API_PREFIX}{path}", params=params, json=json, headers=self._auth_headers()
+            )
+        if response.status_code >= 400:
+            raise error_from_response(response.status_code, _safe_json(response))
+        if response.status_code == 204 or not response.content:
+            return None
+        return response.json()
+
+    async def aclose(self) -> None:
+        await self._http.aclose()

@@ -53,6 +53,7 @@ root = "./src"
 
 [tool.ruff]
 line-length = 120
+extend-exclude = ["src/extralit/v2/_api/_generated.py"]
 
 [tool.ruff.lint]
 select = [
@@ -115,6 +116,7 @@ dev = [
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
     "ty>=0.0.46",
+    "datamodel-code-generator>=0.26,<0.69",
 ]
 
 [project.scripts]
