@@ -4,7 +4,6 @@ from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
-from urllib3 import HTTPResponse
 from urllib3._collections import HTTPHeaderDict
 
 
@@ -64,7 +63,11 @@ class ListObjectsResponse(BaseModel):
 
 
 class FileObjectResponse(BaseModel):
-    response: HTTPResponse
+    # The S3 body is a streaming object whose concrete type varies by client/version
+    # (urllib3 HTTPResponse via minio; StreamingBody / StreamingChecksumBody via
+    # aiobotocore). Consumers only stream it (`await .response.read()`), so keep the
+    # annotation permissive — a strict type triggers pydantic is_instance_of 422s.
+    response: Any
     metadata: ObjectMetadata
     versions: ListObjectsResponse | None
 
