@@ -10,3 +10,6 @@ node_modules/
 dist/
 .vercel
 .env*
+
+# v2 e2e generated seed output (regenerated per run)
+e2e/v2/seed/seed-output.json

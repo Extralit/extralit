@@ -1,21 +1,21 @@
 <template>
   <div class="container" @keydown="keyboardHandler">
-    <div class="component-header" v-if="showSearch || showCollapseButton">
+    <div v-if="showSearch || showCollapseButton" class="component-header">
       <div class="left-header">
         <SearchLabelComponent
           v-if="showSearch"
           ref="searchComponentRef"
           v-model="searchInput"
-          :searchRef="searchRef"
+          :search-ref="searchRef"
           :placeholder="$t('spanAnnotation.searchLabels')"
         />
       </div>
       <div class="right-header">
         <button
+          v-if="showCollapseButton"
           ref="showLessButtonRef"
           type="button"
           class="show-less-button cursor-pointer"
-          v-if="showCollapseButton"
           @click="toggleShowLess"
         >
           <span :class="isExpanded ? '--less' : '--more'" v-text="textToShowInTheCollapseButton" />
@@ -24,31 +24,31 @@
       </div>
     </div>
     <transition-group
+      v-if="filteredOptions.length"
       ref="inputsAreaRef"
       :key="searchInput"
       name="shuffle"
       :css="modelValue.length < 50"
       class="inputs-area"
-      v-if="filteredOptions.length"
       role="group"
       aria-multiselectable="multiple"
       aria-label="Label-Options"
     >
       <div
-        class="input-button"
         v-for="(option, index) in visibleOptions"
         :key="option.id"
-        @keydown.enter.prevent
+        class="input-button"
         role="button"
         :aria-label="option.text"
+        @keydown.enter.prevent
       >
         <input
+          :id="option.id"
           ref="options"
+          v-model="option.isSelected"
           type="checkbox"
           :name="option.text"
-          :id="option.id"
           :data-keyboard="keyboards[option.id]"
-          v-model="option.isSelected"
           @change="onSelect(option)"
           @focus="onFocus"
           @keydown.tab="expandLabelsOnTab(index)"
@@ -82,7 +82,7 @@
         </BaseTooltip>
       </div>
     </transition-group>
-    <i class="no-result" v-if="!filteredOptions.length" />
+    <i v-if="!filteredOptions.length" class="no-result" />
   </div>
 </template>
 
@@ -93,12 +93,6 @@ import { useLabelSelectionViewModel } from "./useLabelSelectionViewModel";
 
 export default {
   name: "LabelSelectionComponent",
-  // Consumed via `v-model="question.answer.values"` from parent (Single/Multi/Rating/Span).
-  // Vue 3 removed the `model: { prop, event }` option, so `v-model` now desugars to
-  // `:modelValue` + `@update:modelValue`. The selection list is mutated in place
-  // (`option.isSelected = ...`), so reactivity flows via the shared array reference;
-  // we still declare `update:modelValue` for correctness.
-  emits: ["update:modelValue", "on-focus", "on-selected"],
   props: {
     maxOptionsToShowBeforeCollapse: {
       type: Number,
@@ -131,38 +125,21 @@ export default {
       default: true,
     },
   },
+  // Consumed via `v-model="question.answer.values"` from parent (Single/Multi/Rating/Span).
+  // Vue 3 removed the `model: { prop, event }` option, so `v-model` now desugars to
+  // `:modelValue` + `@update:modelValue`. The selection list is mutated in place
+  // (`option.isSelected = ...`), so reactivity flows via the shared array reference;
+  // we still declare `update:modelValue` for correctness.
+  emits: ["update:modelValue", "on-focus", "on-selected"],
+  setup(props) {
+    return useLabelSelectionViewModel(props);
+  },
   data() {
     return {
       searchInput: "",
       timer: null,
       keyCode: "",
     };
-  },
-  created() {
-    this.searchRef = `${this.componentId}SearchFilterRef`;
-  },
-  watch: {
-    isFocused: {
-      immediate: true,
-      handler(newValue) {
-        if (newValue) {
-          this.$nextTick(() => {
-            const options = this.$refs?.options;
-            if (options?.some((o) => o.contains(document.activeElement))) {
-              return;
-            }
-
-            if (options?.length > 0) {
-              options[0].focus({
-                preventScroll: true,
-              });
-            } else {
-              this.$refs.searchComponentRef?.searchInputRef.focus();
-            }
-          });
-        }
-      },
-    },
   },
   computed: {
     keyboards() {
@@ -226,6 +203,32 @@ export default {
     maxVisibleOptions() {
       return this.maxOptionsToShowBeforeCollapse ?? this.modelValue.length + 1;
     },
+  },
+  watch: {
+    isFocused: {
+      immediate: true,
+      handler(newValue) {
+        if (newValue) {
+          this.$nextTick(() => {
+            const options = this.$refs?.options;
+            if (options?.some((o) => o.contains(document.activeElement))) {
+              return;
+            }
+
+            if (options?.length > 0) {
+              options[0].focus({
+                preventScroll: true,
+              });
+            } else {
+              this.$refs.searchComponentRef?.searchInputRef.focus();
+            }
+          });
+        }
+      },
+    },
+  },
+  created() {
+    this.searchRef = `${this.componentId}SearchFilterRef`;
   },
   methods: {
     keyboardHandler($event) {
@@ -340,9 +343,6 @@ export default {
       }
       return tooltip;
     },
-  },
-  setup(props) {
-    return useLabelSelectionViewModel(props);
   },
 };
 </script>

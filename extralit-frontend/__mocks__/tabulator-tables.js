@@ -1,11 +1,26 @@
 // Mock implementation for tabulator-tables
 export class TabulatorFull {
-  constructor() {
+  // Test hooks: how many times the ctor ran (rebuild detection) and the latest instance
+  // (so tests can fire its stored event handlers). Reset these in a test's beforeEach.
+  static constructed = 0;
+  static latest = null;
+
+  constructor(element, options) {
+    this.element = element;
+    this.options = options || {};
+    this.handlers = {};
     this.rows = [];
     this.columns = [];
     this.data = [];
     // Mock all required methods to prevent errors
     this.initialized = true;
+    TabulatorFull.constructed += 1;
+    TabulatorFull.latest = this;
+  }
+
+  // Fire a stored handler from a test, e.g. instance.emit("cellEdited", fakeCell).
+  emit(event, ...args) {
+    this.handlers[event]?.(...args);
   }
 
   addRow(data, position, index) {
@@ -70,8 +85,13 @@ export class TabulatorFull {
     return true;
   }
 
-  on() {
+  on(event, callback) {
+    this.handlers[event] = callback;
     return this;
+  }
+
+  destroy() {
+    return true;
   }
 
   redraw() {

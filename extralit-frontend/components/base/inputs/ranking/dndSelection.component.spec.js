@@ -1,7 +1,7 @@
 import { shallowMount } from "@vue/test-utils";
 import DndSelectionComponent from "./DndSelection.component";
-import { adaptQuestionsToSlots } from "../ranking-adapter";
-import { settingsFake, settingsFakeWith12Elements } from "../ranking-fakes";
+import { adaptQuestionsToSlots } from "./ranking-adapter";
+import { settingsFake, settingsFakeWith12Elements } from "./ranking-fakes";
 
 let wrapper = null;
 const options = {

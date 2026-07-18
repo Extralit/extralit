@@ -18,7 +18,12 @@
         "e2e:silent": "npx playwright test",
         "test": "vitest run",
         "test:watch": "vitest",
-        "test:coverage": "vitest run --coverage"
+        "test:coverage": "vitest run --coverage",
+        "e2e:v2:seed": "uv run --project ../extralit-server python e2e/v2/seed/seed_v2_e2e.py",
+        "e2e:v2": "playwright test --project=v2",
+        "gen:api": "npm run gen:api:snapshot && npm run gen:api:types",
+        "gen:api:snapshot": "uv run --project ../extralit-server python -m extralit_server.cli openapi-dump --output v2/infrastructure/api/openapi.json",
+        "gen:api:types": "openapi-typescript v2/infrastructure/api/openapi.json -o v2/infrastructure/api/generated/v2-api.ts && prettier --write v2/infrastructure/api/generated/v2-api.ts"
     },
     "dependencies": {
         "@codescouts/events": "^1.0.2",
@@ -63,12 +68,12 @@
     },
     "devDependencies": {
         "@codescouts/test": "^1.0.7",
+        "@eslint/js": "^10.0.1",
         "@intlify/eslint-plugin-vue-i18n": "^4.5.1",
         "@nuxt/test-utils": "^4.0.3",
         "@playwright/test": "^1.61.1",
         "@types/papaparse": "^5.3.16",
         "@types/tabulator-tables": "^6.2.0",
-        "@eslint/js": "^10.0.1",
         "@typescript-eslint/eslint-plugin": "^8.62.0",
         "@typescript-eslint/parser": "^8.62.0",
         "@typescript-eslint/typescript-estree": "^8.62.0",
@@ -82,6 +87,7 @@
         "eslint-plugin-vue": "^10.9.2",
         "globals": "^17.7.0",
         "happy-dom": "^20.10.6",
+        "openapi-typescript": "^7.13.0",
         "prettier": "^3.8.4",
         "rimraf": "^6.1.3",
         "typescript": "^5.4.5",

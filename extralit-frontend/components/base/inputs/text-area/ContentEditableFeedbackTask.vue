@@ -1,26 +1,26 @@
 <template>
   <span>
     <div
-      class="content__edition-area"
       v-click-outside="{
         events: ['mousedown'],
         handler: onClickOutside,
       }"
+      class="content__edition-area"
     >
       <p
-        ref="text"
         id="contentId"
+        ref="text"
         class="content__text"
         :class="classes"
         :contenteditable="true"
         :placeholder="placeholder"
         @input="onInputText"
-        v-text="sanitizedCurrentValue"
         @focus="setFocus(true)"
         @blur="setFocus(false)"
         @keydown.stop=""
         @keydown.esc.exact="exitEditionMode"
         @paste="pastePlainText"
+        v-text="sanitizedCurrentValue"
       />
     </div>
   </span>

@@ -28,6 +28,7 @@ export default [
       "v1/domain/entities/document/Document.ts",
       "v1/domain/usecases/get-extraction-completion-use-case.ts",
       "components/base/base-render-table/**",
+      "v2/infrastructure/api/generated/**",
     ],
   },
 

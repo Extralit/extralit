@@ -15,6 +15,7 @@ on:
       - releases/**
     paths:
       - "extralit-server/**"
+      - "extralit-frontend/v2/infrastructure/api/**"
 
 permissions:
   id-token: write
@@ -95,6 +96,12 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --dev --extra postgresql
+
+      - name: Check frontend v2 OpenAPI snapshot is current 🔒
+        run: |
+          uv run python -m extralit_server.cli openapi-dump --output /tmp/openapi-v2.json
+          diff -u ../extralit-frontend/v2/infrastructure/api/openapi.json /tmp/openapi-v2.json \
+            || { echo "::error::v2 OpenAPI drift — run 'npm run gen:api' in extralit-frontend and commit"; exit 1; }
 
       - name: Run tests 📈
         id: run-tests
