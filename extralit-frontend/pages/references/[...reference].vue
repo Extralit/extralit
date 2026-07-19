@@ -28,6 +28,7 @@ import InternalPage from "@/layouts/InternalPage.vue";
 import { useReferenceReviewViewModel } from "./useReferenceReviewViewModel";
 import { useEnsureWorkspaces } from "~/composables/useEnsureWorkspaces";
 import { useV2Breadcrumbs } from "~/composables/useV2Breadcrumbs";
+import { useTranslate } from "~/v1/infrastructure/services/useTranslate";
 
 export default {
   components: { InternalPage },
@@ -41,7 +42,11 @@ export default {
     const viewModel = useReferenceReviewViewModel(reference, workspaceId);
     const { ensureWorkspaces } = useEnsureWorkspaces();
     const { schemasBreadcrumbs } = useV2Breadcrumbs();
-    const breadcrumbs = computed(() => schemasBreadcrumbs([{ name: reference }]));
+    const { t } = useTranslate();
+    // Leaf label is the static "Review" verb, not the bare reference: the page <h1>
+    // ("Review — {reference}") already carries the reference, and duplicating it in the
+    // breadcrumb makes getByText(reference) match two nodes (e2e strict-mode violation).
+    const breadcrumbs = computed(() => schemasBreadcrumbs([{ name: t("review.title") }]));
 
     onBeforeMount(async () => {
       await ensureWorkspaces();
