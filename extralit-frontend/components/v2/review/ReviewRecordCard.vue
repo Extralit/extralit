@@ -38,15 +38,27 @@
     </ul>
 
     <footer class="review-record__actions">
-      <button :data-test="`submit-${record.recordId}`" @click="$emit('submit', record.recordId, cleanValues())">
+      <BaseButton
+        class="primary"
+        :data-test="`submit-${record.recordId}`"
+        @click="$emit('submit', record.recordId, cleanValues())"
+      >
         {{ $t("review.submit") }}
-      </button>
-      <button :data-test="`save-draft-${record.recordId}`" @click="$emit('save-draft', record.recordId, cleanValues())">
+      </BaseButton>
+      <BaseButton
+        class="secondary"
+        :data-test="`save-draft-${record.recordId}`"
+        @click="$emit('save-draft', record.recordId, cleanValues())"
+      >
         {{ $t("review.saveDraft") }}
-      </button>
-      <button :data-test="`discard-${record.recordId}`" @click="$emit('discard', record.recordId)">
+      </BaseButton>
+      <BaseButton
+        class="secondary"
+        :data-test="`discard-${record.recordId}`"
+        @click="$emit('discard', record.recordId)"
+      >
         {{ $t("review.discard") }}
-      </button>
+      </BaseButton>
     </footer>
   </section>
 </template>
