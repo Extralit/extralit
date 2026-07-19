@@ -117,7 +117,7 @@ export default defineComponent({
   margin-bottom: $base-space * 2;
 
   &__errors {
-    color: var(--color-danger, #c00);
+    color: var(--color-danger);
   }
 
   &__actions {
