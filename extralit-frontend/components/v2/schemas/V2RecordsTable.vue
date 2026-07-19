@@ -18,7 +18,7 @@
           </NuxtLink>
         </td>
         <td v-for="column in columns" :key="column.name">{{ formatCell(record.fields[column.name]) }}</td>
-        <td>{{ record.status }}</td>
+        <td><V2StatusBadge :status="record.status" /></td>
       </tr>
     </tbody>
   </table>
