@@ -13,12 +13,17 @@
         </div>
 
         <div class="schema-detail__search">
-          <BaseSearchBar
+          <!-- Native input rather than BaseSearchBar: the shared BaseInput debounces its
+               update:modelValue emit while re-rendering a controlled :value, which resets the
+               DOM value to the stale model on every keystroke — losing characters under fast
+               typing and dropping Playwright fill() entirely. v-model on a native input is
+               immediate and lossless; search fires on Enter (the spec's fill + press("Enter")). -->
+          <input
+            v-model="searchText"
+            type="search"
             class="schema-detail__search-input"
-            :query-search="searchText"
-            :collapsed="false"
             :placeholder="$t('schemas.searchPlaceholder')"
-            @input="onSearchInput"
+            @keyup.enter="onSearch"
           />
           <select v-model="statusFilter" class="schema-detail__status" @change="onSearch">
             <option value="">{{ $t("schemas.status") }}</option>
@@ -89,15 +94,10 @@ export default {
       viewModel.currentOffset.value = 0;
       await viewModel.search();
     };
-    // BaseSearchBar emits the new string via `input`; mirror it into the view-model ref, then search.
-    const onSearchInput = async (value: string) => {
-      viewModel.searchText.value = value;
-      await onSearch();
-    };
 
     onBeforeMount(ensureWorkspaces);
 
-    return { ...viewModel, breadcrumbs, onSearch, onSearchInput };
+    return { ...viewModel, breadcrumbs, onSearch };
   },
 };
 </script>
@@ -121,6 +121,19 @@ export default {
   }
   &__search-input {
     flex: 1;
+    padding: $base-space * 1.2 $base-space * 1.5;
+    border: 1px solid var(--bg-opacity-10);
+    border-radius: $border-radius;
+    background: var(--bg-accent-grey-1);
+    color: var(--fg-secondary);
+    @include font-size(14px);
+    &::placeholder {
+      color: var(--fg-tertiary);
+    }
+    &:focus {
+      outline: none;
+      border-color: var(--fg-cuaternary);
+    }
   }
   &__status {
     padding: 0 $base-space;
