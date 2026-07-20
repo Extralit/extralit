@@ -36,6 +36,7 @@
         :pdf-data="pdfData"
         :workspace="workspace"
         :loading="isAnalyzing"
+        :initial-document-actions="uploadData.documentActions"
         @update="handleAnalysisUpdate"
         @analysis-complete="handleAnalysisComplete"
       />
@@ -273,6 +274,7 @@ export default {
         dataframeData: data.dataframeData || null,
         rawContent: data.rawContent || "",
       };
+      this.uploadData.documentActions = {};
       this.clearError();
     },
 
@@ -282,6 +284,7 @@ export default {
         unmatchedFiles: data.unmatchedFiles || [],
         totalFiles: data.totalFiles || 0,
       };
+      this.uploadData.documentActions = {};
       this.clearError();
     },
 

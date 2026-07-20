@@ -107,13 +107,17 @@ export default {
       type: Boolean,
       default: false,
     },
+    initialDocumentActions: {
+      type: Object as () => Record<string, ImportStatus>,
+      default: () => ({}),
+    },
   },
 
   emits: ["update", "analysis-complete"],
 
   data() {
     return {
-      localDocumentActions: {} as Record<string, ImportStatus>,
+      localDocumentActions: { ...this.initialDocumentActions } as Record<string, ImportStatus>,
       editableTableData: [] as any[],
     };
   },
@@ -439,8 +443,18 @@ export default {
     analysisResult: {
       handler(newData: ImportAnalysisResponse) {
         if (newData) {
-          // Reset local document actions when new analysis data arrives
-          this.localDocumentActions = {};
+          // Filter persisted actions to only keys present in the new analysis,
+          // discarding stale entries from a previous Bib/PDF set
+          const validKeys = new Set(Object.keys(newData.documents ?? {}));
+          const filtered: Record<string, ImportStatus> = {};
+          if (this.initialDocumentActions) {
+            for (const [key, status] of Object.entries(this.initialDocumentActions)) {
+              if (validKeys.has(key)) {
+                filtered[key] = status as ImportStatus;
+              }
+            }
+          }
+          this.localDocumentActions = filtered;
           // Emit the analysis complete event
           this.$emit("analysis-complete", newData);
           // Emit initial update
