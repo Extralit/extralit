@@ -44,8 +44,31 @@ npm run e2e:report       # View test report
 > `/api/v1/token` + `/api/v1/me` offline, and waits for the home/datasets landing at `/`
 > (there is no `/datasets` route). This flow is runtime-verified via the CDP browser. The
 > per-page specs still need fresh Extralit screenshot baselines (`--update-snapshots`); the
-> inherited ones are Argilla's. The local Playwright browser can't launch on the Orin dev
-> host (missing OS libs, no sudo) — run the headless gate in CI.
+> inherited ones are Argilla's. The local Playwright chromium **does** launch on the Orin
+> host (verified 2026-07-18: `chromium.launch({headless:true})` → Chrome 149 after a plain
+> `npx playwright install chromium`; no `install-deps`/sudo needed), so the headless gate
+> can run locally as well as in CI.
+
+## v2 e2e suite (`e2e/v2/`, real backend — the v2 slice's integration gate)
+
+Separate Playwright project (`--project=v2`, `testMatch: v2/**/*.spec.ts`); the legacy
+Argilla specs above are **not** a v2 gate. No network mocking — it exercises real bearer
+auth on `/api/v2`, slashed-DOI encoding, the suggestion→response loop, drafts and search
+freshness. Env knobs (see `e2e/v2/fixtures.ts`): `E2E_API_URL` (default `http://localhost:6900`),
+`E2E_BASE_URL`/`BASE_URL` (default `http://localhost:3000`), `E2E_USERNAME`/`E2E_PASSWORD`
+(default `extralit`/`12345678`), optional `E2E_CDP_URL` to drive a remote chromium.
+
+```bash
+npm run e2e:v2:seed   # uv run ../extralit-server python e2e/v2/seed/seed_v2_e2e.py
+npm run dev -- --host # dev server reachable from the browser
+npm run e2e:v2        # playwright test --project=v2 (local chromium)
+```
+
+Requires the full stack up with the server on :6900. On the Orin host the backing services
+publish to `localhost` (postgres :5432, minio :9000, elasticsearch :9200) but the compose
+`redis` is **not** published, and the server `.env` uses docker-network hostnames
+(`minio`/`elasticsearch`/`redis`) — running the server on the host needs those overridden
+to `localhost` plus a throwaway redis on :6379.
 
 ## Code Quality
 
