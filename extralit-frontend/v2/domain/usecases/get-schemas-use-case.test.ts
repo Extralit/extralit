@@ -11,7 +11,8 @@ describe("GetSchemasUseCase", () => {
 
   it("fetches schemas and saves them to storage", async () => {
     const repository = { getSchemas: vi.fn(async () => [SCHEMA]) };
-    const useCase = new GetSchemasUseCase(repository as never, useSchemas);
+    // Pass the resolved store object, matching what ts-injecty injects at runtime.
+    const useCase = new GetSchemasUseCase(repository as never, useSchemas());
 
     const result = await useCase.execute("w-1");
 

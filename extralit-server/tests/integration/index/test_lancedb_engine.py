@@ -55,6 +55,26 @@ async def test_scalar_filter_without_text(engine):
     assert recs[0].id in ids and recs[1].id not in ids
 
 
+async def test_fts_search_with_scalar_filter(engine):
+    # Regression: combining an FTS query with a scalar filter hit
+    # `AsyncFTSQuery.where(clause, prefilter=True)`, but async LanceDB's where() has no
+    # `prefilter` kwarg — every text+filter search 500'd. The filter must narrow the
+    # FTS match set, and a non-matching token must return nothing.
+    sid = uuid4()
+    await engine.ensure_table(sid, COLUMNS)
+    recs = [_Rec("Deep Learning Foundations", 2016), _Rec("Deep Ocean Currents", 1999)]
+    await engine.upsert(sid, [record_to_row(r, COLUMNS) for r in recs], COLUMNS)
+
+    result = await engine.search(sid, text="Deep", filters=[IndexFilter(column="year", op="ge", value=2000)], limit=10)
+    ids = [h.record_id for h in result.hits]
+    assert recs[0].id in ids and recs[1].id not in ids
+
+    empty = await engine.search(
+        sid, text="zzznosuchtoken", filters=[IndexFilter(column="year", op="ge", value=2000)], limit=10
+    )
+    assert empty.total == 0 and empty.hits == []
+
+
 async def test_upsert_updates_in_place(engine):
     sid = uuid4()
     await engine.ensure_table(sid, COLUMNS)

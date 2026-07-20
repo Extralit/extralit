@@ -71,7 +71,7 @@ const makeUseCase = () =>
     schemaRepository as never,
     recordRepository as never,
     annotationRepository as never,
-    useReferenceReviews
+    useReferenceReviews()
   );
 
 describe("GetReferenceReviewUseCase", () => {
@@ -230,7 +230,7 @@ describe("GetReferenceReviewUseCase", () => {
       schema as never,
       records as never,
       annotation as never,
-      useReferenceReviews
+      useReferenceReviews()
     ).execute(REFERENCE, WORKSPACE);
 
     const r1 = review.records.find((r) => r.recordId === "r-1")!;

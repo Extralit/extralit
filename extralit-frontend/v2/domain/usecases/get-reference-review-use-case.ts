@@ -28,7 +28,9 @@ export class GetReferenceReviewUseCase {
     private readonly schemaRepository: SchemaRepository,
     private readonly recordRepository: V2RecordRepository,
     private readonly annotationRepository: AnnotationRepository,
-    private readonly reviewsStorage: typeof useReferenceReviews
+    // ts-injecty resolves the `useReferenceReviews` hook by calling it, so the injected
+    // value is the store object, not the hook (same contract as v1 GetWorkspacesUseCase).
+    private readonly reviewsStorage: ReturnType<typeof useReferenceReviews>
   ) {}
 
   async execute(reference: string, workspaceId: string): Promise<ReferenceReview> {
@@ -66,7 +68,7 @@ export class GetReferenceReviewUseCase {
     );
 
     const review = new ReferenceReview(reference, reviewRecords, projection.totalRecords);
-    this.reviewsStorage().saveReview(review);
+    this.reviewsStorage.saveReview(review);
     return review;
   }
 

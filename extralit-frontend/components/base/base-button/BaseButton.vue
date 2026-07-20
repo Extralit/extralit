@@ -46,7 +46,6 @@
 <script>
 export default {
   name: "BaseButton",
-  emits: ["click", "on-click", "mouseover", "mouseleave"],
   props: {
     tabIndex: {
       type: Number,
@@ -66,8 +65,9 @@ export default {
     },
     disabled: Boolean,
     centered: Boolean,
-    to: { type: String | Object },
+    to: { type: [String, Object] },
   },
+  emits: ["click", "on-click", "mouseover", "mouseleave"],
   computed: {
     newRel() {
       if (this.target === "_blank") {

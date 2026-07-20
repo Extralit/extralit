@@ -201,7 +201,11 @@ class LanceIndexEngine(IndexEngine):
             # the total saturates at _FTS_TOTAL_CEILING (documented, bounded work).
             query = await table.search(text, query_type="fts")
             if clause:
-                query = query.where(clause, prefilter=True)
+                # Async LanceDB (0.34) `where()` takes only the predicate — the sync-only
+                # `prefilter=` kwarg raises TypeError and 500s every FTS+filter search.
+                # Scalar filters over an FTS match set apply as a postfilter here, which is
+                # correct for our materialize-then-page model.
+                query = query.where(clause)
             arrow = await query.limit(_FTS_TOTAL_CEILING).to_arrow()
             matches = arrow.to_pylist()
             hits = [
