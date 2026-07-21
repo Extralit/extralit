@@ -154,6 +154,34 @@ async def test_single_dict_table_value_is_one_row(db):
     assert view.rows[0].cells["Outcomes.results.value"].value == "12%"
 
 
+async def test_quotes_and_backslashes_in_names_do_not_break_json_paths(db):
+    """Question names and sub-column bindings are unconstrained user input; a raw `"` used to be
+    a bind-time JSON-path error that failed the whole grid, not just the offending cell."""
+    workspace = await WorkspaceFactory.create()
+    schema, version = await _make_schema(workspace, "Outcomes")
+    await _add_question(schema, 'we"ird\\name')
+    t = await _add_question(schema, "results", qtype=QuestionType.table, columns=['sub"col', "back\\slash"])
+    rec = await V2RecordFactory.create(version=version, reference="10.1/a")
+    await V2SuggestionFactory.create(record=rec, question=t, value=[{'sub"col': "A", "back\\slash": "B"}])
+    user = await UserFactory.create()
+    await V2ResponseFactory.create(
+        record=rec, user=user, values={'we"ird\\name': {"value": "RCT"}}, status=ResponseStatus.submitted
+    )
+
+    view = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
+
+    assert [c.name for c in view.columns] == [
+        'Outcomes.we"ird\\name',
+        'Outcomes.results.sub"col',
+        "Outcomes.results.back\\slash",
+    ]
+    cells = view.rows[0].cells
+    assert cells['Outcomes.we"ird\\name'].value == "RCT"
+    assert cells['Outcomes.we"ird\\name'].source == "response"
+    assert cells['Outcomes.results.sub"col'].value == "A"
+    assert cells["Outcomes.results.back\\slash"].value == "B"
+
+
 async def test_effective_record_is_latest_inserted_per_reference_schema(db):
     workspace = await WorkspaceFactory.create()
     schema, version = await _make_schema(workspace, "Design")

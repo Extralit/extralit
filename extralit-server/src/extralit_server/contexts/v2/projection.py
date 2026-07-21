@@ -131,11 +131,24 @@ def _build_columns(
     return columns
 
 
+def _json_path_escape(key: str) -> str:
+    """Escape a key for interpolation inside a double-quoted DuckDB JSON path segment.
+
+    Question names and table sub-column bindings are unconstrained user input, and DuckDB parses
+    the JSON path as a whole: an unescaped `"` raises `JSON path error near ...`, which fails the
+    entire workspace grid rather than just the offending cell.
+    """
+    return key.replace("\\", "\\\\").replace('"', '\\"')
+
+
 _INPUT_TABLES_DDL = """
 CREATE TABLE questions (
     question_id VARCHAR, schema_id VARCHAR, schema_name VARCHAR, question_name VARCHAR, qtype VARCHAR
 );
-CREATE TABLE question_columns (question_id VARCHAR, sub_column VARCHAR);
+-- `sub_path` is `sub_column` pre-escaped for interpolation into a quoted JSON path
+-- (see `_json_path_escape`); a raw `"` or `\` in the binding would otherwise be a bind-time
+-- JSON-path parse error that fails the whole statement, not just that cell.
+CREATE TABLE question_columns (question_id VARCHAR, sub_column VARCHAR, sub_path VARCHAR);
 CREATE TABLE records (record_id VARCHAR, schema_id VARCHAR, reference VARCHAR, inserted_at TIMESTAMP);
 CREATE TABLE suggestions (record_id VARCHAR, question_id VARCHAR, value_json JSON, agent VARCHAR, score_json JSON);
 CREATE TABLE responses (record_id VARCHAR, values_json JSON, updated_at TIMESTAMP);
@@ -143,7 +156,7 @@ CREATE TABLE responses (record_id VARCHAR, values_json JSON, updated_at TIMESTAM
 
 _INSERTS = {
     "questions": "INSERT INTO questions VALUES (?, ?, ?, ?, ?)",
-    "question_columns": "INSERT INTO question_columns VALUES (?, ?)",
+    "question_columns": "INSERT INTO question_columns VALUES (?, ?, ?)",
     "records": "INSERT INTO records VALUES (?, ?, ?, ?)",
     "suggestions": "INSERT INTO suggestions VALUES (?, ?, ?, ?, ?)",
     "responses": "INSERT INTO responses VALUES (?, ?, ?)",
@@ -160,21 +173,27 @@ WITH effective_records AS (
     QUALIFY row_number() OVER (PARTITION BY reference, schema_id ORDER BY inserted_at DESC, record_id DESC) = 1
 ),
 latest_responses AS (
-    -- latest submitted response per record, by ANY user (submitted-only filtering happens in Postgres)
+    -- Record-level selection, intentional per spec §3.2: exactly ONE response *envelope* wins
+    -- per record -- the latest submitted one by ANY user (submitted-only filtering happens in
+    -- Postgres). A question absent from that envelope therefore falls back to its suggestion
+    -- even when an earlier submitted response answered it; envelopes are not merged per cell.
     SELECT record_id, values_json
     FROM responses
     WHERE values_json IS NOT NULL
     QUALIFY row_number() OVER (PARTITION BY record_id ORDER BY updated_at DESC) = 1
 ),
-response_keys AS (
-    SELECT record_id, values_json, unnest(json_keys(values_json)) AS question_name
+response_entries AS (
+    -- zip-unnest the envelope: `json_keys` and the `'$.*'` wildcard walk the object in the same
+    -- order, which avoids interpolating a data-derived key into a JSON path (unescapable here).
+    SELECT record_id,
+           unnest(json_keys(values_json)) AS question_name,
+           unnest(json_extract(values_json, '$.*')) AS entry
     FROM latest_responses
 ),
 response_cells AS (
     -- unwrap the {question_name: {"value": ...}} envelope
-    SELECT record_id, question_name,
-           json_extract(values_json, '$."' || question_name || '".value') AS value
-    FROM response_keys
+    SELECT record_id, question_name, json_extract(entry, '$.value') AS value
+    FROM response_entries
 ),
 resolved AS (
     -- coalesce = response ?? suggestion; (record, question) pairs with neither drop out
@@ -221,15 +240,18 @@ table_rows AS (
 table_object_rows AS (
     SELECT * FROM table_rows WHERE json_type(row_json) = 'OBJECT'
 ),
-table_cells AS (
-    -- quoting the sub-column into the JSON path handles arbitrary key names
+table_cell_values AS (
+    -- the pre-escaped `sub_path` quoted into the JSON path handles arbitrary key names
     SELECT tr.reference, tr.record_id, tr.row_idx,
            tr.schema_name || '.' || tr.question_name || '.' || qc.sub_column AS column_name,
-           json_extract(tr.row_json, '$."' || qc.sub_column || '"') AS value,
+           json_extract(tr.row_json, '$."' || qc.sub_path || '"') AS value,
            tr.source, tr.agent, tr.score
     FROM table_object_rows tr
     JOIN question_columns qc ON qc.question_id = tr.question_id
-    WHERE json_type(json_extract(tr.row_json, '$."' || qc.sub_column || '"')) <> 'NULL'
+),
+table_cells AS (
+    -- absent sub-key (SQL NULL) and JSON-null alike are omitted
+    SELECT * FROM table_cell_values WHERE json_type(value) <> 'NULL'
 ),
 fanout AS (
     SELECT reference, max(row_idx) AS max_idx FROM table_object_rows GROUP BY reference
@@ -287,6 +309,11 @@ async def build_workspace_view(db: AsyncSession, *, workspace_id: UUID, offset: 
     the in-memory DuckDB statement implements every semantic: effective-record dedup,
     response-over-suggestion coalescing, table fan-out with independent stacking and scalar
     repetition. `offset`/`limit` count references, not fan-out rows.
+
+    Coalescing is record-level, intentionally (spec §3.2): the latest submitted response
+    *envelope* per record wins outright, across all users. A question the winning envelope does
+    not contain falls back to its suggestion even if an earlier submitted response answered it
+    — envelopes are never merged cell-by-cell.
     """
     schemas = (
         (await db.execute(select(Schema).where(Schema.workspace_id == workspace_id).order_by(Schema.name)))
@@ -362,7 +389,10 @@ async def build_workspace_view(db: AsyncSession, *, workspace_id: UUID, offset: 
             (str(q.id), str(q.schema_id), schema_names[q.schema_id], q.name, q.type.value) for q in questions
         ],
         "question_columns": [
-            (str(q.id), sub) for q in questions if q.type == QuestionType.table for sub in (q.columns or [])
+            (str(q.id), sub, _json_path_escape(sub))
+            for q in questions
+            if q.type == QuestionType.table
+            for sub in (q.columns or [])
         ],
         "records": [(str(r.id), str(r.schema_id), r.reference, r.inserted_at) for r in records],
         "suggestions": [
