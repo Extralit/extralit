@@ -2,9 +2,11 @@ import { ref } from "vue";
 import { useResolve } from "ts-injecty";
 import { Question } from "~/v1/domain/entities/question/Question";
 import { UpdateQuestionSettingUseCase } from "~/v1/domain/usecases/dataset-setting/update-question-setting-use-case";
+import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
 
 export const useSettingsQuestionsViewModel = () => {
   const updateQuestionSettingsUseCase = useResolve(UpdateQuestionSettingUseCase);
+  const notification = useNotifications();
   const newLabelText = ref({});
 
   const restore = (question: Question) => {
@@ -28,7 +30,10 @@ export const useSettingsQuestionsViewModel = () => {
     );
 
     if (existingOption) {
-      // TODO: Show error message that option already exists
+      notification.notify({
+        message: "Label already exists. Please choose a different one.",
+        type: "warning",
+      });
       return;
     }
 
