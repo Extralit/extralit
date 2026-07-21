@@ -5,12 +5,12 @@
 **Goal:** Ship a workspace-level denormalized extraction table — new `GET /api/v2/projection` endpoint with enriched provenance cells, a `/extractions` page rendered by Perspective 4.x, an additive `list[dict]` table-value contract, and deletion of the superseded reference-review page.
 
 **Delivery: two phases, two PRs.**
-- **Phase 1 (Tasks 1–7, PR 1):** everything additive and low-risk — server contract (validator extension, enriched cells, workspace endpoint) plus the frontend data layer (gen:api, domain types, repository, grid adapter, use-case, storage, DI). No UI, no deletions, no new dependencies. Mergeable to `develop` on its own; SDK #231 and any other consumer can build against the endpoint immediately.
+- **Phase 1 (Tasks 1–7, PR 1):** everything additive and low-risk — server contract (validator extension, enriched cells, workspace endpoint) plus the frontend data layer (gen:api, domain types, repository, grid adapter, use-case, storage, DI). No UI, no deletions, no new frontend dependencies (the server gains `duckdb`). Mergeable to `develop` on its own; SDK #231 and any other consumer can build against the endpoint immediately.
 - **Phase 2 (Tasks 8–13, PR 2, stacked on Phase 1):** the integration-risk half — Perspective deps/WASM/Vite wiring, the custom-element grid wrapper, the `/extractions` page, deletion of the reference-review page, and the e2e gate. If Perspective 4.5.2 fights back (WASM boot, init API drift, custom-element quirks), Phase 1 is already merged and unaffected.
 
-**Architecture:** The server performs the full denormalization (coalesce `submitted response → suggestion → empty`, table fan-out, independent stacking, scalar repetition) in `contexts/v2/projection.py` using batched queries; the client only pages, aggregates, and renders. Frontend follows the existing v2 DDD chain: `ProjectionRepository` → `GetWorkspaceProjectionUseCase` → Pinia storage → `useExtractionsViewModel` → `pages/extractions/index.vue`, with a Perspective web-component grid wrapped in `ExtractionsGrid.vue`.
+**Architecture:** The server performs the full denormalization in `contexts/v2/projection.py`: batched Postgres queries (via the existing `AsyncSession`) fetch raw slices, and an **in-memory DuckDB** connection runs ONE SQL statement that does everything semantic — effective-record dedup (window functions), `submitted response ?? suggestion` coalesce, table fan-out (`json_each`), the independent-stacking row spine, and scalar repetition. Python only registers inputs and regroups the long-format result into Pydantic models, so the transform stays declarative over arbitrary schema-defined JSON and pre-builds the spec §5 Arrow path (`.fetchall()` → `.arrow()` later streams Arrow IPC straight into Perspective). The client only pages, aggregates, and renders. Frontend follows the existing v2 DDD chain: `ProjectionRepository` → `GetWorkspaceProjectionUseCase` → Pinia storage → `useExtractionsViewModel` → `pages/extractions/index.vue`, with a Perspective web-component grid wrapped in `ExtractionsGrid.vue`.
 
-**Tech Stack:** FastAPI + SQLAlchemy async (extralit-server), Vue 3 / Nuxt 4 / Pinia / ts-injecty (extralit-frontend), Perspective `@perspective-dev/*` 4.5.2 (WASM), openapi-typescript contract gate, pytest / vitest / Playwright.
+**Tech Stack:** FastAPI + SQLAlchemy async + DuckDB (in-process denormalization engine) on extralit-server, Vue 3 / Nuxt 4 / Pinia / ts-injecty (extralit-frontend), Perspective `@perspective-dev/*` 4.5.2 (WASM), openapi-typescript contract gate, pytest / vitest / Playwright.
 
 **Spec:** `docs/superpowers/specs/2026-07-20-extraction-table-design.md` (this plan implements §3–§4 within the §6 scope boundary; §5 items are explicitly NOT built).
 
@@ -31,7 +31,7 @@
 **extralit-server (modify):**
 - `src/extralit_server/validators/v2/values.py` — `_validate_table` accepts `list[dict]` additively (Task 1)
 - `src/extralit_server/api/schemas/v2/projection.py` — enrich `ProjectionCell`; add `WorkspaceProjection*` models (Tasks 2, 3)
-- `src/extralit_server/contexts/v2/projection.py` — enrich `build_reference_view`; add `build_workspace_view` + pure denormalization helpers (Tasks 2, 3)
+- `src/extralit_server/contexts/v2/projection.py` — enrich `build_reference_view`; add `build_workspace_view` + the DuckDB denormalization statement (Tasks 2, 3)
 - `src/extralit_server/api/v2/projection.py` — add `GET /projection` route (Task 4)
 - `tests/unit/validators/v2/test_values.py`, `tests/integration/contexts/v2/test_projection.py`, `tests/integration/api/v2/test_projection.py` — extend; new `tests/integration/contexts/v2/test_workspace_projection.py`
 
@@ -246,13 +246,15 @@ git commit -m "feat(server): enrich ProjectionCell with record_id/agent/score pr
 
 **Files:**
 - Modify: `extralit-server/src/extralit_server/api/schemas/v2/projection.py` (add 4 models)
-- Modify: `extralit-server/src/extralit_server/contexts/v2/projection.py` (add `build_workspace_view` + helpers)
+- Modify: `extralit-server/src/extralit_server/contexts/v2/projection.py` (add `build_workspace_view` + the DuckDB denormalization)
+- Modify: `extralit-server/pyproject.toml` + `uv.lock` (via `uv add duckdb`)
 - Create: `extralit-server/tests/integration/contexts/v2/test_workspace_projection.py`
 
 **Interfaces:**
 - Consumes: `Schema`, `V2Question` (`.columns` binding, `.type`), `V2Record` (`.reference`), `V2Suggestion`, `V2Response` ORM models; `ResponseStatus`, `QuestionType` enums.
 - Produces: `async def build_workspace_view(db: AsyncSession, *, workspace_id: UUID, offset: int, limit: int) -> WorkspaceProjection` — Task 4's route calls exactly this. Pydantic models `WorkspaceProjectionColumn`, `WorkspaceProjectionCell`, `WorkspaceProjectionRow`, `WorkspaceProjection` (names Task 4 and gen:api rely on).
 - Semantics locked here: `limit`/`offset` count **references** (not fan-out rows); cell coalesce = **latest submitted response by any user** (by `updated_at`) `??` suggestion `??` omitted; one **effective record** per (reference, schema) = latest `inserted_at`; table fan-out with **independent stacking** (row count = max fan-out, min 1) and **scalar repetition**; absent cells omitted from `cells`.
+- Engine: Postgres (via the existing `AsyncSession`) serves only batched raw slices; an **in-memory DuckDB** connection runs ONE SQL statement implementing all of the semantics above (window-function dedup, `json_each` fan-out, spine + repetition) over the schema-defined JSON. Do NOT `ATTACH` Postgres from DuckDB — integration tests run inside a rolled-back transaction that a second connection can't see, and it would add a second credential/pool path. The tests and API contract are engine-agnostic: they exercise `build_workspace_view` only.
 
 - [ ] **Step 1: Add the Pydantic models**
 
@@ -507,11 +509,23 @@ Note: if `V2ResponseFactory`/`V2QuestionFactory` kwargs differ (check `tests/fac
 Run: `cd extralit-server && uv run pytest tests/integration/contexts/v2/test_workspace_projection.py -v`
 Expected: FAIL — `module … has no attribute 'build_workspace_view'`.
 
-- [ ] **Step 4: Implement**
+- [ ] **Step 4: Add the DuckDB dependency**
+
+```bash
+cd extralit-server && uv add duckdb
+```
+
+DuckDB (in-process) is the denormalization engine: the transform stays declarative SQL over the schema-defined JSON instead of nested Python loops, and swapping `.fetchall()` for `.arrow()` later yields the spec §5 Arrow-IPC streaming path for free. Its bundled JSON extension autoloads — no `INSTALL`/`LOAD` calls needed. `anyio` (used below for the thread offload) already ships with FastAPI/Starlette.
+
+- [ ] **Step 5: Implement**
 
 In `src/extralit_server/contexts/v2/projection.py`, extend the imports (keep existing ones):
 
 ```python
+import json
+
+import duckdb
+from anyio import to_thread
 from sqlalchemy import func, select
 
 from extralit_server.api.schemas.v2.projection import (
@@ -563,81 +577,119 @@ def _build_columns(
     return columns
 
 
-def _resolve(record, question, suggestions, responses):
-    """Coalesce (spec §3.1): latest submitted response (any user) ?? suggestion ?? None.
-    Returns (value, source, agent, score) or None. Drafts never reach `responses`."""
-    wrapped = responses.get(record.id, {}).get(question.name)
-    if wrapped is not None:
-        return (wrapped.get("value"), "response", None, None)
-    suggestion = suggestions.get((record.id, question.id))
-    if suggestion is not None:
-        return (suggestion.value, "suggestion", suggestion.agent, suggestion.score)
-    return None
+# One SQL statement performs the entire denormalization (spec §3.1/§3.4): effective-
+# record dedup, response ?? suggestion coalesce, table fan-out, the independent-stacking
+# row spine, and scalar repetition. Long format out: one row per (reference, row_idx,
+# column) — plus a bare spine row when a reference has no resolved cells yet.
+_DENORMALIZE_SQL = """
+WITH effective_records AS (  -- one effective record per (reference, schema): latest inserted_at
+    SELECT record_id, schema_id, reference
+    FROM records
+    QUALIFY row_number() OVER (PARTITION BY reference, schema_id ORDER BY inserted_at DESC) = 1
+),
+latest_responses AS (  -- latest submitted response per record, ANY user (user-agnostic view)
+    SELECT record_id, values_json
+    FROM responses
+    QUALIFY row_number() OVER (PARTITION BY record_id ORDER BY updated_at DESC) = 1
+),
+response_cells AS (  -- explode the {question_name: {"value": ...}} envelope
+    SELECT lr.record_id, je.key AS question_name, json_extract(je.value, '$.value') AS value
+    FROM latest_responses lr, json_each(lr.values_json) je
+),
+resolved AS (  -- coalesce: response ?? suggestion; (record, question) with neither drops out
+    SELECT er.reference, er.record_id, q.question_id, q.schema_name, q.question_name, q.qtype,
+           COALESCE(rc.value, s.value_json) AS value,
+           CASE WHEN rc.value IS NOT NULL THEN 'response' ELSE 'suggestion' END AS source,
+           CASE WHEN rc.value IS NULL THEN s.agent END AS agent,
+           CASE WHEN rc.value IS NULL THEN s.score_json END AS score
+    FROM effective_records er
+    JOIN questions q ON q.schema_id = er.schema_id
+    LEFT JOIN response_cells rc
+      ON rc.record_id = er.record_id AND rc.question_name = q.question_name
+    LEFT JOIN suggestions s
+      ON s.record_id = er.record_id AND s.question_id = q.question_id
+    WHERE COALESCE(rc.value, s.value_json) IS NOT NULL
+),
+table_rows AS (  -- §3.4 in SQL: bare dict = the 1-row case; arrays fan out with 0-based indices
+    SELECT r.reference, r.record_id, r.question_id, r.schema_name, r.question_name,
+           r.source, r.agent, r.score,
+           CAST(je.key AS BIGINT) AS row_idx, je.value AS row_json
+    FROM resolved r,
+         json_each(CASE WHEN json_type(r.value) = 'ARRAY' THEN r.value
+                        ELSE json_array(r.value) END) je
+    WHERE r.qtype = 'table' AND json_type(je.value) = 'OBJECT'
+),
+table_cells AS (  -- fan each row dict out over the question's bound sub-columns
+    SELECT tr.reference, tr.row_idx,
+           tr.schema_name || '.' || tr.question_name || '.' || qc.sub_column AS column_name,
+           json_extract(tr.row_json, '$."' || qc.sub_column || '"') AS value,
+           tr.source, tr.record_id, tr.agent, tr.score
+    FROM table_rows tr
+    JOIN question_columns qc ON qc.question_id = tr.question_id
+    WHERE COALESCE(json_type(json_extract(tr.row_json, '$."' || qc.sub_column || '"')), 'NULL') <> 'NULL'
+),
+scalar_cells AS (
+    SELECT reference, schema_name || '.' || question_name AS column_name,
+           value, source, record_id, agent, score
+    FROM resolved
+    WHERE qtype <> 'table' AND json_type(value) <> 'NULL'
+),
+spine AS (  -- independent stacking: rows per reference = max table fan-out, min 1
+    SELECT refs.reference, unnest(generate_series(0, COALESCE(mx.mx, 0))) AS row_idx
+    FROM (SELECT DISTINCT reference FROM effective_records) refs
+    LEFT JOIN (SELECT reference, MAX(row_idx) AS mx FROM table_rows GROUP BY reference) mx
+      ON mx.reference = refs.reference
+),
+long_cells AS (
+    SELECT sp.reference, sp.row_idx, sc.column_name, sc.value,
+           sc.source, sc.record_id, sc.agent, sc.score
+    FROM spine sp
+    JOIN scalar_cells sc ON sc.reference = sp.reference  -- scalar repetition on every fan-out row
+    UNION ALL
+    SELECT reference, row_idx, column_name, value, source, record_id, agent, score
+    FROM table_cells
+)
+SELECT sp.reference, sp.row_idx, lc.column_name, CAST(lc.value AS VARCHAR) AS value_json,
+       lc.source, lc.record_id, lc.agent, CAST(lc.score AS VARCHAR) AS score_json
+FROM spine sp
+LEFT JOIN long_cells lc ON lc.reference = sp.reference AND lc.row_idx = sp.row_idx
+ORDER BY sp.reference, sp.row_idx, lc.column_name
+"""
 
 
-def _table_rows(value) -> list[dict]:
-    # §3.4 normalization: bare dict is the 1-row case; list[dict] is N rows.
-    if isinstance(value, list):
-        return [row for row in value if isinstance(row, dict)]
-    if isinstance(value, dict):
-        return [value]
-    return []
+_INPUT_DDL = {
+    "questions": "question_id VARCHAR, schema_id VARCHAR, schema_name VARCHAR, question_name VARCHAR, qtype VARCHAR",
+    "question_columns": "question_id VARCHAR, sub_column VARCHAR",
+    "records": "record_id VARCHAR, schema_id VARCHAR, reference VARCHAR, inserted_at TIMESTAMP",
+    "suggestions": "record_id VARCHAR, question_id VARCHAR, value_json JSON, agent VARCHAR, score_json JSON",
+    "responses": "record_id VARCHAR, values_json JSON, updated_at TIMESTAMP",
+}
 
 
-def _denormalize_reference(
-    reference: str,
-    *,
-    schemas: list[Schema],
-    questions_by_schema: dict,
-    effective: dict,
-    suggestions: dict,
-    responses: dict,
-) -> list[WorkspaceProjectionRow]:
-    scalar_cells: dict[str, WorkspaceProjectionCell] = {}
-    table_values: list[tuple] = []  # (schema_name, question, rows, record, (source, agent, score))
-    fan_out = 1
-    for schema in schemas:
-        record = effective.get((reference, schema.id))
-        if record is None:
-            continue  # coverage gap: this schema's columns stay empty for the reference
-        for question in questions_by_schema.get(schema.id, []):
-            resolved = _resolve(record, question, suggestions, responses)
-            if resolved is None:
-                continue  # absent cells are omitted; the client renders them as null
-            value, source, agent, score = resolved
-            if question.type == QuestionType.table:
-                rows = _table_rows(value)
-                if not rows:
-                    continue
-                fan_out = max(fan_out, len(rows))
-                table_values.append((schema.name, question, rows, record, (source, agent, score)))
-            elif value is not None:
-                scalar_cells[f"{schema.name}.{question.name}"] = WorkspaceProjectionCell(
-                    value=value, source=source, record_id=record.id, agent=agent, score=score
-                )
-
-    out: list[WorkspaceProjectionRow] = []
-    for row_index in range(fan_out):
-        cells = dict(scalar_cells)  # scalars repeat on every fan-out row (denormalized, §3.1)
-        for schema_name, question, rows, record, (source, agent, score) in table_values:
-            if row_index >= len(rows):
-                continue  # independent stacking: shorter tables just end, no fabricated pairing
-            for sub in question.columns:
-                sub_value = rows[row_index].get(sub)
-                if sub_value is None:
-                    continue
-                cells[f"{schema_name}.{question.name}.{sub}"] = WorkspaceProjectionCell(
-                    value=sub_value, source=source, record_id=record.id, agent=agent, score=score
-                )
-        out.append(WorkspaceProjectionRow(reference=reference, row_index=row_index, cells=cells))
-    return out
+def _run_denormalization(inputs: dict[str, list[tuple]]) -> list[tuple]:
+    """Feed the raw slices into an in-memory DuckDB and run the denormalization.
+    Synchronous/CPU-bound — callers offload via to_thread. NEVER attach Postgres from
+    here: integration tests run inside a rolled-back transaction a second connection
+    cannot see, and it would add a second credential path."""
+    con = duckdb.connect()
+    try:
+        for table, ddl in _INPUT_DDL.items():
+            con.execute(f"CREATE TABLE {table}({ddl})")
+            rows = inputs[table]
+            if rows:
+                placeholders = ", ".join("?" * len(rows[0]))
+                con.executemany(f"INSERT INTO {table} VALUES ({placeholders})", rows)
+        return con.execute(_DENORMALIZE_SQL).fetchall()
+    finally:
+        con.close()
 
 
 async def build_workspace_view(
     db: AsyncSession, *, workspace_id: UUID, offset: int, limit: int
 ) -> WorkspaceProjection:
-    """Workspace-level denormalized projection (spec §3.2). Batched: a fixed number of
-    queries regardless of reference/record count. `offset`/`limit` count references."""
+    """Workspace-level denormalized projection (spec §3.2). Postgres serves batched raw
+    slices — a fixed number of queries regardless of reference/record count — and the
+    DuckDB statement above does all the semantics. `offset`/`limit` count references."""
     schemas = (
         (await db.execute(select(Schema).where(Schema.workspace_id == workspace_id).order_by(Schema.name)))
         .scalars()
@@ -682,75 +734,102 @@ async def build_workspace_view(
     record_rows = (
         (
             await db.execute(
-                select(V2Record)
-                .where(V2Record.schema_id.in_(schema_ids), V2Record.reference.in_(references))
-                .order_by(V2Record.inserted_at)
+                select(V2Record).where(
+                    V2Record.schema_id.in_(schema_ids), V2Record.reference.in_(references)
+                )
             )
         )
         .scalars()
         .all()
     )
-    # One effective record per (reference, schema): latest inserted_at wins (§3.1).
-    effective: dict[tuple[str, UUID], V2Record] = {}
-    for record in record_rows:
-        effective[(record.reference, record.schema_id)] = record
-    record_ids = [r.id for r in effective.values()]
+    record_ids = [r.id for r in record_rows]
 
-    suggestions: dict[tuple[UUID, UUID], V2Suggestion] = {}
-    responses: dict[UUID, dict] = {}
+    sugg_rows: list[V2Suggestion] = []
+    resp_rows: list[V2Response] = []
     if record_ids:
         sugg_rows = (
             (await db.execute(select(V2Suggestion).where(V2Suggestion.record_id.in_(record_ids))))
             .scalars()
             .all()
         )
-        suggestions = {(s.record_id, s.question_id): s for s in sugg_rows}
-        # Latest submitted per record across ALL users — endpoint is user-agnostic and
-        # cacheable (§3.1); ordering by updated_at lets the dict overwrite older entries.
+        # Submitted only — drafts must never reach the projection (§3.1). The
+        # latest-per-record pick happens in SQL (latest_responses window).
         resp_rows = (
             (
                 await db.execute(
-                    select(V2Response)
-                    .where(
+                    select(V2Response).where(
                         V2Response.record_id.in_(record_ids),
                         V2Response.status == ResponseStatus.submitted,
                     )
-                    .order_by(V2Response.updated_at)
                 )
             )
             .scalars()
             .all()
         )
-        for resp in resp_rows:
-            responses[resp.record_id] = resp.values or {}
 
-    rows: list[WorkspaceProjectionRow] = []
-    for reference in references:
-        rows.extend(
-            _denormalize_reference(
-                reference,
-                schemas=schemas,
-                questions_by_schema=questions_by_schema,
-                effective=effective,
-                suggestions=suggestions,
-                responses=responses,
+    question_tuples: list[tuple] = []
+    column_tuples: list[tuple] = []
+    for schema in schemas:
+        for question in questions_by_schema.get(schema.id, []):
+            question_tuples.append(
+                (str(question.id), str(schema.id), schema.name, question.name, question.type.value)
             )
+            if question.type == QuestionType.table:
+                column_tuples.extend((str(question.id), sub) for sub in question.columns)
+
+    inputs = {
+        "questions": question_tuples,
+        "question_columns": column_tuples,
+        "records": [(str(r.id), str(r.schema_id), r.reference, r.inserted_at) for r in record_rows],
+        "suggestions": [
+            (
+                str(s.record_id),
+                str(s.question_id),
+                json.dumps(s.value),
+                s.agent,
+                json.dumps(s.score) if s.score is not None else None,
+            )
+            for s in sugg_rows
+        ],
+        "responses": [(str(r.record_id), json.dumps(r.values or {}), r.updated_at) for r in resp_rows],
+    }
+    long_rows = await to_thread.run_sync(_run_denormalization, inputs)
+
+    # Regroup the ordered long format; SQL's ORDER BY reference matches the page order.
+    rows: list[WorkspaceProjectionRow] = []
+    current: WorkspaceProjectionRow | None = None
+    for reference, row_index, column_name, value_json, source, record_id, agent, score_json in long_rows:
+        if current is None or current.reference != reference or current.row_index != row_index:
+            current = WorkspaceProjectionRow(reference=reference, row_index=row_index, cells={})
+            rows.append(current)
+        if column_name is None:
+            continue  # spine-only row: the reference exists but nothing resolved yet
+        current.cells[column_name] = WorkspaceProjectionCell(
+            value=json.loads(value_json),
+            source=source,
+            record_id=UUID(record_id),
+            agent=agent,
+            score=json.loads(score_json) if score_json is not None else None,
         )
     return WorkspaceProjection(columns=columns, rows=rows, total_references=total_references)
 ```
 
-Note: `build_reference_view`'s existing imports already cover most of this; merge rather than duplicate import lines. `AsyncSession`/`UUID` are already imported at the top of the module.
+Notes for the implementer:
+- `build_reference_view`'s existing imports already cover most of this; merge rather than duplicate import lines. `AsyncSession`/`UUID` are already imported at the top of the module.
+- `json_each` is DuckDB's SQLite-style table function (DuckDB ≥1.1) used laterally (`FROM t, json_each(t.col)`). If the installed version rejects the lateral column reference, replace those two spots with the zip-unnest pattern in the SELECT list: `unnest(from_json(col, '["json"]'))` paired with `unnest(generate_series(0, len(...) - 1))` — DuckDB zips parallel unnests.
+- All JSON values cross the boundary as strings (`json.dumps` in, `CAST(... AS VARCHAR)` + `json.loads` out) — `score` round-trips `float | list[float]` intact this way.
+- Timestamps insert as native `datetime`. If the ORM ever hands back tz-aware datetimes and DuckDB complains, switch the two DDL columns to `TIMESTAMPTZ`.
 
-- [ ] **Step 5: Run to verify pass**
+- [ ] **Step 6: Run to verify pass**
 
 Run: `cd extralit-server && uv run pytest tests/integration/contexts/v2/test_workspace_projection.py tests/integration/contexts/v2/test_projection.py -v`
-Expected: ALL PASS (including the ≤7-statement query-count guard).
+Expected: ALL PASS — including the ≤7-statement query-count guard, which still holds because it counts `AsyncSession.execute` calls only; the DuckDB work never touches the session.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add extralit-server/src/extralit_server/api/schemas/v2/projection.py extralit-server/src/extralit_server/contexts/v2/projection.py extralit-server/tests/integration/contexts/v2/test_workspace_projection.py
-git commit -m "feat(server): workspace-level denormalized projection with table fan-out"
+git add extralit-server/src/extralit_server/api/schemas/v2/projection.py extralit-server/src/extralit_server/contexts/v2/projection.py extralit-server/tests/integration/contexts/v2/test_workspace_projection.py extralit-server/pyproject.toml extralit-server/uv.lock
+git commit -m "feat(server): workspace projection denormalized via in-process DuckDB"
 ```
 
 ---
@@ -1440,7 +1519,7 @@ Expected: all green. (No `npm run build` needed yet — no new build-affecting c
 
 - [ ] **Step 4: Scope audit**
 
-Confirm Phase 1 is purely additive: no `package.json` dependency changes, no `nuxt.config.ts`/`vitest.config.ts` changes, no page/component/e2e changes, no deletions. Existing v2 e2e specs (`review-loop`, `draft-lifecycle`, `slashed-reference`, `auth-smoke`, `search-roundtrip`) are untouched and still the active gate.
+Confirm Phase 1 is purely additive: no frontend `package.json` dependency changes (the server gained only `duckdb` in Task 3), no `nuxt.config.ts`/`vitest.config.ts` changes, no page/component/e2e changes, no deletions. Existing v2 e2e specs (`review-loop`, `draft-lifecycle`, `slashed-reference`, `auth-smoke`, `search-roundtrip`) are untouched and still the active gate.
 
 - [ ] **Step 5: Open PR 1**
 
