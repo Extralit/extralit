@@ -48,7 +48,7 @@ def test_unknown_question_type_fails_closed():
 
 MULTI_LABEL_SETTINGS = {
     "type": "multi_label_selection",
-    "options": [{"value": "yes", "text": "Yes"}],
+    "options": [{"value": "yes", "text": "Yes"}, {"value": "no", "text": "No"}],
 }
 
 
@@ -99,27 +99,32 @@ def test_table_suggestion_allows_single_score_for_multi_row_value():
     )
 
 
-def test_table_suggestion_allows_score_list_not_matching_row_count():
-    V2SuggestionValidator.validate(
-        [{"value": "12%"}, {"value": "8%"}, {"value": "3%"}],
-        [0.9, 0.1],
-        type=QuestionType.table,
-        settings=TABLE_SETTINGS,
-        columns=["value"],
-    )
+def test_table_suggestion_rejects_score_list():
+    # The exemption is scalar-only: a table score is whole-suggestion confidence, so a list
+    # (which the fan-out would repeat verbatim onto every cell) is uninterpretable, not per-row.
+    with pytest.raises(UnprocessableEntityError, match="single number or null"):
+        V2SuggestionValidator.validate(
+            [{"value": "12%"}, {"value": "8%"}, {"value": "3%"}],
+            [0.9, 0.1],
+            type=QuestionType.table,
+            settings=TABLE_SETTINGS,
+            columns=["value"],
+        )
 
 
-def test_table_suggestion_allows_score_list_for_bare_dict_value():
-    V2SuggestionValidator.validate(
-        {"value": "12%"}, [0.9, 0.1], type=QuestionType.table, settings=TABLE_SETTINGS, columns=["value"]
-    )
+def test_table_suggestion_rejects_score_list_for_bare_dict_value():
+    with pytest.raises(UnprocessableEntityError, match="single number or null"):
+        V2SuggestionValidator.validate(
+            {"value": "12%"}, [0.9, 0.1], type=QuestionType.table, settings=TABLE_SETTINGS, columns=["value"]
+        )
 
 
 def test_non_table_suggestion_still_rejects_single_score_for_list_value():
     # The exemption above must be scoped to table only — these rules still bind elsewhere.
+    # Use MULTI_LABEL_SETTINGS so the settings `type` matches the question type the API enforces.
     with pytest.raises(UnprocessableEntityError, match="a single score is not allowed"):
         V2SuggestionValidator.validate(
-            ["yes", "no"], 0.9, type=QuestionType.multi_label_selection, settings=LABEL_SETTINGS, columns=["q"]
+            ["yes", "no"], 0.9, type=QuestionType.multi_label_selection, settings=MULTI_LABEL_SETTINGS, columns=["q"]
         )
 
 
@@ -129,6 +134,6 @@ def test_non_table_suggestion_still_rejects_mismatched_score_count():
             ["yes", "no"],
             [0.9],
             type=QuestionType.multi_label_selection,
-            settings=LABEL_SETTINGS,
+            settings=MULTI_LABEL_SETTINGS,
             columns=["q"],
         )

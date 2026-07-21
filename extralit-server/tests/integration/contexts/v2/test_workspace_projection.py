@@ -280,18 +280,21 @@ async def test_non_ascii_names_and_bindings_resolve(db):
     # serialization) — a mismatch would silently omit the cell rather than error.
     workspace = await WorkspaceFactory.create()
     schema, version = await _make_schema(workspace, "Résumé")
-    await _add_question(schema, "pays")
+    # `país` is non-ASCII so it exercises the response-envelope join (rc.question_name =
+    # q.question_name) against a key DuckDB parsed from values_json — the half of the
+    # ensure_ascii=False change on the responses serialization that an ASCII name would miss.
+    await _add_question(schema, "país")
     table_q = await _add_question(schema, "résultats", qtype=QuestionType.table, columns=["café", "日本語"])
     rec = await V2RecordFactory.create(version=version, reference="10.1/a")
     user = await UserFactory.create()
     await V2SuggestionFactory.create(record=rec, question=table_q, value=[{"café": "noir", "日本語": "はい"}])
     await V2ResponseFactory.create(
-        record=rec, user=user, status=ResponseStatus.submitted, values={"pays": {"value": "Côte d'Ivoire"}}
+        record=rec, user=user, status=ResponseStatus.submitted, values={"país": {"value": "Côte d'Ivoire"}}
     )
 
     view = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
 
     cells = view.rows[0].cells
-    assert cells["Résumé.pays"].value == "Côte d'Ivoire"
+    assert cells["Résumé.país"].value == "Côte d'Ivoire"
     assert cells["Résumé.résultats.café"].value == "noir"
     assert cells["Résumé.résultats.日本語"].value == "はい"
