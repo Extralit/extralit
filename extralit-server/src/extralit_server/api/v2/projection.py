@@ -5,13 +5,26 @@ from fastapi import APIRouter, Depends, Query, Security
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.policies.v1 import SchemaPolicy, authorize
-from extralit_server.api.schemas.v2.projection import ProjectionView
+from extralit_server.api.schemas.v2.projection import ProjectionView, WorkspaceProjection
 from extralit_server.contexts.v2 import projection as projection_ctx
 from extralit_server.database import get_async_db
 from extralit_server.models import User
 from extralit_server.security import auth
 
 router = APIRouter(tags=["v2: projection"])
+
+
+@router.get("/projection", response_model=WorkspaceProjection)
+async def get_workspace_projection(
+    *,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    current_user: Annotated[User, Security(auth.get_current_user)],
+    workspace_id: Annotated[UUID, Query(description="Workspace to scope the view (required)")],
+    offset: Annotated[int, Query(ge=0, description="Reference offset (not fan-out rows)")] = 0,
+    limit: Annotated[int, Query(ge=1, le=100, description="References per page")] = 50,
+):
+    await authorize(current_user, SchemaPolicy.list(workspace_id))
+    return await projection_ctx.build_workspace_view(db, workspace_id=workspace_id, offset=offset, limit=limit)
 
 
 # Distinct `/projection/...` prefix, NOT `/references/{reference:path}/view`: the greedy `:path`
