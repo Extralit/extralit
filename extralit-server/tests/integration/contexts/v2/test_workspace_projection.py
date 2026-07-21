@@ -240,3 +240,58 @@ async def test_query_count_is_constant_regardless_of_reference_count(db, monkeyp
     await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
     # schemas, questions, ref-count, ref-page, records, suggestions, responses => 7 max
     assert len(executed) <= 7, f"N+1 regression: {len(executed)} statements"
+
+
+async def test_multi_question_response_envelope_attributes_each_value_to_its_own_question(db):
+    # The response path pairs json_keys(values_json) with json_extract(values_json, '$.*')
+    # positionally and then joins on question_name. Every other test in this file submits a
+    # single-key envelope, so a misalignment would be invisible. This is the real-world
+    # shape: one user answering several questions on one record.
+    workspace = await WorkspaceFactory.create()
+    schema, version = await _make_schema(workspace, "Design")
+    await _add_question(schema, "type")
+    await _add_question(schema, "country")
+    await _add_question(schema, "notes")
+    rec = await V2RecordFactory.create(version=version, reference="10.1/a")
+    user = await UserFactory.create()
+    await V2ResponseFactory.create(
+        record=rec,
+        user=user,
+        status=ResponseStatus.submitted,
+        values={
+            "type": {"value": "RCT"},
+            "country": {"value": "KE"},
+            "notes": {"value": "multi-site"},
+        },
+    )
+
+    view = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
+
+    cells = view.rows[0].cells
+    assert cells["Design.type"].value == "RCT"
+    assert cells["Design.country"].value == "KE"
+    assert cells["Design.notes"].value == "multi-site"
+    assert all(cells[name].source == "response" for name in ("Design.type", "Design.country", "Design.notes"))
+
+
+async def test_non_ascii_names_and_bindings_resolve(db):
+    # Both joins compare Python strings against keys DuckDB parsed out of JSON text.
+    # Non-ASCII names must survive that round-trip (see ensure_ascii=False at the input
+    # serialization) — a mismatch would silently omit the cell rather than error.
+    workspace = await WorkspaceFactory.create()
+    schema, version = await _make_schema(workspace, "Résumé")
+    await _add_question(schema, "pays")
+    table_q = await _add_question(schema, "résultats", qtype=QuestionType.table, columns=["café", "日本語"])
+    rec = await V2RecordFactory.create(version=version, reference="10.1/a")
+    user = await UserFactory.create()
+    await V2SuggestionFactory.create(record=rec, question=table_q, value=[{"café": "noir", "日本語": "はい"}])
+    await V2ResponseFactory.create(
+        record=rec, user=user, status=ResponseStatus.submitted, values={"pays": {"value": "Côte d'Ivoire"}}
+    )
+
+    view = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
+
+    cells = view.rows[0].cells
+    assert cells["Résumé.pays"].value == "Côte d'Ivoire"
+    assert cells["Résumé.résultats.café"].value == "noir"
+    assert cells["Résumé.résultats.日本語"].value == "はい"

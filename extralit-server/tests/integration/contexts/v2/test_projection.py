@@ -45,7 +45,9 @@ async def test_cell_resolves_to_suggestion_when_no_response(db):
 async def test_cell_resolves_to_response_over_suggestion(db):
     schema, version, q = await _schema_with_question(db)
     record = await V2RecordFactory.create(version=version, reference="doc-2")
-    await V2SuggestionFactory.create(record=record, question=q, value="flu")
+    # Seed provenance on the losing suggestion so the `is None` assertions below actually
+    # prove the response branch suppresses it, rather than passing vacuously.
+    await V2SuggestionFactory.create(record=record, question=q, value="flu", agent="gpt-x", score=0.92)
     user = await UserFactory.create()
     await V2ResponseFactory.create(
         record=record, user=user, status=ResponseStatus.submitted, values={"dx": {"value": "covid"}}

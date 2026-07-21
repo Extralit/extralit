@@ -84,3 +84,51 @@ def test_table_value_list_rejects_non_dict_rows():
         V2ResponseValueValidator.validate(
             [{"a": 1}, 5], type=QuestionType.table, settings=TABLE_SETTINGS, columns=["a"]
         )
+
+
+def test_table_suggestion_allows_single_score_for_multi_row_value():
+    # A table value's list is N rows (spec §3.4), not N answer choices: one confidence
+    # score describes the whole suggestion and the projection fan-out repeats it onto
+    # every fanned-out cell. The list-cardinality rules must not apply here.
+    V2SuggestionValidator.validate(
+        [{"value": "12%"}, {"value": "8%"}],
+        0.92,
+        type=QuestionType.table,
+        settings=TABLE_SETTINGS,
+        columns=["value"],
+    )
+
+
+def test_table_suggestion_allows_score_list_not_matching_row_count():
+    V2SuggestionValidator.validate(
+        [{"value": "12%"}, {"value": "8%"}, {"value": "3%"}],
+        [0.9, 0.1],
+        type=QuestionType.table,
+        settings=TABLE_SETTINGS,
+        columns=["value"],
+    )
+
+
+def test_table_suggestion_allows_score_list_for_bare_dict_value():
+    V2SuggestionValidator.validate(
+        {"value": "12%"}, [0.9, 0.1], type=QuestionType.table, settings=TABLE_SETTINGS, columns=["value"]
+    )
+
+
+def test_non_table_suggestion_still_rejects_single_score_for_list_value():
+    # The exemption above must be scoped to table only — these rules still bind elsewhere.
+    with pytest.raises(UnprocessableEntityError, match="a single score is not allowed"):
+        V2SuggestionValidator.validate(
+            ["yes", "no"], 0.9, type=QuestionType.multi_label_selection, settings=LABEL_SETTINGS, columns=["q"]
+        )
+
+
+def test_non_table_suggestion_still_rejects_mismatched_score_count():
+    with pytest.raises(UnprocessableEntityError, match="doesn't match"):
+        V2SuggestionValidator.validate(
+            ["yes", "no"],
+            [0.9],
+            type=QuestionType.multi_label_selection,
+            settings=LABEL_SETTINGS,
+            columns=["q"],
+        )

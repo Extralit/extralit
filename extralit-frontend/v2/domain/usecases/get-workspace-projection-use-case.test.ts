@@ -70,14 +70,52 @@ describe("GetWorkspaceProjectionUseCase", () => {
     const repository = {
       getWorkspaceProjection: vi
         .fn()
+        // Page 2 returns a DIFFERENT manifest: if the manifest were captured from the last
+        // page (or reassigned every page) rather than the first, this test fails. Sharing one
+        // array across both pages could not distinguish those implementations.
         .mockResolvedValueOnce({ columns: SERVER_ORDER_COLUMNS, rows: [row("10.1/a")], totalReferences: 150 })
-        .mockResolvedValueOnce({ columns: SERVER_ORDER_COLUMNS, rows: [row("10.1/b")], totalReferences: 150 }),
+        .mockResolvedValueOnce({ columns: [COLUMN], rows: [row("10.1/b")], totalReferences: 150 }),
     };
     const useCase = new GetWorkspaceProjectionUseCase(repository as never, useExtractions());
 
     const projection = await useCase.execute("w-1");
 
     expect(projection.columns).toEqual(SERVER_ORDER_COLUMNS);
+  });
+
+  it("fixes the page count at sweep start so a growing total cannot run away", async () => {
+    // Records landing mid-sweep raise the server's reported total. The loop bound must be
+    // whatever the first page reported, or the sweep chases a moving target. The zero-progress
+    // guard cannot catch this: every page here returns a non-empty rows array.
+    const repository = {
+      getWorkspaceProjection: vi
+        .fn()
+        .mockResolvedValueOnce({ columns: [COLUMN], rows: [row("10.1/a")], totalReferences: 150 })
+        .mockResolvedValueOnce({ columns: [COLUMN], rows: [row("10.1/b")], totalReferences: 350 })
+        .mockResolvedValue({ columns: [COLUMN], rows: [row("10.1/c")], totalReferences: 350 }),
+    };
+    const useCase = new GetWorkspaceProjectionUseCase(repository as never, useExtractions());
+
+    const projection = await useCase.execute("w-1");
+
+    expect(repository.getWorkspaceProjection).toHaveBeenCalledTimes(2);
+    expect(projection.totalReferences).toBe(150);
+    expect(projection.rows.map((r) => r.reference)).toEqual(["10.1/a", "10.1/b"]);
+  });
+
+  it("returns an empty projection with the manifest for a workspace with no records", async () => {
+    // Schemas but no records — the empty state `/extractions` must render in Phase 2.
+    const repository = {
+      getWorkspaceProjection: vi.fn().mockResolvedValue({ columns: [COLUMN], rows: [], totalReferences: 0 }),
+    };
+    const useCase = new GetWorkspaceProjectionUseCase(repository as never, useExtractions());
+
+    const projection = await useCase.execute("w-1");
+
+    expect(repository.getWorkspaceProjection).toHaveBeenCalledTimes(1);
+    expect(projection.rows).toEqual([]);
+    expect(projection.columns).toEqual([COLUMN]);
+    expect(projection.totalReferences).toBe(0);
   });
 
   it("stops after a single call on a zero-progress response instead of hanging", async () => {

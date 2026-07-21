@@ -66,10 +66,17 @@ class V2SuggestionValidator:
     @classmethod
     def validate(cls, value, score, *, type: QuestionType, settings: dict, columns: list[str]) -> None:
         V2ResponseValueValidator.validate(value, type=type, settings=settings, columns=columns)
-        cls._validate_score(value, score)
+        cls._validate_score(value, score, type=type)
 
     @staticmethod
-    def _validate_score(value, score) -> None:
+    def _validate_score(value, score, *, type: QuestionType) -> None:
+        if type == QuestionType.table:
+            # The cardinality rules below assume a list value is a list of *answer choices*
+            # (multi_label_selection, ranking), where one score per choice is meaningful.
+            # A table value's list is N *rows* (spec §3.4), and a suggestion's score applies
+            # to the suggestion as a whole — the projection fan-out repeats it onto every
+            # fanned-out cell. Row count and score count are unrelated, so skip the checks.
+            return
         if not isinstance(value, list) and isinstance(score, list):
             raise UnprocessableEntityError("a list of scores is not allowed for a single-value suggestion")
         if isinstance(value, list) and score is not None and not isinstance(score, list):

@@ -388,11 +388,24 @@ async def build_workspace_view(db: AsyncSession, *, workspace_id: UUID, offset: 
             (str(q.id), sub) for q in questions if q.type == QuestionType.table for sub in (q.columns or [])
         ],
         "records": [(str(r.id), str(r.schema_id), r.reference, r.inserted_at) for r in records],
+        # ensure_ascii=False: question names and sub-column bindings are matched by string
+        # equality against keys DuckDB parses out of this JSON text (`rc.question_name =
+        # q.question_name`, `qc.sub_column = e.entry_key`). Emitting non-ASCII keys as
+        # \uXXXX escapes would make that join depend on DuckDB decoding them back; writing
+        # the codepoints directly removes the dependency instead of relying on it.
         "suggestions": [
-            (str(s.record_id), str(s.question_id), json.dumps(s.value), s.agent, json.dumps(s.score))
+            (
+                str(s.record_id),
+                str(s.question_id),
+                json.dumps(s.value, ensure_ascii=False),
+                s.agent,
+                json.dumps(s.score, ensure_ascii=False),
+            )
             for s in suggestions
         ],
-        "responses": [(str(r.record_id), json.dumps(r.values or {}), r.updated_at) for r in responses],
+        "responses": [
+            (str(r.record_id), json.dumps(r.values or {}, ensure_ascii=False), r.updated_at) for r in responses
+        ],
     }
     output = await to_thread.run_sync(_run_denormalization, inputs)
 
