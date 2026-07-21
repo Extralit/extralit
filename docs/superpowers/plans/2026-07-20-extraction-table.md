@@ -577,248 +577,49 @@ def _build_columns(
     return columns
 
 
-# One SQL statement performs the entire denormalization (spec §3.1/§3.4): effective-
-# record dedup, response ?? suggestion coalesce, table fan-out, the independent-stacking
-# row spine, and scalar repetition. Long format out: one row per (reference, row_idx,
-# column) — plus a bare spine row when a reference has no resolved cells yet.
-_DENORMALIZE_SQL = """
-WITH effective_records AS (  -- one effective record per (reference, schema): latest inserted_at
-    SELECT record_id, schema_id, reference
-    FROM records
-    QUALIFY row_number() OVER (PARTITION BY reference, schema_id ORDER BY inserted_at DESC) = 1
-),
-latest_responses AS (  -- latest submitted response per record, ANY user (user-agnostic view)
-    SELECT record_id, values_json
-    FROM responses
-    QUALIFY row_number() OVER (PARTITION BY record_id ORDER BY updated_at DESC) = 1
-),
-response_cells AS (  -- explode the {question_name: {"value": ...}} envelope
-    SELECT lr.record_id, je.key AS question_name, json_extract(je.value, '$.value') AS value
-    FROM latest_responses lr, json_each(lr.values_json) je
-),
-resolved AS (  -- coalesce: response ?? suggestion; (record, question) with neither drops out
-    SELECT er.reference, er.record_id, q.question_id, q.schema_name, q.question_name, q.qtype,
-           COALESCE(rc.value, s.value_json) AS value,
-           CASE WHEN rc.value IS NOT NULL THEN 'response' ELSE 'suggestion' END AS source,
-           CASE WHEN rc.value IS NULL THEN s.agent END AS agent,
-           CASE WHEN rc.value IS NULL THEN s.score_json END AS score
-    FROM effective_records er
-    JOIN questions q ON q.schema_id = er.schema_id
-    LEFT JOIN response_cells rc
-      ON rc.record_id = er.record_id AND rc.question_name = q.question_name
-    LEFT JOIN suggestions s
-      ON s.record_id = er.record_id AND s.question_id = q.question_id
-    WHERE COALESCE(rc.value, s.value_json) IS NOT NULL
-),
-table_rows AS (  -- §3.4 in SQL: bare dict = the 1-row case; arrays fan out with 0-based indices
-    SELECT r.reference, r.record_id, r.question_id, r.schema_name, r.question_name,
-           r.source, r.agent, r.score,
-           CAST(je.key AS BIGINT) AS row_idx, je.value AS row_json
-    FROM resolved r,
-         json_each(CASE WHEN json_type(r.value) = 'ARRAY' THEN r.value
-                        ELSE json_array(r.value) END) je
-    WHERE r.qtype = 'table' AND json_type(je.value) = 'OBJECT'
-),
-table_cells AS (  -- fan each row dict out over the question's bound sub-columns
-    SELECT tr.reference, tr.row_idx,
-           tr.schema_name || '.' || tr.question_name || '.' || qc.sub_column AS column_name,
-           json_extract(tr.row_json, '$."' || qc.sub_column || '"') AS value,
-           tr.source, tr.record_id, tr.agent, tr.score
-    FROM table_rows tr
-    JOIN question_columns qc ON qc.question_id = tr.question_id
-    WHERE COALESCE(json_type(json_extract(tr.row_json, '$."' || qc.sub_column || '"')), 'NULL') <> 'NULL'
-),
-scalar_cells AS (
-    SELECT reference, schema_name || '.' || question_name AS column_name,
-           value, source, record_id, agent, score
-    FROM resolved
-    WHERE qtype <> 'table' AND json_type(value) <> 'NULL'
-),
-spine AS (  -- independent stacking: rows per reference = max table fan-out, min 1
-    SELECT refs.reference, unnest(generate_series(0, COALESCE(mx.mx, 0))) AS row_idx
-    FROM (SELECT DISTINCT reference FROM effective_records) refs
-    LEFT JOIN (SELECT reference, MAX(row_idx) AS mx FROM table_rows GROUP BY reference) mx
-      ON mx.reference = refs.reference
-),
-long_cells AS (
-    SELECT sp.reference, sp.row_idx, sc.column_name, sc.value,
-           sc.source, sc.record_id, sc.agent, sc.score
-    FROM spine sp
-    JOIN scalar_cells sc ON sc.reference = sp.reference  -- scalar repetition on every fan-out row
-    UNION ALL
-    SELECT reference, row_idx, column_name, value, source, record_id, agent, score
-    FROM table_cells
-)
-SELECT sp.reference, sp.row_idx, lc.column_name, CAST(lc.value AS VARCHAR) AS value_json,
-       lc.source, lc.record_id, lc.agent, CAST(lc.score AS VARCHAR) AS score_json
-FROM spine sp
-LEFT JOIN long_cells lc ON lc.reference = sp.reference AND lc.row_idx = sp.row_idx
-ORDER BY sp.reference, sp.row_idx, lc.column_name
-"""
-
-
-_INPUT_DDL = {
-    "questions": "question_id VARCHAR, schema_id VARCHAR, schema_name VARCHAR, question_name VARCHAR, qtype VARCHAR",
-    "question_columns": "question_id VARCHAR, sub_column VARCHAR",
-    "records": "record_id VARCHAR, schema_id VARCHAR, reference VARCHAR, inserted_at TIMESTAMP",
-    "suggestions": "record_id VARCHAR, question_id VARCHAR, value_json JSON, agent VARCHAR, score_json JSON",
-    "responses": "record_id VARCHAR, values_json JSON, updated_at TIMESTAMP",
-}
+_DENORMALIZE_SQL = """..."""  # ONE statement; CTE outline below — exact SQL is the implementer's call
 
 
 def _run_denormalization(inputs: dict[str, list[tuple]]) -> list[tuple]:
-    """Feed the raw slices into an in-memory DuckDB and run the denormalization.
-    Synchronous/CPU-bound — callers offload via to_thread. NEVER attach Postgres from
-    here: integration tests run inside a rolled-back transaction a second connection
-    cannot see, and it would add a second credential path."""
-    con = duckdb.connect()
-    try:
-        for table, ddl in _INPUT_DDL.items():
-            con.execute(f"CREATE TABLE {table}({ddl})")
-            rows = inputs[table]
-            if rows:
-                placeholders = ", ".join("?" * len(rows[0]))
-                con.executemany(f"INSERT INTO {table} VALUES ({placeholders})", rows)
-        return con.execute(_DENORMALIZE_SQL).fetchall()
-    finally:
-        con.close()
+    """CREATE + executemany the five input tables into an in-memory duckdb.connect(),
+    run _DENORMALIZE_SQL, fetchall(), close."""
 
 
 async def build_workspace_view(
     db: AsyncSession, *, workspace_id: UUID, offset: int, limit: int
 ) -> WorkspaceProjection:
-    """Workspace-level denormalized projection (spec §3.2). Postgres serves batched raw
-    slices — a fixed number of queries regardless of reference/record count — and the
-    DuckDB statement above does all the semantics. `offset`/`limit` count references."""
-    schemas = (
-        (await db.execute(select(Schema).where(Schema.workspace_id == workspace_id).order_by(Schema.name)))
-        .scalars()
-        .all()
-    )
-    schema_ids = [s.id for s in schemas]
-
-    questions_by_schema: dict[UUID, list[V2Question]] = {}
-    if schema_ids:
-        question_rows = (
-            (
-                await db.execute(
-                    select(V2Question)
-                    .where(V2Question.schema_id.in_(schema_ids))
-                    .order_by(V2Question.inserted_at)
-                )
-            )
-            .scalars()
-            .all()
-        )
-        for question in question_rows:
-            questions_by_schema.setdefault(question.schema_id, []).append(question)
-
-    columns = _build_columns(schemas, questions_by_schema)
-
-    if not schema_ids:
-        return WorkspaceProjection(columns=columns, rows=[], total_references=0)
-
-    # Row universe: every distinct reference across the workspace's records (§3.1).
-    ref_query = select(V2Record.reference).where(V2Record.schema_id.in_(schema_ids)).distinct()
-    total_references = (
-        await db.execute(select(func.count()).select_from(ref_query.subquery()))
-    ).scalar_one()
-    references = (
-        (await db.execute(ref_query.order_by(V2Record.reference).offset(offset).limit(limit)))
-        .scalars()
-        .all()
-    )
-    if not references:
-        return WorkspaceProjection(columns=columns, rows=[], total_references=total_references)
-
-    record_rows = (
-        (
-            await db.execute(
-                select(V2Record).where(
-                    V2Record.schema_id.in_(schema_ids), V2Record.reference.in_(references)
-                )
-            )
-        )
-        .scalars()
-        .all()
-    )
-    record_ids = [r.id for r in record_rows]
-
-    sugg_rows: list[V2Suggestion] = []
-    resp_rows: list[V2Response] = []
-    if record_ids:
-        sugg_rows = (
-            (await db.execute(select(V2Suggestion).where(V2Suggestion.record_id.in_(record_ids))))
-            .scalars()
-            .all()
-        )
-        # Submitted only — drafts must never reach the projection (§3.1). The
-        # latest-per-record pick happens in SQL (latest_responses window).
-        resp_rows = (
-            (
-                await db.execute(
-                    select(V2Response).where(
-                        V2Response.record_id.in_(record_ids),
-                        V2Response.status == ResponseStatus.submitted,
-                    )
-                )
-            )
-            .scalars()
-            .all()
-        )
-
-    question_tuples: list[tuple] = []
-    column_tuples: list[tuple] = []
-    for schema in schemas:
-        for question in questions_by_schema.get(schema.id, []):
-            question_tuples.append(
-                (str(question.id), str(schema.id), schema.name, question.name, question.type.value)
-            )
-            if question.type == QuestionType.table:
-                column_tuples.extend((str(question.id), sub) for sub in question.columns)
-
-    inputs = {
-        "questions": question_tuples,
-        "question_columns": column_tuples,
-        "records": [(str(r.id), str(r.schema_id), r.reference, r.inserted_at) for r in record_rows],
-        "suggestions": [
-            (
-                str(s.record_id),
-                str(s.question_id),
-                json.dumps(s.value),
-                s.agent,
-                json.dumps(s.score) if s.score is not None else None,
-            )
-            for s in sugg_rows
-        ],
-        "responses": [(str(r.record_id), json.dumps(r.values or {}), r.updated_at) for r in resp_rows],
-    }
-    long_rows = await to_thread.run_sync(_run_denormalization, inputs)
-
-    # Regroup the ordered long format; SQL's ORDER BY reference matches the page order.
-    rows: list[WorkspaceProjectionRow] = []
-    current: WorkspaceProjectionRow | None = None
-    for reference, row_index, column_name, value_json, source, record_id, agent, score_json in long_rows:
-        if current is None or current.reference != reference or current.row_index != row_index:
-            current = WorkspaceProjectionRow(reference=reference, row_index=row_index, cells={})
-            rows.append(current)
-        if column_name is None:
-            continue  # spine-only row: the reference exists but nothing resolved yet
-        current.cells[column_name] = WorkspaceProjectionCell(
-            value=json.loads(value_json),
-            source=source,
-            record_id=UUID(record_id),
-            agent=agent,
-            score=json.loads(score_json) if score_json is not None else None,
-        )
-    return WorkspaceProjection(columns=columns, rows=rows, total_references=total_references)
+    """Postgres serves batched raw slices; the DuckDB statement does all the semantics."""
 ```
 
-Notes for the implementer:
-- `build_reference_view`'s existing imports already cover most of this; merge rather than duplicate import lines. `AsyncSession`/`UUID` are already imported at the top of the module.
-- `json_each` is DuckDB's SQLite-style table function (DuckDB ≥1.1) used laterally (`FROM t, json_each(t.col)`). If the installed version rejects the lateral column reference, replace those two spots with the zip-unnest pattern in the SELECT list: `unnest(from_json(col, '["json"]'))` paired with `unnest(generate_series(0, len(...) - 1))` — DuckDB zips parallel unnests.
-- All JSON values cross the boundary as strings (`json.dumps` in, `CAST(... AS VARCHAR)` + `json.loads` out) — `score` round-trips `float | list[float]` intact this way.
-- Timestamps insert as native `datetime`. If the ORM ever hands back tz-aware datetimes and DuckDB complains, switch the two DDL columns to `TIMESTAMPTZ`.
+`build_workspace_view` — same batched-query skeleton as `build_reference_view`, generalized to the workspace:
+
+1. Fetch with ≤7 `AsyncSession` queries (the query-count test enforces this): schemas ordered by name → questions (`schema_id IN`) → distinct-reference count → the reference page (`ORDER BY reference OFFSET/LIMIT`) → all records for those references → suggestions and **submitted-only** responses for those record ids. Early-return an empty projection (with the columns manifest) when there are no schemas or no references.
+2. Serialize the slices to plain tuples — UUIDs as `str`, JSON values via `json.dumps` (including `score`, so `float | list[float]` round-trips) — and run `_run_denormalization` via `await to_thread.run_sync(...)`: DuckDB is sync/CPU-bound; don't block the event loop.
+3. Regroup the ordered long-format output into `WorkspaceProjectionRow`s (`json.loads` values/scores, `UUID(record_id)`). A row with a NULL column name is a spine-only row → empty `cells`. The SQL's `ORDER BY reference` matches the page order, so a single linear pass groups correctly.
+
+Input tables (all VARCHAR ids; JSON-typed value columns; TIMESTAMP for `inserted_at`/`updated_at`):
+- `questions(question_id, schema_id, schema_name, question_name, qtype)`
+- `question_columns(question_id, sub_column)` — table-question bindings pre-exploded in Python (avoids JSON-path gymnastics for arbitrary keys)
+- `records(record_id, schema_id, reference, inserted_at)`
+- `suggestions(record_id, question_id, value_json, agent, score_json)`
+- `responses(record_id, values_json, updated_at)`
+
+`_DENORMALIZE_SQL` — one statement, one CTE per concern (behavior is fully pinned by the tests):
+- `effective_records` — window dedup (`QUALIFY row_number() OVER ...`): latest `inserted_at` per (reference, schema_id)
+- `latest_responses` — window dedup: latest `updated_at` per record, ANY user
+- `response_cells` — `json_each` over the `{question_name: {"value": …}}` envelope
+- `resolved` — questions × effective records with `COALESCE(response, suggestion)` + source/agent/score; (record, question) pairs with neither drop out
+- `table_rows` — §3.4 normalization: wrap a bare dict via `json_array`, `json_each` arrays into a 0-based `row_idx`, keep only OBJECT rows
+- `table_cells` — join `question_columns` and extract each bound sub-key (`'$."' || sub || '"'` quoting handles arbitrary key names); omit missing / JSON-null values
+- `scalar_cells` — non-table resolved values, JSON-null omitted
+- `spine` — per reference, `row_idx` from `generate_series(0, max table row_idx)`, min 1 row (independent stacking)
+- final SELECT — spine LEFT JOIN (scalar cells repeated onto every `row_idx` UNION table cells at their own `row_idx`); `CAST` JSON columns to VARCHAR; `ORDER BY reference, row_idx, column_name`
+
+Gotchas:
+- **NEVER `ATTACH` Postgres from DuckDB** — the test-fixture transaction is invisible to a second connection (see Interfaces).
+- `json_each` used laterally (`FROM t, json_each(t.col)`) needs DuckDB ≥1.1; if the lateral column reference is rejected, use the zip-unnest pattern instead: `unnest(from_json(col, '["json"]'))` paired with `unnest(generate_series(...))` in the SELECT list.
+- `build_reference_view`'s existing imports cover most needs — merge, don't duplicate; `AsyncSession`/`UUID` are already imported.
+- If tz-aware datetimes upset the TIMESTAMP columns, switch them to `TIMESTAMPTZ`.
 
 - [ ] **Step 6: Run to verify pass**
 
@@ -1076,64 +877,7 @@ Expected: FAIL — `getWorkspaceProjection is not a function`.
 
 - [ ] **Step 5: Implement the repository method**
 
-In `v2/infrastructure/repositories/ProjectionRepository.ts` add (keeping the existing `getProjection` untouched):
-
-```ts
-import {
-  type ProjectionColumn,
-  type ProjectionGridCell,
-  type ProjectionGridRow,
-} from "~/v2/domain/entities/projection/WorkspaceProjection";
-
-type BackendWorkspaceProjection = components["schemas"]["WorkspaceProjection"];
-
-export interface WorkspaceProjectionPageDto {
-  columns: ProjectionColumn[];
-  rows: ProjectionGridRow[];
-  totalReferences: number;
-}
-```
-
-and inside the class:
-
-```ts
-  async getWorkspaceProjection(
-    workspaceId: string,
-    offset = 0,
-    limit = 50
-  ): Promise<WorkspaceProjectionPageDto> {
-    const { data } = await this.axios.get<BackendWorkspaceProjection>("/v2/projection", {
-      params: { workspace_id: workspaceId, offset, limit },
-    });
-    return {
-      totalReferences: data.total_references,
-      columns: data.columns.map((c) => ({
-        name: c.name,
-        schemaId: c.schema_id,
-        schemaName: c.schema_name,
-        questionName: c.question_name,
-        subColumn: c.sub_column ?? null,
-        dtype: c.dtype,
-      })),
-      rows: data.rows.map((r) => ({
-        reference: r.reference,
-        rowIndex: r.row_index,
-        cells: Object.fromEntries(
-          Object.entries(r.cells).map(([name, cell]) => [
-            name,
-            {
-              value: cell.value ?? null,
-              source: cell.source,
-              recordId: cell.record_id,
-              agent: cell.agent ?? null,
-              score: cell.score ?? null,
-            } satisfies ProjectionGridCell,
-          ])
-        ),
-      })),
-    };
-  }
-```
+In `v2/infrastructure/repositories/ProjectionRepository.ts` (keep the existing `getProjection` untouched): export `WorkspaceProjectionPageDto` (shape in Interfaces) and add `getWorkspaceProjection(workspaceId, offset = 0, limit = 50)` calling `GET "/v2/projection"` with `params: { workspace_id, offset, limit }`, typed against `components["schemas"]["WorkspaceProjection"]` from the generated file, mapping snake_case → camelCase. Follow the existing method's style; the test pins the exact mapping, including `?? null` for the optional cell fields.
 
 - [ ] **Step 6: Run to verify pass**
 
@@ -1256,51 +1000,11 @@ Expected: FAIL — module not found.
 
 - [ ] **Step 3: Implement**
 
-Create `v2/domain/entities/projection/grid-adapter.ts`:
-
-```ts
-import { type ProjectionGridCell, type WorkspaceProjection } from "./WorkspaceProjection";
-
-export const REFERENCE_COLUMN = "reference";
-
-// Flat denormalized records for `client.table(data)`. Every manifest column is present
-// on every row (null when absent) so Perspective infers a stable schema.
-export const toPerspectiveData = (projection: WorkspaceProjection): Record<string, unknown>[] =>
-  projection.rows.map((row) => {
-    const flat: Record<string, unknown> = { [REFERENCE_COLUMN]: row.reference };
-    for (const column of projection.columns) {
-      flat[column.name] = row.cells[column.name]?.value ?? null;
-    }
-    return flat;
-  });
-
-// Click plumbing (spec §3.3): rows load in projection order and the grid is static
-// (no sort/filter), so a datagrid row index maps 1:1 onto projection.rows.
-export const cellAt = (
-  projection: WorkspaceProjection,
-  rowIndex: number,
-  columnName: string
-): ProjectionGridCell | null => projection.rows[rowIndex]?.cells[columnName] ?? null;
-
-// Row-banding by reference (spec §3.1) — Perspective is flat-columnar and cannot merge
-// cells, so visual grouping is alternating bands per reference block.
-export const bandParity = (projection: WorkspaceProjection): number[] => {
-  let parity = 0;
-  let previous: string | null = null;
-  return projection.rows.map((row) => {
-    if (previous !== null && row.reference !== previous) parity ^= 1;
-    previous = row.reference;
-    return parity;
-  });
-};
-
-// Future annotation URL contract (spec §3.3): schema id occupies the dataset slot.
-// Guarded OFF until annotation-mode resolves v2 schema ids (ledger §5).
-export const ANNOTATION_CELL_LINKS_ENABLED = false;
-
-export const buildAnnotationUrl = (schemaId: string, reference: string): string =>
-  `/dataset/${schemaId}/annotation-mode?_search=${encodeURIComponent(reference)}`;
-```
+Create `v2/domain/entities/projection/grid-adapter.ts` with the five exports listed in Interfaces — all pure, behavior fully pinned by the tests. Design intent to preserve in comments:
+- `toPerspectiveData` emits EVERY manifest column on every row (`null` when absent) so Perspective infers a stable schema, with `reference` as the first key.
+- `cellAt` relies on the static-grid invariant (no sort/filter): a datagrid row index maps 1:1 onto `projection.rows`.
+- `bandParity` flips 0↔1 when `reference` changes — Perspective can't merge cells, so banding is the §3.1 reference-grouping affordance.
+- `buildAnnotationUrl` percent-encodes the reference; `ANNOTATION_CELL_LINKS_ENABLED = false` guards navigation until annotation-mode resolves v2 schema ids (ledger §5).
 
 - [ ] **Step 4: Run to verify pass**
 
@@ -1421,45 +1125,7 @@ Expected: FAIL — module not found.
 
 - [ ] **Step 4: Implement the use-case**
 
-Create `v2/domain/usecases/get-workspace-projection-use-case.ts`:
-
-```ts
-import { WorkspaceProjection } from "../entities/projection/WorkspaceProjection";
-import { ProjectionRepository } from "~/v2/infrastructure/repositories/ProjectionRepository";
-import { type useExtractions } from "~/v2/infrastructure/storage/ExtractionsStorage";
-
-// Server caps limit at 100; the client loads all pages into ONE Perspective table
-// (spec §3.3 data path — Arrow IPC streaming is a recorded follow-up, §5).
-export const PROJECTION_PAGE_SIZE = 100;
-
-export class GetWorkspaceProjectionUseCase {
-  constructor(
-    private readonly projectionRepository: ProjectionRepository,
-    // ts-injecty resolves the hook by calling it; the injected value is the store object.
-    private readonly extractionsStorage: ReturnType<typeof useExtractions>
-  ) {}
-
-  async execute(workspaceId: string): Promise<WorkspaceProjection> {
-    const first = await this.projectionRepository.getWorkspaceProjection(
-      workspaceId,
-      0,
-      PROJECTION_PAGE_SIZE
-    );
-    const rows = [...first.rows];
-    for (let offset = PROJECTION_PAGE_SIZE; offset < first.totalReferences; offset += PROJECTION_PAGE_SIZE) {
-      const page = await this.projectionRepository.getWorkspaceProjection(
-        workspaceId,
-        offset,
-        PROJECTION_PAGE_SIZE
-      );
-      rows.push(...page.rows);
-    }
-    const projection = new WorkspaceProjection(first.columns, rows, first.totalReferences);
-    this.extractionsStorage.saveProjection(projection);
-    return projection;
-  }
-}
-```
+Create `v2/domain/usecases/get-workspace-projection-use-case.ts` exporting `PROJECTION_PAGE_SIZE = 100` (the server's `limit` cap) and `GetWorkspaceProjectionUseCase` with constructor `(projectionRepository: ProjectionRepository, extractionsStorage: ReturnType<typeof useExtractions>)` — ts-injecty resolves the hook by calling it, so the injected value is the store object (same contract as `GetReferenceReviewUseCase` today). `execute(workspaceId)` fetches offset 0, keeps paging by `PROJECTION_PAGE_SIZE` until `totalReferences` is covered, concatenates all rows under the first page's columns/total into ONE `WorkspaceProjection`, saves it via `saveProjection`, and returns it. The test pins the call sequence; comment why it loads everything (one Perspective table — Arrow IPC streaming is the recorded §5 follow-up).
 
 - [ ] **Step 5: Run to verify pass**
 
@@ -1737,128 +1403,15 @@ Expected: FAIL — component file not found.
 
 - [ ] **Step 3: Implement the component**
 
-Create `components/v2/extractions/ExtractionsGrid.vue`:
+Create `components/v2/extractions/ExtractionsGrid.vue` — `<script setup lang="ts">`; the template is a bare `<perspective-viewer ref="viewerEl" class="extractions-grid" data-testid="extractions-grid" />`. Props `{ projection: WorkspaceProjection }`; emits `cell-click` with the Interfaces payload. Responsibilities:
 
-```vue
-<template>
-  <perspective-viewer ref="viewerEl" class="extractions-grid" data-testid="extractions-grid" />
-</template>
+- `onMounted`: `await initPerspective()` → `perspective.worker()` → `client.table(toPerspectiveData(props.projection))`. Guard on `viewerEl.value?.load` before touching the element (unit tests stub the custom element away), then `viewer.load(table)` and `viewer.restore({ plugin: "Datagrid", settings: false })` — static grid, toolbar hidden, natural order.
+- Banding + pointer affordance via the datagrid's inner `regular-table` element (`viewer.querySelector("regular-table")`): register an `addStyleListener` callback that walks the visible `<td>`s, reads `getMeta(td)` — `meta.y` is the row index (1:1 with `projection.rows` because the grid is static) and `meta.column_header.at(-1)` is the column name — and toggles a band class from `bandParity` plus a linkable class where `cellAt(...) !== null`.
+- Click handling: one listener on the viewer; find the `<td>` via `event.composedPath()`, resolve `(row, column)` through `getMeta`, look up the cell with `cellAt` and the schema id from the column manifest, and emit `cell-click` only for non-empty cells.
+- `onBeforeUnmount`: remove the listener, then `viewer.delete()` BEFORE `table.delete()` — table deletion fails while a viewer still references it. Swallow cleanup rejections.
+- Styles: `display: block` with a viewport-based height; band/linkable rules target `td` inside the viewer. Scoped `:deep()` only reaches the datagrid if it renders in light DOM — if banding doesn't show in Task 12's e2e run, move those two rules to an unscoped style block keyed on `.extractions-grid`.
 
-<script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
-import { initPerspective } from "~/components/v2/extractions/perspective-bootstrap";
-import {
-  bandParity,
-  cellAt,
-  toPerspectiveData,
-} from "~/v2/domain/entities/projection/grid-adapter";
-import {
-  type ProjectionGridCell,
-  type WorkspaceProjection,
-} from "~/v2/domain/entities/projection/WorkspaceProjection";
-
-interface PerspectiveViewerElement extends HTMLElement {
-  load(table: unknown): Promise<void>;
-  restore(config: Record<string, unknown>): Promise<void>;
-  delete(): Promise<void>;
-}
-
-interface RegularTableElement extends HTMLElement {
-  addStyleListener(callback: () => void): void;
-  getMeta(td: HTMLElement): { x?: number; y?: number; column_header?: unknown[] };
-}
-
-const props = defineProps<{ projection: WorkspaceProjection }>();
-
-const emit = defineEmits<{
-  (
-    e: "cell-click",
-    payload: { cell: ProjectionGridCell; reference: string; schemaId: string; columnName: string }
-  ): void;
-}>();
-
-const viewerEl = ref<PerspectiveViewerElement | null>(null);
-let table: { delete(options?: Record<string, unknown>): Promise<void> } | null = null;
-
-const regularTable = (): RegularTableElement | null =>
-  (viewerEl.value?.querySelector("regular-table") as RegularTableElement | null) ?? null;
-
-// Band + pointer styling via the datagrid's regular-table style hook: the grid is
-// static (no sort/filter), so datagrid row index y maps 1:1 onto projection.rows.
-const applyStyles = () => {
-  const grid = regularTable();
-  if (!grid) return;
-  const parity = bandParity(props.projection);
-  grid.addStyleListener(() => {
-    for (const td of Array.from(grid.querySelectorAll("td"))) {
-      const meta = grid.getMeta(td as HTMLElement);
-      if (meta.y === undefined) continue;
-      (td as HTMLElement).classList.toggle("extractions-grid__band", parity[meta.y] === 1);
-      const columnName = String(meta.column_header?.at(-1) ?? "");
-      (td as HTMLElement).classList.toggle(
-        "extractions-grid__linkable",
-        cellAt(props.projection, meta.y, columnName) !== null
-      );
-    }
-  });
-};
-
-const onViewerClick = (event: Event) => {
-  const grid = regularTable();
-  const td = event
-    .composedPath()
-    .find((el): el is HTMLElement => el instanceof HTMLElement && el.tagName === "TD");
-  if (!grid || !td) return;
-  const meta = grid.getMeta(td);
-  if (meta.y === undefined) return;
-  const columnName = String(meta.column_header?.at(-1) ?? "");
-  const cell = cellAt(props.projection, meta.y, columnName);
-  const row = props.projection.rows[meta.y];
-  const schemaId = props.projection.columns.find((c) => c.name === columnName)?.schemaId;
-  if (!cell || !row || !schemaId) return;
-  emit("cell-click", { cell, reference: row.reference, schemaId, columnName });
-};
-
-onMounted(async () => {
-  const perspective = await initPerspective();
-  const client = await perspective.worker();
-  table = await client.table(toPerspectiveData(props.projection));
-  const viewer = viewerEl.value;
-  if (!viewer?.load) return; // unit tests stub the element away
-  await viewer.load(table);
-  // Static grid (spec §3.1): datagrid plugin, toolbar/settings hidden, natural order.
-  await viewer.restore({ plugin: "Datagrid", settings: false });
-  applyStyles();
-  viewer.addEventListener("click", onViewerClick);
-});
-
-onBeforeUnmount(async () => {
-  viewerEl.value?.removeEventListener("click", onViewerClick);
-  // Order matters: table.delete() fails while a viewer still references it.
-  await viewerEl.value?.delete?.().catch(() => undefined);
-  await table?.delete().catch(() => undefined);
-  table = null;
-});
-</script>
-
-<style lang="scss" scoped>
-.extractions-grid {
-  display: block;
-  height: calc(100vh - 200px);
-  min-height: 400px;
-
-  :deep(td.extractions-grid__band) {
-    background: var(--bg-opacity-4, rgba(0, 0, 0, 0.04));
-  }
-
-  :deep(td.extractions-grid__linkable) {
-    cursor: pointer;
-  }
-}
-</style>
-```
-
-Note: if `restore({ plugin: "Datagrid" })` names the plugin differently in 4.5.2, the accepted values are listed by `viewer.restore` typings in `node_modules/@perspective-dev/viewer/dist/esm/perspective-viewer.d.ts` — the datagrid plugin registers as `"Datagrid"`. The `:deep()` selectors only apply if the datagrid renders in light DOM (it is slotted into the viewer); if banding doesn't show in Task 12's e2e run, move the two rules to an unscoped `<style lang="scss">` block keyed on `.extractions-grid`.
+If `restore({ plugin: "Datagrid" })` names the plugin differently in 4.5.2, the accepted values are in `node_modules/@perspective-dev/viewer/dist/esm/perspective-viewer.d.ts`.
 
 - [ ] **Step 4: Run to verify pass**
 
@@ -1951,58 +1504,7 @@ Expected: FAIL — module not found.
 
 - [ ] **Step 3: Implement the view-model**
 
-Create `pages/extractions/useExtractionsViewModel.ts`:
-
-```ts
-import { computed, ref, watch } from "vue";
-import { useResolve } from "ts-injecty";
-import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
-import {
-  ANNOTATION_CELL_LINKS_ENABLED,
-  buildAnnotationUrl,
-} from "~/v2/domain/entities/projection/grid-adapter";
-import { type WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
-import { GetWorkspaceProjectionUseCase } from "~/v2/domain/usecases/get-workspace-projection-use-case";
-
-export const useExtractionsViewModel = (workspaceIdOverride: string | null = null) => {
-  const getWorkspaceProjectionUseCase = useResolve(GetWorkspaceProjectionUseCase);
-  // v1 store — the documented exception, same as useSchemasViewModel.
-  const workspacesStore = useWorkspaces();
-
-  const projection = ref<WorkspaceProjection | null>(null);
-  const isLoading = ref(false);
-  const loadFailed = ref(false);
-
-  const workspaceId = computed(
-    () => workspaceIdOverride ?? workspacesStore.get().selectedWorkspace?.id ?? null
-  );
-
-  const load = async () => {
-    if (!workspaceId.value) return;
-    isLoading.value = true;
-    loadFailed.value = false;
-    try {
-      projection.value = await getWorkspaceProjectionUseCase.execute(workspaceId.value);
-    } catch {
-      loadFailed.value = true;
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  const onCellClick = (payload: { schemaId: string; reference: string }): string => {
-    const url = buildAnnotationUrl(payload.schemaId, payload.reference);
-    // Guard (spec §3.3): navigation flips on when annotation-mode resolves v2 schema
-    // ids (ledger §5). Until then the URL contract ships and is testable, unnavigated.
-    if (ANNOTATION_CELL_LINKS_ENABLED) window.location.assign(url);
-    return url;
-  };
-
-  watch(workspaceId, load);
-
-  return { projection, isLoading, loadFailed, workspaceId, load, onCellClick };
-};
-```
+Create `pages/extractions/useExtractionsViewModel.ts` mirroring `pages/schemas/useSchemasViewModel.ts`: resolve `GetWorkspaceProjectionUseCase` via `useResolve`; `workspaceId` is a computed of `workspaceIdOverride ?? useWorkspaces().get().selectedWorkspace?.id ?? null` (v1 store — the documented exception); `load()` no-ops without a workspace id, otherwise wraps `execute(workspaceId)` in `isLoading`/`loadFailed`; `watch(workspaceId, load)`; `onCellClick({ schemaId, reference })` returns `buildAnnotationUrl(...)` and only navigates when `ANNOTATION_CELL_LINKS_ENABLED` is true — the guard stays off, so the URL contract ships testable but unnavigated (spec §3.3 / ledger §5). Return `{ projection, isLoading, loadFailed, workspaceId, load, onCellClick }`. The test pins the behavior.
 
 - [ ] **Step 4: Run to verify pass**
 
@@ -2011,21 +1513,7 @@ Expected: ALL PASS.
 
 - [ ] **Step 5: Breadcrumbs + i18n**
 
-In `composables/useV2Breadcrumbs.ts`, add inside `useV2Breadcrumbs` (mirroring `schemasBreadcrumbs`) and export it:
-
-```ts
-  const extractionsBreadcrumbs = (): BreadcrumbItem[] => {
-    const selected = workspacesStore.get().selectedWorkspace;
-    const crumbs: BreadcrumbItem[] = [{ name: "Home", link: "/" }];
-    if (selected) {
-      crumbs.push({ name: selected.name, isWorkspace: true, workspaceId: selected.id });
-    }
-    crumbs.push({ name: "Extractions", link: "/extractions" });
-    return crumbs;
-  };
-
-  return { schemasBreadcrumbs, extractionsBreadcrumbs };
-```
+In `composables/useV2Breadcrumbs.ts`, add and export `extractionsBreadcrumbs()` mirroring `schemasBreadcrumbs`: Home → workspace crumb when one is selected → "Extractions" linking `/extractions`.
 
 In `translation/en.js`, next to the existing top-level `schemas:` block (~line 111), add:
 
@@ -2043,61 +1531,9 @@ Mirror the same block (same keys; translate values or keep English placeholders 
 
 - [ ] **Step 6: Create the page**
 
-Create `pages/extractions/index.vue` (same shape as `pages/schemas/index.vue`):
-
-```vue
-<template>
-  <InternalPage>
-    <template #header>
-      <AppHeader :breadcrumbs="breadcrumbs" />
-    </template>
-    <template #page-content>
-      <div class="extractions__content">
-        <h1 v-text="$t('extractions.title')" />
-        <p v-if="!workspaceId" v-text="$t('extractions.noWorkspace')" />
-        <p v-else-if="loadFailed" v-text="$t('extractions.loadError')" />
-        <p v-else-if="isLoading" v-text="$t('extractions.loading')" />
-        <p v-else-if="projection && projection.rows.length === 0" v-text="$t('extractions.empty')" />
-        <ExtractionsGrid v-else-if="projection" :projection="projection" @cell-click="onCellClick" />
-      </div>
-    </template>
-  </InternalPage>
-</template>
-
-<script lang="ts">
-import { computed, defineComponent, onBeforeMount } from "vue";
-import { useRoute } from "vue-router";
-import { useExtractionsViewModel } from "./useExtractionsViewModel";
-
-export default defineComponent({
-  name: "ExtractionsPage",
-  setup() {
-    const route = useRoute();
-    const workspaceIdOverride =
-      typeof route.query.workspace_id === "string" ? route.query.workspace_id : null;
-    const viewModel = useExtractionsViewModel(workspaceIdOverride);
-    const { ensureWorkspaces } = useEnsureWorkspaces();
-    const { extractionsBreadcrumbs } = useV2Breadcrumbs();
-    const breadcrumbs = computed(() => extractionsBreadcrumbs());
-
-    onBeforeMount(async () => {
-      await ensureWorkspaces();
-      await viewModel.load();
-    });
-
-    return { ...viewModel, breadcrumbs };
-  },
-});
-</script>
-
-<style lang="scss" scoped>
-.extractions__content {
-  padding: $base-space * 3;
-}
-</style>
-```
-
-(`useEnsureWorkspaces` and `useV2Breadcrumbs` are Nuxt auto-imported composables — match how `pages/schemas/index.vue` references them; if that file imports them explicitly, do the same here.)
+Create `pages/extractions/index.vue` mirroring `pages/schemas/index.vue` exactly (same `InternalPage`/`AppHeader` shell, same `setup()` style, `useEnsureWorkspaces` + `useV2Breadcrumbs` wiring, `onBeforeMount` → `await ensureWorkspaces()` then `await load()`), with two page-specific behaviors:
+- Read `route.query.workspace_id` (string only) and pass it to `useExtractionsViewModel` as the override.
+- Render this state cascade in `#page-content` under an `$t("extractions.title")` heading: no workspace → `noWorkspace`; failed → `loadError`; loading → `loading`; loaded with zero rows → `empty`; otherwise `<ExtractionsGrid :projection="projection" @cell-click="onCellClick" />`.
 
 - [ ] **Step 7: Full check + smoke**
 
@@ -2127,28 +1563,7 @@ git commit -m "feat(v2-ui): /extractions page with Perspective grid and workspac
 
 - [ ] **Step 1: Extract the kept types**
 
-Create `v2/domain/entities/review/ReviewCell.ts` (moved verbatim from `ReferenceReview.ts`):
-
-```ts
-import { Question } from "../question/Question";
-
-export interface Provenance {
-  agent: string | null;
-  score: number | null;
-  suggestedValue: unknown;
-}
-
-export class ReviewCell {
-  constructor(
-    public readonly question: Question,
-    public readonly value: unknown,
-    public readonly source: "response" | "suggestion" | null,
-    public readonly provenance: Provenance | null,
-    // The question binds a column absent from this record's pinned version cache (§17.3).
-    public readonly notApplicable: boolean
-  ) {}
-}
-```
+Create `v2/domain/entities/review/ReviewCell.ts` and move the `Provenance` and `ReviewCell` declarations into it VERBATIM from `ReferenceReview.ts` (they depend only on `Question`), including their comments. Do NOT move `ReferenceReview`/`ReviewRecord`/`ContextField`/`OrphanedValue` — those die with the page.
 
 - [ ] **Step 2: Repoint the kept importers**
 
@@ -2222,74 +1637,12 @@ git commit -m "refactor(v2-ui): delete reference-review page — review derives 
 
 - [ ] **Step 1: Extend the seed script**
 
-In `e2e/v2/seed/seed_v2_e2e.py`:
+In `e2e/v2/seed/seed_v2_e2e.py`, mirroring the script's OWN existing client calls (schema create → version → questions → record → suggestion; copy their exact endpoint/payload shapes rather than inventing new ones):
 
-Top-of-file constants (next to `SCHEMA_NAME`):
-
-```python
-EMPTY_SCHEMA_NAME = "e2e_v2_empty"
-
-EMPTY_BODY = pa.DataFrameSchema(
-    columns={"notes": pa.Column(pa.String, nullable=True)}
-).to_json()
-```
-
-Extend the schema-recreate loop (currently deletes only `SCHEMA_NAME`):
-
-```python
-        for schema_item in schemas:
-            if schema_item["name"] in (SCHEMA_NAME, EMPTY_SCHEMA_NAME):
-                client.delete(f"/api/v2/schemas/{schema_item['id']}").raise_for_status()
-```
-
-After the existing suggestion `client.put(...suggestions...)` block, add:
-
-```python
-        # Response-beats-suggestion on `label`: competing suggestion + submitted response.
-        client.put(
-            f"/api/v2/records/{record['id']}/suggestions",
-            json={
-                "question_id": questions["label"]["id"],
-                "value": "intervention",
-                "score": 0.55,
-                "agent": "e2e-seeder",
-            },
-        ).raise_for_status()
-        client.put(
-            f"/api/v2/records/{record['id']}/responses",
-            json={"values": {"label": {"value": "control"}}, "status": "submitted"},
-        ).raise_for_status()
-
-        # Second schema with zero records: the grid doubles as a coverage map (§3.1).
-        empty_schema = (
-            client.post(
-                "/api/v2/schemas",
-                json={"name": EMPTY_SCHEMA_NAME, "workspace_id": workspace["id"]},
-            )
-            .raise_for_status()
-            .json()
-        )
-        client.post(
-            f"/api/v2/schemas/{empty_schema['id']}/versions", json={"body": EMPTY_BODY}
-        ).raise_for_status()
-        client.post(
-            f"/api/v2/schemas/{empty_schema['id']}/questions",
-            json={
-                "name": "notes",
-                "title": "Notes",
-                "type": "text",
-                "columns": ["notes"],
-                "settings": {},
-                "required": False,
-            },
-        ).raise_for_status()
-```
-
-And extend the output dict:
-
-```python
-        "emptySchemaName": EMPTY_SCHEMA_NAME,
-```
+1. Add an `EMPTY_SCHEMA_NAME = "e2e_v2_empty"` constant and include it in the delete-and-recreate loop that currently handles only `SCHEMA_NAME`.
+2. On the seeded record's `label` question, create a competing suggestion (`value="intervention"`, `agent="e2e-seeder"`, any score) AND a submitted response (`values={"label": {"value": "control"}}`, `status="submitted"` — the `PUT /records/{id}/responses` shape the deleted review specs used) so the grid proves response-beats-suggestion.
+3. Create the second schema `EMPTY_SCHEMA_NAME` with one version, one text question `notes` (bound `columns=["notes"]`), and ZERO records — the grid doubles as a coverage map (§3.1).
+4. Add `"emptySchemaName": EMPTY_SCHEMA_NAME` to the seed-output dict.
 
 In `e2e/v2/fixtures.ts`, add `emptySchemaName: string;` to the `SeedOutput` type.
 
