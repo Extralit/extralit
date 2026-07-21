@@ -131,24 +131,15 @@ def _build_columns(
     return columns
 
 
-def _json_path_escape(key: str) -> str:
-    """Escape a key for interpolation inside a double-quoted DuckDB JSON path segment.
-
-    Question names and table sub-column bindings are unconstrained user input, and DuckDB parses
-    the JSON path as a whole: an unescaped `"` raises `JSON path error near ...`, which fails the
-    entire workspace grid rather than just the offending cell.
-    """
-    return key.replace("\\", "\\\\").replace('"', '\\"')
-
-
 _INPUT_TABLES_DDL = """
 CREATE TABLE questions (
     question_id VARCHAR, schema_id VARCHAR, schema_name VARCHAR, question_name VARCHAR, qtype VARCHAR
 );
--- `sub_path` is `sub_column` pre-escaped for interpolation into a quoted JSON path
--- (see `_json_path_escape`); a raw `"` or `\` in the binding would otherwise be a bind-time
--- JSON-path parse error that fails the whole statement, not just that cell.
-CREATE TABLE question_columns (question_id VARCHAR, sub_column VARCHAR, sub_path VARCHAR);
+-- Sub-column bindings are unconstrained user input and are never interpolated into a JSON path:
+-- the statement joins them against unnested object keys instead. A quote, a backslash or an
+-- empty name in a path aborts the whole statement at execution time (not just that cell), and a
+-- name of '*' would silently match every key.
+CREATE TABLE question_columns (question_id VARCHAR, sub_column VARCHAR);
 CREATE TABLE records (record_id VARCHAR, schema_id VARCHAR, reference VARCHAR, inserted_at TIMESTAMP);
 CREATE TABLE suggestions (record_id VARCHAR, question_id VARCHAR, value_json JSON, agent VARCHAR, score_json JSON);
 CREATE TABLE responses (record_id VARCHAR, values_json JSON, updated_at TIMESTAMP);
@@ -156,7 +147,7 @@ CREATE TABLE responses (record_id VARCHAR, values_json JSON, updated_at TIMESTAM
 
 _INSERTS = {
     "questions": "INSERT INTO questions VALUES (?, ?, ?, ?, ?)",
-    "question_columns": "INSERT INTO question_columns VALUES (?, ?, ?)",
+    "question_columns": "INSERT INTO question_columns VALUES (?, ?)",
     "records": "INSERT INTO records VALUES (?, ?, ?, ?)",
     "suggestions": "INSERT INTO suggestions VALUES (?, ?, ?, ?, ?)",
     "responses": "INSERT INTO responses VALUES (?, ?, ?)",
@@ -240,18 +231,23 @@ table_rows AS (
 table_object_rows AS (
     SELECT * FROM table_rows WHERE json_type(row_json) = 'OBJECT'
 ),
-table_cell_values AS (
-    -- the pre-escaped `sub_path` quoted into the JSON path handles arbitrary key names
-    SELECT tr.reference, tr.record_id, tr.row_idx,
-           tr.schema_name || '.' || tr.question_name || '.' || qc.sub_column AS column_name,
-           json_extract(tr.row_json, '$."' || qc.sub_path || '"') AS value,
-           tr.source, tr.agent, tr.score
-    FROM table_object_rows tr
-    JOIN question_columns qc ON qc.question_id = tr.question_id
+table_row_entries AS (
+    -- same zip-unnest as the response envelope: no data-derived text ever reaches a JSON path,
+    -- so quotes, backslashes, empty names and '*' in a binding are all just ordinary keys
+    SELECT reference, record_id, question_id, schema_name, question_name, source, agent, score, row_idx,
+           unnest(json_keys(row_json)) AS entry_key,
+           unnest(json_extract(row_json, '$.*')) AS entry_value
+    FROM table_object_rows
 ),
 table_cells AS (
-    -- absent sub-key (SQL NULL) and JSON-null alike are omitted
-    SELECT * FROM table_cell_values WHERE json_type(value) <> 'NULL'
+    -- an unmatched binding is an absent sub-key: no join row, hence no cell. JSON-null omitted too.
+    SELECT e.reference, e.record_id, e.row_idx,
+           e.schema_name || '.' || e.question_name || '.' || qc.sub_column AS column_name,
+           e.entry_value AS value,
+           e.source, e.agent, e.score
+    FROM table_row_entries e
+    JOIN question_columns qc ON qc.question_id = e.question_id AND qc.sub_column = e.entry_key
+    WHERE json_type(e.entry_value) <> 'NULL'
 ),
 fanout AS (
     SELECT reference, max(row_idx) AS max_idx FROM table_object_rows GROUP BY reference
@@ -389,10 +385,7 @@ async def build_workspace_view(db: AsyncSession, *, workspace_id: UUID, offset: 
             (str(q.id), str(q.schema_id), schema_names[q.schema_id], q.name, q.type.value) for q in questions
         ],
         "question_columns": [
-            (str(q.id), sub, _json_path_escape(sub))
-            for q in questions
-            if q.type == QuestionType.table
-            for sub in (q.columns or [])
+            (str(q.id), sub) for q in questions if q.type == QuestionType.table for sub in (q.columns or [])
         ],
         "records": [(str(r.id), str(r.schema_id), r.reference, r.inserted_at) for r in records],
         "suggestions": [

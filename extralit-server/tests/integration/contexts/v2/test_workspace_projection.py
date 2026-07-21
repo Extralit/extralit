@@ -154,15 +154,20 @@ async def test_single_dict_table_value_is_one_row(db):
     assert view.rows[0].cells["Outcomes.results.value"].value == "12%"
 
 
-async def test_quotes_and_backslashes_in_names_do_not_break_json_paths(db):
-    """Question names and sub-column bindings are unconstrained user input; a raw `"` used to be
-    a bind-time JSON-path error that failed the whole grid, not just the offending cell."""
+async def test_hostile_names_are_treated_as_ordinary_keys(db):
+    """Question names and sub-column bindings are unconstrained user input. Interpolating them
+    into a JSON path made a quote, a backslash or an empty name abort the WHOLE grid, and made a
+    binding named `*` silently return every key's value."""
     workspace = await WorkspaceFactory.create()
     schema, version = await _make_schema(workspace, "Outcomes")
     await _add_question(schema, 'we"ird\\name')
-    t = await _add_question(schema, "results", qtype=QuestionType.table, columns=['sub"col', "back\\slash"])
+    t = await _add_question(schema, "results", qtype=QuestionType.table, columns=['sub"col', "back\\slash", "", "*"])
     rec = await V2RecordFactory.create(version=version, reference="10.1/a")
-    await V2SuggestionFactory.create(record=rec, question=t, value=[{'sub"col': "A", "back\\slash": "B"}])
+    await V2SuggestionFactory.create(
+        record=rec,
+        question=t,
+        value=[{'sub"col': "A", "back\\slash": "B", "": "C", "*": "D", "unbound": "E"}],
+    )
     user = await UserFactory.create()
     await V2ResponseFactory.create(
         record=rec, user=user, values={'we"ird\\name': {"value": "RCT"}}, status=ResponseStatus.submitted
@@ -174,12 +179,17 @@ async def test_quotes_and_backslashes_in_names_do_not_break_json_paths(db):
         'Outcomes.we"ird\\name',
         'Outcomes.results.sub"col',
         "Outcomes.results.back\\slash",
+        "Outcomes.results.",
+        "Outcomes.results.*",
     ]
     cells = view.rows[0].cells
     assert cells['Outcomes.we"ird\\name'].value == "RCT"
     assert cells['Outcomes.we"ird\\name'].source == "response"
     assert cells['Outcomes.results.sub"col'].value == "A"
     assert cells["Outcomes.results.back\\slash"].value == "B"
+    assert cells["Outcomes.results."].value == "C"
+    assert cells["Outcomes.results.*"].value == "D"  # a literal key, not a wildcard
+    assert "Outcomes.results.unbound" not in cells
 
 
 async def test_effective_record_is_latest_inserted_per_reference_schema(db):
