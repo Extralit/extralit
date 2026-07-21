@@ -28,7 +28,7 @@ async def test_projection_view_resolves_suggestion_cell(async_client, owner_auth
     workspace = await WorkspaceFactory.create()
     schema, version, q = await _schema_with_question(workspace)
     record = await V2RecordFactory.create(version=version, reference="doc-1")
-    await V2SuggestionFactory.create(record=record, question=q, value="flu")
+    await V2SuggestionFactory.create(record=record, question=q, value="flu", agent="e2e-agent", score=0.5)
 
     resp = await async_client.get(
         f"/api/v2/projection/references/doc-1?workspace_id={workspace.id}", headers=owner_auth_header
@@ -44,6 +44,9 @@ async def test_projection_view_resolves_suggestion_cell(async_client, owner_auth
     assert cell["question_name"] == "dx"
     assert cell["value"] == "flu"
     assert cell["source"] == "suggestion"
+    assert cell["record_id"] == str(record.id)
+    assert cell["agent"] == "e2e-agent"
+    assert cell["score"] == 0.5
 
 
 async def test_projection_view_unknown_reference_returns_empty(async_client, owner_auth_header):

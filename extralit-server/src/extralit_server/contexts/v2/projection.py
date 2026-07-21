@@ -26,9 +26,9 @@ async def build_reference_view(db: AsyncSession, *, workspace_id: UUID, referenc
     for q in q_rows:
         questions_by_schema.setdefault(q.schema_id, []).append(q)
 
-    # (record_id, question_id) -> suggestion value
+    # (record_id, question_id) -> suggestion row
     sugg_rows = (await db.execute(select(V2Suggestion).where(V2Suggestion.record_id.in_(record_ids)))).scalars().all()
-    suggestions = {(s.record_id, s.question_id): s.value for s in sugg_rows}
+    suggestions = {(s.record_id, s.question_id): s for s in sugg_rows}
 
     # requesting user's submitted responses only: record_id -> {question_name: value}
     resp_rows = (
@@ -52,13 +52,24 @@ async def build_reference_view(db: AsyncSession, *, workspace_id: UUID, referenc
         for question in questions_by_schema.get(record.schema_id, []):
             wrapped = responses.get(record.id, {}).get(question.name)
             if wrapped is not None:
-                cells.append(ProjectionCell(question_name=question.name, value=wrapped.get("value"), source="response"))
-            elif (record.id, question.id) in suggestions:
                 cells.append(
                     ProjectionCell(
                         question_name=question.name,
-                        value=suggestions[(record.id, question.id)],
+                        value=wrapped.get("value"),
+                        source="response",
+                        record_id=record.id,
+                    )
+                )
+            elif (record.id, question.id) in suggestions:
+                suggestion = suggestions[(record.id, question.id)]
+                cells.append(
+                    ProjectionCell(
+                        question_name=question.name,
+                        value=suggestion.value,
                         source="suggestion",
+                        record_id=record.id,
+                        agent=suggestion.agent,
+                        score=suggestion.score,
                     )
                 )
             else:

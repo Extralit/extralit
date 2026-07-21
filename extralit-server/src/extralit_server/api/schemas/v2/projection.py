@@ -8,6 +8,10 @@ class ProjectionCell(BaseModel):
     question_name: str
     value: Any | None = None
     source: Literal["response", "suggestion"] | None = None  # None => neither exists yet
+    # Enriched provenance (spec §3.2): consumers link and attribute with zero extra calls.
+    record_id: UUID | None = None
+    agent: str | None = None
+    score: float | list[float] | None = None
 
 
 class ProjectionRecord(BaseModel):

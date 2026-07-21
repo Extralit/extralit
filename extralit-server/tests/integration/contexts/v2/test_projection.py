@@ -31,12 +31,15 @@ async def _schema_with_question(db):
 async def test_cell_resolves_to_suggestion_when_no_response(db):
     schema, version, q = await _schema_with_question(db)
     record = await V2RecordFactory.create(version=version, reference="doc-1")
-    await V2SuggestionFactory.create(record=record, question=q, value="flu")
+    await V2SuggestionFactory.create(record=record, question=q, value="flu", agent="gpt-x", score=0.92)
     user = await UserFactory.create()
 
     view = await projection_ctx.build_reference_view(db, workspace_id=schema.workspace_id, reference="doc-1", user=user)
     cell = view.records[0].cells[0]
     assert cell.value == "flu" and cell.source == "suggestion"
+    assert cell.record_id == record.id
+    assert cell.agent == "gpt-x"
+    assert cell.score == 0.92
 
 
 async def test_cell_resolves_to_response_over_suggestion(db):
@@ -51,6 +54,8 @@ async def test_cell_resolves_to_response_over_suggestion(db):
     view = await projection_ctx.build_reference_view(db, workspace_id=schema.workspace_id, reference="doc-2", user=user)
     cell = view.records[0].cells[0]
     assert cell.value == "covid" and cell.source == "response"
+    assert cell.record_id == record.id
+    assert cell.agent is None and cell.score is None
 
 
 async def test_cell_is_none_when_no_response_or_suggestion(db):
