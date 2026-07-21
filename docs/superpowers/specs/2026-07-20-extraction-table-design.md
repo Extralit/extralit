@@ -127,8 +127,42 @@ embeds into the annotation + projection flow going forward).
 - **Layering:** `ProjectionRepository.getWorkspaceProjection()` →
   `get-workspace-projection-use-case` → Pinia storage → `useExtractionsViewModel` →
   page.
+- **Vue 3 / Nuxt 4 integration notes** (verified against this repo's config):
+  - The app is `ssr: false` (SPA) — no `<client-only>` wrapper needed; the WASM
+    bootstrap just runs once client-side (page/component `onMounted` or a lazy
+    module-level init guard).
+  - `<perspective-viewer>` is a **web Custom Element**: Vue must be told not to
+    resolve it as a component via
+    `vue.compilerOptions.isCustomElement = (tag) => tag.startsWith("perspective-")`
+    in `nuxt.config.ts` (see §7 refs).
+  - Vite needs `build.target`/`optimizeDeps.esbuildOptions.target: "esnext"` for
+    the Perspective ESM/WASM builds, and the `?url` asset-import syntax for the
+    two `.wasm` binaries (§7 refs).
+  - There is **no official Vue/Nuxt Perspective example** — the repo's
+    `vite-example` (bundler wiring) and `react-example` (wrapping the custom
+    element in a component framework) are the transferable templates (§7).
 
-### 3.4 Deletions — review derives from suggestions/responses, no parallel entity
+### 3.4 Discovered constraint — table-question values are single-row today
+
+Found during spec refinement (2026-07-20), affects the fan-out design:
+
+- The server validator (`validators/v2/values.py::_validate_table`) accepts a table
+  value only as **a dict keyed by bound columns** — i.e. **one row**.
+- The frontend editor agrees: `V2TableEditor.vue` renders
+  `data: [{ ...modelValue }]` — "single-row grid: the value IS one dict".
+- A table question's **sub-columns are its `V2Question.columns` binding** (the ≥1
+  schema columns it binds; non-table types bind exactly 1). Denormalized column
+  names `Schema.question.subcol` come from this list.
+
+**Resolution (recommended, in scope for this build's backend task):** extend the
+table value contract **additively** to also accept `list[dict]` (N rows), keeping
+bare `dict` valid as the 1-row case — `_validate_table` validates each row's keys
+against the binding; `V2TableEditor` keeps emitting the dict form until the
+embedded-review work touches it. The projection fan-out handles both shapes from
+day one (`dict → [dict]` normalization), so the grid is correct now (fan-out = 1)
+and automatically right when multi-row values start arriving from the SDK/agents.
+
+### 3.5 Deletions — review derives from suggestions/responses, no parallel entity
 
 The reference-review **page is deleted**; its function is superseded by the
 extraction table now and the embedded annotation/review flow later.
@@ -189,7 +223,48 @@ tests). Replacement gate in this build: a new `e2e/v2/extractions-grid.spec.ts`
 
 ## 6. Scope boundary
 
-In: new workspace projection endpoint + enriched `ProjectionCell`, `/extractions`
-Perspective page, deletions per §3.4, tests per §4.
+In: new workspace projection endpoint + enriched `ProjectionCell`, table-value
+`list[dict]` extension (§3.4), `/extractions` Perspective page, deletions per §3.5,
+tests per §4.
 Out: everything in §5; any v1 dataset/annotation-mode changes; SDK changes beyond
 regenerated types (additive cell fields are backward-compatible for #231).
+
+## 7. Integration references — Perspective × Vue 3 / Nuxt 4
+
+Perspective 4.x (`@perspective-dev/*`, all at 4.5.2 as of 2026-07-20):
+
+- **Importing & WASM bootstrap** (the page this design's bundling follows):
+  <https://perspective-dev.github.io/guide/how_to/javascript/importing.html> —
+  Vite `?url` imports of `perspective-server.wasm` + `perspective-viewer.wasm`,
+  `perspective.init_server(fetch(…))` / `perspective_viewer.init_client(fetch(…))`,
+  Vite `target: esnext`.
+- **Loading data**: <https://perspective-dev.github.io/guide/how_to/javascript/loading_data.html> —
+  `client.table(data | schema)`, `viewer.load(table)`, sharing one `Table` across
+  viewers (relevant if the review drawer later mounts a second viewer).
+- **Guide root / architecture**: <https://perspective-dev.github.io/guide/>
+- **`@perspective-dev/viewer` web-component API** (attributes, `restore()` for
+  locking the static config, plugin selection, themes):
+  <https://perspective-dev.github.io/> → "JavaScript → `@perspective-dev/viewer`
+  Web Component".
+- **Bundler example (closest to our Nuxt 4/Vite setup)**:
+  <https://github.com/perspective-dev/perspective/tree/master/examples/vite-example>
+- **Framework-wrapper example (pattern for our Vue wrapper component)**:
+  <https://github.com/perspective-dev/perspective/tree/master/examples/react-example>
+  — note there is **no official Vue/Nuxt example**; the React one shows the
+  custom-element lifecycle (load on mount, `delete()` on unmount) to mirror in
+  `onMounted`/`onBeforeUnmount`.
+
+Vue 3 / Nuxt 4 custom-element integration:
+
+- **Vue 3 — using web components in Vue**:
+  <https://vuejs.org/guide/extras/web-components.html> — `compilerOptions.isCustomElement`
+  so `<perspective-viewer>` isn't resolved as a Vue component; passing DOM
+  properties vs attributes.
+- **Nuxt 4 — vue compiler options in `nuxt.config.ts`**:
+  <https://nuxt.com/docs/api/configuration/nuxt-config#vue> (`vue.compilerOptions`).
+- **Nuxt 4 — client components** (background; not needed here since `ssr: false`):
+  <https://nuxt.com/docs/guide/directory-structure/components#client-components>
+- **Vite — explicit `?url` asset imports** (WASM binaries):
+  <https://vite.dev/guide/assets.html#explicit-url-imports>
+- **Vite — `build.target`** (`esnext` requirement):
+  <https://vite.dev/config/build-options.html#build-target>
