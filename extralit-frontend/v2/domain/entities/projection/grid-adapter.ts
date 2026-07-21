@@ -10,11 +10,18 @@ export const REFERENCE_COLUMN = "reference";
  * Maps a `WorkspaceProjection` into the flat-row shape Perspective ingests.
  *
  * `projection.columns` order is the single source of truth for column order (server-side
- * question order is definition order, not alphabetical, and JS object key order is not a
- * safe substitute once column names could look numeric). `reference` is emitted first so
- * every row shares an identical, stably-ordered key set — every manifest column is present
- * on every row (`null` when the cell is absent) so Perspective infers one stable schema
- * instead of a per-row-varying one.
+ * question order is definition order, not alphabetical). We iterate `columns` to build each
+ * record rather than relying on the emitted plain object's own key insertion order for
+ * anything downstream: today every column name is `Schema.question[.subcol]` and always
+ * contains a `.`, so it can never collide with JS's canonical-integer-key hoisting (e.g. a
+ * bare `"2024"` key would sort before string keys) — but that safety is a property of the
+ * naming convention, not of this function's return type. A plain `Record<string, unknown>`
+ * has no ordering guarantee Perspective is contractually bound to respect. Handoff note for
+ * Phase 2: prefer passing `projection.columns` as Perspective's explicit column/schema
+ * config rather than relying on inferred key order from the objects returned here.
+ * `reference` is emitted first so every row shares an identical, stably-ordered key set —
+ * every manifest column is present on every row (`null` when the cell is absent) so
+ * Perspective infers one stable schema instead of a per-row-varying one.
  */
 export function toPerspectiveData(projection: WorkspaceProjection): Record<string, unknown>[] {
   return projection.rows.map((row) => {
@@ -70,9 +77,10 @@ export function bandParity(projection: WorkspaceProjection): number[] {
 export const ANNOTATION_CELL_LINKS_ENABLED = false;
 
 /**
- * Builds the annotation-mode deep link for a cell's reference, percent-encoding the
- * reference so slashes and other reserved characters survive the query string.
+ * Builds the annotation-mode deep link for a cell's reference, percent-encoding both the
+ * schema id (path segment) and the reference (query value) so slashes, `&`, `#`, and other
+ * reserved characters can't reshape the URL.
  */
 export function buildAnnotationUrl(schemaId: string, reference: string): string {
-  return `/dataset/${schemaId}/annotation-mode?_search=${encodeURIComponent(reference)}`;
+  return `/dataset/${encodeURIComponent(schemaId)}/annotation-mode?_search=${encodeURIComponent(reference)}`;
 }
