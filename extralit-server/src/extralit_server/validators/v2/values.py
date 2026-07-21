@@ -47,14 +47,17 @@ class V2ResponseValueValidator:
 
     @staticmethod
     def _validate_table(value, columns: list[str]) -> None:
-        if not isinstance(value, dict):
-            raise UnprocessableEntityError(f"table question expects a dict of values, found {type(value)}")
+        # Additive contract (spec §3.4): a bare dict is the 1-row case; list[dict] is N rows.
+        rows = value if isinstance(value, list) else [value]
         bound = set(columns)
-        extra = sorted(k for k in value if k not in bound)
-        if extra:
-            raise UnprocessableEntityError(
-                f"table value keys {extra!r} are not bound columns; bound: {sorted(bound)!r}"
-            )
+        for row in rows:
+            if not isinstance(row, dict):
+                raise UnprocessableEntityError(f"table question expects a dict of values per row, found {type(row)}")
+            extra = sorted(k for k in row if k not in bound)
+            if extra:
+                raise UnprocessableEntityError(
+                    f"table value keys {extra!r} are not bound columns; bound: {sorted(bound)!r}"
+                )
 
 
 class V2SuggestionValidator:

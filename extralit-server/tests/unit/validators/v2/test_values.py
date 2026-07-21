@@ -60,3 +60,27 @@ def test_suggestion_score_length_must_match_list_value():
         V2SuggestionValidator.validate(
             ["yes"], [0.9, 0.1], type=QuestionType.multi_label_selection, settings=MULTI_LABEL_SETTINGS, columns=["c"]
         )
+
+
+def test_table_value_accepts_list_of_row_dicts():
+    V2ResponseValueValidator.validate(
+        [{"a": 1}, {"a": 2, "b": "x"}], type=QuestionType.table, settings=TABLE_SETTINGS, columns=["a", "b"]
+    )
+
+
+def test_table_value_accepts_empty_list():
+    V2ResponseValueValidator.validate([], type=QuestionType.table, settings=TABLE_SETTINGS, columns=["a"])
+
+
+def test_table_value_list_rejects_unbound_keys_in_any_row():
+    with pytest.raises(UnprocessableEntityError, match="not bound"):
+        V2ResponseValueValidator.validate(
+            [{"a": 1}, {"z": 2}], type=QuestionType.table, settings=TABLE_SETTINGS, columns=["a", "b"]
+        )
+
+
+def test_table_value_list_rejects_non_dict_rows():
+    with pytest.raises(UnprocessableEntityError, match="dict of values per row"):
+        V2ResponseValueValidator.validate(
+            [{"a": 1}, 5], type=QuestionType.table, settings=TABLE_SETTINGS, columns=["a"]
+        )
