@@ -8,6 +8,7 @@ from tests.factories import (
     V2RecordFactory,
     V2SuggestionFactory,
     WorkspaceFactory,
+    WorkspaceUserFactory,
 )
 
 pytestmark = pytest.mark.asyncio
@@ -110,3 +111,42 @@ async def test_workspace_projection_rejects_limit_over_100(async_client, owner_a
         f"/api/v2/projection?workspace_id={workspace.id}&limit=101", headers=owner_auth_header
     )
     assert resp.status_code == 422
+
+
+async def test_workspace_projection_authz(async_client, annotator_auth_header, annotator):
+    workspace = await WorkspaceFactory.create()
+    _schema, version, q = await _schema_with_question(workspace)
+    record = await V2RecordFactory.create(version=version, reference="doc-1")
+    await V2SuggestionFactory.create(record=record, question=q, value="flu", agent="gpt-x", score=0.92)
+
+    # Non-member: forbidden.
+    resp = await async_client.get(f"/api/v2/projection?workspace_id={workspace.id}", headers=annotator_auth_header)
+    assert resp.status_code == 403, resp.text
+
+    # Member annotator: allowed to read.
+    await WorkspaceUserFactory.create(workspace_id=workspace.id, user_id=annotator.id)
+    resp = await async_client.get(f"/api/v2/projection?workspace_id={workspace.id}", headers=annotator_auth_header)
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["total_references"] == 1
+
+
+@pytest.mark.parametrize(
+    ("query_params", "needs_workspace"),
+    [
+        ("limit=0", True),
+        ("offset=-1", True),
+        ("workspace_id=not-a-uuid", False),
+        ("", False),  # workspace_id missing entirely
+    ],
+    ids=["limit_below_minimum", "offset_negative", "workspace_id_malformed", "workspace_id_missing"],
+)
+async def test_workspace_projection_rejects_invalid_query_params(
+    async_client, owner_auth_header, query_params, needs_workspace
+):
+    query = query_params
+    if needs_workspace:
+        workspace = await WorkspaceFactory.create()
+        query = f"workspace_id={workspace.id}&{query_params}"
+
+    resp = await async_client.get(f"/api/v2/projection?{query}", headers=owner_auth_header)
+    assert resp.status_code == 422, resp.text
