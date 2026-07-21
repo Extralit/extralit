@@ -29,14 +29,19 @@ export class GetWorkspaceProjectionUseCase {
     for (;;) {
       const page = await this.projectionRepository.getWorkspaceProjection(workspaceId, offset, PROJECTION_PAGE_SIZE);
       if (offset === 0) {
-        // Every page returns the same manifest — capture it once, in server order.
+        // Every page returns the same manifest and total — capture both from the first
+        // page only, in server order, so a shifting count mid-paging can't mix into a
+        // result built from a stale row set.
         columns = page.columns;
+        totalReferences = page.totalReferences;
       }
-      totalReferences = page.totalReferences;
       rows.push(...page.rows);
 
       // Guard against a zero-progress response (e.g. a server bug that keeps reporting
       // outstanding references but never returns any) so a stuck server can't hang the browser.
+      // Safe because every reference in a page yields >= 1 row: the server's `spine` CTE
+      // emits `max_idx + 1` rows per reference (minimum 1) and keeps the spine row even when
+      // `column_name IS NULL` — so an empty `rows` array can only mean an empty reference page.
       if (page.rows.length === 0) {
         break;
       }
