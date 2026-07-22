@@ -141,6 +141,8 @@ export default {
     loadError: "Could not load the extraction table.",
   },
   review: {
+    suggestion: "Suggestion",
+    response: "Response",
     agent: "Agent",
     score: "Score",
     notApplicable: "Not applicable in this schema version",
