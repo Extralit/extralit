@@ -225,7 +225,15 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
     // failure with no explanation ever shown to the user.
     newTable = await client.table(toPerspectiveData(projection));
   } catch (error) {
-    if (!cancelled) {
+    // Guards against a stale load's failure clobbering a newer, healthy projection: `loadChain`
+    // serializes *starts*, not *settlements* — an earlier-queued `performLoad(P1)` can still be
+    // awaiting a rejecting `client.table()` after `performLoad(P2)` has already been requested
+    // (and, since Vue updates `props.projection` synchronously before the watcher fires, has
+    // already become the current `props.projection`). Without this check, P1's rejection would
+    // still emit `load-error`, which the page latches into a permanent `loadFailed` state that
+    // outlives P2's perfectly healthy load — see this file's `load-error` doc comment and the
+    // fix's changelog entry for the full failure sequence.
+    if (!cancelled && projection === props.projection) {
       console.error("[ExtractionsGrid] failed to build the Perspective table for this projection", error);
       emit("load-error");
     }
