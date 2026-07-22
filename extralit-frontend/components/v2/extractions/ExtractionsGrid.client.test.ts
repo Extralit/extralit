@@ -1,13 +1,24 @@
 import { flushPromises, mount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ExtractionsGrid from "./ExtractionsGrid.client.vue";
 import { WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
 
-const tableSpy = vi.fn(async (data: unknown) => ({ __data: data, delete: async () => undefined }));
-const initSpy = vi.fn(async () => ({ table: tableSpy }));
+// Module-level so the `vi.mock` factory below (evaluated once, hoisted) can close over them.
+// Call counts and implementations are reset/re-established per spec in `beforeEach` — without
+// that, `toHaveBeenCalledTimes(N)` assertions only pass because of spec execution order, and a
+// `mockImplementationOnce`/`mockRejectedValueOnce` installed by one spec but left unconsumed
+// (e.g. by an early failure) could otherwise leak into the next spec's first call.
+const tableSpy = vi.fn();
+const defaultTableImpl = async (data: unknown) => ({ __data: data, delete: async () => undefined });
+
+// Mocks the shared client factory `initPerspectiveClient` (not, despite the name similarity,
+// the Perspective WASM boot itself — that happens inside the real implementation this spy
+// replaces; see perspective-bootstrap.ts).
+const initPerspectiveClientSpy = vi.fn();
+const defaultInitPerspectiveClientImpl = async () => ({ table: tableSpy });
 
 vi.mock("~/components/v2/extractions/perspective-bootstrap", () => ({
-  initPerspectiveClient: () => initSpy(),
+  initPerspectiveClient: () => initPerspectiveClientSpy(),
 }));
 
 const PROJECTION = new WorkspaceProjection(
@@ -70,35 +81,43 @@ const deferred = <T>() => {
   return { promise, resolve, reject };
 };
 
+const mountGrid = (projection: WorkspaceProjection) =>
+  mount(ExtractionsGrid, {
+    props: { projection },
+    global: {
+      config: { compilerOptions: { isCustomElement: (tag: string) => tag.startsWith("perspective-") } },
+    },
+  });
+
+let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+
 describe("ExtractionsGrid", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    tableSpy.mockImplementation(defaultTableImpl);
+    initPerspectiveClientSpy.mockImplementation(defaultInitPerspectiveClientImpl);
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
+  });
+
   it("boots perspective once and loads the flat projection rows into a table", async () => {
-    mount(ExtractionsGrid, {
-      props: { projection: PROJECTION },
-      global: {
-        config: { compilerOptions: { isCustomElement: (tag: string) => tag.startsWith("perspective-") } },
-      },
-    });
+    mountGrid(PROJECTION);
     await flushPromises();
 
-    expect(initSpy).toHaveBeenCalledTimes(1);
+    expect(initPerspectiveClientSpy).toHaveBeenCalledTimes(1);
     expect(tableSpy).toHaveBeenCalledWith([{ reference: "10.1/a", "Design.type": "RCT" }]);
   });
 
   it("emits load-error instead of throwing when building the Perspective table rejects", async () => {
     tableSpy.mockRejectedValueOnce(new Error("boom"));
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    const wrapper = mount(ExtractionsGrid, {
-      props: { projection: PROJECTION },
-      global: {
-        config: { compilerOptions: { isCustomElement: (tag: string) => tag.startsWith("perspective-") } },
-      },
-    });
+    const wrapper = mountGrid(PROJECTION);
     await flushPromises();
 
     expect(wrapper.emitted("load-error")).toHaveLength(1);
-
-    consoleErrorSpy.mockRestore();
   });
 
   it("does not emit load-error for a superseded projection whose table build rejects after a newer one is already current", async () => {
@@ -109,14 +128,8 @@ describe("ExtractionsGrid", () => {
     // `load-error` doc comment).
     const firstCall = deferred<Awaited<ReturnType<typeof tableSpy>>>();
     tableSpy.mockImplementationOnce(() => firstCall.promise);
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
-    const wrapper = mount(ExtractionsGrid, {
-      props: { projection: PROJECTION },
-      global: {
-        config: { compilerOptions: { isCustomElement: (tag: string) => tag.startsWith("perspective-") } },
-      },
-    });
+    const wrapper = mountGrid(PROJECTION);
     await flushPromises();
 
     // Supersede P1 with P2 before P1's table build settles.
@@ -129,7 +142,56 @@ describe("ExtractionsGrid", () => {
 
     expect(wrapper.emitted("load-error")).toBeUndefined();
     expect(consoleErrorSpy).not.toHaveBeenCalled();
+  });
 
-    consoleErrorSpy.mockRestore();
+  it("emits load-error when the viewer's load/restore/getPlugin chain rejects, not just when client.table() rejects", async () => {
+    // Finding 2: the second `try`/`catch` in `performLoad` (wrapping `viewer.eject()`,
+    // `viewer.load()`, `viewer.restore()`, `getPlugin()`) previously had a bare `catch {}` that
+    // swallowed everything silently. happy-dom never upgrades `<perspective-viewer>`, so that
+    // code is normally unreachable (`viewer?.load` stays undefined and `performLoad` returns
+    // before the `try`) — reached here the same way the component itself would call it, by
+    // installing stub methods directly on the actual DOM node standing in for the upgraded
+    // custom element, exactly mirroring what a real `load()`/`restore()` rejection looks like.
+    const wrapper = mountGrid(PROJECTION);
+    const viewerNode = wrapper.element as unknown as {
+      load: (...args: unknown[]) => Promise<unknown>;
+      restore: (...args: unknown[]) => Promise<unknown>;
+      getPlugin: (...args: unknown[]) => Promise<unknown>;
+      addEventListener: (...args: unknown[]) => void;
+      removeEventListener: (...args: unknown[]) => void;
+    };
+    viewerNode.load = vi.fn(async () => undefined);
+    viewerNode.restore = vi.fn(async () => {
+      throw new Error("viewer restore failed");
+    });
+    viewerNode.getPlugin = vi.fn(async () => undefined);
+    viewerNode.addEventListener = vi.fn();
+    viewerNode.removeEventListener = vi.fn();
+
+    await flushPromises();
+
+    expect(wrapper.emitted("load-error")).toHaveLength(1);
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it("releases the table built for a superseded projection even when the viewer never upgrades (deterministic-leak fix)", async () => {
+    // Finding 3: `table = newTable` drops the last reference to the previous table, and the
+    // `!viewer?.load` early-return guard used to return before that previous table was ever
+    // deleted. Under happy-dom the custom element never upgrades, so every call takes this
+    // exact guard — this is the deterministic leak Finding 3 describes, naturally reachable
+    // (no monkey-patching needed) via two ordinary, successful, back-to-back loads.
+    const firstDelete = vi.fn(async () => undefined);
+    const secondDelete = vi.fn(async () => undefined);
+    tableSpy.mockImplementationOnce(async (data: unknown) => ({ __data: data, delete: firstDelete }));
+    tableSpy.mockImplementationOnce(async (data: unknown) => ({ __data: data, delete: secondDelete }));
+
+    const wrapper = mountGrid(PROJECTION);
+    await flushPromises();
+
+    await wrapper.setProps({ projection: PROJECTION_2 });
+    await flushPromises();
+
+    expect(firstDelete).toHaveBeenCalledTimes(1);
+    expect(secondDelete).not.toHaveBeenCalled();
   });
 });

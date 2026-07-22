@@ -128,6 +128,43 @@ function cellMetaAt(rt: RegularTableLike, td: HTMLElement): { rowIndex: number; 
   return { rowIndex, columnName };
 }
 
+/**
+ * The two style-only affordances applied to grid `<td>`s (reference-group row banding +
+ * pointer cursor for linkable cells). Declared once here and reused by `ensureShadowStyles`
+ * below; the `<style scoped>` block at the end of this file carries an equivalent copy for
+ * the light-DOM render target (see that block's comment for why a single copy can't serve
+ * both — Vue scoped/`:deep()` styles compile to a document-level stylesheet, which cannot
+ * cross a shadow boundary). Keep both copies in sync if you touch either.
+ */
+const CELL_STYLE_RULES =
+  "td.extractions-grid__band { background-color: rgba(0, 0, 0, 0.035); }\n" +
+  "td.extractions-grid__linkable { cursor: pointer; }";
+
+const SHADOW_STYLE_ELEMENT_ID = "extractions-grid-cell-style";
+
+/**
+ * `@perspective-dev/viewer-datagrid` picks its render target with
+ * `CSS.supports("selector(:host-context(foo))") ? "shadow" : "light"` and, for the shadow
+ * case, renders the `regular-table` (and every `<td>`) inside an `attachShadow({mode:"open"})`
+ * root. Chromium supports `:host-context`, so in the primary target browser `rt` — the same
+ * element `applyCellStyles` queries via `querySelectorAll("td")` — lives inside that shadow
+ * root, which document-level CSS (including this file's Vue `:deep()` rules) cannot reach.
+ * This injects a plain `<style>` element straight into that root instead: scoped to the root
+ * it's appended to with no `adoptedStyleSheets` feature-detection needed. No-ops for the
+ * light-DOM render target (the `<style scoped>` rules already reach those cells there) and is
+ * idempotent per root (id-guarded) so repeated draws/plugin swaps never append duplicates.
+ */
+function ensureShadowStyles(rt: RegularTableLike): void {
+  const root = rt.getRootNode();
+  if (!(root instanceof ShadowRoot) || root.getElementById(SHADOW_STYLE_ELEMENT_ID)) {
+    return;
+  }
+  const style = document.createElement("style");
+  style.id = SHADOW_STYLE_ELEMENT_ID;
+  style.textContent = CELL_STYLE_RULES;
+  root.appendChild(style);
+}
+
 function applyCellStyles(rt: RegularTableLike): void {
   const cells = rt.querySelectorAll<HTMLTableCellElement>("td");
   for (const td of Array.from(cells)) {
@@ -251,16 +288,26 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
   // the table the viewer is currently bound to (or `null` on the very first load).
   const previousTable = table;
   table = newTable;
-  // Tracks whether `previousTable` has already been handed to a delete call on one of the
-  // `cancelled` early-return paths below, so the catch block (which can be reached after any
-  // of those same awaits throws instead of merely observing `cancelled`) never deletes it a
-  // second time.
+  // Distinguishes "a path already released `previousTable`" from "an await inside the `try`
+  // below threw before any path got the chance to". Only the assignment immediately after
+  // `deleteSupersededTable` in the normal (non-cancelled) path is actually observed: it is
+  // followed by more code in that same `try` (the `getPlugin` await, `addStyleListener`,
+  // `addEventListener`) that can still throw into the `catch`, which reads this flag to avoid
+  // deleting `previousTable` a second time. Every `if (cancelled)` branch inside the `try`
+  // `return`s immediately after its own delete — control can never fall from a `return` into
+  // this function's `catch` — so a flag write there would have no observer; those are not
+  // written. The same reasoning applies below: the release for the `!viewer?.load` early
+  // return happens before the `try` even begins, so nothing ever reads a flag for it either.
   let previousTableDeleted = false;
 
   const viewer = viewerEl.value;
   if (!viewer?.load) {
     // happy-dom never upgrades the custom element, so `load` stays undefined there — this
-    // guard is what keeps the unit test from touching the untestable Perspective wiring.
+    // guard is what keeps the unit test from touching the untestable Perspective wiring. It's
+    // also a real, deterministic path in production whenever the viewer hasn't upgraded yet
+    // by the time a projection swap lands: `table = newTable` above already dropped the last
+    // reference to `previousTable`, so it must be released here or it leaks permanently.
+    await deleteSupersededTable(previousTable);
     return;
   }
 
@@ -272,7 +319,6 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
       await viewer.eject();
       if (cancelled) {
         await safeDelete(previousTable);
-        previousTableDeleted = true;
         return;
       }
     }
@@ -280,14 +326,12 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
     await viewer.load(newTable);
     if (cancelled) {
       await safeDelete(previousTable);
-      previousTableDeleted = true;
       return;
     }
     // Static grid: no config/settings panel, natural (insertion) order — no `sort`.
     await viewer.restore({ plugin: "Datagrid", settings: false });
     if (cancelled) {
       await safeDelete(previousTable);
-      previousTableDeleted = true;
       return;
     }
 
@@ -302,20 +346,41 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
     }
     regularTable = (plugin?.regular_table as RegularTableLike | undefined) ?? null;
     if (regularTable) {
+      ensureShadowStyles(regularTable);
       unsubscribeStyle = regularTable.addStyleListener((styleEvent) => applyCellStyles(styleEvent.detail));
+      // `addStyleListener` only pushes onto regular-table's listener array — it neither invokes
+      // the callback nor forces a redraw (see `addStyleListener` in
+      // `node_modules/regular-table/dist/esm/regular-table.js`). `viewer.load()` above already
+      // guarantees "the first frame ... has been drawn", so that first frame happened before we
+      // registered and our listener missed it: without this call the banding and pointer-cursor
+      // classes are absent until something else triggers a redraw (a scroll or a resize), i.e.
+      // never, for a user who just reads the grid.
+      applyCellStyles(regularTable);
     }
 
     // Idempotent: addEventListener silently ignores a re-registration of the exact same
     // (type, listener) pair, so calling this again on reload does not double-fire clicks.
     viewer.addEventListener?.("click", handleClick);
-  } catch {
+  } catch (error) {
     // A viewer detached mid-flight (fast route navigation, or torn down by onBeforeUnmount
-    // while this chain was still in progress) throws here — not actionable, and must not
-    // escape as an unhandled rejection. `previousTable`, however, is still this call's
-    // responsibility: none of the `cancelled` branches above ran (they return instead of
-    // throwing), so unless the normal swap already deleted it, it would otherwise leak.
+    // while this chain was still in progress) throws here too, alongside genuine failures
+    // from `eject()`/`load()`/`restore()`/`getPlugin()` (an unrenderable schema, a rejected
+    // `restore` config, a plugin regression). `previousTable` is still this call's
+    // responsibility either way: none of the `cancelled` branches above ran (they return
+    // instead of throwing), so unless the normal swap already deleted it, it would otherwise
+    // leak.
     if (previousTable && !previousTableDeleted) {
       await deleteSupersededTable(previousTable);
+    }
+    // Mirrors the `client.table()` catch above: only report if this call is both live (not
+    // unmounted) and still current (not a superseded projection's failure racing in after a
+    // newer, healthy one already took over) — see that catch's doc comment for the full
+    // staleness-race rationale. Without this, a viewer/plugin failure here left `loadFailed`
+    // at `false` while the viewer stayed mounted empty — the exact silent-failure mode the
+    // `load-error` contract exists to eliminate.
+    if (!cancelled && projection === props.projection) {
+      console.error("[ExtractionsGrid] failed to load the Perspective table into the viewer", error);
+      emit("load-error");
     }
   }
 }
@@ -376,6 +441,10 @@ onBeforeUnmount(async () => {
   height: calc(100vh - 160px);
 }
 
+// Reaches the grid's <td>s only for the "light" Perspective Datagrid render target — a
+// ShadowRoot render target (the common one in Chromium; see `ensureShadowStyles` in the
+// <script> block above) is outside any document-level stylesheet's reach, so these rules are
+// duplicated there via a directly-injected <style> element. Keep both copies in sync.
 :deep(td.extractions-grid__band) {
   background-color: rgba(0, 0, 0, 0.035);
 }
