@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { defineComponent, h } from "vue";
 import { mount } from "@vue/test-utils";
 import ReviewCellInput from "./ReviewCellInput.vue";
-import { ReviewCell } from "~/v2/domain/entities/review/ReferenceReview";
+import { ReviewCell } from "~/v2/domain/entities/review/ReviewCell";
 import { Question } from "~/v2/domain/entities/question/Question";
 
 // Stubs that actually emit the leaf-widget events (the real leaves mutate their bound

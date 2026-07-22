@@ -10,12 +10,7 @@
     <tbody>
       <tr v-for="record in records" :key="record.id">
         <td>
-          <NuxtLink
-            :to="`/references/${encodeURIComponent(record.reference)}?workspace_id=${workspaceId}`"
-            :data-reference="record.reference"
-          >
-            {{ record.reference }}
-          </NuxtLink>
+          <span :data-reference="record.reference">{{ record.reference }}</span>
         </td>
         <td v-for="column in columns" :key="column.name">{{ formatCell(record.fields[column.name]) }}</td>
         <td><V2StatusBadge :status="record.status" /></td>

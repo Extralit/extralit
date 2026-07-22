@@ -13,7 +13,7 @@ export class GetWorkspaceProjectionUseCase {
   constructor(
     private readonly projectionRepository: ProjectionRepository,
     // ts-injecty resolves the `useExtractions` hook by calling it, so the injected
-    // value is the store object, not the hook (same contract as GetReferenceReviewUseCase).
+    // value is the store object, not the hook.
     private readonly extractionsStorage: ReturnType<typeof useExtractions>
   ) {}
 

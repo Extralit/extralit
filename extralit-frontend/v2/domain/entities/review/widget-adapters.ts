@@ -1,5 +1,5 @@
 import { Question } from "../question/Question";
-import { type ReviewCell } from "./ReferenceReview";
+import { type ReviewCell } from "./ReviewCell";
 import { SuggestionHint } from "./SuggestionHint";
 
 // Adapters between server value shapes and the extracted leaf-widget option shapes

@@ -10,7 +10,7 @@
 
 <script lang="ts">
 import { type PropType } from "vue";
-import { type Provenance } from "~/v2/domain/entities/review/ReferenceReview";
+import { type Provenance } from "~/v2/domain/entities/review/ReviewCell";
 
 export default {
   name: "ReviewProvenance",

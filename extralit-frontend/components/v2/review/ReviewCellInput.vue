@@ -52,7 +52,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref, watch, type PropType } from "vue";
-import { type ReviewCell } from "~/v2/domain/entities/review/ReferenceReview";
+import { type ReviewCell } from "~/v2/domain/entities/review/ReviewCell";
 import { type ColumnMeta } from "~/v2/domain/entities/schema/ColumnMeta";
 import {
   buildLabelOptions,

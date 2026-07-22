@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Question } from "../question/Question";
-import { ReviewCell } from "./ReferenceReview";
+import { ReviewCell } from "./ReviewCell";
 import {
   buildLabelOptions,
   buildRankingValues,
