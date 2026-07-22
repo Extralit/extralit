@@ -7,7 +7,7 @@ const tableSpy = vi.fn(async (data: unknown) => ({ __data: data, delete: async (
 const initSpy = vi.fn(async () => ({ worker: async () => ({ table: tableSpy }) }));
 
 vi.mock("~/components/v2/extractions/perspective-bootstrap", () => ({
-  initPerspective: (...args: unknown[]) => initSpy(...args),
+  initPerspective: () => initSpy(),
 }));
 
 const PROJECTION = new WorkspaceProjection(
