@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+  "/projection": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Workspace Projection */
+    get: operations["get_workspace_projection_projection_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/projection/references/{reference}": {
     parameters: {
       query?: never;
@@ -341,8 +358,14 @@ export interface components {
     };
     /** ProjectionCell */
     ProjectionCell: {
+      /** Agent */
+      agent?: string | null;
       /** Question Name */
       question_name: string;
+      /** Record Id */
+      record_id?: string | null;
+      /** Score */
+      score?: number | number[] | null;
       /** Source */
       source?: ("response" | "suggestion") | null;
       /** Value */
@@ -816,6 +839,63 @@ export interface components {
      * @enum {string}
      */
     V2RecordStatus: "pending" | "completed" | "discarded";
+    /** WorkspaceProjection */
+    WorkspaceProjection: {
+      /** Columns */
+      columns: components["schemas"]["WorkspaceProjectionColumn"][];
+      /** Rows */
+      rows: components["schemas"]["WorkspaceProjectionRow"][];
+      /** Total References */
+      total_references: number;
+    };
+    /** WorkspaceProjectionCell */
+    WorkspaceProjectionCell: {
+      /** Agent */
+      agent?: string | null;
+      /**
+       * Record Id
+       * Format: uuid
+       */
+      record_id: string;
+      /** Score */
+      score?: number | number[] | null;
+      /**
+       * Source
+       * @enum {string}
+       */
+      source: "response" | "suggestion";
+      /** Value */
+      value?: unknown | null;
+    };
+    /** WorkspaceProjectionColumn */
+    WorkspaceProjectionColumn: {
+      /** Dtype */
+      dtype: string;
+      /** Name */
+      name: string;
+      /** Question Name */
+      question_name: string;
+      /**
+       * Schema Id
+       * Format: uuid
+       */
+      schema_id: string;
+      /** Schema Name */
+      schema_name: string;
+      /** Sub Column */
+      sub_column?: string | null;
+    };
+    /** WorkspaceProjectionRow */
+    WorkspaceProjectionRow: {
+      /** Cells */
+      cells: {
+        [key: string]: components["schemas"]["WorkspaceProjectionCell"];
+      };
+      /** Reference */
+      reference: string;
+      /** Row Index */
+      row_index: number;
+    };
   };
   responses: never;
   parameters: never;
@@ -825,6 +905,144 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  get_workspace_projection_projection_get: {
+    parameters: {
+      query: {
+        /** @description Workspace to scope the view (required) */
+        workspace_id: string;
+        /** @description Reference offset (not fan-out rows) */
+        offset?: number;
+        /** @description References per page */
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["WorkspaceProjection"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "detail": {
+           *         "code": "extralit.api.errors::MissingDatasetRecordsError",
+           *         "params": {
+           *           "extra": "error parameters"
+           *         }
+           *       }
+           *     }
+           */
+          "application/json": unknown;
+        };
+      };
+      /** @description Forbidden */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "detail": {
+           *         "code": "extralit.api.errors::ForbiddenOperationError",
+           *         "params": {
+           *           "extra": "error parameters"
+           *         }
+           *       }
+           *     }
+           */
+          "application/json": unknown;
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "detail": {
+           *         "code": "extralit.api.errors::EntityNotFoundError",
+           *         "params": {
+           *           "extra": "error parameters"
+           *         }
+           *       }
+           *     }
+           */
+          "application/json": unknown;
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "detail": {
+           *         "code": "extralit.api.errors::EntityAlreadyExistsError",
+           *         "params": {
+           *           "extra": "error parameters"
+           *         }
+           *       }
+           *     }
+           */
+          "application/json": unknown;
+        };
+      };
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "detail": {
+           *         "code": "extralit.api.errors::ValidationError",
+           *         "params": {
+           *           "extra": "error parameters"
+           *         }
+           *       }
+           *     }
+           */
+          "application/json": unknown;
+        };
+      };
+      /** @description Internal Server Error */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          /**
+           * @example {
+           *       "detail": {
+           *         "code": "builtins.TypeError"
+           *       }
+           *     }
+           */
+          "application/json": unknown;
+        };
+      };
+    };
+  };
   get_reference_projection_projection_references__reference__get: {
     parameters: {
       query: {
@@ -924,7 +1142,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -1057,7 +1275,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -1194,7 +1412,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -1325,7 +1543,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -1458,7 +1676,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -1595,7 +1813,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -1728,7 +1946,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -1865,7 +2083,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -2001,7 +2219,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -2135,7 +2353,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -2270,7 +2488,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -2403,7 +2621,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -2540,7 +2758,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -2673,7 +2891,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -2806,7 +3024,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -2939,7 +3157,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -3076,7 +3294,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -3214,7 +3432,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -3348,7 +3566,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -3485,7 +3703,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -3622,7 +3840,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -3755,7 +3973,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -3892,7 +4110,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -4026,7 +4244,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -4161,7 +4379,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -4296,7 +4514,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;
@@ -4431,7 +4649,7 @@ export interface operations {
           "application/json": unknown;
         };
       };
-      /** @description Unprocessable Content */
+      /** @description Unprocessable Entity */
       422: {
         headers: {
           [name: string]: unknown;

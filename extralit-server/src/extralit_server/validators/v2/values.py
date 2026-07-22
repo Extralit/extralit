@@ -47,14 +47,17 @@ class V2ResponseValueValidator:
 
     @staticmethod
     def _validate_table(value, columns: list[str]) -> None:
-        if not isinstance(value, dict):
-            raise UnprocessableEntityError(f"table question expects a dict of values, found {type(value)}")
+        # Additive contract (spec §3.4): a bare dict is the 1-row case; list[dict] is N rows.
+        rows = value if isinstance(value, list) else [value]
         bound = set(columns)
-        extra = sorted(k for k in value if k not in bound)
-        if extra:
-            raise UnprocessableEntityError(
-                f"table value keys {extra!r} are not bound columns; bound: {sorted(bound)!r}"
-            )
+        for row in rows:
+            if not isinstance(row, dict):
+                raise UnprocessableEntityError(f"table question expects a dict of values per row, found {type(row)}")
+            extra = sorted(k for k in row if k not in bound)
+            if extra:
+                raise UnprocessableEntityError(
+                    f"table value keys {extra!r} are not bound columns; bound: {sorted(bound)!r}"
+                )
 
 
 class V2SuggestionValidator:
@@ -63,10 +66,20 @@ class V2SuggestionValidator:
     @classmethod
     def validate(cls, value, score, *, type: QuestionType, settings: dict, columns: list[str]) -> None:
         V2ResponseValueValidator.validate(value, type=type, settings=settings, columns=columns)
-        cls._validate_score(value, score)
+        cls._validate_score(value, score, type=type)
 
     @staticmethod
-    def _validate_score(value, score) -> None:
+    def _validate_score(value, score, *, type: QuestionType) -> None:
+        if type == QuestionType.table:
+            # A table value's list is N *rows* (spec §3.4), not N answer choices, so the
+            # answer-choice cardinality rules below don't apply. A suggestion's score is
+            # whole-suggestion confidence — a scalar or None — which the projection fan-out
+            # repeats onto every fanned-out cell. A per-row score list would be a distinct
+            # future feature (needing indexed fan-out, not whole-list repetition); reject it
+            # now rather than surface an uninterpretable multi-value score in the grid.
+            if score is not None and not isinstance(score, (int, float)):
+                raise UnprocessableEntityError("a table question score must be a single number or null")
+            return
         if not isinstance(value, list) and isinstance(score, list):
             raise UnprocessableEntityError("a list of scores is not allowed for a single-value suggestion")
         if isinstance(value, list) and score is not None and not isinstance(score, list):

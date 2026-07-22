@@ -33,5 +33,9 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/extralit-server/src",
         "${workspaceFolder}/extralit/src"
+    ],
+    "cursorpyright.analysis.extraPaths": [
+        "${workspaceFolder}/extralit-server/src",
+        "${workspaceFolder}/extralit/src"
     ]
 }
