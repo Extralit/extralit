@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { type HTMLPerspectiveViewerElement } from "@perspective-dev/viewer";
 import { initPerspective } from "~/components/v2/extractions/perspective-bootstrap";
 import { type WorkspaceProjection, type ProjectionGridCell } from "~/v2/domain/entities/projection/WorkspaceProjection";
@@ -14,9 +14,11 @@ import { toPerspectiveData, cellAt, bandParity } from "~/v2/domain/entities/proj
  * suffix stops Nuxt from ever SSR-evaluating this file: perspective-viewer/-datagrid boot
  * WASM + a Web Component the moment they're imported, which only exists client-side.
  *
- * Loads the flat projection once into a static Datagrid (no sort/group/filter — natural
- * insertion order, toolbar hidden), then layers two DOM-only affordances on top of the
- * plugin's `regular-table` since Perspective itself has no concept of either:
+ * Loads the flat projection into a static Datagrid (no sort/group/filter — natural
+ * insertion order, toolbar hidden), reloading the underlying Perspective table whenever
+ * `props.projection` changes (the host page swaps workspaces without remounting this
+ * component). Layers two DOM-only affordances on top of the plugin's `regular-table` since
+ * Perspective itself has no concept of either:
  *  - reference-group row banding (`bandParity`), re-applied on every `addStyleListener` draw
  *    because virtualized `<td>`s are recycled and never retain classes across redraws.
  *  - a single `click` listener on the viewer host, resolved through `event.composedPath()`
@@ -24,7 +26,7 @@ import { toPerspectiveData, cellAt, bandParity } from "~/v2/domain/entities/proj
  */
 
 interface CellMeta {
-  type?: string;
+  type: string;
   y?: number;
   column_header?: Array<string | HTMLElement>;
 }
@@ -32,6 +34,14 @@ interface CellMeta {
 interface RegularTableLike extends HTMLElement {
   addStyleListener(listener: (event: { detail: RegularTableLike }) => void | Promise<void>): () => void;
   getMeta(element?: HTMLElement): CellMeta | undefined;
+}
+
+interface PerspectiveTableLike {
+  delete: () => Promise<unknown>;
+}
+
+interface PerspectiveClientLike {
+  table: (data: Record<string, unknown>[]) => Promise<PerspectiveTableLike>;
 }
 
 const props = defineProps<{ projection: WorkspaceProjection }>();
@@ -42,18 +52,46 @@ const emit = defineEmits<{
 
 const viewerEl = ref<HTMLPerspectiveViewerElement | null>(null);
 
-// Computed once: the projection is loaded a single time and never re-sorted/re-filtered in
-// this static grid, so the parity-per-row-index table stays valid for the component's lifetime.
-const bandByRow = bandParity(props.projection);
+// Reference-group row banding is a pure function of the projection: recomputed whenever
+// `props.projection` changes so it never lags behind the rows currently on screen.
+let bandByRow: number[] = bandParity(props.projection);
 
-let table: { delete: () => Promise<unknown> } | null = null;
+let client: PerspectiveClientLike | null = null;
+let table: PerspectiveTableLike | null = null;
 let regularTable: RegularTableLike | null = null;
 let unsubscribeStyle: (() => void) | null = null;
 
+// Flipped by onBeforeUnmount and checked after every await on the mount/reload path: the
+// perspective boot chain (`initPerspective` → `worker` → `table`) is async, and a fast
+// route navigation can unmount this component while it's still in flight. Without this
+// guard, a `table` created after cleanup already ran would never get `.delete()`d — a
+// WASM-heap leak — and post-await calls into a detached viewer could throw as an
+// unhandled rejection.
+let cancelled = false;
+
+async function safeDelete(candidate: PerspectiveTableLike | null): Promise<void> {
+  if (!candidate) {
+    return;
+  }
+  try {
+    await candidate.delete();
+  } catch {
+    // Cleanup races (e.g. fast route navigation, or a table already released by the
+    // viewer) are not actionable — swallow.
+  }
+}
+
 function cellMetaAt(rt: RegularTableLike, td: HTMLElement): { rowIndex: number; columnName: string } | null {
   const meta = rt.getMeta(td);
-  const rowIndex = meta?.y;
-  const header = meta?.column_header;
+  // regular-table uses a single DOM interface (HTMLTableCellElement) for both <td> and
+  // <th>, and CellMetadataRowHeader carries the same required `y` + `column_header` shape
+  // as a body cell's metadata. Without this check a row-header <th> can pass the rest of
+  // the guard below and be misread as a body cell.
+  if (meta?.type !== "body") {
+    return null;
+  }
+  const rowIndex = meta.y;
+  const header = meta.column_header;
   const columnName = header && header.length > 0 ? header[header.length - 1] : undefined;
   if (rowIndex === undefined || typeof columnName !== "string") {
     return null;
@@ -77,7 +115,12 @@ function handleClick(event: Event): void {
   if (!regularTable) {
     return;
   }
-  const td = event.composedPath().find((node): node is HTMLTableCellElement => node instanceof HTMLTableCellElement);
+  // Restrict the lookup to <td> (matching what applyCellStyles already scopes to via
+  // querySelectorAll("td")) so a click that resolves to a row-header <th> can't even reach
+  // cellMetaAt's guard.
+  const td = event
+    .composedPath()
+    .find((node): node is HTMLTableCellElement => node instanceof HTMLTableCellElement && node.tagName === "TD");
   if (!td) {
     return;
   }
@@ -94,32 +137,108 @@ function handleClick(event: Event): void {
   emit("cell-click", { cell, reference: row.reference, schemaId: column.schemaId, columnName: at.columnName });
 }
 
-onMounted(async () => {
-  const perspective = await initPerspective();
-  const client = await perspective.worker();
-  table = await client.table(toPerspectiveData(props.projection));
+/**
+ * Builds a fresh Perspective table for `projection` and installs it into the viewer,
+ * tearing down `previousTable` (the table this call is replacing, if any) once it is safe
+ * to do so.
+ *
+ * Ordering: `viewer.load(newTable)` is documented (see
+ * `@perspective-dev/viewer/dist/wasm/perspective-viewer.d.ts`, `load()`) as equivalent to
+ * `restore({ table: newTable.get_name() })` and resolving only once "the first frame ...
+ * is guaranteed to have been drawn" — i.e. by the time it resolves the viewer is bound to
+ * `newTable` and no longer references `previousTable`. That makes `previousTable.delete()`
+ * safe immediately after `load()` (and the `restore()` that reasserts the Datagrid plugin
+ * config) resolve, without ever calling `viewer.delete()` — unlike full unmount, this path
+ * replaces the bound table on a *live* viewer, it does not tear the viewer down.
+ */
+async function loadProjectionIntoViewer(
+  projection: WorkspaceProjection,
+  previousTable: PerspectiveTableLike | null
+): Promise<void> {
+  if (!client) {
+    return;
+  }
+  const newTable = await client.table(toPerspectiveData(projection));
+  if (cancelled) {
+    // Unmount already ran and, finding nothing to clean up at the time, will never run
+    // again — this table would otherwise never be deleted.
+    await safeDelete(newTable);
+    return;
+  }
+  table = newTable;
 
-  // happy-dom never upgrades the custom element, so `load` stays undefined there — this
-  // guard is what keeps the unit test from touching the untestable Perspective wiring below.
   const viewer = viewerEl.value;
   if (!viewer?.load) {
+    // happy-dom never upgrades the custom element, so `load` stays undefined there — this
+    // guard is what keeps the unit test from touching the untestable Perspective wiring.
     return;
   }
 
-  await viewer.load(table);
-  // Static grid: no config/settings panel, natural (insertion) order — no `sort`.
-  await viewer.restore({ plugin: "Datagrid", settings: false });
+  try {
+    await viewer.load(newTable);
+    if (cancelled) {
+      await safeDelete(previousTable);
+      return;
+    }
+    // Static grid: no config/settings panel, natural (insertion) order — no `sort`.
+    await viewer.restore({ plugin: "Datagrid", settings: false });
+    if (cancelled) {
+      await safeDelete(previousTable);
+      return;
+    }
 
-  const plugin = await viewer.getPlugin?.("Datagrid");
-  regularTable = (plugin?.regular_table as RegularTableLike | undefined) ?? null;
-  if (regularTable) {
-    unsubscribeStyle = regularTable.addStyleListener((styleEvent) => applyCellStyles(styleEvent.detail));
+    // The viewer is now bound to `newTable`; `previousTable` (if any) is unreferenced.
+    await safeDelete(previousTable);
+
+    unsubscribeStyle?.();
+    unsubscribeStyle = null;
+    const plugin = await viewer.getPlugin?.("Datagrid");
+    if (cancelled) {
+      return;
+    }
+    regularTable = (plugin?.regular_table as RegularTableLike | undefined) ?? null;
+    if (regularTable) {
+      unsubscribeStyle = regularTable.addStyleListener((styleEvent) => applyCellStyles(styleEvent.detail));
+    }
+
+    // Idempotent: addEventListener silently ignores a re-registration of the exact same
+    // (type, listener) pair, so calling this again on reload does not double-fire clicks.
+    viewer.addEventListener?.("click", handleClick);
+  } catch {
+    // A viewer detached mid-flight (fast route navigation, or torn down by onBeforeUnmount
+    // while this chain was still in progress) throws here — not actionable, and must not
+    // escape as an unhandled rejection.
   }
+}
 
-  viewer.addEventListener?.("click", handleClick);
+onMounted(async () => {
+  const perspective = await initPerspective();
+  if (cancelled) {
+    return;
+  }
+  client = await perspective.worker();
+  if (cancelled) {
+    return;
+  }
+  // Read `props.projection` fresh (not a captured value) in case it changed while the
+  // above awaited.
+  await loadProjectionIntoViewer(props.projection, null);
 });
 
+watch(
+  () => props.projection,
+  async (nextProjection) => {
+    if (cancelled || !client) {
+      return;
+    }
+    bandByRow = bandParity(nextProjection);
+    const previousTable = table;
+    await loadProjectionIntoViewer(nextProjection, previousTable);
+  }
+);
+
 onBeforeUnmount(async () => {
+  cancelled = true;
   const viewer = viewerEl.value;
   viewer?.removeEventListener?.("click", handleClick);
   unsubscribeStyle?.();
@@ -132,11 +251,7 @@ onBeforeUnmount(async () => {
   } catch {
     // Cleanup races (e.g. fast route navigation) are not actionable — swallow.
   }
-  try {
-    await table?.delete();
-  } catch {
-    // Same rationale as above.
-  }
+  await safeDelete(table);
   table = null;
 });
 </script>
