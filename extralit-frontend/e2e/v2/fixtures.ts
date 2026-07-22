@@ -6,6 +6,7 @@ export interface SeedOutput {
   workspaceId: string;
   schemaId: string;
   schemaName: string;
+  emptySchemaName: string;
   reference: string;
   recordId: string;
   questions: Record<string, { id: string; name: string }>;
