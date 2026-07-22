@@ -4,10 +4,10 @@ import ExtractionsGrid from "./ExtractionsGrid.client.vue";
 import { WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
 
 const tableSpy = vi.fn(async (data: unknown) => ({ __data: data, delete: async () => undefined }));
-const initSpy = vi.fn(async () => ({ worker: async () => ({ table: tableSpy }) }));
+const initSpy = vi.fn(async () => ({ table: tableSpy }));
 
 vi.mock("~/components/v2/extractions/perspective-bootstrap", () => ({
-  initPerspective: () => initSpy(),
+  initPerspectiveClient: () => initSpy(),
 }));
 
 const PROJECTION = new WorkspaceProjection(

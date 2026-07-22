@@ -12,10 +12,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const initServerSpy = vi.fn();
 const initClientSpy = vi.fn();
+const workerSpy = vi.fn();
 
 vi.mock("@perspective-dev/client", () => ({
   default: {
     init_server: (...args: unknown[]) => initServerSpy(...args),
+    worker: (...args: unknown[]) => workerSpy(...args),
   },
 }));
 
@@ -34,6 +36,7 @@ beforeEach(() => {
   vi.resetModules();
   initServerSpy.mockReset();
   initClientSpy.mockReset();
+  workerSpy.mockReset();
   // Real `fetch(SERVER_WASM)`/`fetch(CLIENT_WASM)` calls are made with plain mock-string
   // "URLs" as arguments (see the wasm `?url` mocks above) regardless of whether
   // `init_server`/`init_client` themselves are mocked, since `fetch(...)` is evaluated as an
@@ -87,5 +90,38 @@ describe("initPerspective", () => {
     expect(b).toBe(c);
     expect(initServerSpy).toHaveBeenCalledTimes(1);
     expect(initClientSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("initPerspectiveClient", () => {
+  it("resets the memoized client promise on rejection so the next call retries instead of replaying the same failure", async () => {
+    initServerSpy.mockImplementation(() => Promise.resolve(undefined));
+    initClientSpy.mockImplementation(() => Promise.resolve(undefined));
+    workerSpy.mockImplementationOnce(() => Promise.reject(new Error("worker boot failed")));
+    workerSpy.mockImplementation(() => Promise.resolve({ marker: "client" }));
+
+    const { initPerspectiveClient } = await import("./perspective-bootstrap");
+
+    await expect(initPerspectiveClient()).rejects.toThrow("worker boot failed");
+    await expect(initPerspectiveClient()).resolves.toEqual({ marker: "client" });
+    expect(workerSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("shares exactly one client across concurrent and sequential calls, calling perspective.worker() exactly once", async () => {
+    initServerSpy.mockImplementation(() => Promise.resolve(undefined));
+    initClientSpy.mockImplementation(() => Promise.resolve(undefined));
+    workerSpy.mockImplementation(() => Promise.resolve({ marker: "client" }));
+
+    const { initPerspectiveClient } = await import("./perspective-bootstrap");
+
+    const [a, b] = await Promise.all([initPerspectiveClient(), initPerspectiveClient()]);
+    const c = await initPerspectiveClient();
+
+    expect(a).toBe(b);
+    expect(b).toBe(c);
+    // This is the crux of the worker/WASM-heap leak fix: every mount of `ExtractionsGrid`
+    // must share this ONE client rather than each calling `perspective.worker()` (which
+    // constructs a brand-new Web Worker + WASM server instance every time) for itself.
+    expect(workerSpy).toHaveBeenCalledTimes(1);
   });
 });

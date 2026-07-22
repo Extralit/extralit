@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { type HTMLPerspectiveViewerElement } from "@perspective-dev/viewer";
-import { initPerspective } from "~/components/v2/extractions/perspective-bootstrap";
+import { initPerspectiveClient } from "~/components/v2/extractions/perspective-bootstrap";
 import { type WorkspaceProjection, type ProjectionGridCell } from "~/v2/domain/entities/projection/WorkspaceProjection";
 import { toPerspectiveData, cellAt, bandParity } from "~/v2/domain/entities/projection/grid-adapter";
 
@@ -67,7 +67,7 @@ let regularTable: RegularTableLike | null = null;
 let unsubscribeStyle: (() => void) | null = null;
 
 // Flipped by onBeforeUnmount and checked after every await on the mount/reload path: the
-// perspective boot chain (`initPerspective` → `worker` → `table`) is async, and a fast
+// perspective boot chain (`initPerspectiveClient` → `table`) is async, and a fast
 // route navigation can unmount this component while it's still in flight. Without this
 // guard, a `table` created after cleanup already ran would never get `.delete()`d — a
 // WASM-heap leak — and post-await calls into a detached viewer could throw as an
@@ -313,11 +313,11 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
 }
 
 onMounted(async () => {
-  const perspective = await initPerspective();
-  if (cancelled) {
-    return;
-  }
-  client = await perspective.worker();
+  // `initPerspectiveClient` hoists the Perspective `Client` (and its Web Worker + WASM
+  // heap) into a module-level memo shared across every mount — see the doc comment on
+  // `initPerspectiveClient` in perspective-bootstrap.ts for why this component must never
+  // call `perspective.worker()` directly.
+  client = await initPerspectiveClient();
   if (cancelled) {
     return;
   }
@@ -353,6 +353,11 @@ onBeforeUnmount(async () => {
   }
   await safeDelete(table);
   table = null;
+  // Intentionally NOT `client.terminate()`d here: `client` is the module-level Client
+  // shared across every mount (see `initPerspectiveClient`'s doc comment) and outlives this
+  // component instance by design — terminating it would tear down the one shared Worker for
+  // every other still- or future-mounted grid too. Only the local reference is dropped.
+  client = null;
 });
 </script>
 

@@ -36,3 +36,30 @@ export const initPerspective = (): Promise<typeof perspective> => {
   }
   return ready;
 };
+
+type PerspectiveClient = Awaited<ReturnType<typeof perspective.worker>>;
+
+// `perspective.worker()` constructs a brand-new Web Worker (+ its own WASM server
+// instance) on *every* call — confirmed in
+// `@perspective-dev/client/dist/esm/perspective.js`'s `worker()`/`pe()` helpers, which
+// always `new Worker(...)`. Only `Client.terminate()`
+// (`@perspective-dev/client/dist/wasm/perspective-js.d.ts`'s `Client.terminate()`) runs the
+// close callback that actually calls `Worker.terminate()`. Memoizing the client here —
+// instead of every `ExtractionsGrid` mount calling `perspective.worker()` for itself — means
+// exactly one worker/WASM heap is ever live for the app's session, no matter how many times
+// `/extractions` is mounted and unmounted. Mirrors `ready`'s retry-on-rejection behavior for
+// the same reason: a transient worker-boot failure must not brick every later mount.
+let clientReady: Promise<PerspectiveClient> | null = null;
+
+export const initPerspectiveClient = (): Promise<PerspectiveClient> => {
+  if (!clientReady) {
+    const attempt = initPerspective().then((p) => p.worker());
+    attempt.catch(() => {
+      if (clientReady === attempt) {
+        clientReady = null;
+      }
+    });
+    clientReady = attempt;
+  }
+  return clientReady;
+};
