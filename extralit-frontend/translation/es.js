@@ -108,6 +108,13 @@ export default {
     docs: "Documentación",
     logout: "Cerrar sesión",
   },
+  extractions: {
+    title: "Extractions",
+    loading: "Loading extractions…",
+    empty: "No extracted references in this workspace yet.",
+    noWorkspace: "Select a workspace to view its extraction table.",
+    loadError: "Could not load the extraction table.",
+  },
   settings: {
     title: "Configuración del dataset",
     datasetInfo: "Información del dataset",

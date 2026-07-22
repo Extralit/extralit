@@ -15,5 +15,16 @@ export const useV2Breadcrumbs = () => {
     return crumbs;
   };
 
-  return { schemasBreadcrumbs };
+  const extractionsBreadcrumbs = (leaf: { name: string; link?: string }[] = []): BreadcrumbItem[] => {
+    const selected = workspacesStore.get().selectedWorkspace;
+    const crumbs: BreadcrumbItem[] = [{ name: "Home", link: "/" }];
+    if (selected) {
+      crumbs.push({ name: selected.name, isWorkspace: true, workspaceId: selected.id });
+    }
+    crumbs.push({ name: "Extractions", link: "/extractions" });
+    crumbs.push(...leaf);
+    return crumbs;
+  };
+
+  return { schemasBreadcrumbs, extractionsBreadcrumbs };
 };
