@@ -121,6 +121,32 @@ describe("toPerspectiveData", () => {
     expect(toPerspectiveData(explicitNullProjection)[0]["Design.type"]).toBeNull();
   });
 
+  it("returns null instead of throwing for a circular-object cell value", () => {
+    // JSON.stringify throws on a circular structure; toScalarCell must coerce that to `null`
+    // (per its own contract) rather than let it escape as an unhandled exception that would
+    // surface as a spurious `load-error` out of `performLoad`.
+    const circular: Record<string, unknown> = { a: 1 };
+    circular.self = circular;
+    const circularProjection = new WorkspaceProjection(
+      COLUMNS,
+      [{ reference: "10.1/a", rowIndex: 0, cells: { "Design.type": cell(circular) } }],
+      1
+    );
+    expect(toPerspectiveData(circularProjection)[0]["Design.type"]).toBeNull();
+  });
+
+  it("returns null, not undefined, for a function cell value (JSON.stringify itself returns undefined)", () => {
+    // JSON.stringify(fn) === undefined, not a string — without the `?? null` coercion this
+    // key would be `undefined`, breaking the "every manifest column present, null when
+    // absent" contract that downstream schema inference depends on.
+    const fnProjection = new WorkspaceProjection(
+      COLUMNS,
+      [{ reference: "10.1/a", rowIndex: 0, cells: { "Design.type": cell(() => "x") } }],
+      1
+    );
+    expect(toPerspectiveData(fnProjection)[0]["Design.type"]).toBeNull();
+  });
+
   it("passes scalar cell values (string, number, boolean) through unchanged", () => {
     const scalarProjection = new WorkspaceProjection(
       COLUMNS,

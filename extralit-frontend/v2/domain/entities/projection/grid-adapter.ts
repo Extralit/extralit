@@ -48,6 +48,14 @@ export function toPerspectiveData(projection: WorkspaceProjection): Record<strin
  * `"null"`) because the manifest-completeness contract in `toPerspectiveData`'s doc comment
  * depends on an absent/empty cell being `null`. Genuine scalars (string/number/boolean) are
  * passed through unchanged.
+ *
+ * `JSON.stringify` itself does not unconditionally return a string: it returns `undefined`
+ * (not a string) for a function or a symbol, and throws for a `BigInt` or a circular
+ * structure. Server JSON can't produce any of those today, but this helper is the one place
+ * that is supposed to make the "every column present, `null` when absent" contract
+ * unconditional — so both failure modes are coerced to `null` rather than left to leak
+ * `undefined` into a "present" key or throw and escape as a spurious `load-error` out of
+ * `performLoad`.
  */
 function toScalarCell(value: unknown): unknown {
   if (value === null || value === undefined) {
@@ -57,7 +65,11 @@ function toScalarCell(value: unknown): unknown {
   if (valueType === "string" || valueType === "number" || valueType === "boolean") {
     return value;
   }
-  return JSON.stringify(value);
+  try {
+    return JSON.stringify(value) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /**
