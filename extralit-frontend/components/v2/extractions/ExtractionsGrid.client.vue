@@ -69,6 +69,12 @@ let unsubscribeStyle: (() => void) | null = null;
 // unhandled rejection.
 let cancelled = false;
 
+// Every `loadProjectionIntoViewer` call is appended to this chain instead of running
+// immediately: see the doc comment above that function for why unserialized calls (mount
+// racing a prop-change watcher, or watcher racing watcher) can clobber each other and leak
+// tables.
+let loadChain: Promise<void> = Promise.resolve();
+
 async function safeDelete(candidate: PerspectiveTableLike | null): Promise<void> {
   if (!candidate) {
     return;
@@ -78,6 +84,24 @@ async function safeDelete(candidate: PerspectiveTableLike | null): Promise<void>
   } catch {
     // Cleanup races (e.g. fast route navigation, or a table already released by the
     // viewer) are not actionable — swallow.
+  }
+}
+
+async function deleteSupersededTable(candidate: PerspectiveTableLike | null): Promise<void> {
+  if (!candidate) {
+    return;
+  }
+  try {
+    await candidate.delete();
+  } catch (error) {
+    // Neither `load()` nor `eject()` documents synchronously releasing the View bound to
+    // the table being replaced (see the doc comment above `loadProjectionIntoViewer`), so
+    // this can legitimately still throw per `Table.delete()`'s documented precondition
+    // ("no View instances registered to it, which must be deleted first" —
+    // `@perspective-dev/client/dist/wasm/perspective-js.d.ts`). Swallowing it here would
+    // hide a leaked Table + View on every projection swap, so surface it loudly instead —
+    // the grid itself keeps working either way.
+    console.warn("[ExtractionsGrid] failed to delete the superseded Perspective table after a projection swap", error);
   }
 }
 
@@ -139,22 +163,49 @@ function handleClick(event: Event): void {
 
 /**
  * Builds a fresh Perspective table for `projection` and installs it into the viewer,
- * tearing down `previousTable` (the table this call is replacing, if any) once it is safe
- * to do so.
+ * tearing down the table it replaces (if any) once it is safe to do so.
  *
- * Ordering: `viewer.load(newTable)` is documented (see
- * `@perspective-dev/viewer/dist/wasm/perspective-viewer.d.ts`, `load()`) as equivalent to
- * `restore({ table: newTable.get_name() })` and resolving only once "the first frame ...
- * is guaranteed to have been drawn" — i.e. by the time it resolves the viewer is bound to
- * `newTable` and no longer references `previousTable`. That makes `previousTable.delete()`
- * safe immediately after `load()` (and the `restore()` that reasserts the Datagrid plugin
- * config) resolve, without ever calling `viewer.delete()` — unlike full unmount, this path
- * replaces the bound table on a *live* viewer, it does not tear the viewer down.
+ * Concurrency: both `onMounted` and the `watch(() => props.projection, ...)` callback below
+ * funnel through this function, and Vue does not serialize async watcher callbacks against
+ * each other or against `onMounted` — two calls can be in flight simultaneously (mount vs.
+ * watch, or watch vs. a second watch firing before the first's async body has finished).
+ * Left unserialized, a slower call resolving after a faster, more-recently-requested one
+ * would clobber the correct, just-rendered table with a stale one, and whichever table lost
+ * that race would never become anyone's `previousTable` — a leaked Table + View. To prevent
+ * this, every call is appended to `loadChain`: a new call's body does not start running
+ * until every call requested before it has fully settled (finished a swap, or bailed out).
+ * This guarantees calls run in request order, so the table for the most-recently-requested
+ * `projection` is always the last thing written to the viewer, exactly one Table is ever
+ * live, and each call can safely read module-scope `table` — "whatever the viewer is
+ * currently bound to" — without needing it passed as a parameter.
+ *
+ * Table release ordering on a swap: neither `load()` nor `eject()` (see their docstrings in
+ * `@perspective-dev/viewer/dist/wasm/perspective-viewer.d.ts`) documents synchronously
+ * dropping the View bound to the table being replaced. `load()` only guarantees "the first
+ * frame ... is guaranteed to have been drawn" — nothing about releasing a *previous*
+ * binding. `Table.delete()` (`@perspective-dev/client/dist/wasm/perspective-js.d.ts`)
+ * throws unless the table "has no View instances registered to it (which must be deleted
+ * first)". `eject()`, however, is documented to "Restart this `<perspective-viewer>` to its
+ * initial state, before `load()`" specifically so `load()` can be called again on the same
+ * element — the strongest documented lever available for releasing the current binding
+ * without tearing the viewer down — so it is called on the outgoing table's behalf before
+ * loading its replacement. That still isn't an explicit guarantee against `Table.delete()`
+ * throwing afterwards, so a rejection there is handled by `deleteSupersededTable`, not
+ * silently swallowed.
  */
-async function loadProjectionIntoViewer(
-  projection: WorkspaceProjection,
-  previousTable: PerspectiveTableLike | null
-): Promise<void> {
+function loadProjectionIntoViewer(projection: WorkspaceProjection): Promise<void> {
+  const run = loadChain.then(() => performLoad(projection));
+  // Keep the chain usable even if this run rejects or the viewer bails out — a later,
+  // already-requested call must not be stuck behind it forever. Callers that care about
+  // this specific call's outcome still get it via the returned `run`.
+  loadChain = run.then(
+    () => undefined,
+    () => undefined
+  );
+  return run;
+}
+
+async function performLoad(projection: WorkspaceProjection): Promise<void> {
   if (!client) {
     return;
   }
@@ -165,6 +216,11 @@ async function loadProjectionIntoViewer(
     await safeDelete(newTable);
     return;
   }
+
+  // Safe to read fresh here: by construction (see the doc comment above
+  // `loadProjectionIntoViewer`) no other call is running concurrently, so this is exactly
+  // the table the viewer is currently bound to (or `null` on the very first load).
+  const previousTable = table;
   table = newTable;
 
   const viewer = viewerEl.value;
@@ -175,6 +231,17 @@ async function loadProjectionIntoViewer(
   }
 
   try {
+    if (previousTable && viewer.eject) {
+      // Release the viewer's current View/Table binding before loading the replacement —
+      // see the doc comment above `loadProjectionIntoViewer` for why this, and not just
+      // `load()`, is what makes the delete below safe.
+      await viewer.eject();
+      if (cancelled) {
+        await safeDelete(previousTable);
+        return;
+      }
+    }
+
     await viewer.load(newTable);
     if (cancelled) {
       await safeDelete(previousTable);
@@ -187,8 +254,7 @@ async function loadProjectionIntoViewer(
       return;
     }
 
-    // The viewer is now bound to `newTable`; `previousTable` (if any) is unreferenced.
-    await safeDelete(previousTable);
+    await deleteSupersededTable(previousTable);
 
     unsubscribeStyle?.();
     unsubscribeStyle = null;
@@ -222,7 +288,7 @@ onMounted(async () => {
   }
   // Read `props.projection` fresh (not a captured value) in case it changed while the
   // above awaited.
-  await loadProjectionIntoViewer(props.projection, null);
+  await loadProjectionIntoViewer(props.projection);
 });
 
 watch(
@@ -232,8 +298,7 @@ watch(
       return;
     }
     bandByRow = bandParity(nextProjection);
-    const previousTable = table;
-    await loadProjectionIntoViewer(nextProjection, previousTable);
+    await loadProjectionIntoViewer(nextProjection);
   }
 );
 
