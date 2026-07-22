@@ -19,17 +19,47 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
 
   const workspaceId = computed(() => workspaceIdOverride ?? workspacesStore.get().selectedWorkspace?.id ?? null);
 
-  const load = async () => {
-    if (!workspaceId.value) return;
+  // Race-safety: `load()` can be re-entered concurrently — e.g. `ensureWorkspaces()` flips
+  // `workspaceId` from null to a real id mid-flight, firing `watch(workspaceId, load)` before
+  // the page's own `await load()` continuation resumes, or the user switches workspace while a
+  // load is still in flight. `requestToken` lets a stale in-flight call detect it has been
+  // superseded before it writes to shared state; `inFlight` dedupes concurrent calls for the
+  // same workspace id into a single `execute()` call.
+  let requestToken = 0;
+  let inFlight: { workspaceId: string; promise: Promise<void> } | null = null;
+
+  const load = (): Promise<void> => {
+    const id = workspaceId.value;
+    if (!id) return Promise.resolve();
+
+    if (inFlight && inFlight.workspaceId === id) {
+      return inFlight.promise;
+    }
+
+    const token = ++requestToken;
     isLoading.value = true;
     loadFailed.value = false;
-    try {
-      projection.value = await getWorkspaceProjectionUseCase.execute(workspaceId.value);
-    } catch {
-      loadFailed.value = true; // AxiosErrorHandler already notified
-    } finally {
-      isLoading.value = false;
-    }
+
+    const promise = (async () => {
+      try {
+        const result = await getWorkspaceProjectionUseCase.execute(id);
+        if (token !== requestToken) return; // superseded by a newer load
+        projection.value = result;
+      } catch {
+        if (token !== requestToken) return; // superseded by a newer load
+        loadFailed.value = true; // AxiosErrorHandler already notified
+      } finally {
+        if (token === requestToken) {
+          isLoading.value = false;
+        }
+        if (inFlight?.workspaceId === id) {
+          inFlight = null;
+        }
+      }
+    })();
+
+    inFlight = { workspaceId: id, promise };
+    return promise;
   };
 
   watch(workspaceId, load);
