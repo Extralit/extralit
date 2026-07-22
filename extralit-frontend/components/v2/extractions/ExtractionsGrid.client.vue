@@ -222,6 +222,11 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
   // the table the viewer is currently bound to (or `null` on the very first load).
   const previousTable = table;
   table = newTable;
+  // Tracks whether `previousTable` has already been handed to a delete call on one of the
+  // `cancelled` early-return paths below, so the catch block (which can be reached after any
+  // of those same awaits throws instead of merely observing `cancelled`) never deletes it a
+  // second time.
+  let previousTableDeleted = false;
 
   const viewer = viewerEl.value;
   if (!viewer?.load) {
@@ -238,6 +243,7 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
       await viewer.eject();
       if (cancelled) {
         await safeDelete(previousTable);
+        previousTableDeleted = true;
         return;
       }
     }
@@ -245,16 +251,19 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
     await viewer.load(newTable);
     if (cancelled) {
       await safeDelete(previousTable);
+      previousTableDeleted = true;
       return;
     }
     // Static grid: no config/settings panel, natural (insertion) order — no `sort`.
     await viewer.restore({ plugin: "Datagrid", settings: false });
     if (cancelled) {
       await safeDelete(previousTable);
+      previousTableDeleted = true;
       return;
     }
 
     await deleteSupersededTable(previousTable);
+    previousTableDeleted = true;
 
     unsubscribeStyle?.();
     unsubscribeStyle = null;
@@ -273,7 +282,12 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
   } catch {
     // A viewer detached mid-flight (fast route navigation, or torn down by onBeforeUnmount
     // while this chain was still in progress) throws here — not actionable, and must not
-    // escape as an unhandled rejection.
+    // escape as an unhandled rejection. `previousTable`, however, is still this call's
+    // responsibility: none of the `cancelled` branches above ran (they return instead of
+    // throwing), so unless the normal swap already deleted it, it would otherwise leak.
+    if (previousTable && !previousTableDeleted) {
+      await deleteSupersededTable(previousTable);
+    }
   }
 }
 
