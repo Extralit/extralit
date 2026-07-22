@@ -48,6 +48,56 @@ describe("useExtractionsViewModel", () => {
     expect(executeMock).not.toHaveBeenCalled();
   });
 
+  it("starts with hasLoaded false and flips it true once the first load settles, so the empty state cannot flash before the first load", async () => {
+    const projection = new WorkspaceProjection([], [], 0);
+    const pending = deferred<WorkspaceProjection>();
+    executeMock.mockReturnValue(pending.promise);
+
+    const vm = useExtractionsViewModel("w-1");
+    // Without the `hasLoaded` fix, this is already `true` (it's never initialized `false`, or
+    // the page gates the empty state on `isLoading` alone) — which is exactly what lets the
+    // empty state render on first paint before the spinner ever shows.
+    expect(vm.hasLoaded.value).toBe(false);
+
+    const load1 = vm.load();
+    expect(vm.hasLoaded.value).toBe(false);
+
+    pending.resolve(projection);
+    await load1;
+
+    expect(vm.hasLoaded.value).toBe(true);
+  });
+
+  it("clears the stale projection when the workspace is deselected mid-flight, so a superseded response cannot repopulate it after the fact", async () => {
+    const firstCall = deferred<WorkspaceProjection>();
+    executeMock.mockReturnValue(firstCall.promise);
+
+    const { saveSelectedWorkspace } = useWorkspaces();
+    saveSelectedWorkspace(new Workspace("w-1", "Workspace 1"));
+
+    const vm = useExtractionsViewModel();
+    const load1 = vm.load();
+    expect(vm.isLoading.value).toBe(true);
+
+    // Deselect the workspace entirely while the load is still in flight.
+    saveSelectedWorkspace(null);
+    const load2 = vm.load();
+    await load2;
+
+    // Without the fix, `load()` returns immediately on a null id without bumping
+    // `requestToken`, so the still-in-flight `load1`'s `token === requestToken` check still
+    // passes when it resolves below — committing a projection for a workspace the user has
+    // already left, with `isLoading` cleared and no way to tell the grid is now stale.
+    expect(vm.projection.value).toBeNull();
+    expect(vm.isLoading.value).toBe(false);
+
+    const staleProjection = new WorkspaceProjection([], [], 1);
+    firstCall.resolve(staleProjection);
+    await load1;
+
+    expect(vm.projection.value).toBeNull();
+  });
+
   it("flags load failure", async () => {
     executeMock.mockRejectedValue(new Error("boom"));
     const vm = useExtractionsViewModel("w-1");

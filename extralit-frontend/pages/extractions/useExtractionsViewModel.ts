@@ -16,6 +16,11 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
   const projection = shallowRef<WorkspaceProjection | null>(null);
   const isLoading = ref(false);
   const loadFailed = ref(false);
+  // Distinguishes "no load has settled yet" from "loaded, and genuinely empty" — without it,
+  // the page's empty-state branch (`!projection || !projection.rows.length`) is briefly true
+  // on every first paint, before `isLoading` flips true, flashing "no extracted references"
+  // ahead of the spinner.
+  const hasLoaded = ref(false);
 
   const workspaceId = computed(() => workspaceIdOverride ?? workspacesStore.get().selectedWorkspace?.id ?? null);
 
@@ -30,7 +35,17 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
 
   const load = (): Promise<void> => {
     const id = workspaceId.value;
-    if (!id) return Promise.resolve();
+    if (!id) {
+      // Bump the token so any in-flight load for a previous (now-deselected) workspace is
+      // recognized as superseded when it settles, instead of committing a projection for a
+      // workspace the user is no longer in. `inFlight` is deliberately left alone: it is
+      // keyed by workspace id/token and the in-flight call's own `finally` will clear it.
+      ++requestToken;
+      projection.value = null;
+      isLoading.value = false;
+      loadFailed.value = false;
+      return Promise.resolve();
+    }
 
     if (inFlight && inFlight.workspaceId === id) {
       return inFlight.promise;
@@ -52,6 +67,10 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
         if (token === requestToken) {
           isLoading.value = false;
         }
+        // Monotonic: once any load attempt has settled, the pristine "not loaded yet" state
+        // is over for good — subsequent selections gate their own spinner via `isLoading`,
+        // not this flag.
+        hasLoaded.value = true;
         // Only the call that created the current `inFlight` entry may clear it — a stale
         // ping-pong (w-1 -> w-2 -> w-1) can share `workspaceId` with a newer generation's
         // entry, so identity is keyed on `token`, not the string id.
@@ -84,5 +103,5 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
     loadFailed.value = true;
   };
 
-  return { projection, isLoading, loadFailed, workspaceId, load, onCellClick, onGridLoadError };
+  return { projection, isLoading, loadFailed, hasLoaded, workspaceId, load, onCellClick, onGridLoadError };
 };
