@@ -133,4 +133,64 @@ describe("useExtractionsViewModel", () => {
     expect(vm.isLoading.value).toBe(false);
     expect(vm.loadFailed.value).toBe(false);
   });
+
+  it("dedupes a w-1 load that ping-pongs back (w-1 -> w-2 -> w-1 -> w-1) against the still-pending later w-1 request", async () => {
+    // Reproduces: oldest w-1 call's `finally` must not clear a newer generation's `inFlight`
+    // entry just because it shares the same workspace id. Sequence: w-1 (gen A) -> w-2
+    // (evicts gen A's entry) -> w-1 (gen B, a genuinely new request since gen A's entry is
+    // gone) -> gen A settles -> a 4th w-1 load must dedupe against gen B, still pending.
+    const w1GenA = deferred<WorkspaceProjection>();
+    const w2Call = deferred<WorkspaceProjection>();
+    const w1GenB = deferred<WorkspaceProjection>();
+    const w1Calls = [w1GenA, w1GenB];
+    // If the dedup defect lets a redundant w-1 call through, resolve it immediately (rather
+    // than with a never-settled deferred) so the test fails on the call-count assertion
+    // instead of hanging on an unresolved `await`.
+    const unexpectedExtraCall = new WorkspaceProjection([], [], -1);
+    executeMock.mockImplementation((id: string) => {
+      if (id !== "w-1") return w2Call.promise;
+      const next = w1Calls.shift();
+      return next ? next.promise : Promise.resolve(unexpectedExtraCall);
+    });
+
+    const { saveSelectedWorkspace } = useWorkspaces();
+    saveSelectedWorkspace(new Workspace("w-1", "Workspace 1"));
+
+    const vm = useExtractionsViewModel();
+    const load1 = vm.load(); // w-1 gen A — creates inFlight{w-1, gen A}
+
+    saveSelectedWorkspace(new Workspace("w-2", "Workspace 2"));
+    const load2 = vm.load(); // w-2 — id mismatch, evicts gen A's entry, inFlight{w-2}
+
+    saveSelectedWorkspace(new Workspace("w-1", "Workspace 1"));
+    const load3 = vm.load(); // w-1 gen B — id mismatch against inFlight{w-2}, a real 3rd call
+
+    expect(executeMock).toHaveBeenCalledTimes(3);
+
+    // Oldest w-1 call (gen A) settles while gen B is still in flight. Buggy code clears
+    // `inFlight` here because it only compares `workspaceId === 'w-1'`, which also matches
+    // gen B's still-pending entry.
+    const projectionGenA = new WorkspaceProjection([], [], 1);
+    w1GenA.resolve(projectionGenA);
+    await load1;
+
+    // A 4th w-1 load must dedupe against gen B (still pending), not fire a redundant call.
+    const load4 = vm.load();
+    expect(executeMock).toHaveBeenCalledTimes(3);
+
+    const projectionGenB = new WorkspaceProjection([], [], 2);
+    w1GenB.resolve(projectionGenB);
+    await load3;
+    await load4;
+
+    const projectionW2 = new WorkspaceProjection([], [], 0);
+    w2Call.resolve(projectionW2);
+    await load2;
+
+    // gen B is the last-requested (highest token) call, so its result wins.
+    expect(executeMock).toHaveBeenCalledTimes(3);
+    expect(vm.projection.value).toBe(projectionGenB);
+    expect(vm.isLoading.value).toBe(false);
+    expect(vm.loadFailed.value).toBe(false);
+  });
 });

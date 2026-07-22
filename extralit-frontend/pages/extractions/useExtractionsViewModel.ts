@@ -26,7 +26,7 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
   // superseded before it writes to shared state; `inFlight` dedupes concurrent calls for the
   // same workspace id into a single `execute()` call.
   let requestToken = 0;
-  let inFlight: { workspaceId: string; promise: Promise<void> } | null = null;
+  let inFlight: { workspaceId: string; token: number; promise: Promise<void> } | null = null;
 
   const load = (): Promise<void> => {
     const id = workspaceId.value;
@@ -52,13 +52,16 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
         if (token === requestToken) {
           isLoading.value = false;
         }
-        if (inFlight?.workspaceId === id) {
+        // Only the call that created the current `inFlight` entry may clear it — a stale
+        // ping-pong (w-1 -> w-2 -> w-1) can share `workspaceId` with a newer generation's
+        // entry, so identity is keyed on `token`, not the string id.
+        if (inFlight?.token === token) {
           inFlight = null;
         }
       }
     })();
 
-    inFlight = { workspaceId: id, promise };
+    inFlight = { workspaceId: id, token, promise };
     return promise;
   };
 
