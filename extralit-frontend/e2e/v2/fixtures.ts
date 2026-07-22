@@ -1,4 +1,4 @@
-import { test as base, chromium, type APIRequestContext, type Browser } from "@playwright/test";
+import { test as base, chromium, type Browser } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -12,21 +12,33 @@ export interface SeedOutput {
   questions: Record<string, { id: string; name: string }>;
 }
 
-export const loadSeed = (): SeedOutput =>
-  JSON.parse(readFileSync(join(__dirname, "seed", "seed-output.json"), "utf-8"));
+const REQUIRED_SEED_KEYS: readonly (keyof SeedOutput)[] = [
+  "workspaceId",
+  "schemaId",
+  "schemaName",
+  "emptySchemaName",
+  "reference",
+  "recordId",
+  "questions",
+];
+
+export const loadSeed = (): SeedOutput => {
+  const parsed = JSON.parse(readFileSync(join(__dirname, "seed", "seed-output.json"), "utf-8"));
+  const missing = REQUIRED_SEED_KEYS.filter((key) => parsed[key] === undefined);
+  if (missing.length > 0) {
+    throw new Error(
+      `seed-output.json is missing required key(s): ${missing.join(", ")}. ` +
+        "This usually means it was written by an older version of the seeder — re-run " +
+        "`npm run e2e:v2:seed` to regenerate it."
+    );
+  }
+  return parsed as SeedOutput;
+};
 
 export const credentials = () => ({
   username: process.env.E2E_USERNAME ?? "extralit",
   password: process.env.E2E_PASSWORD ?? "12345678",
 });
-
-const apiUrl = () => process.env.E2E_API_URL ?? "http://localhost:6900";
-
-export const apiToken = async (request: APIRequestContext): Promise<string> => {
-  const { username, password } = credentials();
-  const res = await request.post(`${apiUrl()}/api/v2/token`, { form: { username, password } });
-  return (await res.json()).access_token;
-};
 
 // Local chromium cannot launch on the Orin dev host — connect to the remote ccui
 // chromium over CDP when E2E_CDP_URL is set; fall back to a plain launch (CI).

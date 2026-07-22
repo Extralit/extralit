@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve as resolvePath } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 import { createI18n } from "vue-i18n";
@@ -44,7 +45,23 @@ const mountProvenance = (source: "response" | "suggestion") =>
 // Original values recovered verbatim from git (293466ae8^:extralit-frontend/translation/en.js).
 const EXPECTED = { response: "Response", suggestion: "Suggestion" } as const;
 
-const en_js_source = readFileSync(resolve(process.cwd(), "translation/en.js"), "utf-8");
+// Resolved relative to this spec file (not `process.cwd()`), so the check doesn't ENOENT when
+// vitest is invoked from a different directory (e.g. the monorepo root) than
+// `extralit-frontend/`. Deliberately avoids `new URL(relative, import.meta.url)`: this spec's
+// `happy-dom` test environment overrides the global `URL` constructor (and `node:url`'s
+// browser-shimmed `URL` re-export follows it) to resolve relative references against the
+// fake `http://localhost:3000` test document location instead of the given `file:` base.
+const en_js_path = resolvePath(dirname(fileURLToPath(import.meta.url)), "../../../translation/en.js");
+const en_js_source = readFileSync(en_js_path, "utf-8");
+// Scoped to the `review: { ... }` block specifically — matching against the whole file would
+// also be satisfied by an identically-valued pair under any OTHER namespace (en.js already
+// has a near-miss: `response: "Response value"` elsewhere), so it would never actually pin
+// `review.suggestion`/`review.response`.
+const reviewBlockMatch = en_js_source.match(/\breview:\s*{([^}]*)}/);
+if (!reviewBlockMatch) {
+  throw new Error(`Could not locate a top-level "review: { ... }" block in ${en_js_path}`);
+}
+const reviewBlockSource = reviewBlockMatch[1];
 
 describe("ReviewProvenance dynamic source lookup ($t(`review.${source}`))", () => {
   it.each(["response", "suggestion"] as const)(
@@ -57,10 +74,21 @@ describe("ReviewProvenance dynamic source lookup ($t(`review.${source}`))", () =
     }
   );
 
-  it.each(["response", "suggestion"] as const)("keeps review.%s present in the checked-in en.js catalog", (key) => {
-    // Belt-and-suspenders: assert directly against the source text, independent of the
-    // build-time i18n transform above, so a future edit to en.js is caught even if the
-    // transform/mount plumbing above ever changes.
-    expect(en_js_source).toMatch(new RegExp(`\\b${key}:\\s*"${EXPECTED[key]}"`));
+  it("keeps both review.suggestion and review.response present in the imported catalog's structure", () => {
+    // Asserts against the imported object's actual structure (post `@nuxtjs/i18n` build-time
+    // transform) rather than only regexing source text, so a key removed from `en.review` —
+    // or moved to a differently-shaped export — fails here directly.
+    expect(Object.keys(en.review)).toEqual(expect.arrayContaining(["suggestion", "response"]));
   });
+
+  it.each(["response", "suggestion"] as const)(
+    "keeps review.%s present with its expected value in the checked-in en.js catalog's review block",
+    (key) => {
+      // Belt-and-suspenders: assert directly against the source text, independent of the
+      // build-time i18n transform above (and scoped to the `review` block only, so it can't
+      // be satisfied by a same-valued key under a different namespace), so a future edit to
+      // en.js is caught even if the transform/mount plumbing above ever changes.
+      expect(reviewBlockSource).toMatch(new RegExp(`\\b${key}:\\s*"${EXPECTED[key]}"`));
+    }
+  );
 });

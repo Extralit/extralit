@@ -134,10 +134,26 @@ def main() -> None:
                 json={
                     "items": [
                         {
+                            # Deliberately distinct from the `size` suggestion ("120") and the
+                            # `label` response ("control") seeded below: if the projection ever
+                            # regressed to resolving cells from raw record fields instead of
+                            # coalescing suggestion/response, the grid would show these raw
+                            # values and the e2e spec's `getByText("999")` count-0 assertion
+                            # would catch it. Same field values would otherwise make that
+                            # regression invisible to the positive assertions alone.
                             "fields": {
-                                "size": "120",
-                                "label": "control",
-                                "country": "KE",
+                                "size": "999",
+                                "label": "unset",
+                                # `country` (not a Question, never projected into the grid) is
+                                # the one raw field left carrying a "control" token: the FTS
+                                # index (`index/mapping.py::record_to_row`) only ever sees
+                                # `record.fields`, never suggestion/response values, so
+                                # search-roundtrip.spec.ts's search for "control" needs a raw
+                                # field to match now that `label`'s raw value diverges from its
+                                # response ("control"). Keeping it here (instead of on
+                                # `label`) preserves the size/label raw-vs-coalesced divergence
+                                # the grid spec's `getByText("999")` count-0 assertion relies on.
+                                "country": "KE-control",
                             },
                             "reference": REFERENCE,
                         }
