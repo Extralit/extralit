@@ -12,7 +12,7 @@
         <BaseLoading v-else-if="isLoading" />
         <V2Empty v-else-if="!projection || !projection.rows.length" :message="$t('extractions.empty')" />
 
-        <ExtractionsGrid v-else :projection="projection" @cell-click="onCellClick" />
+        <ExtractionsGrid v-else :projection="projection" @cell-click="onCellClick" @load-error="onGridLoadError" />
       </div>
     </template>
   </InternalPage>

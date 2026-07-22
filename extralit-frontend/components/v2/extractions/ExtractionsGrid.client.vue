@@ -48,6 +48,11 @@ const props = defineProps<{ projection: WorkspaceProjection }>();
 
 const emit = defineEmits<{
   "cell-click": [payload: { cell: ProjectionGridCell; reference: string; schemaId: string; columnName: string }];
+  // Fired when building/loading a Perspective table for the current projection fails (e.g.
+  // `client.table()` rejects). The host page maps this onto its existing `loadError` state
+  // so a rejection here can never again leave the user staring at a blank, unexplained
+  // <perspective-viewer> (see `performLoad`'s doc comment).
+  "load-error": [];
 }>();
 
 const viewerEl = ref<HTMLPerspectiveViewerElement | null>(null);
@@ -209,7 +214,23 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
   if (!client) {
     return;
   }
-  const newTable = await client.table(toPerspectiveData(projection));
+
+  let newTable: PerspectiveTableLike;
+  try {
+    // Building the table is guarded here (rather than a bare `await` before any try/catch)
+    // specifically so a rejection — e.g. a non-scalar cell value `client.table()` can't
+    // infer a schema for, see `toPerspectiveData` — surfaces as `load-error` instead of
+    // escaping as an unhandled rejection. An unhandled rejection here previously left
+    // `loadFailed` at `false` while the viewer stayed mounted empty: a silent, total
+    // failure with no explanation ever shown to the user.
+    newTable = await client.table(toPerspectiveData(projection));
+  } catch (error) {
+    if (!cancelled) {
+      console.error("[ExtractionsGrid] failed to build the Perspective table for this projection", error);
+      emit("load-error");
+    }
+    return;
+  }
   if (cancelled) {
     // Unmount already ran and, finding nothing to clean up at the time, will never run
     // again — this table would otherwise never be deleted.

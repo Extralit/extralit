@@ -61,6 +61,23 @@ describe("useExtractionsViewModel", () => {
     expect(url).toBe("/dataset/s-1/annotation-mode?_search=10.1%2Fa%20b");
   });
 
+  it("flags load failure when the grid reports a load-error after a successful projection load", async () => {
+    // Reproduces ExtractionsGrid's `load-error` emit (e.g. `client.table()` rejecting on a
+    // non-scalar cell value): the projection itself loaded fine, but the page's state
+    // cascade must still fall back to the loadError message instead of leaving the grid
+    // mounted empty with no explanation.
+    const projection = new WorkspaceProjection([], [], 0);
+    executeMock.mockResolvedValue(projection);
+
+    const vm = useExtractionsViewModel("w-1");
+    await vm.load();
+    expect(vm.loadFailed.value).toBe(false);
+
+    vm.onGridLoadError();
+
+    expect(vm.loadFailed.value).toBe(true);
+  });
+
   it("keeps the last-requested workspace's result when a superseded slow response resolves later", async () => {
     const firstCall = deferred<WorkspaceProjection>();
     const secondCall = deferred<WorkspaceProjection>();

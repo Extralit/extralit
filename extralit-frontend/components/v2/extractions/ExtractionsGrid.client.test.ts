@@ -46,4 +46,21 @@ describe("ExtractionsGrid", () => {
     expect(initSpy).toHaveBeenCalledTimes(1);
     expect(tableSpy).toHaveBeenCalledWith([{ reference: "10.1/a", "Design.type": "RCT" }]);
   });
+
+  it("emits load-error instead of throwing when building the Perspective table rejects", async () => {
+    tableSpy.mockRejectedValueOnce(new Error("boom"));
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const wrapper = mount(ExtractionsGrid, {
+      props: { projection: PROJECTION },
+      global: {
+        config: { compilerOptions: { isCustomElement: (tag: string) => tag.startsWith("perspective-") } },
+      },
+    });
+    await flushPromises();
+
+    expect(wrapper.emitted("load-error")).toHaveLength(1);
+
+    consoleErrorSpy.mockRestore();
+  });
 });

@@ -28,10 +28,36 @@ export function toPerspectiveData(projection: WorkspaceProjection): Record<strin
     const record: Record<string, unknown> = { [REFERENCE_COLUMN]: row.reference };
     for (const column of projection.columns) {
       const cell = row.cells[column.name];
-      record[column.name] = cell ? cell.value : null;
+      record[column.name] = cell ? toScalarCell(cell.value) : null;
     }
     return record;
   });
+}
+
+/**
+ * Coerces a cell value to something Perspective can build a column schema from.
+ *
+ * Perspective infers each column's type from the (assumed-scalar) shape of its cell
+ * values — it has no notion of an array- or object-typed column. The backend's
+ * `QuestionType` enum, though, includes `multi_label_selection` (array of labels),
+ * `ranking` (array of ranked items), and `span` (an object) — all non-scalar. Feeding one
+ * of those straight into `client.table()` either renders as `[object Object]` or makes the
+ * whole `table()` call reject (see grid-adapter.test.ts / ExtractionsGrid's `performLoad`
+ * doc comment for what happens to that rejection). Serializing arrays/objects to a stable
+ * JSON string keeps every column scalar. `null` is passed through as-is (not the string
+ * `"null"`) because the manifest-completeness contract in `toPerspectiveData`'s doc comment
+ * depends on an absent/empty cell being `null`. Genuine scalars (string/number/boolean) are
+ * passed through unchanged.
+ */
+function toScalarCell(value: unknown): unknown {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const valueType = typeof value;
+  if (valueType === "string" || valueType === "number" || valueType === "boolean") {
+    return value;
+  }
+  return JSON.stringify(value);
 }
 
 /**

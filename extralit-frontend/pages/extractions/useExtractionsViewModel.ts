@@ -76,5 +76,13 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
     return url;
   };
 
-  return { projection, isLoading, loadFailed, workspaceId, load, onCellClick };
+  // Wired to `ExtractionsGrid`'s `load-error` emit (see its doc comment): a rejection while
+  // building/loading the Perspective table for the current projection is surfaced through
+  // this same `loadFailed` flag the page already renders `extractions.loadError` for, so the
+  // user is never left staring at a blank, unexplained grid.
+  const onGridLoadError = (): void => {
+    loadFailed.value = true;
+  };
+
+  return { projection, isLoading, loadFailed, workspaceId, load, onCellClick, onGridLoadError };
 };

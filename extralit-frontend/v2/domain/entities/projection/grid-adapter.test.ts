@@ -89,6 +89,53 @@ describe("toPerspectiveData", () => {
     const empty = new WorkspaceProjection(COLUMNS, [], 0);
     expect(toPerspectiveData(empty)).toEqual([]);
   });
+
+  it("serializes an array cell value to a stable JSON string (multi_label_selection / ranking)", () => {
+    const arrayProjection = new WorkspaceProjection(
+      COLUMNS,
+      [{ reference: "10.1/a", rowIndex: 0, cells: { "Design.type": cell(["low", "high"]) } }],
+      1
+    );
+    expect(toPerspectiveData(arrayProjection)[0]["Design.type"]).toBe(JSON.stringify(["low", "high"]));
+  });
+
+  it("serializes an object cell value to a stable JSON string (span)", () => {
+    const spanProjection = new WorkspaceProjection(
+      COLUMNS,
+      [{ reference: "10.1/a", rowIndex: 0, cells: { "Design.type": cell({ start: 0, end: 3, text: "RCT" }) } }],
+      1
+    );
+    expect(toPerspectiveData(spanProjection)[0]["Design.type"]).toBe(JSON.stringify({ start: 0, end: 3, text: "RCT" }));
+  });
+
+  it('keeps an absent cell as the JS value null, not the string "null"', () => {
+    expect(toPerspectiveData(PROJECTION)[2]["Design.type"]).toBeNull();
+  });
+
+  it('keeps a cell whose value is explicitly null as null, not the string "null"', () => {
+    const explicitNullProjection = new WorkspaceProjection(
+      COLUMNS,
+      [{ reference: "10.1/a", rowIndex: 0, cells: { "Design.type": cell(null) } }],
+      1
+    );
+    expect(toPerspectiveData(explicitNullProjection)[0]["Design.type"]).toBeNull();
+  });
+
+  it("passes scalar cell values (string, number, boolean) through unchanged", () => {
+    const scalarProjection = new WorkspaceProjection(
+      COLUMNS,
+      [
+        { reference: "10.1/a", rowIndex: 0, cells: { "Design.type": cell("RCT") } },
+        { reference: "10.1/b", rowIndex: 0, cells: { "Design.type": cell(42) } },
+        { reference: "10.1/c", rowIndex: 0, cells: { "Design.type": cell(true) } },
+      ],
+      1
+    );
+    const rows = toPerspectiveData(scalarProjection);
+    expect(rows[0]["Design.type"]).toBe("RCT");
+    expect(rows[1]["Design.type"]).toBe(42);
+    expect(rows[2]["Design.type"]).toBe(true);
+  });
 });
 
 describe("cellAt", () => {
