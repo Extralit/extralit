@@ -1,11 +1,15 @@
 <template>
   <main class="internal-page">
     <div class="internal-page__header">
-      <slot name="header">here is the header</slot>
+      <slot name="header" />
     </div>
     <main class="internal-page__container">
-      <slot name="page-header">here is the page header</slot>
-      <slot name="page-content">here is the page content</slot>
+      <!-- No placeholder fallbacks: an unfilled slot must render nothing. The inherited
+      "here is the page header" / "here is the page content" defaults were dev scaffolding
+      and rendered as literal copy on every page that fills only some of these slots
+      (e.g. /extractions, which supplies `header` + `page-content` but no `page-header`). -->
+      <slot name="page-header" />
+      <slot name="page-content" />
     </main>
   </main>
 </template>

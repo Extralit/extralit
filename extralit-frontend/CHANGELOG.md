@@ -19,6 +19,13 @@ These are the section headers that we use:
 
 - Loading indicator on sign-in form button to provide visual feedback during authentication requests.
 
+### Fixed
+
+- `InternalPage` no longer renders literal `here is the header` / `here is the page header` /
+  `here is the page content` placeholder copy. These were dev-scaffolding slot fallbacks, and any
+  page that fills only some of the three slots (e.g. `/extractions`, which supplies `header` and
+  `page-content` but no `page-header`) showed the unfilled slot's placeholder as real page copy.
+
 ## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 ### Added
 - Incremental Dataset Import: new `DatasetUpdateDialog` and update workflow in `DatasetConfigurationForm` to update existing datasets with imported data
