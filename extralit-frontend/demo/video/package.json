@@ -1,0 +1,24 @@
+{
+  "name": "extralit-extractions-demo-video",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "render": "remotion render ExtractionsDemo out/extractions-demo.mp4",
+    "studio": "remotion studio",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.496",
+    "@remotion/media": "4.0.496",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.496"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "typescript": "5.8.3"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
+}
