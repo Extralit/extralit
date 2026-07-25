@@ -143,11 +143,12 @@ describe("useExtractionsViewModel", () => {
     expect(vm.loadFailed.value).toBe(true);
   });
 
-  it("builds the annotation URL on cell click but does not navigate (guard off)", () => {
-    const vm = useExtractionsViewModel("w-1");
-    const url = vm.onCellClick({ schemaId: "s-1", reference: "10.1/a b" });
-    expect(url).toBe("/dataset/s-1/annotation-mode?_search=10.1%2Fa%20b");
-  });
+  // NOTE: no spec here for `onCellClick`'s guarded navigation. One was tried and removed:
+  // its only assertion was on the returned URL — byte-identical to grid-adapter.test.ts's
+  // `buildAnnotationUrl` case — while its actual claim ("does not navigate") went
+  // unasserted, so flipping ANNOTATION_CELL_LINKS_ENABLED to true, or deleting the guard
+  // outright, both left it green. Covering it for real needs a `window.location` spy, and
+  // belongs with the ENG-32 consumer that makes navigation reachable.
 
   it("flags load failure when the grid reports a load-error after a successful projection load", async () => {
     // Reproduces ExtractionsGrid's `load-error` emit (e.g. `client.table()` rejecting on a

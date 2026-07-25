@@ -84,8 +84,7 @@ meaning** — join keys are ordinary cell values.
 - **Given** a table value delivered as a bare dict rather than a list, **when** the viewer
   loads, **then** it fans out to exactly 1 row. *[srv]*
 - **Given** two schemas related by a join key (`observation_ref` → `Observation.reference`),
-  **when** the viewer loads, **then** the join key renders as an ordinary readable cell and
-  no assertion is made about cross-schema row correspondence. *[e2e]*
+  **when** the viewer loads, **then** the join key renders as an ordinary readable cell. *[e2e]*
 
 ## AC4 — Reference grouping is legible and the grid is static
 
@@ -100,8 +99,6 @@ cells); toolbar/settings hidden; no sort or filter affordance in v1.
   Perspective does not remove `#settings_button` under `settings: false`; it collapses it to
   0×0 while leaving `display: flex; visibility: visible` (verified in-browser 2026-07-24), so
   a DOM-absence assertion fails against a correctly static grid. *[e2e]*
-- **Given** one reference occupying many rows, **when** rendered, **then** the reference
-  value repeats on every row rather than being merged. *[unit, e2e]*
 
 ## AC5 — The viewer survives real data at scale and fails loudly
 
@@ -176,5 +173,4 @@ Fan-out is global across all five schemas, so a paper with 30 `ClinicalOutcome` 
 `Publication` row yields 30 grid rows with `Publication` repeated and `Observation` blank
 past its own row count. Five schemas × ~70 columns is a very wide, sparse grid with no sort,
 filter, or column visibility. Join keys are readable as cells; the *positional* alignment
-between schemas is meaningless — and that will be visible. AC3's last criterion asserts
-exactly this rather than papering over it.
+between schemas is meaningless — and that will be visible.

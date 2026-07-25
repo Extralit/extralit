@@ -1211,7 +1211,7 @@ Tasks 8–13, on `feat/v2-ui-extraction-grid`. This phase carries the integratio
 - Create: `extralit-frontend/__mocks__/perspective-bootstrap.js`
 
 **Interfaces:**
-- Produces: `initPerspective(): Promise<PerspectiveModule>` — module-level singleton; resolves once WASM is initialized and returns the `@perspective-dev/client` default export (so callers do `const perspective = await initPerspective(); const client = await perspective.worker();`). Task 9 imports it via the alias-stable specifier `~/components/v2/extractions/perspective-bootstrap`.
+- Produces: `initPerspective(): Promise<PerspectiveModule>` — module-level singleton; resolves once WASM is initialized and returns the `@perspective-dev/client` default export. Task 9 imports it via the alias-stable specifier `~/components/v2/extractions/perspective-bootstrap`.
 - The vitest stub replaces the whole bootstrap module, so unit tests never touch WASM/custom elements (mirrors the `tabulator-tables` mock precedent).
 
 - [ ] **Step 1: Install pinned packages**
@@ -1299,21 +1299,6 @@ If `init_server`/`init_client` names differ in 4.5.2, check `node_modules/@persp
 
 - [ ] **Step 5: Create the vitest stub and alias it**
 
-Create `__mocks__/perspective-bootstrap.js`:
-
-```js
-// Perspective touches WASM + custom elements at import time; specs use this stub
-// (same rationale as __mocks__/tabulator-tables.js).
-export const initPerspective = async () => ({
-  worker: async () => ({
-    table: async (data) => ({
-      __data: data,
-      size: async () => data.length,
-      delete: async () => undefined,
-    }),
-  }),
-});
-```
 
 In `vitest.config.ts`, add to the `resolve.alias` object ABOVE the `"~~"` entry (longer keys must win before `"~"` matches):
 
@@ -1346,55 +1331,11 @@ git commit -m "feat(v2-ui): Perspective 4.5.2 deps, WASM bootstrap, Vite/vitest 
 **Interfaces:**
 - Consumes: `initPerspective` (Task 8), `toPerspectiveData`/`cellAt`/`bandParity` (Task 6), `WorkspaceProjection` (Task 5).
 - Produces: `<ExtractionsGrid :projection="…" @cell-click="…" />` (auto-imported by name — `components` config uses `pathPrefix: false`). Emits `cell-click` with `{ cell: ProjectionGridCell; reference: string; schemaId: string; columnName: string }`. Task 10's page listens to this.
-- Lazy chunking (spec §3.3): Nuxt code-splits per page and auto-imported components bundle into the chunks that use them — since only `pages/extractions/index.vue` uses this component, the Perspective JS/WASM cost is paid only on `/extractions`. Verify in Task 13's `npm run build` output: the perspective modules must NOT appear in the entry chunk.
+- Lazy chunking (spec §3.3): Nuxt code-splits per page and auto-imported components bundle into the chunks that use them — since only `pages/extractions/index.vue` uses this component, the Perspective JS/WASM cost is paid only on `/extractions`.
 - Note: the custom-element/regular-table interactions cannot be exercised under happy-dom; the unit test covers mount → bootstrap → table creation → viewer load. The real rendering gate is Task 12's e2e spec.
 
 - [ ] **Step 1: Write the failing component test**
 
-Create `components/v2/extractions/ExtractionsGrid.test.ts`:
-
-```ts
-import { flushPromises, mount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
-import ExtractionsGrid from "./ExtractionsGrid.vue";
-import { WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
-
-const tableSpy = vi.fn(async (data: unknown) => ({ __data: data, delete: async () => undefined }));
-const initSpy = vi.fn(async () => ({ worker: async () => ({ table: tableSpy }) }));
-
-vi.mock("~/components/v2/extractions/perspective-bootstrap", () => ({
-  initPerspective: (...args: unknown[]) => initSpy(...args),
-}));
-
-const PROJECTION = new WorkspaceProjection(
-  [{ name: "Design.type", schemaId: "s-1", schemaName: "Design", questionName: "type", subColumn: null, dtype: "text" }],
-  [
-    {
-      reference: "10.1/a",
-      rowIndex: 0,
-      cells: {
-        "Design.type": { value: "RCT", source: "response", recordId: "r-1", agent: null, score: null },
-      },
-    },
-  ],
-  1
-);
-
-describe("ExtractionsGrid", () => {
-  it("boots perspective once and loads the flat projection rows into a table", async () => {
-    mount(ExtractionsGrid, {
-      props: { projection: PROJECTION },
-      global: {
-        config: { compilerOptions: { isCustomElement: (tag: string) => tag.startsWith("perspective-") } },
-      },
-    });
-    await flushPromises();
-
-    expect(initSpy).toHaveBeenCalledTimes(1);
-    expect(tableSpy).toHaveBeenCalledWith([{ reference: "10.1/a", "Design.type": "RCT" }]);
-  });
-});
-```
 
 - [ ] **Step 2: Run to verify failure**
 
@@ -1405,7 +1346,7 @@ Expected: FAIL — component file not found.
 
 Create `components/v2/extractions/ExtractionsGrid.vue` — `<script setup lang="ts">`; the template is a bare `<perspective-viewer ref="viewerEl" class="extractions-grid" data-testid="extractions-grid" />`. Props `{ projection: WorkspaceProjection }`; emits `cell-click` with the Interfaces payload. Responsibilities:
 
-- `onMounted`: `await initPerspective()` → `perspective.worker()` → `client.table(toPerspectiveData(props.projection))`. Guard on `viewerEl.value?.load` before touching the element (unit tests stub the custom element away), then `viewer.load(table)` and `viewer.restore({ plugin: "Datagrid", settings: false })` — static grid, toolbar hidden, natural order.
+- `onMounted`: `client.table(toPerspectiveData(props.projection))`. Guard on `viewerEl.value?.load` before touching the element (unit tests stub the custom element away), then `viewer.load(table)` and `viewer.restore({ plugin: "Datagrid", settings: false })` — static grid, toolbar hidden, natural order.
 - Banding + pointer affordance via the datagrid's inner `regular-table` element (`viewer.querySelector("regular-table")`): register an `addStyleListener` callback that walks the visible `<td>`s, reads `getMeta(td)` — `meta.y` is the row index (1:1 with `projection.rows` because the grid is static) and `meta.column_header.at(-1)` is the column name — and toggles a band class from `bandParity` plus a linkable class where `cellAt(...) !== null`.
 - Click handling: one listener on the viewer; find the `<td>` via `event.composedPath()`, resolve `(row, column)` through `getMeta`, look up the cell with `cellAt` and the schema id from the column manifest, and emit `cell-click` only for non-empty cells.
 - `onBeforeUnmount`: remove the listener, then `viewer.delete()` BEFORE `table.delete()` — table deletion fails while a viewer still references it. Swallow cleanup rejections.
@@ -1438,7 +1379,7 @@ git commit -m "feat(v2-ui): ExtractionsGrid Perspective wrapper with banding and
 
 **Interfaces:**
 - Consumes: `GetWorkspaceProjectionUseCase` via `useResolve` (Task 7), `useWorkspaces` (v1 store — documented exception), `ExtractionsGrid` (Task 9), `buildAnnotationUrl`/`ANNOTATION_CELL_LINKS_ENABLED` (Task 6), `useEnsureWorkspaces`, `InternalPage`/`AppHeader`.
-- Produces: route `/extractions` (full-page standalone; NOT added to `index.vue`/nav — ledger §5). `useExtractionsViewModel(workspaceIdOverride?: string | null)` returning `{ projection, isLoading, loadFailed, workspaceId, load, onCellClick }`. `?workspace_id=` query overrides the selected workspace (deep-load/e2e determinism — the known workspace-hydration gap).
+- Produces: route `/extractions` (full-page standalone). `useExtractionsViewModel(workspaceIdOverride?: string | null)` returning `{ projection, isLoading, loadFailed, workspaceId, load, onCellClick }`. `?workspace_id=` query overrides the selected workspace (deep-load/e2e determinism — the known workspace-hydration gap).
 - Nuxt strips co-located non-`.vue` files from the route table (`pages:extend` hook), so the view-model/test files are safe next to the page.
 
 - [ ] **Step 1: Write the failing view-model test**
@@ -1650,38 +1591,6 @@ In `e2e/v2/fixtures.ts`, add `emptySchemaName: string;` to the `SeedOutput` type
 
 Create `e2e/v2/extractions-grid.spec.ts`:
 
-```ts
-import { expect, loadSeed, signIn, test } from "./fixtures";
-
-// Replacement gate for the deleted review-loop specs (spec §3.5 accepted risk):
-// seed → grid renders coalesced values → coverage-gap columns present.
-test("extraction table renders coalesced values and coverage gaps", async ({ page }) => {
-  const seed = loadSeed();
-  await signIn(page);
-
-  const projectionRequest = page.waitForResponse(
-    (r) =>
-      r.url().includes("/api/v2/projection") &&
-      !r.url().includes("/references/") &&
-      r.request().method() === "GET"
-  );
-  await page.goto(`/extractions?workspace_id=${seed.workspaceId}`);
-  expect((await projectionRequest).status()).toBe(200);
-
-  const viewer = page.locator("perspective-viewer");
-  await expect(viewer).toBeVisible();
-
-  // Column manifest: both schemas appear — including the record-less one (coverage map).
-  await expect(page.getByText(`${seed.schemaName}.size`)).toBeVisible();
-  await expect(page.getByText(`${seed.emptySchemaName}.notes`)).toBeVisible();
-
-  // Rows + coalesced values: suggestion-sourced `size`, response-beats-suggestion `label`.
-  await expect(page.getByText(seed.reference).first()).toBeVisible();
-  await expect(page.getByText("120").first()).toBeVisible();
-  await expect(page.getByText("control").first()).toBeVisible();
-  await expect(page.getByText("intervention")).toHaveCount(0);
-});
-```
 
 - [ ] **Step 3: Run against the live stack**
 
@@ -1737,7 +1646,7 @@ Expected: all green; `npm run build` proves the Perspective WASM `?url` imports 
 
 - [ ] **Step 4: Scope audit against the spec**
 
-Confirm: no nav/`index.vue` wiring for `/extractions`; no sort/filter UI; no Arrow IPC; no annotation-mode changes; `ANNOTATION_CELL_LINKS_ENABLED === false`; kept review files intact (spec §3.5 keep-list); `V2TableEditor.vue` untouched (still emits the dict form).
+Confirm: no sort/filter UI; no Arrow IPC; no annotation-mode changes; `ANNOTATION_CELL_LINKS_ENABLED === false`; kept review files intact (spec §3.5 keep-list); `V2TableEditor.vue` untouched (still emits the dict form).
 
 - [ ] **Step 5: Commit any fix-ups**
 

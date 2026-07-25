@@ -17,7 +17,7 @@
 - **Reuse-don't-fork:** leaves are extracted with `git mv` and v1 re-pointed; nothing is copy-pasted into `v2/`.
 - **Name-keyed global registries:** ts-injecty DI and `useStoreFor` Pinia stores are keyed by **class name**; Nuxt component auto-import is **flat** (`pathPrefix: false`). Every v2 use-case/repository/storage-state class name and every new component name must be globally unique vs v1 (hence `V2RecordRepository`, `V2TableEditor`, etc.).
 - **UI copy says "Schema"** — all new copy through i18n key families `schemas.*` and `review.*` in `translation/en.js` (fallbackLocale is `en`; other locales fall back). Never reuse `dataset`-keyed copy.
-- **Routes:** `/schemas`, `/schemas/[id]`, `/schemas/[id]/settings`, `/references/[...reference]?workspace_id=`. No `/v2/` prefix. Always `encodeURIComponent(reference)` when building API URLs.
+- **Routes:** `/schemas`, `/schemas/[id]`, `/schemas/[id]/settings`. No `/v2/` prefix. Always `encodeURIComponent(reference)` when building API URLs.
 - **axios baseURL is `/api`** → repository paths start with `/v2/...`. The shared instance injects `Authorization: Bearer` and runs `AxiosErrorHandler` + `AxiosCache` interceptors — do not create a parallel HTTP client.
 - **Server contract gotchas** (from spec §7/§10, verified against merged code): projection cells & `response.values` keyed by question **name**, suggestions by question **id**; `response.values` is double-wrapped `{question_name: {"value": …}}` on PUT and GET; `GET /records/{id}/responses` returns `null` with 200; two 422 body shapes (`detail: string` and `detail: [{loc,msg,type}]`); `total` is approximate; unknown filter columns → 5xx (UI must offer only known columns); `span` questions are rejected by the server (excluded from the slice).
 - **Question value shapes the server validates** (v1 validator union): `text`→string, `label_selection`→string, `multi_label_selection`→string[], `rating`→number, `ranking`→`[{value, rank}]`, `table`→object with keys ⊆ bound columns.
@@ -30,9 +30,7 @@
 2. **App home:** nav sibling — a third "Schemas" tab on the home page that navigates to `/schemas` (Task 6). Home swap deferred to Phase 6.
 3. **i18n:** new `schemas.*` / `review.*` families in `translation/en.js` only (fallback covers de/es/ja).
 4. **Rebuild-index affordance:** yes — button on `/schemas/[id]/settings` calling `POST /v2/schemas/{id}:rebuild-index`, showing the returned `{indexed: n}` (Task 8).
-5. **Orphaned response values:** `ReferenceReview` assembly collects `orphanedValues` (response keys no question owns); the form surfaces them read-only and excludes them from emit payloads (Tasks 11, 14).
 
-**Spec deviation (recorded):** spec §7 sketches `<ProjectionReviewForm :review :draft>` with a singular `draft` prop, but a reference spans multiple records each with its own draft. The plan puts each record's draft inside `ReviewRecord.draft` on the assembled entity; the form takes only `:review`. Emits keep the spec'd `(recordId, values)` signatures.
 
 ## File structure
 
@@ -51,13 +49,12 @@ extralit-frontend/
       record/V2Record.ts, record/RecordsPage.ts                           # Task 5
       search/SearchCriteria.ts (+ .test.ts)                               # Task 5
       review/response-values.ts (+ .test.ts)                              # Task 10
-      review/ReferenceReview.ts, review/SuggestionHint.ts (+ tests)       # Task 11
+      review/SuggestionHint.ts (+ tests)                                  # Task 11
       review/widget-adapters.ts (+ .test.ts)                              # Task 14
     domain/usecases/
       get-schemas-use-case.ts, get-schema-settings-use-case.ts            # Task 4
       get-schema-records-use-case.ts, search-records-use-case.ts,
       rebuild-schema-index-use-case.ts                                    # Task 5
-      get-reference-review-use-case.ts (+ .test.ts)                       # Task 11
       submit-reference-review-use-case.ts, save-review-draft-use-case.ts,
       discard-review-use-case.ts (+ tests)                                # Task 12
     infrastructure/
@@ -67,7 +64,6 @@ extralit-frontend/
       repositories/AnnotationRepository.ts, ProjectionRepository.ts,
       repositories/apiErrors.ts (+ tests)                                 # Task 10
       storage/SchemasStorage.ts                                           # Task 4
-      storage/ReferenceReviewsStorage.ts                                  # Task 11
     di/di.ts, di/index.ts                                                 # Task 4 (grows each task)
   components/base/inputs/                                                 # Task 9 (moved leaves)
     label-selection/{LabelSelection.component.vue, useLabelSelectionViewModel.ts}
@@ -76,13 +72,11 @@ extralit-frontend/
     text-area/ContentEditableFeedbackTask.vue
   components/v2/
     schemas/V2RecordsTable.vue                                            # Task 7
-    review/{ProjectionReviewForm.vue, ReviewRecordCard.vue,
-            ReviewCellInput.vue, ReviewProvenance.vue} (+ tests)          # Task 14
+    review/{ReviewCellInput.vue, ReviewProvenance.vue} (+ tests)          # Task 14
     table/V2TableEditor.vue (+ .test.ts)                                  # Task 13
   pages/schemas/index.vue + useSchemasViewModel.ts (+ test)               # Task 6
   pages/schemas/[id]/index.vue + useSchemaRecordsViewModel.ts (+ test)    # Task 7
   pages/schemas/[id]/settings.vue + useSchemaSettingsViewModel.ts (+ test)# Task 8
-  pages/references/[...reference].vue + useReferenceReviewViewModel.ts    # Task 15
   e2e/v2/                                                                 # Tasks 16–17
     fixtures.ts, seed/seed_v2_e2e.py, *.spec.ts
   translation/en.js                                                       # Tasks 6, 8, 14 (add keys)
@@ -3378,20 +3372,15 @@ git commit -m "feat(v2-ui): lean V2TableEditor tabulator wrapper for table quest
 
 **Files:**
 - Create: `extralit-frontend/v2/domain/entities/review/widget-adapters.ts`
-- Create: `extralit-frontend/components/v2/review/ProjectionReviewForm.vue`
-- Create: `extralit-frontend/components/v2/review/ReviewRecordCard.vue`
 - Create: `extralit-frontend/components/v2/review/ReviewCellInput.vue`
 - Create: `extralit-frontend/components/v2/review/ReviewProvenance.vue`
 - Modify: `extralit-frontend/translation/en.js` (add `review.*` keys)
 - Test: `extralit-frontend/v2/domain/entities/review/widget-adapters.test.ts`
-- Test: `extralit-frontend/components/v2/review/ProjectionReviewForm.test.ts`
 
 **Interfaces:**
 - Consumes: `ReferenceReview` / `ReviewRecord` / `ReviewCell` / `SuggestionHint` (Task 11), extracted leaves (Task 9), `V2TableEditor` (Task 13), `Question` (Task 3).
 - Produces:
   - Widget adapters (pure, tested): `buildLabelOptions(question, selected: unknown): {id,text,value,description,isSelected}[]`; `selectedFromLabelOptions(options, multiple): string | string[] | null`; `buildRatingOptions(question, selected: unknown): {id,value,isSelected}[]`; `selectedFromRatingOptions(options): number | null`; `buildRankingValues(question, ranked: unknown): {id,text,value,description,rank}[]`; `rankingAnswerFromValues(values): {value,rank}[]`; `suggestionHintFor(cell: ReviewCell): SuggestionHint | null`.
-  - `<ProjectionReviewForm :review="ReferenceReview" @submit="(recordId, values)" @save-draft="(recordId, values)" @discard="(recordId)">` — **pure**: no route reads, no fetches, no queue knowledge (spec §7). `values` are PLAIN (unwrapped); the page's use-cases wrap them.
-  - `<ProjectionReviewForm>` also accepts `:submit-errors="Record<string, string[]>"` (recordId → messages) so the page can surface normalized 422s inline.
 
 - [ ] **Step 1: Write the failing adapter tests**
 
@@ -3585,120 +3574,12 @@ In `extralit-frontend/translation/en.js`, add:
 
 ```js
   review: {
-    title: "Review",
-    submit: "Submit",
-    saveDraft: "Save draft",
-    discard: "Discard",
     suggestion: "Suggestion",
     response: "Response",
     agent: "Agent",
     score: "Score",
-    context: "Context",
-    notApplicable: "Not applicable in this schema version",
-    orphanedValues: "Values from removed questions (read-only, not resubmitted)",
-    loadError: "Could not load review for this reference.",
-    submitted: "Response submitted",
-    draftSaved: "Draft saved",
-    discarded: "Response discarded",
-  },
 ```
 
-- [ ] **Step 4: Write the failing form component test**
-
-Create `extralit-frontend/components/v2/review/ProjectionReviewForm.test.ts`:
-
-```ts
-import { describe, expect, it } from "vitest";
-import { mount } from "@vue/test-utils";
-import ProjectionReviewForm from "./ProjectionReviewForm.vue";
-import { ReferenceReview, ReviewCell, ReviewRecord } from "~/v2/domain/entities/review/ReferenceReview";
-import { Question } from "~/v2/domain/entities/question/Question";
-
-const textQuestion = new Question("q-size", "s-1", "size", "Sample size", null, "text", ["size"], {}, true);
-const labelQuestion = new Question("q-label", "s-1", "label", "Label", null, "label_selection", ["label"], {
-  type: "label_selection",
-  options: [{ value: "a", text: "A", description: null }],
-}, false);
-
-const makeReview = (cells: ReviewCell[], draft = null, orphaned: { name: string; value: unknown }[] = []) =>
-  new ReferenceReview("10.1000/j.x", [new ReviewRecord("r-1", "s-1", "sample_size", cells, [], orphaned, draft)], 1);
-
-const stubs = {
-  // Leaves are exercised in their own suites; here we assert dispatch + emit shaping.
-  ContentEditableFeedbackTask: { template: "<div class='stub-text' />", props: ["value"] },
-  LabelSelectionComponent: { template: "<div class='stub-label' />", props: ["modelValue"] },
-  RatingMonoSelectionComponent: true,
-  DndSelectionComponent: true,
-  V2TableEditor: true,
-};
-
-describe("ProjectionReviewForm", () => {
-  it("renders a widget per question type and suggestion provenance", () => {
-    const review = makeReview([
-      new ReviewCell(textQuestion, "12", "suggestion", { agent: "gpt", score: 0.9, suggestedValue: "12" }, false),
-      new ReviewCell(labelQuestion, null, null, null, false),
-    ]);
-
-    const wrapper = mount(ProjectionReviewForm, { props: { review }, global: { stubs } });
-
-    expect(wrapper.find(".stub-text").exists()).toBe(true);
-    expect(wrapper.find(".stub-label").exists()).toBe(true);
-    expect(wrapper.text()).toContain("review.suggestion");
-    expect(wrapper.text()).toContain("gpt");
-  });
-
-  it("emits submit with (recordId, plain values) — page wraps them", async () => {
-    const review = makeReview([
-      new ReviewCell(textQuestion, "12", "suggestion", { agent: "gpt", score: 0.9, suggestedValue: "12" }, false),
-    ]);
-    const wrapper = mount(ProjectionReviewForm, { props: { review }, global: { stubs } });
-
-    await wrapper.get("[data-test='submit-r-1']").trigger("click");
-
-    expect(wrapper.emitted("submit")).toEqual([["r-1", { size: "12" }]]);
-  });
-
-  it("marks not-applicable cells and excludes them from emitted values", async () => {
-    const review = makeReview([
-      new ReviewCell(textQuestion, "12", "suggestion", null, false),
-      new ReviewCell(labelQuestion, "a", "suggestion", null, true),
-    ]);
-    const wrapper = mount(ProjectionReviewForm, { props: { review }, global: { stubs } });
-
-    expect(wrapper.text()).toContain("review.notApplicable");
-    await wrapper.get("[data-test='save-draft-r-1']").trigger("click");
-    expect(wrapper.emitted("save-draft")).toEqual([["r-1", { size: "12" }]]);
-  });
-
-  it("surfaces orphaned values read-only and never includes them in emits", async () => {
-    const review = makeReview(
-      [new ReviewCell(textQuestion, "12", null, null, false)],
-      null,
-      [{ name: "ghost", value: "zzz" }]
-    );
-    const wrapper = mount(ProjectionReviewForm, { props: { review }, global: { stubs } });
-
-    expect(wrapper.text()).toContain("review.orphanedValues");
-    expect(wrapper.text()).toContain("ghost");
-    await wrapper.get("[data-test='submit-r-1']").trigger("click");
-    expect(wrapper.emitted("submit")![0][1]).not.toHaveProperty("ghost");
-  });
-
-  it("emits discard with the record id and renders submit errors passed back by the page", async () => {
-    const review = makeReview([new ReviewCell(textQuestion, null, null, null, false)]);
-    const wrapper = mount(ProjectionReviewForm, {
-      props: { review, submitErrors: { "r-1": ["missing value for required question: size"] } },
-      global: { stubs },
-    });
-
-    expect(wrapper.text()).toContain("missing value for required question: size");
-    await wrapper.get("[data-test='discard-r-1']").trigger("click");
-    expect(wrapper.emitted("discard")).toEqual([["r-1"]]);
-  });
-});
-```
-
-Run: `npx vitest run components/v2/review --reporter=verbose` — expected FAIL (component missing).
 
 - [ ] **Step 5: Write the components**
 
@@ -3904,174 +3785,6 @@ export default defineComponent({
 </style>
 ```
 
-Create `extralit-frontend/components/v2/review/ReviewRecordCard.vue`:
-
-```vue
-<template>
-  <section class="review-record" :data-record="record.recordId">
-    <header class="review-record__header">
-      <h3>{{ record.schemaName }}</h3>
-    </header>
-
-    <div v-if="record.contextFields.length" class="review-record__context">
-      <h4 v-text="$t('review.context')" />
-      <dl>
-        <template v-for="field in record.contextFields" :key="field.column.name">
-          <dt>{{ field.column.name }}</dt>
-          <dd>{{ formatContext(field) }}</dd>
-        </template>
-      </dl>
-    </div>
-
-    <ReviewCellInput
-      v-for="cell in record.cells"
-      :key="cell.question.id"
-      :cell="cell"
-      :model-value="values[cell.question.name]"
-      :table-columns="tableColumnsFor(cell)"
-      @update:model-value="setValue(cell.question.name, $event)"
-    />
-
-    <div v-if="record.orphanedValues.length" class="review-record__orphans">
-      <h4 v-text="$t('review.orphanedValues')" />
-      <dl>
-        <template v-for="orphan in record.orphanedValues" :key="orphan.name">
-          <dt>{{ orphan.name }}</dt>
-          <dd>{{ JSON.stringify(orphan.value) }}</dd>
-        </template>
-      </dl>
-    </div>
-
-    <ul v-if="errors.length" class="review-record__errors">
-      <li v-for="message in errors" :key="message">{{ message }}</li>
-    </ul>
-
-    <footer class="review-record__actions">
-      <button :data-test="`submit-${record.recordId}`" @click="$emit('submit', record.recordId, cleanValues())">
-        {{ $t("review.submit") }}
-      </button>
-      <button :data-test="`save-draft-${record.recordId}`" @click="$emit('save-draft', record.recordId, cleanValues())">
-        {{ $t("review.saveDraft") }}
-      </button>
-      <button :data-test="`discard-${record.recordId}`" @click="$emit('discard', record.recordId)">
-        {{ $t("review.discard") }}
-      </button>
-    </footer>
-  </section>
-</template>
-
-<script lang="ts">
-import { defineComponent, reactive, watch, type PropType } from "vue";
-import { type ContextField, type ReviewCell, ReviewRecord } from "~/v2/domain/entities/review/ReferenceReview";
-import { type ColumnMeta } from "~/v2/domain/entities/schema/ColumnMeta";
-import ReviewCellInput from "./ReviewCellInput.vue";
-
-export default defineComponent({
-  name: "ReviewRecordCard",
-  components: { ReviewCellInput },
-  props: {
-    record: { type: Object as PropType<ReviewRecord>, required: true },
-    errors: { type: Array as PropType<string[]>, default: () => [] },
-    columnsCache: { type: Array as PropType<ColumnMeta[]>, default: () => [] },
-  },
-  emits: ["submit", "save-draft", "discard"],
-  setup(props) {
-    const values = reactive<Record<string, unknown>>(props.record.initialValues());
-
-    watch(
-      () => props.record,
-      (record) => {
-        Object.keys(values).forEach((key) => delete values[key]);
-        Object.assign(values, record.initialValues());
-      }
-    );
-
-    const setValue = (name: string, value: unknown) => {
-      values[name] = value;
-    };
-
-    // Plain values keyed by question name; nulls dropped so "no answer" stays absent
-    // (submit-time required-question enforcement is the server's, surfaced via errors).
-    const cleanValues = (): Record<string, unknown> =>
-      Object.fromEntries(Object.entries(values).filter(([, v]) => v !== null && v !== undefined && v !== ""));
-
-    const tableColumnsFor = (cell: ReviewCell): ColumnMeta[] =>
-      props.columnsCache.filter((column) => cell.question.columns.includes(column.name));
-
-    const formatContext = (field: ContextField): string =>
-      field.value === null || field.value === undefined ? "—" : String(field.value);
-
-    return { values, setValue, cleanValues, tableColumnsFor, formatContext };
-  },
-});
-</script>
-
-<style lang="scss" scoped>
-.review-record {
-  border: 1px solid var(--bg-opacity-10);
-  border-radius: $border-radius;
-  padding: $base-space * 2;
-  margin-bottom: $base-space * 2;
-
-  &__errors {
-    color: var(--color-danger, #c00);
-  }
-
-  &__actions {
-    display: flex;
-    gap: $base-space;
-    margin-top: $base-space * 2;
-  }
-
-  &__context dl,
-  &__orphans dl {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 2px $base-space * 2;
-    color: var(--fg-secondary);
-  }
-}
-</style>
-```
-
-Note: `ReviewRecordCard` gets the pinned version's `columnsCache` (for table sub-column editors) from `record.columnsCache`, which Task 11's `ReviewRecord` already carries (last constructor param, defaulted to `[]` so this task's test fixtures can omit it).
-
-Create `extralit-frontend/components/v2/review/ProjectionReviewForm.vue`:
-
-```vue
-<template>
-  <div class="projection-review-form">
-    <ReviewRecordCard
-      v-for="record in review.records"
-      :key="record.recordId"
-      :record="record"
-      :columns-cache="record.columnsCache"
-      :errors="submitErrors[record.recordId] ?? []"
-      @submit="(recordId, values) => $emit('submit', recordId, values)"
-      @save-draft="(recordId, values) => $emit('save-draft', recordId, values)"
-      @discard="(recordId) => $emit('discard', recordId)"
-    />
-  </div>
-</template>
-
-<script lang="ts">
-import { defineComponent, type PropType } from "vue";
-import { ReferenceReview } from "~/v2/domain/entities/review/ReferenceReview";
-import ReviewRecordCard from "./ReviewRecordCard.vue";
-
-// Pure component (spec §7): all data in via props, all effects out via emits.
-// No route reads, no fetching, no queue knowledge — Phase 5's Queue UI wraps this as-is.
-export default defineComponent({
-  name: "ProjectionReviewForm",
-  components: { ReviewRecordCard },
-  props: {
-    review: { type: Object as PropType<ReferenceReview>, required: true },
-    submitErrors: { type: Object as PropType<Record<string, string[]>>, default: () => ({}) },
-  },
-  emits: ["submit", "save-draft", "discard"],
-});
-</script>
-```
 
 - [ ] **Step 6: Run tests to verify they pass**
 
@@ -4087,232 +3800,6 @@ git commit -m "feat(v2-ui): pure ProjectionReviewForm with per-type widgets, pro
 
 ---
 
-### Task 15: `/references/[...reference]` page + view-model
-
-**Files:**
-- Create: `extralit-frontend/pages/references/[...reference].vue`
-- Create: `extralit-frontend/pages/references/useReferenceReviewViewModel.ts`
-- Test: `extralit-frontend/pages/references/useReferenceReviewViewModel.test.ts`
-
-**Interfaces:**
-- Consumes: `GetReferenceReviewUseCase` (Task 11); `SubmitReferenceReviewUseCase` / `SaveReviewDraftUseCase` / `DiscardReviewUseCase` / `ReviewSubmitError` (Task 12); `useReferenceReviews` (Task 11); `ProjectionReviewForm` (Task 14); `useNotifications` (v1 services, allowed).
-- Produces: route `/references/<anything-with-slashes>?workspace_id=`; `useReferenceReviewViewModel(reference: string, workspaceId: string): { review, isLoading, loadFailed, submitErrors, onSubmit, onSaveDraft, onDiscard }`. The page is deliberately the *first thin wrapper* around the form (route param in, composable + form, nothing else — spec §7).
-
-- [ ] **Step 1: Write the failing view-model test**
-
-Create `extralit-frontend/pages/references/useReferenceReviewViewModel.test.ts`:
-
-```ts
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createPinia, setActivePinia } from "pinia";
-import { useResolveMock } from "~/v1/di/__mocks__/useResolveMock";
-import { GetReferenceReviewUseCase } from "~/v2/domain/usecases/get-reference-review-use-case";
-import { SubmitReferenceReviewUseCase, ReviewSubmitError } from "~/v2/domain/usecases/submit-reference-review-use-case";
-import { SaveReviewDraftUseCase } from "~/v2/domain/usecases/save-review-draft-use-case";
-import { DiscardReviewUseCase } from "~/v2/domain/usecases/discard-review-use-case";
-import { ReferenceReview } from "~/v2/domain/entities/review/ReferenceReview";
-import { useReferenceReviewViewModel } from "./useReferenceReviewViewModel";
-
-vi.mock("~/v1/infrastructure/services/useNotifications", () => ({
-  useNotifications: () => ({ notify: vi.fn() }),
-}));
-vi.mock("~/v1/infrastructure/services/useTranslate", () => ({
-  useTranslate: () => ({ t: (key: string) => key, tc: (key: string) => key }),
-}));
-
-const REVIEW = new ReferenceReview("10.1000/j.x", [], 0);
-
-describe("useReferenceReviewViewModel", () => {
-  beforeEach(() => setActivePinia(createPinia()));
-
-  it("loads the review on mount-equivalent call and exposes it", async () => {
-    const execute = vi.fn(async () => REVIEW);
-    useResolveMock(GetReferenceReviewUseCase, { execute });
-    useResolveMock(SubmitReferenceReviewUseCase, { execute: vi.fn() });
-    useResolveMock(SaveReviewDraftUseCase, { execute: vi.fn() });
-    useResolveMock(DiscardReviewUseCase, { execute: vi.fn() });
-
-    const vm = useReferenceReviewViewModel("10.1000/j.x", "w-1");
-    await vm.load();
-
-    expect(execute).toHaveBeenCalledWith("10.1000/j.x", "w-1");
-    expect(vm.review.value).toBe(REVIEW);
-  });
-
-  it("collects normalized 422 messages per record on submit failure, then clears on success", async () => {
-    useResolveMock(GetReferenceReviewUseCase, { execute: vi.fn(async () => REVIEW) });
-    const submit = vi
-      .fn()
-      .mockRejectedValueOnce(new ReviewSubmitError(["missing value for required question: size"], 422))
-      .mockResolvedValueOnce({ id: "resp" });
-    useResolveMock(SubmitReferenceReviewUseCase, { execute: submit });
-    useResolveMock(SaveReviewDraftUseCase, { execute: vi.fn() });
-    useResolveMock(DiscardReviewUseCase, { execute: vi.fn() });
-
-    const vm = useReferenceReviewViewModel("10.1000/j.x", "w-1");
-    await vm.onSubmit("r-1", {});
-    expect(vm.submitErrors.value["r-1"]).toEqual(["missing value for required question: size"]);
-
-    await vm.onSubmit("r-1", { size: "12" });
-    expect(vm.submitErrors.value["r-1"]).toBeUndefined();
-  });
-
-  it("reloads the review after a successful submit so the projection flips to response", async () => {
-    const load = vi.fn(async () => REVIEW);
-    useResolveMock(GetReferenceReviewUseCase, { execute: load });
-    useResolveMock(SubmitReferenceReviewUseCase, { execute: vi.fn(async () => ({ id: "resp" })) });
-    useResolveMock(SaveReviewDraftUseCase, { execute: vi.fn() });
-    useResolveMock(DiscardReviewUseCase, { execute: vi.fn() });
-
-    const vm = useReferenceReviewViewModel("10.1000/j.x", "w-1");
-    await vm.load();
-    await vm.onSubmit("r-1", { size: "12" });
-
-    expect(load).toHaveBeenCalledTimes(2);
-  });
-});
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `cd extralit-frontend && npx vitest run pages/references --reporter=verbose`
-Expected: FAIL.
-
-- [ ] **Step 3: Write the view-model and page**
-
-Create `extralit-frontend/pages/references/useReferenceReviewViewModel.ts`:
-
-```ts
-import { ref } from "vue";
-import { useResolve } from "ts-injecty";
-import { GetReferenceReviewUseCase } from "~/v2/domain/usecases/get-reference-review-use-case";
-import { SubmitReferenceReviewUseCase, ReviewSubmitError } from "~/v2/domain/usecases/submit-reference-review-use-case";
-import { SaveReviewDraftUseCase } from "~/v2/domain/usecases/save-review-draft-use-case";
-import { DiscardReviewUseCase } from "~/v2/domain/usecases/discard-review-use-case";
-import { ReferenceReview } from "~/v2/domain/entities/review/ReferenceReview";
-import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
-import { useTranslate } from "~/v1/infrastructure/services/useTranslate";
-
-export const useReferenceReviewViewModel = (reference: string, workspaceId: string) => {
-  const getReviewUseCase = useResolve(GetReferenceReviewUseCase);
-  const submitUseCase = useResolve(SubmitReferenceReviewUseCase);
-  const saveDraftUseCase = useResolve(SaveReviewDraftUseCase);
-  const discardUseCase = useResolve(DiscardReviewUseCase);
-  const notifications = useNotifications();
-  const { t } = useTranslate();
-
-  const review = ref<ReferenceReview | null>(null);
-  const isLoading = ref(false);
-  const loadFailed = ref(false);
-  const submitErrors = ref<Record<string, string[]>>({});
-
-  const load = async () => {
-    isLoading.value = true;
-    loadFailed.value = false;
-    try {
-      review.value = await getReviewUseCase.execute(reference, workspaceId);
-    } catch {
-      loadFailed.value = true;
-    } finally {
-      isLoading.value = false;
-    }
-  };
-
-  const runAction = async (recordId: string, action: () => Promise<unknown>, successKey: string) => {
-    try {
-      await action();
-      const { [recordId]: _cleared, ...rest } = submitErrors.value;
-      submitErrors.value = rest;
-      notifications.notify({ message: t(successKey), type: "success" });
-      await load(); // re-read: projection source flips response/suggestion server-side
-    } catch (error) {
-      if (error instanceof ReviewSubmitError) {
-        submitErrors.value = { ...submitErrors.value, [recordId]: error.messages };
-      } else {
-        throw error;
-      }
-    }
-  };
-
-  const onSubmit = (recordId: string, values: Record<string, unknown>) =>
-    runAction(recordId, () => submitUseCase.execute(recordId, values), "review.submitted");
-  const onSaveDraft = (recordId: string, values: Record<string, unknown>) =>
-    runAction(recordId, () => saveDraftUseCase.execute(recordId, values), "review.draftSaved");
-  const onDiscard = (recordId: string) =>
-    runAction(recordId, () => discardUseCase.execute(recordId), "review.discarded");
-
-  return { review, isLoading, loadFailed, submitErrors, load, onSubmit, onSaveDraft, onDiscard };
-};
-```
-
-Create `extralit-frontend/pages/references/[...reference].vue`:
-
-```vue
-<template>
-  <div class="reference-review-page">
-    <h1 class="reference-review-page__title">{{ $t("review.title") }} — {{ reference }}</h1>
-
-    <BaseLoading v-if="isLoading" />
-    <p v-else-if="loadFailed" v-text="$t('review.loadError')" />
-    <ProjectionReviewForm
-      v-else-if="review"
-      :review="review"
-      :submit-errors="submitErrors"
-      @submit="onSubmit"
-      @save-draft="onSaveDraft"
-      @discard="onDiscard"
-    />
-  </div>
-</template>
-
-<script lang="ts">
-import { onBeforeMount } from "vue";
-import { useRoute } from "vue-router";
-import { useReferenceReviewViewModel } from "./useReferenceReviewViewModel";
-
-export default {
-  setup() {
-    const route = useRoute();
-    // Catch-all param: DOIs contain slashes, Nuxt yields the segments as an array (spec §3).
-    const segments = route.params.reference;
-    const reference = Array.isArray(segments) ? segments.join("/") : String(segments ?? "");
-    const workspaceId = String(route.query.workspace_id ?? "");
-
-    const viewModel = useReferenceReviewViewModel(reference, workspaceId);
-    onBeforeMount(viewModel.load);
-
-    return { ...viewModel, reference };
-  },
-};
-</script>
-
-<style lang="scss" scoped>
-.reference-review-page {
-  padding: $base-space * 3;
-
-  &__title {
-    margin: 0 0 $base-space * 2;
-  }
-}
-</style>
-```
-
-- [ ] **Step 4: Run tests and full suite**
-
-Run: `cd extralit-frontend && npx vitest run pages/references --reporter=verbose && npm run test`
-Expected: green.
-
-- [ ] **Step 5: Live smoke against the local stack (optional but recommended)**
-
-With the server stack up (`docker-compose up -d` at repo root; `cd extralit-server && uv run python -m extralit_server server-dev`), run `npm run dev`, seed a schema/records via the SDK or the Task 16 seed script, and open `/references/<seeded-reference>?workspace_id=<id>`. Verify the form renders and a submit round-trips.
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add pages/references
-git commit -m "feat(v2-ui): reference review page wrapping ProjectionReviewForm via composable"
-```
-
 ---
 
 ### Task 16: e2e infrastructure (remote-chromium project, seed script) + scenarios 1–2
@@ -4322,7 +3809,6 @@ git commit -m "feat(v2-ui): reference review page wrapping ProjectionReviewForm 
 - Create: `extralit-frontend/e2e/v2/fixtures.ts`
 - Create: `extralit-frontend/e2e/v2/seed/seed_v2_e2e.py`
 - Create: `extralit-frontend/e2e/v2/auth-smoke.spec.ts` (scenario 1)
-- Create: `extralit-frontend/e2e/v2/slashed-reference.spec.ts` (scenario 2)
 - Create: `extralit-frontend/e2e/v2/README.md` (how to run on this host)
 
 **Interfaces:**
@@ -4572,35 +4058,6 @@ test("signs in with a bearer token, lists schemas, opens records", async ({ page
 
 Note: the schema list loads for the *selected workspace* — if the seeded workspace isn't the first, switch to it via the workspace selector before asserting (check the home header UI for the selector; add the interaction here once visible).
 
-- [ ] **Step 5: Scenario 2 — slashed-DOI reference**
-
-Create `extralit-frontend/e2e/v2/slashed-reference.spec.ts`:
-
-```ts
-import { expect, loadSeed, signIn, test } from "./fixtures";
-
-// Seam B (spec §10.1-B): %2F-encoded DOI through Nuxt devProxy + uvicorn, untested server-side
-// for the projection route. Assert both v2 reference endpoints round-trip.
-test("opens a reference containing a slash via the encoded URL", async ({ page }) => {
-  const seed = loadSeed();
-  await signIn(page);
-
-  const projectionRequest = page.waitForResponse(
-    (r) => r.url().includes("/api/v2/projection/references/") && r.request().method() === "GET"
-  );
-  const recordsRequest = page.waitForResponse(
-    (r) => r.url().includes(`/api/v2/schemas/${seed.schemaId}/records`) && r.request().method() === "GET"
-  );
-
-  await page.goto(`/references/${encodeURIComponent(seed.reference)}?workspace_id=${seed.workspaceId}`);
-
-  expect((await projectionRequest).status()).toBe(200);
-  expect((await recordsRequest).status()).toBe(200);
-
-  await expect(page.getByText(seed.reference)).toBeVisible();
-  await expect(page.locator("[data-question='size']")).toBeVisible();
-});
-```
 
 - [ ] **Step 6: README + run**
 
@@ -4638,102 +4095,13 @@ git commit -m "test(v2-ui): e2e infra (CDP remote chromium, API seeding) + auth 
 ### Task 17: e2e scenarios 3–5 (review loop, draft lifecycle, search round-trip)
 
 **Files:**
-- Create: `extralit-frontend/e2e/v2/review-loop.spec.ts` (scenario 3)
-- Create: `extralit-frontend/e2e/v2/draft-lifecycle.spec.ts` (scenario 4)
 - Create: `extralit-frontend/e2e/v2/search-roundtrip.spec.ts` (scenario 5)
 
 **Interfaces:**
 - Consumes: Task 16 fixtures/seed (`loadSeed`, `signIn`, seeded suggestion on question `size` with agent `e2e-seeder`), Task 14 form DOM contract (`[data-question]`, `[data-test='submit-<id>']`, provenance badges rendering `review.suggestion`/`review.response` copy — i.e. "Suggestion"/"Response" in English).
 - Produces: the remaining slice-gating scenarios (spec §10.2 items 3–5). Scenarios 6–8 are follow-ups, out of this plan.
 
-**IMPORTANT — verify seam C server behavior FIRST (spec §10.1-C):** the draft/discard response lifecycle has zero server tests. Before writing scenario 4's assertions, run the three `curl`s below against the live stack and confirm: (a) a `draft` response does NOT flip the projection cell (`source` stays `suggestion`), (b) `discarded` reverts a previously submitted cell to the suggestion. If either fails, STOP and report upstream — file it in the spec ledger; do not code the frontend around broken semantics.
 
-```bash
-TOKEN=$(curl -s -X POST http://localhost:6900/api/v2/token -d "username=extralit&password=12345678" | jq -r .access_token)
-RID=$(jq -r .recordId e2e/v2/seed/seed-output.json)
-curl -s -X PUT "http://localhost:6900/api/v2/records/$RID/responses" -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" -d '{"values": {"size": {"value": "999"}}, "status": "draft"}'
-curl -s "http://localhost:6900/api/v2/projection/references/10.1000%2Fj.e2e-v2?workspace_id=$(jq -r .workspaceId e2e/v2/seed/seed-output.json)" \
-  -H "Authorization: Bearer $TOKEN" | jq '.records[0].cells[] | select(.question_name=="size")'
-# expect: value "120", source "suggestion"  (draft must NOT project)
-```
-
-- [ ] **Step 1: Scenario 3 — suggestion→response conversion loop**
-
-Create `extralit-frontend/e2e/v2/review-loop.spec.ts`:
-
-```ts
-import { expect, loadSeed, signIn, test } from "./fixtures";
-
-// The core product loop (spec §10.2-3): suggestion shown with provenance → edit → submit →
-// projection re-read flips source to response. Never chained over HTTP in the server suites.
-test("converts a suggestion into a submitted response", async ({ page }) => {
-  const seed = loadSeed();
-  await signIn(page);
-  await page.goto(`/references/${encodeURIComponent(seed.reference)}?workspace_id=${seed.workspaceId}`);
-
-  const sizeCell = page.locator("[data-question='size']");
-  await expect(sizeCell).toBeVisible();
-  await expect(sizeCell.getByText("Suggestion")).toBeVisible();
-  await expect(sizeCell.getByText("e2e-seeder")).toBeVisible();
-
-  // Edit the text answer (ContentEditableFeedbackTask renders a contenteditable paragraph).
-  const editor = sizeCell.locator("[contenteditable]");
-  await editor.click();
-  await editor.fill("135");
-
-  const putResponse = page.waitForResponse(
-    (r) => r.url().includes(`/api/v2/records/${seed.recordId}/responses`) && r.request().method() === "PUT"
-  );
-  await page.locator(`[data-test='submit-${seed.recordId}']`).click();
-  expect((await putResponse).status()).toBe(200);
-
-  // Reload: the projection must now resolve from the submitted response.
-  await page.reload();
-  await expect(sizeCell.getByText("Response")).toBeVisible();
-  await expect(sizeCell.getByText("Suggestion")).not.toBeVisible();
-});
-```
-
-(If `contenteditable.fill` is flaky over CDP, use `editor.click()` + `page.keyboard` select-all/type. Reset state for re-runs by re-running the seed script — it recreates the schema.)
-
-- [ ] **Step 2: Scenario 4 — draft lifecycle**
-
-Create `extralit-frontend/e2e/v2/draft-lifecycle.spec.ts`:
-
-```ts
-import { expect, loadSeed, signIn, test } from "./fixtures";
-
-// Seam C (spec §10.1-C): drafts have ZERO server-side tests. This spec is the gate:
-// a draft restores into the form on reload while the projection still shows the suggestion;
-// submitting then flips the projection to response.
-test("draft persists in the form without touching the projection, then submits", async ({ page }) => {
-  const seed = loadSeed();
-  await signIn(page);
-  await page.goto(`/references/${encodeURIComponent(seed.reference)}?workspace_id=${seed.workspaceId}`);
-
-  const sizeCell = page.locator("[data-question='size']");
-  const editor = sizeCell.locator("[contenteditable]");
-  await editor.click();
-  await editor.fill("777");
-
-  const draftPut = page.waitForResponse(
-    (r) => r.url().includes(`/records/${seed.recordId}/responses`) && r.request().method() === "PUT"
-  );
-  await page.locator(`[data-test='save-draft-${seed.recordId}']`).click();
-  expect((await draftPut).status()).toBe(200);
-
-  await page.reload();
-  // Form restores the draft value...
-  await expect(sizeCell.locator("[contenteditable]")).toHaveText("777");
-  // ...but the projection still resolves the suggestion (draft must not project).
-  await expect(sizeCell.getByText("Suggestion")).toBeVisible();
-
-  await page.locator(`[data-test='submit-${seed.recordId}']`).click();
-  await page.reload();
-  await expect(sizeCell.getByText("Response")).toBeVisible();
-});
-```
 
 - [ ] **Step 3: Scenario 5 — search round-trip**
 
@@ -4793,13 +4161,11 @@ git commit -m "test(v2-ui): e2e review loop, draft lifecycle and search round-tr
 - [ ] `cd extralit-server && uv run pytest tests/unit --disable-warnings` — green.
 - [ ] `cd extralit-frontend && npm run gen:api && git diff --exit-code -- v2/infrastructure/api` — no drift.
 - [ ] `cd extralit-frontend && npm run test && npm run lint && npx nuxi typecheck` — green (typecheck may surface pre-existing v1 issues; only new `v2/`/`components/v2` errors block).
-- [ ] Full e2e: seed + scenarios 1–5 green against the live stack.
 - [ ] Boundary audit: `grep -rn "from \"[~@]/v1" extralit-frontend/v2/ | grep -v "store/create\|infrastructure/services"` → empty; `grep -rn "v2/" extralit-frontend/v1/` → empty.
 - [ ] Use superpowers:finishing-a-development-branch — PR against `develop`.
 
 ## Deferred / ledger (do not build now)
 
 - Scenarios 6–8 (multi-annotator isolation, old-version rendering e2e, required-422 rendering e2e) — follow the slice (spec §10.2).
-- Server-side projection payload enrichment if the 5-endpoint `ReferenceReview` assembly proves chatty (spec §7 ledger).
 - Column filters on the schema detail page derived from `columns_cache` (only `status` ships now).
 - Markdown/table sub-modes of the text widget; span questions; schema authoring UI; Queue UI (Phase 5); v1 retirements (Phase 6).

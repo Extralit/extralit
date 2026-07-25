@@ -101,8 +101,7 @@ embeds into the annotation + projection flow going forward).
 ### 3.3 Frontend — `/extractions` page on Perspective
 
 - **New route `pages/extractions/index.vue`** ("Extractions") — full-page standalone
-  view; **not** wired into `index.vue`/nav in this build. (`/schemas/*` remains
-  reserved for schema-editor functions.)
+  view. (`/schemas/*` remains reserved for schema-editor functions.)
 - **Grid engine:** Perspective **4.x** under the `@perspective-dev/*` npm scope
   (`@perspective-dev/client`, `@perspective-dev/viewer`,
   `@perspective-dev/viewer-datagrid`) — the actively-developed line matching
@@ -227,7 +226,6 @@ itn-recal seed the Playwright gate runs against.
 - **Record-extent hover glow + provenance tooltip** via the datagrid style listener.
 - **Migrate `V2RecordsTable`/search surfaces** onto enriched projection cells where
   useful.
-- Nav/`index.vue` integration of `/extractions`.
 
 ## 6. Scope boundary
 
