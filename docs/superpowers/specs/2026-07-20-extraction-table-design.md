@@ -193,6 +193,14 @@ tests). Replacement gate in this build: a new `e2e/v2/extractions-grid.spec.ts`
 
 ## 4. Testing strategy
 
+**Acceptance criteria:** the properties these gates exist to prove are enumerated in
+[`2026-07-24-extraction-projection-acceptance.md`](./2026-07-24-extraction-projection-acceptance.md)
+(AC1 coverage map, AC2 coalescing + provenance, AC3 fan-out without fabricated joins,
+AC4 banding + static grid, AC5 real-data scale + loud failure). Each criterion names its
+owning gate. AC4 and AC5's scale half are browser-only — happy-dom never upgrades the
+Perspective custom element — which is why that document also specifies the real-data
+itn-recal seed the Playwright gate runs against.
+
 - **Server unit/integration:** denormalization (coalesce precedence, table fan-out,
   independent stacking, scalar repetition, empty-cell omission), row universe
   (union of references, refs with zero records in a schema), pagination
