@@ -123,6 +123,11 @@ import Home from "@/layouts/Home.vue";
 import { useHomeViewModel } from "./useHomeViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
+const NAVIGATION_TAB_ROUTES: Record<string, string> = {
+  schemas: "/schemas",
+  extractions: "/extractions",
+};
+
 export default {
   components: {
     Home,
@@ -139,6 +144,7 @@ export default {
         { id: "datasets", name: this.$t("home.datasets") },
         { id: "documents", name: this.$t("home.documents") },
         { id: "schemas", name: this.$t("schemas.title") },
+        { id: "extractions", name: this.$t("extractions.title") },
       ],
       // Import details modal state
       isImportDetailsModalVisible: false,
@@ -173,8 +179,9 @@ export default {
     },
 
     onTabChange(tabId) {
-      if (tabId === "schemas") {
-        this.$router.push("/schemas");
+      const route = NAVIGATION_TAB_ROUTES[tabId];
+      if (route) {
+        this.$router.push(route);
         return;
       }
       const selectedTab = this.tabs.find((tab) => tab.id === tabId);
