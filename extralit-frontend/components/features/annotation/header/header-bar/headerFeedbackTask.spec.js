@@ -20,12 +20,12 @@ const options = {
   props: {
     breadcrumbs: [
       { link: { name: "datasets" }, name: "Home" },
-      { link: { path: "/?workspace=recognai" }, name: "recognai" },
+      { link: { path: "/?workspace=extralit" }, name: "extralit" },
       {
         link: {
           name: null,
           params: {
-            workspace: "recognai",
+            workspace: "extralit",
             dataset: "imdb-single-label-all-records",
           },
         },
