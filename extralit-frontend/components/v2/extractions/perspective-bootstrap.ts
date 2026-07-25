@@ -26,10 +26,26 @@ import CLIENT_WASM from "@perspective-dev/viewer/dist/wasm/perspective-viewer.wa
 // `worker()` awaits the stashed promise.
 let ready: Promise<typeof perspective> | null = null;
 
+// `fetch` only rejects on a network-level failure — an HTTP error status *resolves* with
+// `ok: false`. Without this check the headline case named above (a 404 right after a
+// redeploy) never reaches `attempt`: both fetches resolve, `init_server` stashes the 404
+// `Response`, and the failure re-emerges later as an unhandled rejection when `worker()`
+// awaits the stashed promise, with `ready` already memoized as *resolved*. Throwing here is
+// what puts an HTTP failure on the same path as a network failure.
+const assertOk = (response: Response, url: string): Response => {
+  if (!response.ok) {
+    throw new Error(`Perspective WASM fetch failed: ${url} → ${response.status}`);
+  }
+  return response;
+};
+
 export const initPerspective = (): Promise<typeof perspective> => {
   if (!ready) {
     const attempt: Promise<typeof perspective> = (async () => {
-      const [serverWasm, clientWasm] = await Promise.all([fetch(SERVER_WASM), fetch(CLIENT_WASM)]);
+      const [serverWasm, clientWasm] = await Promise.all([
+        fetch(SERVER_WASM).then((response) => assertOk(response, SERVER_WASM)),
+        fetch(CLIENT_WASM).then((response) => assertOk(response, CLIENT_WASM)),
+      ]);
       perspective.init_server(serverWasm);
       await perspective_viewer.init_client(clientWasm);
       return perspective;

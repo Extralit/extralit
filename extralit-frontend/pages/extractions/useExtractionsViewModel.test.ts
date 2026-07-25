@@ -98,6 +98,44 @@ describe("useExtractionsViewModel", () => {
     expect(vm.projection.value).toBeNull();
   });
 
+  it("reselecting the same workspace mid-flight issues a fresh request instead of adopting the superseded one", async () => {
+    const firstCall = deferred<WorkspaceProjection>();
+    const secondCall = deferred<WorkspaceProjection>();
+    executeMock.mockReturnValueOnce(firstCall.promise).mockReturnValueOnce(secondCall.promise);
+
+    const { saveSelectedWorkspace } = useWorkspaces();
+    const workspace = new Workspace("w-1", "Workspace 1");
+    saveSelectedWorkspace(workspace);
+
+    const vm = useExtractionsViewModel();
+    const load1 = vm.load();
+
+    // Deselect, then reselect the *same* workspace while the original load is still running.
+    // Both are ordinary workspace-selector firings.
+    saveSelectedWorkspace(null);
+    await vm.load();
+    saveSelectedWorkspace(workspace);
+    const load3 = vm.load();
+
+    // Without the currency check in the dedupe guard, `inFlight.workspaceId === "w-1"` still
+    // matches, so this reselect hands back the superseded promise and issues no request at
+    // all. That promise then fails its own token check, assigns no projection and never sets
+    // `isLoading` — leaving the page on "no extracted references" for a workspace with data.
+    expect(executeMock).toHaveBeenCalledTimes(2);
+
+    const staleProjection = new WorkspaceProjection([], [], 1);
+    firstCall.resolve(staleProjection);
+    await load1;
+    expect(vm.projection.value).toBeNull();
+
+    const freshProjection = new WorkspaceProjection([], [], 7);
+    secondCall.resolve(freshProjection);
+    await load3;
+
+    expect(vm.projection.value).toBe(freshProjection);
+    expect(vm.isLoading.value).toBe(false);
+  });
+
   it("flags load failure", async () => {
     executeMock.mockRejectedValue(new Error("boom"));
     const vm = useExtractionsViewModel("w-1");

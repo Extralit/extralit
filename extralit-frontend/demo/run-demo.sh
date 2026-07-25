@@ -15,8 +15,24 @@ FRONTEND="$(dirname "$HERE")"
 OUT="${DEMO_OUT:-${TMPDIR:-/tmp}/extralit-extractions-demo}"
 
 echo "==> output: $OUT"
-rm -rf "$OUT"
+
+# `DEMO_OUT` is a documented knob, and an unguarded `rm -rf "$OUT"` on it will happily wipe
+# whatever the caller points at — `DEMO_OUT=$HOME`, `DEMO_OUT=$PWD`, or a path with a typo.
+# Only ever recursively delete a directory this script created, identified by a marker file.
+MARKER=".extralit-demo-out"
+case "$OUT" in
+  "" | "/" | "$HOME" | "$HOME/") echo "refusing to use '$OUT' as the demo output directory" >&2; exit 1 ;;
+esac
+if [ -e "$OUT" ]; then
+  if [ ! -f "$OUT/$MARKER" ]; then
+    echo "refusing to delete '$OUT': not a demo output directory (no $MARKER marker)." >&2
+    echo "Remove it yourself, or point DEMO_OUT at a fresh path." >&2
+    exit 1
+  fi
+  rm -rf "$OUT"
+fi
 mkdir -p "$OUT"
+touch "$OUT/$MARKER"
 
 echo "==> seeding demo workspaces"
 uv run --project "$FRONTEND/../extralit-server" python "$HERE/seed_demo_workspace.py" \

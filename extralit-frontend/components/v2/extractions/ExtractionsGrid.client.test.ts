@@ -194,4 +194,135 @@ describe("ExtractionsGrid", () => {
     expect(firstDelete).toHaveBeenCalledTimes(1);
     expect(secondDelete).not.toHaveBeenCalled();
   });
+
+  describe("cell styling", () => {
+    // The banding/pointer affordances are the two things the shadow-DOM style fix exists for,
+    // and neither was reachable by any spec: under happy-dom `getPlugin` resolves to
+    // `undefined`, so `regularTable` stays null and `ensureShadowStyles`/`applyCellStyles`
+    // never run. Stubbing `getPlugin` with a fake `regular_table` living in a REAL
+    // `attachShadow` root makes both assertable — including the property that broke twice in
+    // review: that the classes land on the FIRST draw, with no redraw and without the
+    // style listener ever firing.
+    const BANDING_PROJECTION = new WorkspaceProjection(
+      [
+        {
+          name: "Design.type",
+          schemaId: "s-1",
+          schemaName: "Design",
+          questionName: "type",
+          subColumn: null,
+          dtype: "text",
+        },
+      ],
+      [
+        {
+          reference: "10.1/a",
+          rowIndex: 0,
+          cells: {
+            "Design.type": { value: "RCT", source: "response", recordId: "r-1", agent: null, score: null },
+          },
+        },
+        // Second reference: `bandParity` flips on reference change, so this row bands while
+        // row 0 does not. Its cell is absent, so it is also the not-linkable case.
+        { reference: "10.2/b", rowIndex: 0, cells: {} },
+      ],
+      2
+    );
+
+    /**
+     * A fake `regular-table`: a real element inside a real open shadow root, carrying one
+     * `<td>` per (row, column) plus a `<th>` standing in for a row header, with `getMeta`
+     * returning the metadata shapes regular-table emits for each.
+     */
+    const fakeRegularTable = () => {
+      const host = document.createElement("div");
+      document.body.appendChild(host);
+      const shadow = host.attachShadow({ mode: "open" });
+      const rt = document.createElement("div");
+      shadow.appendChild(rt);
+
+      const meta = new Map<Element, Record<string, unknown>>();
+      const makeCell = (tag: "td" | "th", cellMeta: Record<string, unknown>) => {
+        const cell = document.createElement(tag);
+        rt.appendChild(cell);
+        meta.set(cell, cellMeta);
+        return cell;
+      };
+
+      const row0 = makeCell("td", { type: "body", y: 0, column_header: ["Design.type"] });
+      const row1 = makeCell("td", { type: "body", y: 1, column_header: ["Design.type"] });
+      // A row header: same `HTMLTableCellElement` interface, but `type: "row_header"` — it
+      // must never be banded against a body row's parity.
+      const rowHeader = makeCell("th", { type: "row_header", y: 1, row_header: ["10.2/b"] });
+
+      const styleListener = vi.fn();
+      Object.assign(rt, {
+        getMeta: (cell: Element) => meta.get(cell),
+        addStyleListener: (callback: unknown) => {
+          styleListener(callback);
+          return () => undefined;
+        },
+      });
+
+      return { host, shadow, rt, row0, row1, rowHeader, styleListener };
+    };
+
+    const mountWithPlugin = async (table: ReturnType<typeof fakeRegularTable>) => {
+      const wrapper = mountGrid(BANDING_PROJECTION);
+      const viewerNode = wrapper.element as unknown as Record<string, unknown>;
+      viewerNode.load = vi.fn(async () => undefined);
+      viewerNode.restore = vi.fn(async () => undefined);
+      viewerNode.eject = vi.fn(async () => undefined);
+      viewerNode.getPlugin = vi.fn(async () => ({ regular_table: table.rt }));
+      viewerNode.addEventListener = vi.fn();
+      viewerNode.removeEventListener = vi.fn();
+      await flushPromises();
+      return wrapper;
+    };
+
+    it("bands the second reference's cells and marks populated cells linkable on the first draw, without waiting for a redraw", async () => {
+      const table = fakeRegularTable();
+      await mountWithPlugin(table);
+
+      // Row 0 is the first reference (parity 0); row 1 is the second (parity 1).
+      expect(table.row0.classList.contains("extractions-grid__band")).toBe(false);
+      expect(table.row1.classList.contains("extractions-grid__band")).toBe(true);
+
+      // `Design.type` is populated on row 0 only, so only that cell advertises clickability.
+      expect(table.row0.classList.contains("extractions-grid__linkable")).toBe(true);
+      expect(table.row1.classList.contains("extractions-grid__linkable")).toBe(false);
+
+      // The crux: this all happened on the explicit first-paint `applyCellStyles` call.
+      // `addStyleListener` only registers a callback — it neither invokes it nor forces a
+      // redraw — so without that explicit call nothing would be styled until a scroll or
+      // resize, i.e. never for a user who just reads the grid.
+      expect(table.styleListener).toHaveBeenCalledTimes(1);
+      const registeredCallback = table.styleListener.mock.calls[0][0];
+      expect(registeredCallback).toBeTypeOf("function");
+    });
+
+    // NOTE: there is deliberately no "row headers are never banded" spec here. Three
+    // independent mechanisms already guarantee it — `applyCellStyles` scopes to
+    // `querySelectorAll("td")`, `cellMetaAt` rejects `type !== "body"`, and a real row
+    // header's metadata carries `row_header`/`row_header_x` rather than the `column_header`
+    // the name resolution requires. Mutation-testing confirmed no such spec can fail even
+    // with the first two removed, so it would assert nothing. See `cellMetaAt`'s comment.
+
+    it("injects the cell stylesheet into the shadow root exactly once across repeated loads", async () => {
+      const table = fakeRegularTable();
+      const wrapper = await mountWithPlugin(table);
+
+      const styles = () => table.shadow.querySelectorAll("style#extractions-grid-cell-style");
+      expect(styles()).toHaveLength(1);
+      // Document-level CSS (including this component's Vue `:deep()` rules) cannot cross a
+      // shadow boundary, which is why the rules are injected here at all.
+      expect(styles()[0].textContent).toContain("extractions-grid__band");
+
+      await wrapper.setProps({ projection: PROJECTION });
+      await flushPromises();
+
+      // Id-guarded: a second load must not append a duplicate.
+      expect(styles()).toHaveLength(1);
+    });
+  });
 });

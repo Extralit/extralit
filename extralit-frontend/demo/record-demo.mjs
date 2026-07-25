@@ -341,6 +341,17 @@ const main = async () => {
   if (pageErrors.length) console.log(`page errors:\n${pageErrors.join("\n")}`);
   if (failures.length) {
     console.log(`FAILURES:\n${failures.join("\n")}`);
+  }
+  // An uncaught exception in the app is the most severe class of runtime breakage, and every
+  // scene assertion can still pass around it — so gating the exit code on `failures` alone
+  // would let a `pageerror` produce a green "N/N checks passed" video and a zero exit,
+  // exactly the "broken UI dressed up as a finished video" this harness exists to prevent.
+  // `DEMO_ALLOW_PAGE_ERRORS=1` is the explicit opt-out for known-benign noise.
+  const allowPageErrors = process.env.DEMO_ALLOW_PAGE_ERRORS === "1";
+  if (pageErrors.length && !allowPageErrors) {
+    console.log(`page errors are fatal (set DEMO_ALLOW_PAGE_ERRORS=1 to override)`);
+  }
+  if (failures.length || (pageErrors.length && !allowPageErrors)) {
     process.exitCode = 1;
   }
 };

@@ -112,10 +112,14 @@ async function deleteSupersededTable(candidate: PerspectiveTableLike | null): Pr
 
 function cellMetaAt(rt: RegularTableLike, td: HTMLElement): { rowIndex: number; columnName: string } | null {
   const meta = rt.getMeta(td);
-  // regular-table uses a single DOM interface (HTMLTableCellElement) for both <td> and
-  // <th>, and CellMetadataRowHeader carries the same required `y` + `column_header` shape
-  // as a body cell's metadata. Without this check a row-header <th> can pass the rest of
-  // the guard below and be misread as a body cell.
+  // Defence-in-depth, not the load-bearing guard: regular-table uses a single DOM interface
+  // (HTMLTableCellElement) for both <td> and <th> and row-header metadata also carries `y`,
+  // so only `type` distinguishes them here. In practice a row header cannot reach this
+  // function's callers anyway — `applyCellStyles` scopes to `querySelectorAll("td")`,
+  // `handleClick` filters `composedPath()` to `tagName === "TD"`, and a row header's
+  // metadata carries `row_header`/`row_header_x` rather than the `column_header` the name
+  // resolution below requires (regular-table@^0.7 `types.d.ts`). Kept for a future caller
+  // that isn't so scoped; do not read it as the reason `<th>`s stay unstyled today.
   if (meta?.type !== "body") {
     return null;
   }

@@ -111,6 +111,15 @@ export function bandParity(projection: WorkspaceProjection): number[] {
 /**
  * Guards the §3.3 click-to-annotate affordance off until annotation-mode resolves v2 schema
  * ids (see ledger §5). Flip to true once that lands.
+ *
+ * DELIBERATELY RETAINED AHEAD OF ITS CONSUMER — do not delete as dead code. The whole chain
+ * (`cellAt`, `buildAnnotationUrl`, the grid's `cell-click` emit and its `composedPath`
+ * listener, the page binding, and `onCellClick`) was removed once as unreachable and then
+ * restored by an explicit revert, because it is the wiring the record-correction loop plugs
+ * into rather than speculative generality. That consumer is tracked as ENG-32 ("Cell/record
+ * correction loop in the extraction viewer"); flipping this flag plus resolving v2 schema
+ * ids in annotation-mode is the remaining work. Until then the click resolves a URL and
+ * intentionally does not navigate — see `useExtractionsViewModel.onCellClick`.
  */
 export const ANNOTATION_CELL_LINKS_ENABLED = false;
 

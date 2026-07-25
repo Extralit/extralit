@@ -38,8 +38,9 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
     if (!id) {
       // Bump the token so any in-flight load for a previous (now-deselected) workspace is
       // recognized as superseded when it settles, instead of committing a projection for a
-      // workspace the user is no longer in. `inFlight` is deliberately left alone: it is
-      // keyed by workspace id/token and the in-flight call's own `finally` will clear it.
+      // workspace the user is no longer in. `inFlight` is deliberately left alone: the
+      // in-flight call's own `finally` clears it, and the currency check in the dedupe guard
+      // below stops a reselect of this same workspace from adopting the now-stale entry.
       ++requestToken;
       projection.value = null;
       isLoading.value = false;
@@ -47,7 +48,13 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
       return Promise.resolve();
     }
 
-    if (inFlight && inFlight.workspaceId === id) {
+    // The dedupe guard requires *currency*, not just a matching id. A superseded call (one
+    // whose token no longer matches, e.g. because the null-id branch above bumped the token
+    // on a deselect) can still be in flight for this same workspace id: deselect-then-
+    // reselect the same workspace fast enough and an id-only match would hand back that
+    // stale promise, which then fails its own `token === requestToken` check, assigns no
+    // projection, and leaves the page on the empty state for a workspace that has data.
+    if (inFlight && inFlight.workspaceId === id && inFlight.token === requestToken) {
       return inFlight.promise;
     }
 

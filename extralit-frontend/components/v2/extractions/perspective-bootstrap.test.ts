@@ -79,6 +79,27 @@ describe("initPerspective", () => {
     expect(initServerSpy).toHaveBeenCalledTimes(1); // only the successful attempt reaches init_server
   });
 
+  it("treats an HTTP error status on the server WASM as a boot failure, even though fetch itself resolves", async () => {
+    // The failure mode a *throwing* `fetch` mock cannot reach: `fetch` only rejects on a
+    // network-level failure, so a 404 (the redeploy case the module's own comment names)
+    // RESOLVES with `ok: false`. Unguarded, `init_server` stashes that 404 `Response`, the
+    // boot memoizes as *resolved*, and the real failure only surfaces later as an unhandled
+    // rejection when `worker()` awaits the stashed promise.
+    fetchMock.mockImplementationOnce(async () => ({ ok: false, status: 404 }));
+    initServerSpy.mockImplementation(() => undefined);
+    initClientSpy.mockImplementation(() => Promise.resolve());
+
+    const { initPerspective } = await import("./perspective-bootstrap");
+
+    await expect(initPerspective()).rejects.toThrow(/server\.wasm → 404/);
+    // The rejected attempt must never have handed the error response on to the engine...
+    expect(initServerSpy).not.toHaveBeenCalled();
+    // ...and the memo must have reset, so a redeploy that fixes the asset recovers without
+    // a hard page reload.
+    await expect(initPerspective()).resolves.toBeDefined();
+    expect(initServerSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("resets the memoized boot promise when init_client rejects, so the next call retries instead of replaying the same failure", async () => {
     initServerSpy.mockImplementation(() => undefined);
     initClientSpy.mockImplementationOnce(() => Promise.reject(new Error("client init failed")));
