@@ -3578,8 +3578,9 @@ In `extralit-frontend/translation/en.js`, add:
     response: "Response",
     agent: "Agent",
     score: "Score",
+    notApplicable: "Not applicable in this schema version",
+  },
 ```
-
 
 - [ ] **Step 5: Write the components**
 
