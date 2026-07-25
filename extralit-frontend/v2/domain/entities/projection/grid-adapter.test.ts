@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { bandParity, REFERENCE_COLUMN, toPerspectiveData } from "./grid-adapter";
+import {
+  ANNOTATION_CELL_LINKS_ENABLED,
+  bandParity,
+  buildAnnotationUrl,
+  cellAt,
+  REFERENCE_COLUMN,
+  toPerspectiveData,
+} from "./grid-adapter";
 import { WorkspaceProjection, type ProjectionGridCell } from "./WorkspaceProjection";
 
 const cell = (value: unknown): ProjectionGridCell => ({
@@ -157,6 +164,17 @@ describe("toPerspectiveData", () => {
   });
 });
 
+describe("cellAt", () => {
+  it("returns the enriched cell for the loaded row order", () => {
+    expect(cellAt(PROJECTION, 0, "Design.type")?.recordId).toBe("r-1");
+  });
+
+  it("returns null for empty cells and out-of-range rows", () => {
+    expect(cellAt(PROJECTION, 2, "Design.type")).toBeNull();
+    expect(cellAt(PROJECTION, 99, "Design.type")).toBeNull();
+  });
+});
+
 describe("bandParity", () => {
   it("flips parity when the reference changes, not per row", () => {
     expect(bandParity(PROJECTION)).toEqual([0, 0, 1]);
@@ -178,5 +196,23 @@ describe("bandParity", () => {
   it("returns an empty array for a projection with no rows", () => {
     const empty = new WorkspaceProjection(COLUMNS, [], 0);
     expect(bandParity(empty)).toEqual([]);
+  });
+});
+
+describe("annotation URL contract (spec §3.3)", () => {
+  it("stays guarded off in this build", () => {
+    expect(ANNOTATION_CELL_LINKS_ENABLED).toBe(false);
+  });
+
+  it("puts the schema id in the dataset slot and encodes the reference", () => {
+    expect(buildAnnotationUrl("s-1", "10.1/a b")).toBe("/dataset/s-1/annotation-mode?_search=10.1%2Fa%20b");
+  });
+
+  it("encodes reserved query characters (&, #) in the reference", () => {
+    expect(buildAnnotationUrl("s-1", "a&b#c")).toBe("/dataset/s-1/annotation-mode?_search=a%26b%23c");
+  });
+
+  it("encodes reserved characters in the schema id path segment too", () => {
+    expect(buildAnnotationUrl("s/1", "10.1/a")).toBe("/dataset/s%2F1/annotation-mode?_search=10.1%2Fa");
   });
 });

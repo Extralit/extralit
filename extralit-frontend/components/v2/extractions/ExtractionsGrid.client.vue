@@ -6,8 +6,8 @@
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { type HTMLPerspectiveViewerElement } from "@perspective-dev/viewer";
 import { initPerspectiveClient } from "~/components/v2/extractions/perspective-bootstrap";
-import { type WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
-import { toPerspectiveData, bandParity } from "~/v2/domain/entities/projection/grid-adapter";
+import { type WorkspaceProjection, type ProjectionGridCell } from "~/v2/domain/entities/projection/WorkspaceProjection";
+import { toPerspectiveData, cellAt, bandParity } from "~/v2/domain/entities/projection/grid-adapter";
 
 /**
  * Vue wrapper around `<perspective-viewer>` (§3.1/§3.3 extraction grid). The `.client.vue`
@@ -17,19 +17,18 @@ import { toPerspectiveData, bandParity } from "~/v2/domain/entities/projection/g
  * Loads the flat projection into a static Datagrid (no sort/group/filter — natural
  * insertion order, toolbar hidden), reloading the underlying Perspective table whenever
  * `props.projection` changes (the host page swaps workspaces without remounting this
- * component).
- *
- * The grid is read-only: its one DOM-level addition is reference-group row banding
- * (`bandParity`), which Perspective has no concept of. It is re-applied on every
- * `addStyleListener` draw because virtualized `<td>`s are recycled and never retain classes
- * across redraws. Cells are deliberately not clickable — navigating from a cell to v1
- * annotation-mode is future work, and shipping the plumbing behind an always-off guard only
- * created dead code.
+ * component). Layers two DOM-only affordances on top of the plugin's `regular-table` since
+ * Perspective itself has no concept of either:
+ *  - reference-group row banding (`bandParity`), re-applied on every `addStyleListener` draw
+ *    because virtualized `<td>`s are recycled and never retain classes across redraws.
+ *  - a single `click` listener on the viewer host, resolved through `event.composedPath()`
+ *    so it still finds the cell whether the datagrid plugin rendered into shadow or light DOM.
  */
 
 interface CellMeta {
   type: string;
   y?: number;
+  column_header?: Array<string | HTMLElement>;
 }
 
 interface RegularTableLike extends HTMLElement {
@@ -48,6 +47,7 @@ interface PerspectiveClientLike {
 const props = defineProps<{ projection: WorkspaceProjection }>();
 
 const emit = defineEmits<{
+  "cell-click": [payload: { cell: ProjectionGridCell; reference: string; schemaId: string; columnName: string }];
   // Fired when building/loading a Perspective table for the current projection fails (e.g.
   // `client.table()` rejects). The host page maps this onto its existing `loadError` state
   // so a rejection here can never again leave the user staring at a blank, unexplained
@@ -110,27 +110,35 @@ async function deleteSupersededTable(candidate: PerspectiveTableLike | null): Pr
   }
 }
 
-function rowIndexAt(rt: RegularTableLike, td: HTMLElement): number | null {
+function cellMetaAt(rt: RegularTableLike, td: HTMLElement): { rowIndex: number; columnName: string } | null {
   const meta = rt.getMeta(td);
   // regular-table uses a single DOM interface (HTMLTableCellElement) for both <td> and
-  // <th>, and CellMetadataRowHeader carries the same required `y` shape as a body cell's
-  // metadata. Without this check a row-header <th> would be misread as a body cell and
-  // banded against the wrong reference group.
-  if (meta?.type !== "body" || meta.y === undefined) {
+  // <th>, and CellMetadataRowHeader carries the same required `y` + `column_header` shape
+  // as a body cell's metadata. Without this check a row-header <th> can pass the rest of
+  // the guard below and be misread as a body cell.
+  if (meta?.type !== "body") {
     return null;
   }
-  return meta.y;
+  const rowIndex = meta.y;
+  const header = meta.column_header;
+  const columnName = header && header.length > 0 ? header[header.length - 1] : undefined;
+  if (rowIndex === undefined || typeof columnName !== "string") {
+    return null;
+  }
+  return { rowIndex, columnName };
 }
 
 /**
- * The one style-only affordance applied to grid `<td>`s: reference-group row banding.
- * Declared once here and reused by `ensureShadowStyles` below; the `<style scoped>` block at
- * the end of this file carries an equivalent copy for the light-DOM render target (see that
- * block's comment for why a single copy can't serve both — Vue scoped/`:deep()` styles
- * compile to a document-level stylesheet, which cannot cross a shadow boundary). Keep both
- * copies in sync if you touch either.
+ * The two style-only affordances applied to grid `<td>`s (reference-group row banding +
+ * pointer cursor for linkable cells). Declared once here and reused by `ensureShadowStyles`
+ * below; the `<style scoped>` block at the end of this file carries an equivalent copy for
+ * the light-DOM render target (see that block's comment for why a single copy can't serve
+ * both — Vue scoped/`:deep()` styles compile to a document-level stylesheet, which cannot
+ * cross a shadow boundary). Keep both copies in sync if you touch either.
  */
-const CELL_STYLE_RULES = "td.extractions-grid__band { background-color: rgba(0, 0, 0, 0.035); }";
+const CELL_STYLE_RULES =
+  "td.extractions-grid__band { background-color: rgba(0, 0, 0, 0.035); }\n" +
+  "td.extractions-grid__linkable { cursor: pointer; }";
 
 const SHADOW_STYLE_ELEMENT_ID = "extractions-grid-cell-style";
 
@@ -160,11 +168,39 @@ function ensureShadowStyles(rt: RegularTableLike): void {
 function applyCellStyles(rt: RegularTableLike): void {
   const cells = rt.querySelectorAll<HTMLTableCellElement>("td");
   for (const td of Array.from(cells)) {
-    const rowIndex = rowIndexAt(rt, td);
-    const isBand = rowIndex !== null && bandByRow[rowIndex] === 1;
+    const at = cellMetaAt(rt, td);
+    const isBand = at !== null && bandByRow[at.rowIndex] === 1;
+    const isLinkable = at !== null && cellAt(props.projection, at.rowIndex, at.columnName) !== null;
     // Re-applied every draw: virtualized <td>s are recycled and never retain classes.
     td.classList.toggle("extractions-grid__band", isBand);
+    td.classList.toggle("extractions-grid__linkable", isLinkable);
   }
+}
+
+function handleClick(event: Event): void {
+  if (!regularTable) {
+    return;
+  }
+  // Restrict the lookup to <td> (matching what applyCellStyles already scopes to via
+  // querySelectorAll("td")) so a click that resolves to a row-header <th> can't even reach
+  // cellMetaAt's guard.
+  const td = event
+    .composedPath()
+    .find((node): node is HTMLTableCellElement => node instanceof HTMLTableCellElement && node.tagName === "TD");
+  if (!td) {
+    return;
+  }
+  const at = cellMetaAt(regularTable, td);
+  if (!at) {
+    return;
+  }
+  const cell = cellAt(props.projection, at.rowIndex, at.columnName);
+  const row = props.projection.rows[at.rowIndex];
+  const column = props.projection.columns.find((candidate) => candidate.name === at.columnName);
+  if (!cell || !row || !column) {
+    return;
+  }
+  emit("cell-click", { cell, reference: row.reference, schemaId: column.schemaId, columnName: at.columnName });
 }
 
 /**
@@ -255,8 +291,8 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
   // Distinguishes "a path already released `previousTable`" from "an await inside the `try`
   // below threw before any path got the chance to". Only the assignment immediately after
   // `deleteSupersededTable` in the normal (non-cancelled) path is actually observed: it is
-  // followed by more code in that same `try` (the `getPlugin` await, `addStyleListener`)
-  // that can still throw into the `catch`, which reads this flag to avoid
+  // followed by more code in that same `try` (the `getPlugin` await, `addStyleListener`,
+  // `addEventListener`) that can still throw into the `catch`, which reads this flag to avoid
   // deleting `previousTable` a second time. Every `if (cancelled)` branch inside the `try`
   // `return`s immediately after its own delete — control can never fall from a `return` into
   // this function's `catch` — so a flag write there would have no observer; those are not
@@ -316,11 +352,15 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
       // the callback nor forces a redraw (see `addStyleListener` in
       // `node_modules/regular-table/dist/esm/regular-table.js`). `viewer.load()` above already
       // guarantees "the first frame ... has been drawn", so that first frame happened before we
-      // registered and our listener missed it: without this call the banding classes are
-      // absent until something else triggers a redraw (a scroll or a resize), i.e. never,
-      // for a user who just reads the grid.
+      // registered and our listener missed it: without this call the banding and pointer-cursor
+      // classes are absent until something else triggers a redraw (a scroll or a resize), i.e.
+      // never, for a user who just reads the grid.
       applyCellStyles(regularTable);
     }
+
+    // Idempotent: addEventListener silently ignores a re-registration of the exact same
+    // (type, listener) pair, so calling this again on reload does not double-fire clicks.
+    viewer.addEventListener?.("click", handleClick);
   } catch (error) {
     // A viewer detached mid-flight (fast route navigation, or torn down by onBeforeUnmount
     // while this chain was still in progress) throws here too, alongside genuine failures
@@ -373,6 +413,7 @@ watch(
 onBeforeUnmount(async () => {
   cancelled = true;
   const viewer = viewerEl.value;
+  viewer?.removeEventListener?.("click", handleClick);
   unsubscribeStyle?.();
   unsubscribeStyle = null;
   regularTable = null;
@@ -406,5 +447,9 @@ onBeforeUnmount(async () => {
 // duplicated there via a directly-injected <style> element. Keep both copies in sync.
 :deep(td.extractions-grid__band) {
   background-color: rgba(0, 0, 0, 0.035);
+}
+
+:deep(td.extractions-grid__linkable) {
+  cursor: pointer;
 }
 </style>

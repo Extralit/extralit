@@ -2,6 +2,7 @@ import { computed, ref, shallowRef, watch } from "vue";
 import { useResolve } from "ts-injecty";
 import { GetWorkspaceProjectionUseCase } from "~/v2/domain/usecases/get-workspace-projection-use-case";
 import { type WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
+import { buildAnnotationUrl, ANNOTATION_CELL_LINKS_ENABLED } from "~/v2/domain/entities/projection/grid-adapter";
 // Documented v1 exception: workspace selection survives Phase 6 (see plan Global Constraints).
 import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 
@@ -85,6 +86,15 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
 
   watch(workspaceId, load);
 
+  const onCellClick = ({ schemaId, reference }: { schemaId: string; reference: string }): string => {
+    const url = buildAnnotationUrl(schemaId, reference);
+    if (ANNOTATION_CELL_LINKS_ENABLED) {
+      // Guarded off: annotation-mode cannot resolve v2 schema ids yet (see grid-adapter.ts).
+      window.location.href = url;
+    }
+    return url;
+  };
+
   // Wired to `ExtractionsGrid`'s `load-error` emit (see its doc comment): a rejection while
   // building/loading the Perspective table for the current projection is surfaced through
   // this same `loadFailed` flag the page already renders `extractions.loadError` for, so the
@@ -93,5 +103,5 @@ export const useExtractionsViewModel = (workspaceIdOverride?: string | null) => 
     loadFailed.value = true;
   };
 
-  return { projection, isLoading, loadFailed, hasLoaded, workspaceId, load, onGridLoadError };
+  return { projection, isLoading, loadFailed, hasLoaded, workspaceId, load, onCellClick, onGridLoadError };
 };

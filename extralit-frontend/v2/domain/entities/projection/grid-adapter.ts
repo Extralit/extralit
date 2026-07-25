@@ -1,4 +1,4 @@
-import { type WorkspaceProjection } from "./WorkspaceProjection";
+import { type WorkspaceProjection, type ProjectionGridCell } from "./WorkspaceProjection";
 
 /**
  * Flat-row column name carrying the reference (DOI/identifier) for each row.
@@ -73,6 +73,25 @@ function toScalarCell(value: unknown): unknown {
 }
 
 /**
+ * Looks up the enriched cell (value + provenance) for a grid position.
+ *
+ * Relies on the static-grid invariant: the projection is loaded once, unsorted and
+ * unfiltered, so a datagrid row index maps 1:1 onto `projection.rows` by array position.
+ * Returns null for an absent cell or an out-of-range row index.
+ */
+export function cellAt(
+  projection: WorkspaceProjection,
+  rowIndex: number,
+  columnName: string
+): ProjectionGridCell | null {
+  const row = projection.rows[rowIndex];
+  if (!row) {
+    return null;
+  }
+  return row.cells[columnName] ?? null;
+}
+
+/**
  * Returns a 0/1 parity value per row that flips whenever `reference` changes from the
  * previous row (not per row). Perspective has no notion of merged/grouped cells, so this
  * alternating band is the §3.1 reference-grouping affordance rendered as a background tint.
@@ -87,4 +106,19 @@ export function bandParity(projection: WorkspaceProjection): number[] {
     previousReference = row.reference;
     return parity;
   });
+}
+
+/**
+ * Guards the §3.3 click-to-annotate affordance off until annotation-mode resolves v2 schema
+ * ids (see ledger §5). Flip to true once that lands.
+ */
+export const ANNOTATION_CELL_LINKS_ENABLED = false;
+
+/**
+ * Builds the annotation-mode deep link for a cell's reference, percent-encoding both the
+ * schema id (path segment) and the reference (query value) so slashes, `&`, `#`, and other
+ * reserved characters can't reshape the URL.
+ */
+export function buildAnnotationUrl(schemaId: string, reference: string): string {
+  return `/dataset/${encodeURIComponent(schemaId)}/annotation-mode?_search=${encodeURIComponent(reference)}`;
 }
