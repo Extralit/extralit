@@ -8,7 +8,7 @@
 - **Phase 1 (Tasks 1–7, PR 1):** everything additive and low-risk — server contract (validator extension, enriched cells, workspace endpoint) plus the frontend data layer (gen:api, domain types, repository, grid adapter, use-case, storage, DI). No UI, no deletions, no new frontend dependencies (the server gains `duckdb`). Mergeable to `develop` on its own; SDK #231 and any other consumer can build against the endpoint immediately.
 - **Phase 2 (Tasks 8–13, PR 2, stacked on Phase 1):** the integration-risk half — Perspective deps/WASM/Vite wiring, the custom-element grid wrapper, the `/extractions` page, deletion of the reference-review page, and the e2e gate. If Perspective 4.5.2 fights back (WASM boot, init API drift, custom-element quirks), Phase 1 is already merged and unaffected.
 
-**Architecture:** The server performs the full denormalization in `contexts/v2/projection.py`: batched Postgres queries (via the existing `AsyncSession`) fetch raw slices, and an **in-memory DuckDB** connection runs ONE SQL statement that does everything semantic — effective-record dedup (window functions), `submitted response ?? suggestion` coalesce, table fan-out (`json_each`), the independent-stacking row spine, and scalar repetition. Python only registers inputs and regroups the long-format result into Pydantic models, so the transform stays declarative over arbitrary schema-defined JSON and pre-builds the spec §5 Arrow path (`.fetchall()` → `.arrow()` later streams Arrow IPC straight into Perspective). The client only pages, aggregates, and renders. Frontend follows the existing v2 DDD chain: `ProjectionRepository` → `GetWorkspaceProjectionUseCase` → Pinia storage → `useExtractionsViewModel` → `pages/extractions/index.vue`, with a Perspective web-component grid wrapped in `ExtractionsGrid.vue`.
+**Architecture:** The server performs the full denormalization in `contexts/v2/projection.py`: batched Postgres queries (via the existing `AsyncSession`) fetch raw slices, and an **in-memory DuckDB** connection runs ONE SQL statement that does everything semantic — effective-record dedup (window functions), `submitted response ?? suggestion` coalesce, table fan-out (`json_each`), the independent-stacking row spine, and scalar repetition. Python only registers inputs and regroups the long-format result into Pydantic models, so the transform stays declarative over arbitrary schema-defined JSON and pre-builds the spec §5 Arrow path (`.fetchall()` → `.arrow()` later streams Arrow IPC straight into Perspective). The client only pages, aggregates, and renders. Frontend follows the existing v2 DDD chain: `ProjectionRepository` → `GetWorkspaceProjectionUseCase` → Pinia storage → `useExtractionsViewModel` → `pages/extractions/index.vue`, with a Perspective web-component grid wrapped in `ExtractionsGrid.client.vue`.
 
 **Tech Stack:** FastAPI + SQLAlchemy async + DuckDB (in-process denormalization engine) on extralit-server, Vue 3 / Nuxt 4 / Pinia / ts-injecty (extralit-frontend), Perspective `@perspective-dev/*` 4.5.2 (WASM), openapi-typescript contract gate, pytest / vitest / Playwright.
 
@@ -41,7 +41,7 @@
 - `v2/domain/usecases/get-workspace-projection-use-case.ts` (+`.test.ts`) — pages through endpoint, saves to storage
 - `v2/infrastructure/storage/ExtractionsStorage.ts` — `useExtractions` Pinia store
 - `components/v2/extractions/perspective-bootstrap.ts` — WASM init singleton (`__mocks__/perspective-bootstrap.js` stub)
-- `components/v2/extractions/ExtractionsGrid.vue` (+`.test.ts`) — Perspective viewer wrapper: load, banding, click plumbing
+- `components/v2/extractions/ExtractionsGrid.client.vue` (+`.test.ts`) — Perspective viewer wrapper: load, banding, click plumbing
 - `pages/extractions/index.vue`, `pages/extractions/useExtractionsViewModel.ts` (+`.test.ts`) — the `/extractions` route
 - `e2e/v2/extractions-grid.spec.ts` — replacement e2e gate
 
@@ -1322,11 +1322,11 @@ git commit -m "feat(v2-ui): Perspective 4.5.2 deps, WASM bootstrap, Vite/vitest 
 
 ---
 
-### Task 9: `ExtractionsGrid.vue` — viewer wrapper with banding + click plumbing (frontend)
+### Task 9: `ExtractionsGrid.client.vue` — viewer wrapper with banding + click plumbing (frontend)
 
 **Files:**
-- Create: `extralit-frontend/components/v2/extractions/ExtractionsGrid.vue`
-- Test: `extralit-frontend/components/v2/extractions/ExtractionsGrid.test.ts`
+- Create: `extralit-frontend/components/v2/extractions/ExtractionsGrid.client.vue`
+- Test: `extralit-frontend/components/v2/extractions/ExtractionsGrid.client.test.ts`
 
 **Interfaces:**
 - Consumes: `initPerspective` (Task 8), `toPerspectiveData`/`cellAt`/`bandParity` (Task 6), `WorkspaceProjection` (Task 5).
@@ -1339,12 +1339,12 @@ git commit -m "feat(v2-ui): Perspective 4.5.2 deps, WASM bootstrap, Vite/vitest 
 
 - [ ] **Step 2: Run to verify failure**
 
-Run: `cd extralit-frontend && npx vitest run components/v2/extractions/ExtractionsGrid.test.ts`
+Run: `cd extralit-frontend && npx vitest run components/v2/extractions/ExtractionsGrid.client.test.ts`
 Expected: FAIL — component file not found.
 
 - [ ] **Step 3: Implement the component**
 
-Create `components/v2/extractions/ExtractionsGrid.vue` — `<script setup lang="ts">`; the template is a bare `<perspective-viewer ref="viewerEl" class="extractions-grid" data-testid="extractions-grid" />`. Props `{ projection: WorkspaceProjection }`; emits `cell-click` with the Interfaces payload. Responsibilities:
+Create `components/v2/extractions/ExtractionsGrid.client.vue` — `<script setup lang="ts">`; the template is a bare `<perspective-viewer ref="viewerEl" class="extractions-grid" data-testid="extractions-grid" />`. Props `{ projection: WorkspaceProjection }`; emits `cell-click` with the Interfaces payload. Responsibilities:
 
 - `onMounted`: `client.table(toPerspectiveData(props.projection))`. Guard on `viewerEl.value?.load` before touching the element (unit tests stub the custom element away), then `viewer.load(table)` and `viewer.restore({ plugin: "Datagrid", settings: false })` — static grid, toolbar hidden, natural order.
 - Banding + pointer affordance via the datagrid's inner `regular-table` element (`viewer.querySelector("regular-table")`): register an `addStyleListener` callback that walks the visible `<td>`s, reads `getMeta(td)` — `meta.y` is the row index (1:1 with `projection.rows` because the grid is static) and `meta.column_header.at(-1)` is the column name — and toggles a band class from `bandParity` plus a linkable class where `cellAt(...) !== null`.
@@ -1356,13 +1356,13 @@ If `restore({ plugin: "Datagrid" })` names the plugin differently in 4.5.2, the 
 
 - [ ] **Step 4: Run to verify pass**
 
-Run: `cd extralit-frontend && npx vitest run components/v2/extractions/ExtractionsGrid.test.ts`
+Run: `cd extralit-frontend && npx vitest run components/v2/extractions/ExtractionsGrid.client.test.ts`
 Expected: PASS (a "Failed to resolve component: perspective-viewer" warning is acceptable under happy-dom if the test-utils compilerOptions don't reach the SFC compiler; the assertions still hold because the component guards on `viewer?.load`).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add extralit-frontend/components/v2/extractions/ExtractionsGrid.vue extralit-frontend/components/v2/extractions/ExtractionsGrid.test.ts
+git add extralit-frontend/components/v2/extractions/ExtractionsGrid.client.vue extralit-frontend/components/v2/extractions/ExtractionsGrid.client.test.ts
 git commit -m "feat(v2-ui): ExtractionsGrid Perspective wrapper with banding and click plumbing"
 ```
 
