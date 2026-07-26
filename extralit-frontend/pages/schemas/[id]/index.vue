@@ -39,12 +39,7 @@
             <template v-if="isApproximateTotal">{{ $t("schemas.totalApproximate", { total: page.total }) }}</template>
             <template v-else>{{ page.total }}</template>
           </p>
-          <V2RecordsTable
-            v-if="page.items.length"
-            :records="page.items"
-            :columns="columns"
-            :workspace-id="schema?.workspaceId ?? ''"
-          />
+          <V2RecordsTable v-if="page.items.length" :records="page.items" :columns="columns" />
           <V2Empty v-else :message="$t('schemas.noResults')" />
 
           <!-- Pager stays outside the results branch so advancing onto an empty page (approximate

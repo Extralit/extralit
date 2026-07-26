@@ -28,7 +28,6 @@ export default {
   props: {
     records: { type: Array as PropType<V2Record[]>, required: true },
     columns: { type: Array as PropType<ColumnMeta[]>, required: true },
-    workspaceId: { type: String, required: true },
   },
   methods: {
     formatCell(value: unknown): string {
