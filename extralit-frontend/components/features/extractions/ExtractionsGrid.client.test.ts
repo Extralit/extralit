@@ -17,7 +17,7 @@ const defaultTableImpl = async (data: unknown) => ({ __data: data, delete: async
 const initPerspectiveClientSpy = vi.fn();
 const defaultInitPerspectiveClientImpl = async () => ({ table: tableSpy });
 
-vi.mock("~/components/v2/extractions/perspective-bootstrap", () => ({
+vi.mock("~/components/features/extractions/perspective-bootstrap", () => ({
   initPerspectiveClient: () => initPerspectiveClientSpy(),
 }));
 

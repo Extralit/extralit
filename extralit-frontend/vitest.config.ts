@@ -9,7 +9,7 @@ export default defineVitestConfig({
     // the same import paths. Longer keys first so "~~"/"@@" win over "~"/"@".
     alias: {
       // Perspective boots WASM at import; specs use the stub (see __mocks__/).
-      "~/components/v2/extractions/perspective-bootstrap": r("./__mocks__/perspective-bootstrap.js"),
+      "~/components/features/extractions/perspective-bootstrap": r("./__mocks__/perspective-bootstrap.js"),
       "~~": r("./"),
       "@@": r("./"),
       "~": r("./"),

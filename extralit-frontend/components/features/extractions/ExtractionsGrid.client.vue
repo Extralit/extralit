@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { type HTMLPerspectiveViewerElement } from "@perspective-dev/viewer";
-import { initPerspectiveClient } from "~/components/v2/extractions/perspective-bootstrap";
+import { initPerspectiveClient } from "~/components/features/extractions/perspective-bootstrap";
 import { type WorkspaceProjection, type ProjectionGridCell } from "~/v2/domain/entities/projection/WorkspaceProjection";
 import { toPerspectiveData, cellAt, bandParity } from "~/v2/domain/entities/projection/grid-adapter";
 

@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  * that mounts `ExtractionsGrid` needs Perspective's WASM/custom-element boot kept out of the
  * happy-dom environment entirely — see that alias's comment). This spec exercises the REAL
  * module instead, by importing it with a path relative to this file (`./perspective-bootstrap`)
- * rather than the `~/components/v2/extractions/perspective-bootstrap` specifier the alias
+ * rather than the `~/components/features/extractions/perspective-bootstrap` specifier the alias
  * matches on. The `@perspective-dev/*` packages themselves are mocked below so importing the
  * real module doesn't touch actual WASM/custom-element registration.
  *
