@@ -15,6 +15,7 @@ import httpx
 import pandera.pandas as pa
 
 SCHEMA_NAME = "e2e_v2_slice"
+EMPTY_SCHEMA_NAME = "e2e_v2_empty"
 REFERENCE = "10.1000/j.e2e-v2"  # slash on purpose: seam B
 WORKSPACE_NAME = "e2e-v2"
 
@@ -23,6 +24,14 @@ BODY = pa.DataFrameSchema(
         "size": pa.Column(pa.String, nullable=True),
         "label": pa.Column(pa.String, nullable=True),
         "country": pa.Column(pa.String, nullable=True),
+    }
+).to_json()
+
+# Coverage-map schema (spec §3.1): one question, zero records — proves the grid still
+# renders a column for a schema nobody has annotated yet.
+EMPTY_BODY = pa.DataFrameSchema(
+    columns={
+        "notes": pa.Column(pa.String, nullable=True),
     }
 ).to_json()
 
@@ -64,7 +73,7 @@ def main() -> None:
             .json()["items"]
         )
         for schema in schemas:
-            if schema["name"] == SCHEMA_NAME:
+            if schema["name"] in (SCHEMA_NAME, EMPTY_SCHEMA_NAME):
                 client.delete(f"/api/v2/schemas/{schema['id']}").raise_for_status()
         schema = (
             client.post(
@@ -107,7 +116,11 @@ def main() -> None:
                         "type": qtype,
                         "columns": [name],
                         "settings": settings,
-                        "required": name == "size",
+                        # Neither question is required: the seeded submitted response below
+                        # answers only `label` (to prove response-beats-suggestion there while
+                        # `size` stays suggestion-sourced) and `PUT .../responses` rejects a
+                        # submitted envelope missing any required question's value.
+                        "required": False,
                     },
                 )
                 .raise_for_status()
@@ -121,10 +134,26 @@ def main() -> None:
                 json={
                     "items": [
                         {
+                            # Deliberately distinct from the `size` suggestion ("120") and the
+                            # `label` response ("control") seeded below: if the projection ever
+                            # regressed to resolving cells from raw record fields instead of
+                            # coalescing suggestion/response, the grid would show these raw
+                            # values and the e2e spec's `getByText("999")` count-0 assertion
+                            # would catch it. Same field values would otherwise make that
+                            # regression invisible to the positive assertions alone.
                             "fields": {
-                                "size": "120",
-                                "label": "control",
-                                "country": "KE",
+                                "size": "999",
+                                "label": "unset",
+                                # `country` (not a Question, never projected into the grid) is
+                                # the one raw field left carrying a "control" token: the FTS
+                                # index (`index/mapping.py::record_to_row`) only ever sees
+                                # `record.fields`, never suggestion/response values, so
+                                # search-roundtrip.spec.ts's search for "control" needs a raw
+                                # field to match now that `label`'s raw value diverges from its
+                                # response ("control"). Keeping it here (instead of on
+                                # `label`) preserves the size/label raw-vs-coalesced divergence
+                                # the grid spec's `getByText("999")` count-0 assertion relies on.
+                                "country": "KE-control",
                             },
                             "reference": REFERENCE,
                         }
@@ -146,13 +175,55 @@ def main() -> None:
             },
         ).raise_for_status()
 
+        # Competing `label` suggestion + a submitted response that must win the coalesce
+        # (spec §3.2 response-beats-suggestion), so the grid proves it, not just the
+        # per-reference review form.
+        client.put(
+            f"/api/v2/records/{record['id']}/suggestions",
+            json={
+                "question_id": questions["label"]["id"],
+                "value": "intervention",
+                "score": 0.42,
+                "agent": "e2e-seeder",
+            },
+        ).raise_for_status()
+        client.put(
+            f"/api/v2/records/{record['id']}/responses",
+            json={"values": {"label": {"value": "control"}}, "status": "submitted"},
+        ).raise_for_status()
+
         # Fresh index so the search scenario has something to find.
         client.post(f"/api/v2/schemas/{schema['id']}:rebuild-index").raise_for_status()
+
+        # Coverage-map schema (spec §3.1): one question, zero records.
+        empty_schema = (
+            client.post(
+                "/api/v2/schemas",
+                json={"name": EMPTY_SCHEMA_NAME, "workspace_id": workspace["id"]},
+            )
+            .raise_for_status()
+            .json()
+        )
+        client.post(
+            f"/api/v2/schemas/{empty_schema['id']}/versions", json={"body": EMPTY_BODY}
+        ).raise_for_status()
+        client.post(
+            f"/api/v2/schemas/{empty_schema['id']}/questions",
+            json={
+                "name": "notes",
+                "title": "Notes",
+                "type": "text",
+                "columns": ["notes"],
+                "settings": {},
+                "required": False,
+            },
+        ).raise_for_status()
 
     output = {
         "workspaceId": workspace["id"],
         "schemaId": schema["id"],
         "schemaName": SCHEMA_NAME,
+        "emptySchemaName": EMPTY_SCHEMA_NAME,
         "reference": REFERENCE,
         "recordId": record["id"],
         "questions": questions,

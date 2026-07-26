@@ -85,6 +85,13 @@ export default defineNuxtConfig({
     },
   },
 
+  vue: {
+    compilerOptions: {
+      // <perspective-viewer> is a web Custom Element, not a Vue component (spec §3.3).
+      isCustomElement: (tag: string) => tag.startsWith("perspective-"),
+    },
+  },
+
   vite: {
     plugins: [svgLoader()],
     // Allow reaching the dev server by arbitrary hostnames (e.g. a containerised
@@ -95,6 +102,19 @@ export default defineNuxtConfig({
     // a re-optimize + full page reload, which flakes open tabs and the e2e suite.
     optimizeDeps: {
       include: ["marked", "marked-highlight", "marked-katex-extension", "highlight.js", "dompurify"],
+      // WASM ESM packages break under esbuild pre-bundling; load them as-is.
+      exclude: [
+        "@perspective-dev/client",
+        "@perspective-dev/server",
+        "@perspective-dev/viewer",
+        "@perspective-dev/viewer-datagrid",
+      ],
+      esbuildOptions: {
+        target: "esnext",
+      },
+    },
+    build: {
+      target: "esnext", // Perspective 4.x ESM/WASM requirement
     },
     css: {
       preprocessorOptions: {

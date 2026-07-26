@@ -25,6 +25,9 @@ export default [
       ".nuxt/**",
       ".output/**",
       "e2e/**",
+      // Demo-video harness: a standalone Node driver plus an isolated React/Remotion
+      // sub-package (see demo/README.md) — not part of the Nuxt app's lint scope.
+      "demo/**",
       "v1/domain/entities/document/Document.ts",
       "v1/domain/usecases/get-extraction-completion-use-case.ts",
       "components/base/base-render-table/**",

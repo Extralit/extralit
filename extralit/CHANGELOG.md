@@ -1226,7 +1226,7 @@ These are the section headers that we use:
 ### Fixes
 
 - Copying datasets between workspaces with proper owner/workspace info. Closes [#2562](https://github.com/argilla-io/argilla/issues/2562)
-- Copy dataset with empty workspace to the default user workspace [905d4de](https://github.com/recognai/argilla/commit/905d4deaa769bfc9bbc022cd2dc75c7435cfe865)
+- Copy dataset with empty workspace to the default user workspace [905d4de](https://github.com/argilla-io/argilla/commit/905d4deaa769bfc9bbc022cd2dc75c7435cfe865)
 - Using elasticsearch config to request backend version. Closes [#2311](https://github.com/argilla-io/argilla/issues/2311)
 - Remove sorting by score in labels. Closes [#2622](https://github.com/argilla-io/argilla/issues/2622)
 

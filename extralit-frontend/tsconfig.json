@@ -1,16 +1,10 @@
 {
-  // Nuxt 4 generates .nuxt/tsconfig.json with strict:true. The pre-Vue3 project
-  // explicitly ran with strict:false ("// Temporal"); preserve that posture so the
-  // migration doesn't newly impose strict-null / no-implicit-any on a codebase that
-  // never satisfied them. Tightening to strict is a separate hardening effort.
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
     "strict": false,
-    // Nuxt 4 newly enables these; the pre-Vue3 tsconfig had neither. Keep them off to
-    // match original posture. (Runtime type-only erasure is handled by inline `import type`
-    // modifiers for Vite/esbuild isolatedModules, independent of verbatimModuleSyntax.)
     "verbatimModuleSyntax": false,
     "noImplicitOverride": false,
     "types": ["node", "vitest/globals"]
-  }
+  },
+  "exclude": ["node_modules", "dist", ".data", "demo"]
 }

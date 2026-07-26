@@ -6,7 +6,7 @@
     <template #page-content>
       <div class="schema-settings">
         <BaseLoading v-if="isLoading" />
-        <V2Empty v-else-if="loadFailed" :message="$t('schemas.loadError')" />
+        <EmptyState v-else-if="loadFailed" :message="$t('schemas.loadError')" />
         <template v-else-if="settings">
           <h1 class="schema-settings__title">{{ settings.schema.name }} — {{ $t("schemas.settings") }}</h1>
 

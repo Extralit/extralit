@@ -26,8 +26,8 @@ const stubs = {
   AppHeader: { name: "AppHeader", template: "<div class='app-header' />" },
   BaseLoading: true,
   NuxtLink: { template: "<a><slot /></a>" },
-  V2StatusBadge: { name: "V2StatusBadge", template: "<span>{{ status }}</span>", props: ["status"] },
-  V2Empty: { name: "V2Empty", template: "<div>{{ message }}</div>", props: ["message"] },
+  StatusBadge: { name: "StatusBadge", template: "<span>{{ status }}</span>", props: ["status"] },
+  EmptyState: { name: "EmptyState", template: "<div>{{ message }}</div>", props: ["message"] },
 };
 
 describe("schemas list page", () => {
@@ -53,6 +53,7 @@ describe("schemas list page", () => {
 
     expect(execute).toHaveBeenCalledWith("w-1");
     expect(wrapper.text()).toContain("sample_size");
+    expect(wrapper.text()).toContain("published");
   });
 
   it("shows the empty state when the workspace has no schemas", async () => {

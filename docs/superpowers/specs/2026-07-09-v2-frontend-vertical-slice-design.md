@@ -9,14 +9,11 @@
 
 Build the first v2 UI vertical slice — **schemas → records → search → annotation** — as
 an isolated module alongside the v1 frontend, consuming the shipped `/api/v2` surface
-(spec §7, §17.5). The slice proves the schema-centric UX end-to-end and produces the
-**reference-agnostic projection review form** that Phase 5's Queue UI will wrap.
+(spec §7, §17.5). The slice proves the schema-centric UX end-to-end.
 
 **In scope (this build):**
 - Schema list page; schema detail page (records table + FTS search via `:search`).
 - Read-only schema inspection: columns (`columns_cache`), versions, questions.
-- Reference review page: projection view + annotation form (suggestion→response loop)
-  for question types `text | label | multi_label | rating | ranking | table`.
 - v2 module skeleton (`v2/` DDD layout, DI registration, generated API types),
   vitest component tests with mocked repositories, one e2e happy path (remote chromium).
 
@@ -33,9 +30,9 @@ New top-level `v2/` directory, structurally a sibling twin of `v1/`:
 v2/
   domain/
     entities/        # Schema, SchemaVersion, ColumnMeta, V2Record, RecordsPage,
-                     # Question, ReferenceReview (record × question resolved cells)
+                     # Question
     usecases/        # get-schemas, get-schema-records, search-records,
-                     # get-reference-review, submit-reference-review, save-review-draft
+                     # submit-reference-review, save-review-draft
   infrastructure/
     api/
       openapi.json         # checked-in snapshot of GET /api/v2/openapi.json
@@ -45,7 +42,7 @@ v2/
     storage/         # Pinia stores via v1/store/create.ts::useStoreFor (reused as-is)
   di/                # loadV2DependencyContainer(nuxtApp)
 components/v2/       # feature components for this slice (reuse components/base/*)
-pages/schemas/…      # + pages/references/[...reference].vue (routes, §3)
+pages/schemas/…      # (routes, §3)
 ```
 
 Rules of the boundary:
@@ -69,11 +66,6 @@ namespaces are disjoint by noun):
 | `/schemas` | Schema list (per workspace) |
 | `/schemas/[id]` | Records table + search for one schema |
 | `/schemas/[id]/settings` | Read-only: columns, versions, questions |
-| `/references/[...reference]?workspace_id=` | Projection review (annotation surface) |
-
-`[...reference]` is a Nuxt catch-all because DOIs contain slashes (same reason the
-server route uses `{reference:path}`, §7 of the parent spec). `workspace_id` rides as
-a query param, mirroring the projection endpoint contract (§17.5).
 
 **Terminology: the v2 UI says "Schema", superseding parent-spec §3's "UI calls it a
 Dataset" for the v1/v2 coexistence window.** Rationale:
@@ -166,84 +158,19 @@ primitive (§3, §17). The mapping:
 So `review_widgets` never *overrides* a question's widget — it covers the two places
 questions don't reach (table sub-columns, context fields) plus authoring defaults.
 
-## 7. Decision 5 — Reference-agnostic `ProjectionReviewForm`
-
-The review form is a **pure component**: all data in via props, all effects out via
-emits. It must not read the route, fetch data, or know what a queue is.
-
-```
-<ProjectionReviewForm
-  :review="ReferenceReview"        // assembled domain entity (below)
-  :draft="ResponseDraft | null"    // current user's draft values
-  @submit="(recordId, values)"     // → PUT /records/{id}/responses (submitted)
-  @save-draft="(recordId, values)" // → PUT /records/{id}/responses (draft)
-  @discard="(recordId)"
-/>
-```
-
-**`ReferenceReview` (domain entity)** — one reference's full review context,
-composed client-side because the projection payload is deliberately thin
-(`ProjectionCell = {question_name, value, source}`):
-
-- `GET /projection/references/{reference}` — resolved grid (precedence already
-  applied server-side: submitted response → suggestion → empty).
-- `GET /schemas/{id}/questions` per involved schema — types + settings for widget
-  selection (§6.1).
-- `GET /schemas/{id}/records?reference=` — `record.fields` for read-only context
-  cells + the pinned `schema_version_id`.
-- `GET /schemas/{id}/versions/{version}` — `columns_cache` for the pinned version
-  (old-version tolerance: a bound column missing from the pinned version's cache
-  renders "not applicable", §17.3).
-- `GET /records/{id}/suggestions` / `/responses` — provenance (`score`, `agent`) and
-  the user's draft.
-
-Composition lives in `get-reference-review-use-case` (parallel fetches, one entity
-out), exposed to pages via `useReferenceReviewViewModel(reference, workspaceId)`.
-State sits in a Pinia store keyed by `reference` — not by route — so Phase 5's Queue
-page can drive it with references from `GET /queues/{id}/next` and wrap the same
-form with progress/assignment chrome. The `/references/[...reference]` page (§3) is
-itself just the first thin wrapper: route param in, composable + form, nothing else.
-
-**Contract gotchas the `ReferenceReview` assembly must handle** (verified against the
-merged Phase 2–4 code, §10):
-
-- **Asymmetric keying:** projection cells and `response.values` are keyed by question
-  **name**; suggestions are keyed by question **id**. The assembly joins through the
-  questions list (`name ↔ id`) — get this join wrong and provenance silently detaches.
-- **Asymmetric wrapping:** `ProjectionCell.value` is bare; `response.values` is
-  double-wrapped `{question_name: {"value": …}}` on both PUT and GET. The form's
-  emit payloads must re-wrap.
-- **Nullable response read:** `GET /records/{id}/responses` returns a bare object
-  **or literal `null`** with 200 (never 404) when the user has no response yet.
-- **Two 422 body shapes on every endpoint:** domain errors are
-  `{"detail": "<string>"}`; pydantic request errors are FastAPI's
-  `{"detail": [{loc, msg, type}]}`. The error-rendering layer handles both.
-- **Records list details:** `metadata`/`status` are patch-like on upsert (metadata
-  cannot be cleared); timestamps are naive ISO strings (treat as UTC); unknown
-  reference → 200 empty, never 404; always `encodeURIComponent` the reference.
-
-*Ledger item:* if the multi-endpoint composition proves chatty in practice, enrich
-the projection payload server-side (single round-trip) — an additive change behind
-the same endpoint contract (§17.4 already reserves backing swaps).
-
 ## 8. Testing strategy
 
-- **Domain unit (vitest):** `ReferenceReview` assembly (precedence display,
-  not-applicable columns, draft merge); dtype→widget defaults; search criteria
-  serialization.
+- **Domain unit (vitest):** dtype→widget defaults; search criteria serialization.
 - **Component (vitest + @vue/test-utils, mocked repositories):** register mock
   repositories in the ts-injecty container (v1's `di/__mocks__/useResolveMock`
-  pattern); test `ProjectionReviewForm` renders per question type, emits
-  `submit`/`save-draft` with correctly-shaped `{question_name: {value}}` payloads,
-  and shows suggestion provenance; schema list/detail pages against mocked
+  pattern); schema list/detail pages against mocked
   `SchemaRepository`.
 - **Contract:** the `gen:api` drift gate (§4) is the API contract test.
 - **e2e (Playwright, remote chromium via ccui):** the prioritized scenario set in
   §10.2 — not just one happy path; a review of merged PRs #225/#227/#228/#229 found
   the frontend will be the first client to exercise several server seams end-to-end.
   Runs against `npm run dev` on `0.0.0.0` with the browser at the ccui container;
-  local chromium launch is broken on this host, and the stale Argilla `e2e/` specs
-  are explicitly not a gate. New specs live in `e2e/v2/`.
+  The stale Argilla `e2e/` specs are explicitly not a gate. New specs live in `e2e/v2/`.
 - **Lint:** the existing eslint 10 flat config + prettier 3 cover `v2/` with no new
   config surface.
 
@@ -257,8 +184,6 @@ the same endpoint contract (§17.4 already reserves backing swaps).
 - Whether the schema detail page exposes a "rebuild index" affordance
   (`POST /schemas/{id}:rebuild-index` → `{indexed: n}`, may take tens of seconds) —
   the only recovery from a silently-swallowed sync failure (§10.1-D).
-- How the review form renders response values orphaned by a deleted/recreated
-  question (values keyed by a name no question owns — tolerate + surface, §10.1-E).
 
 ## 10. E2E review addendum (2026-07-10) — from merged PRs #225/#227/#228/#229
 
@@ -296,32 +221,18 @@ production untested until this slice's E2E runs them.
 - **E — §6/§7 question-name keying fragility.** Questions can't be renamed
   (`QuestionUpdate` has no `name`), but delete+recreate changes the name and
   orphans stored `response.values` keys — they vanish from the projection and
-  re-submitting them 422s ("non-configured"). The form must tolerate orphaned keys
-  (see §9 open item).
+  re-submitting them 422s ("non-configured").
 
-### 10.2 E2E scenario set (priority order; 1–5 gate the slice, 6–8 follow)
+### 10.2 E2E scenario set (priority order)
 
 1. **Auth + smoke:** sign in (bearer token via the v1 auth router on `/api/v2`) →
-   schema list → schema detail renders records. Covers seam A + CORS preflight from
-   the dev origin.
-2. **Slashed-DOI reference:** open `/references/10.1000/j.x`-style reference; assert
-   both `GET /api/v2/references/…` and `GET /api/v2/projection/references/…` succeed
-   with the encoded param (seam B).
-3. **Suggestion→response conversion loop:** seed a suggestion (SDK/fixture) → open
-   review form (cell shows `source: suggestion` + provenance) → edit → submit →
-   projection re-read flips to `source: response`. The core product loop, never
-   chained through HTTP anywhere in the server suites.
-4. **Draft lifecycle:** save draft → reload: form restores draft, projection still
-   shows the suggestion → submit → projection shows response (seam C).
+   schema list → schema detail renders records. Covers seam A.
 5. **Search round-trip:** upsert a record (fixture) → FTS search finds it → filtered
    search (status/scalar) → assert graceful rendering when the index is empty/stale
    (seam D; also the first real write→search freshness check anywhere).
 6. **Multi-annotator isolation:** users A and B submit different values for the same
    record; each sees only their own value in the projection (server filters by
    requesting user — untested with two users at the projection level).
-7. **Old-version rendering:** record pinned to version 1 whose `columns_cache` lacks
-   a currently-bound column → form renders "not applicable" via the versions
-   endpoint (§7).
 8. **Required-question 422 rendering:** submit with a required question empty →
    both 422 body shapes render as actionable form errors.
 

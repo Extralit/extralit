@@ -7,10 +7,10 @@
       <div class="schemas-page">
         <h1 class="schemas-page__title" v-text="$t('schemas.title')" />
 
-        <V2Empty v-if="!selectedWorkspace" :message="$t('schemas.noWorkspace')" />
+        <EmptyState v-if="!selectedWorkspace" :message="$t('schemas.noWorkspace')" />
         <BaseLoading v-else-if="isLoading" />
-        <V2Empty v-else-if="loadFailed" :message="$t('schemas.loadError')" />
-        <V2Empty v-else-if="!schemas.length" :message="$t('schemas.empty')" />
+        <EmptyState v-else-if="loadFailed" :message="$t('schemas.loadError')" />
+        <EmptyState v-else-if="!schemas.length" :message="$t('schemas.empty')" />
 
         <table v-else class="schemas-page__table">
           <thead>
@@ -26,7 +26,7 @@
               <td>
                 <NuxtLink class="schemas-page__link" :to="`/schemas/${schema.id}`">{{ schema.name }}</NuxtLink>
               </td>
-              <td><V2StatusBadge :status="schema.status" /></td>
+              <td><StatusBadge :status="schema.status" /></td>
               <td>{{ schema.updatedAt }}</td>
               <td>
                 <NuxtLink class="schemas-page__link" :to="`/schemas/${schema.id}/settings`">

@@ -28,6 +28,15 @@ from extralit_server.models.v2 import Schema, V2Question, V2Record, V2Response, 
 
 
 async def build_reference_view(db: AsyncSession, *, workspace_id: UUID, reference: str, user) -> ProjectionView:
+    """Project a single reference for one annotator, scoped to `user`'s own responses.
+
+    The user-scoping is deliberate and is *not* shared with `build_workspace_view`: this is the
+    per-reference review surface, where an annotator must see their own answers and must not have
+    a colleague's response silently displace one of theirs mid-review. `build_workspace_view` is
+    the cross-user workspace overview and coalesces across all users by design. The same
+    (reference, schema, question) cell can therefore report a different `value`, `source` and
+    `record_id` on the two surfaces — that divergence is intended, not a bug.
+    """
     records = await records_ctx.list_records_by_reference(db, workspace_id=workspace_id, reference=reference)
     if not records:
         return ProjectionView(reference=reference, records=[], total_records=0)
@@ -142,7 +151,7 @@ CREATE TABLE questions (
 CREATE TABLE question_columns (question_id VARCHAR, sub_column VARCHAR);
 CREATE TABLE records (record_id VARCHAR, schema_id VARCHAR, reference VARCHAR, inserted_at TIMESTAMP);
 CREATE TABLE suggestions (record_id VARCHAR, question_id VARCHAR, value_json JSON, agent VARCHAR, score_json JSON);
-CREATE TABLE responses (record_id VARCHAR, values_json JSON, updated_at TIMESTAMP);
+CREATE TABLE responses (response_id VARCHAR, record_id VARCHAR, values_json JSON, updated_at TIMESTAMP);
 """
 
 _INSERTS = {
@@ -150,7 +159,7 @@ _INSERTS = {
     "question_columns": "INSERT INTO question_columns VALUES (?, ?)",
     "records": "INSERT INTO records VALUES (?, ?, ?, ?)",
     "suggestions": "INSERT INTO suggestions VALUES (?, ?, ?, ?, ?)",
-    "responses": "INSERT INTO responses VALUES (?, ?, ?)",
+    "responses": "INSERT INTO responses VALUES (?, ?, ?, ?)",
 }
 
 # One statement, one CTE per concern. Emits long-format
@@ -168,10 +177,15 @@ latest_responses AS (
     -- per record -- the latest submitted one by ANY user (submitted-only filtering happens in
     -- Postgres). A question absent from that envelope therefore falls back to its suggestion
     -- even when an earlier submitted response answered it; envelopes are not merged per cell.
+    -- `response_id` is a tiebreaker, not decoration: TimestampMixin defaults `updated_at` to
+    -- `datetime.utcnow`, so two users submitting back-to-back can land on the identical
+    -- timestamp and the winner would otherwise be whatever order Postgres happened to return.
+    -- It buys stability, not latest-ness: a UUID carries no recency, so on a tie the winner is
+    -- the greatest `response_id` -- an arbitrary user, picked the same way every run.
     SELECT record_id, values_json
     FROM responses
     WHERE values_json IS NOT NULL
-    QUALIFY row_number() OVER (PARTITION BY record_id ORDER BY updated_at DESC) = 1
+    QUALIFY row_number() OVER (PARTITION BY record_id ORDER BY updated_at DESC, response_id DESC) = 1
 ),
 response_entries AS (
     -- zip-unnest the envelope: `json_keys` and the `'$.*'` wildcard walk the object in the same
@@ -309,7 +323,11 @@ async def build_workspace_view(db: AsyncSession, *, workspace_id: UUID, offset: 
     Coalescing is record-level, intentionally (spec §3.2): the latest submitted response
     *envelope* per record wins outright, across all users. A question the winning envelope does
     not contain falls back to its suggestion even if an earlier submitted response answered it
-    — envelopes are never merged cell-by-cell.
+    — envelopes are never merged cell-by-cell. "Latest" is by `updated_at`; ties resolve to the
+    greatest `response_id`, which is deterministic but arbitrary with respect to authorship.
+
+    "Across all users" is also what separates this from `build_reference_view`, which scopes to
+    the requesting user's own responses; see its docstring for why the two intentionally differ.
     """
     schemas = (
         (await db.execute(select(Schema).where(Schema.workspace_id == workspace_id).order_by(Schema.name)))
@@ -404,7 +422,8 @@ async def build_workspace_view(db: AsyncSession, *, workspace_id: UUID, offset: 
             for s in suggestions
         ],
         "responses": [
-            (str(r.record_id), json.dumps(r.values or {}, ensure_ascii=False), r.updated_at) for r in responses
+            (str(r.id), str(r.record_id), json.dumps(r.values or {}, ensure_ascii=False), r.updated_at)
+            for r in responses
         ],
     }
     output = await to_thread.run_sync(_run_denormalization, inputs)

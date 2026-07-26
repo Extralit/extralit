@@ -28,10 +28,48 @@ export function toPerspectiveData(projection: WorkspaceProjection): Record<strin
     const record: Record<string, unknown> = { [REFERENCE_COLUMN]: row.reference };
     for (const column of projection.columns) {
       const cell = row.cells[column.name];
-      record[column.name] = cell ? cell.value : null;
+      record[column.name] = cell ? toScalarCell(cell.value) : null;
     }
     return record;
   });
+}
+
+/**
+ * Coerces a cell value to something Perspective can build a column schema from.
+ *
+ * Perspective infers each column's type from the (assumed-scalar) shape of its cell
+ * values — it has no notion of an array- or object-typed column. The backend's
+ * `QuestionType` enum, though, includes `multi_label_selection` (array of labels),
+ * `ranking` (array of ranked items), and `span` (an object) — all non-scalar. Feeding one
+ * of those straight into `client.table()` either renders as `[object Object]` or makes the
+ * whole `table()` call reject (see grid-adapter.test.ts / ExtractionsGrid's `performLoad`
+ * doc comment for what happens to that rejection). Serializing arrays/objects to a stable
+ * JSON string keeps every column scalar. `null` is passed through as-is (not the string
+ * `"null"`) because the manifest-completeness contract in `toPerspectiveData`'s doc comment
+ * depends on an absent/empty cell being `null`. Genuine scalars (string/number/boolean) are
+ * passed through unchanged.
+ *
+ * `JSON.stringify` itself does not unconditionally return a string: it returns `undefined`
+ * (not a string) for a function or a symbol, and throws for a `BigInt` or a circular
+ * structure. Server JSON can't produce any of those today, but this helper is the one place
+ * that is supposed to make the "every column present, `null` when absent" contract
+ * unconditional — so both failure modes are coerced to `null` rather than left to leak
+ * `undefined` into a "present" key or throw and escape as a spurious `load-error` out of
+ * `performLoad`.
+ */
+function toScalarCell(value: unknown): unknown {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const valueType = typeof value;
+  if (valueType === "string" || valueType === "number" || valueType === "boolean") {
+    return value;
+  }
+  try {
+    return JSON.stringify(value) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -73,6 +111,15 @@ export function bandParity(projection: WorkspaceProjection): number[] {
 /**
  * Guards the §3.3 click-to-annotate affordance off until annotation-mode resolves v2 schema
  * ids (see ledger §5). Flip to true once that lands.
+ *
+ * DELIBERATELY RETAINED AHEAD OF ITS CONSUMER — do not delete as dead code. The whole chain
+ * (`cellAt`, `buildAnnotationUrl`, the grid's `cell-click` emit and its `composedPath`
+ * listener, the page binding, and `onCellClick`) was removed once as unreachable and then
+ * restored by an explicit revert, because it is the wiring the record-correction loop plugs
+ * into rather than speculative generality. That consumer is tracked as ENG-32 ("Cell/record
+ * correction loop in the extraction viewer"); flipping this flag plus resolving v2 schema
+ * ids in annotation-mode is the remaining work. Until then the click resolves a URL and
+ * intentionally does not navigate — see `useExtractionsViewModel.onCellClick`.
  */
 export const ANNOTATION_CELL_LINKS_ENABLED = false;
 

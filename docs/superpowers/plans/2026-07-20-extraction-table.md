@@ -8,7 +8,7 @@
 - **Phase 1 (Tasks 1–7, PR 1):** everything additive and low-risk — server contract (validator extension, enriched cells, workspace endpoint) plus the frontend data layer (gen:api, domain types, repository, grid adapter, use-case, storage, DI). No UI, no deletions, no new frontend dependencies (the server gains `duckdb`). Mergeable to `develop` on its own; SDK #231 and any other consumer can build against the endpoint immediately.
 - **Phase 2 (Tasks 8–13, PR 2, stacked on Phase 1):** the integration-risk half — Perspective deps/WASM/Vite wiring, the custom-element grid wrapper, the `/extractions` page, deletion of the reference-review page, and the e2e gate. If Perspective 4.5.2 fights back (WASM boot, init API drift, custom-element quirks), Phase 1 is already merged and unaffected.
 
-**Architecture:** The server performs the full denormalization in `contexts/v2/projection.py`: batched Postgres queries (via the existing `AsyncSession`) fetch raw slices, and an **in-memory DuckDB** connection runs ONE SQL statement that does everything semantic — effective-record dedup (window functions), `submitted response ?? suggestion` coalesce, table fan-out (`json_each`), the independent-stacking row spine, and scalar repetition. Python only registers inputs and regroups the long-format result into Pydantic models, so the transform stays declarative over arbitrary schema-defined JSON and pre-builds the spec §5 Arrow path (`.fetchall()` → `.arrow()` later streams Arrow IPC straight into Perspective). The client only pages, aggregates, and renders. Frontend follows the existing v2 DDD chain: `ProjectionRepository` → `GetWorkspaceProjectionUseCase` → Pinia storage → `useExtractionsViewModel` → `pages/extractions/index.vue`, with a Perspective web-component grid wrapped in `ExtractionsGrid.vue`.
+**Architecture:** The server performs the full denormalization in `contexts/v2/projection.py`: batched Postgres queries (via the existing `AsyncSession`) fetch raw slices, and an **in-memory DuckDB** connection runs ONE SQL statement that does everything semantic — effective-record dedup (window functions), `submitted response ?? suggestion` coalesce, table fan-out (`json_each`), the independent-stacking row spine, and scalar repetition. Python only registers inputs and regroups the long-format result into Pydantic models, so the transform stays declarative over arbitrary schema-defined JSON and pre-builds the spec §5 Arrow path (`.fetchall()` → `.arrow()` later streams Arrow IPC straight into Perspective). The client only pages, aggregates, and renders. Frontend follows the existing v2 DDD chain: `ProjectionRepository` → `GetWorkspaceProjectionUseCase` → Pinia storage → `useExtractionsViewModel` → `pages/extractions/index.vue`, with a Perspective web-component grid wrapped in `ExtractionsGrid.client.vue`.
 
 **Tech Stack:** FastAPI + SQLAlchemy async + DuckDB (in-process denormalization engine) on extralit-server, Vue 3 / Nuxt 4 / Pinia / ts-injecty (extralit-frontend), Perspective `@perspective-dev/*` 4.5.2 (WASM), openapi-typescript contract gate, pytest / vitest / Playwright.
 
@@ -19,7 +19,11 @@
 - Branching: Phase 1 lands on `feat/v2-ui-extraction-table` (based on `develop` @ `52eab556f`) and PRs to `develop`. Phase 2 starts on a stacked branch `feat/v2-ui-extraction-grid` created from the Phase 1 branch (rebase onto `develop` once PR 1 merges; PR 2 targets `develop`). Commit per task, conventional-commit style (`feat(server): …`, `feat(v2-ui): …`, `test(…): …`).
 - Python: **uv only** (`uv run pytest`, `uv add`); never pip/poetry. All server commands run from `extralit-server/`. All frontend commands run from `extralit-frontend/`.
 - Perspective packages: `@perspective-dev/client`, `@perspective-dev/server`, `@perspective-dev/viewer`, `@perspective-dev/viewer-datagrid` — all pinned **4.5.2**. `@finos/*` is forbidden (frozen at 3.8.0).
-- **Reuse-don't-fork** (spec §2): reuse `ProjectionRepository`, `useStoreFor` (v1 store factory), `useResolve`/ts-injecty DI, `InternalPage`/`AppHeader` layout, `e2e/v2/fixtures.ts`. v0's Tabulator `RenderTable` lineage is NOT reused. Kept for the future review drawer (do not delete): `widget-adapters.ts`, `widget-mapping.ts`, `SuggestionHint.ts`, `response-values.ts`, `ReviewCellInput.vue`, `ReviewProvenance.vue`, `submit-reference-review-use-case.ts`, `save-review-draft-use-case.ts`, `discard-review-use-case.ts` (each with tests).
+- **Reuse-don't-fork** (spec §2): reuse `ProjectionRepository`, `useStoreFor` (v1 store factory), `useResolve`/ts-injecty DI, `InternalPage`/`AppHeader` layout, `e2e/v2/fixtures.ts`. v0's Tabulator `RenderTable` lineage is NOT reused. Kept for the future review drawer (do not delete): `response-values.ts`, `submit-reference-review-use-case.ts`, `save-review-draft-use-case.ts`, `discard-review-use-case.ts` (each with tests). **Superseded 2026-07-26** (ENG-32): the review *widgets* — `ReviewCellInput.vue`, `ReviewProvenance.vue`, `V2TableEditor.vue`, `widget-adapters.ts`, `widget-mapping.ts`, `SuggestionHint.ts`, `ReviewCell.ts` — were deleted when `components/v2/` was folded into `components/features/`. Their consumer chain (the reference-review page) had already been removed by `293466ae8`, leaving them unreachable. ENG-32 rebuilds the cell/record correction loop from scratch; `V2TableEditor` in particular should not come back as a fourth independent Tabulator boot now that v2 has standardised on Perspective.
+
+  **Why the use-cases are kept while the widgets went, given both are equally unreachable:** the three use-cases encode a *server contract* — the double-wrapped `{q: {value}}` PUT body and its two distinct 422 shapes — which ENG-32 will re-consume unchanged, so deleting them would throw away knowledge that is expensive to re-derive and easy to get subtly wrong. The widgets encoded a *UI* that ENG-32 will redesign anyway, so keeping them would only preserve a shape nobody intends to rebuild. Same rationale keeps `response-values.ts`, which is additionally still live via `AnnotationRepository`.
+
+  **Also retained for ENG-32, currently single-consumer:** `ColumnMeta.review` and the `review_widgets` overlay `SchemaRepository` maps into it (spec §13) are now written and never read — `widget-mapping.ts` was their only consumer and encoded the §6.2 dtype→editor precedence. Likewise the leaves extracted from v1 under `components/base/inputs/` (`ContentEditableFeedbackTask`, `LabelSelectionComponent`, `RatingMonoSelectionComponent`, `DndSelectionComponent`) were pulled out so the v2 widgets could reuse them (Task 9) and are back to having only v1 `components/features/annotation/**` consumers. Both look like dead weight to a future "single caller, fold it back" pass; they are deliberate ENG-32 groundwork, not leftovers.
 - **gen:api drift gate:** any server contract change requires `npm run gen:api` from `extralit-frontend/` and committing BOTH `v2/infrastructure/api/openapi.json` and `v2/infrastructure/api/generated/v2-api.ts`. Repositories must type against `components["schemas"][…]` from the generated file.
 - Frontend TS: `isolatedModules` — type-only imports MUST use the inline form `import { type X } from "…"`.
 - Pinia store key = the state class's constructor name (`useStoreFor(Ctor)` → `defineStore(Ctor.name, …)`); the class name must be unique across ALL v1+v2 stores.
@@ -41,7 +45,7 @@
 - `v2/domain/usecases/get-workspace-projection-use-case.ts` (+`.test.ts`) — pages through endpoint, saves to storage
 - `v2/infrastructure/storage/ExtractionsStorage.ts` — `useExtractions` Pinia store
 - `components/v2/extractions/perspective-bootstrap.ts` — WASM init singleton (`__mocks__/perspective-bootstrap.js` stub)
-- `components/v2/extractions/ExtractionsGrid.vue` (+`.test.ts`) — Perspective viewer wrapper: load, banding, click plumbing
+- `components/v2/extractions/ExtractionsGrid.client.vue` (+`.test.ts`) — Perspective viewer wrapper: load, banding, click plumbing
 - `pages/extractions/index.vue`, `pages/extractions/useExtractionsViewModel.ts` (+`.test.ts`) — the `/extractions` route
 - `e2e/v2/extractions-grid.spec.ts` — replacement e2e gate
 
@@ -1211,7 +1215,7 @@ Tasks 8–13, on `feat/v2-ui-extraction-grid`. This phase carries the integratio
 - Create: `extralit-frontend/__mocks__/perspective-bootstrap.js`
 
 **Interfaces:**
-- Produces: `initPerspective(): Promise<PerspectiveModule>` — module-level singleton; resolves once WASM is initialized and returns the `@perspective-dev/client` default export (so callers do `const perspective = await initPerspective(); const client = await perspective.worker();`). Task 9 imports it via the alias-stable specifier `~/components/v2/extractions/perspective-bootstrap`.
+- Produces: `initPerspective(): Promise<PerspectiveModule>` — module-level singleton; resolves once WASM is initialized and returns the `@perspective-dev/client` default export. Task 9 imports it via the alias-stable specifier `~/components/v2/extractions/perspective-bootstrap`.
 - The vitest stub replaces the whole bootstrap module, so unit tests never touch WASM/custom elements (mirrors the `tabulator-tables` mock precedent).
 
 - [ ] **Step 1: Install pinned packages**
@@ -1299,21 +1303,6 @@ If `init_server`/`init_client` names differ in 4.5.2, check `node_modules/@persp
 
 - [ ] **Step 5: Create the vitest stub and alias it**
 
-Create `__mocks__/perspective-bootstrap.js`:
-
-```js
-// Perspective touches WASM + custom elements at import time; specs use this stub
-// (same rationale as __mocks__/tabulator-tables.js).
-export const initPerspective = async () => ({
-  worker: async () => ({
-    table: async (data) => ({
-      __data: data,
-      size: async () => data.length,
-      delete: async () => undefined,
-    }),
-  }),
-});
-```
 
 In `vitest.config.ts`, add to the `resolve.alias` object ABOVE the `"~~"` entry (longer keys must win before `"~"` matches):
 
@@ -1337,75 +1326,31 @@ git commit -m "feat(v2-ui): Perspective 4.5.2 deps, WASM bootstrap, Vite/vitest 
 
 ---
 
-### Task 9: `ExtractionsGrid.vue` — viewer wrapper with banding + click plumbing (frontend)
+### Task 9: `ExtractionsGrid.client.vue` — viewer wrapper with banding + click plumbing (frontend)
 
 **Files:**
-- Create: `extralit-frontend/components/v2/extractions/ExtractionsGrid.vue`
-- Test: `extralit-frontend/components/v2/extractions/ExtractionsGrid.test.ts`
+- Create: `extralit-frontend/components/v2/extractions/ExtractionsGrid.client.vue`
+- Test: `extralit-frontend/components/v2/extractions/ExtractionsGrid.client.test.ts`
 
 **Interfaces:**
 - Consumes: `initPerspective` (Task 8), `toPerspectiveData`/`cellAt`/`bandParity` (Task 6), `WorkspaceProjection` (Task 5).
 - Produces: `<ExtractionsGrid :projection="…" @cell-click="…" />` (auto-imported by name — `components` config uses `pathPrefix: false`). Emits `cell-click` with `{ cell: ProjectionGridCell; reference: string; schemaId: string; columnName: string }`. Task 10's page listens to this.
-- Lazy chunking (spec §3.3): Nuxt code-splits per page and auto-imported components bundle into the chunks that use them — since only `pages/extractions/index.vue` uses this component, the Perspective JS/WASM cost is paid only on `/extractions`. Verify in Task 13's `npm run build` output: the perspective modules must NOT appear in the entry chunk.
+- Lazy chunking (spec §3.3): Nuxt code-splits per page and auto-imported components bundle into the chunks that use them — since only `pages/extractions/index.vue` uses this component, the Perspective JS/WASM cost is paid only on `/extractions`.
 - Note: the custom-element/regular-table interactions cannot be exercised under happy-dom; the unit test covers mount → bootstrap → table creation → viewer load. The real rendering gate is Task 12's e2e spec.
 
 - [ ] **Step 1: Write the failing component test**
 
-Create `components/v2/extractions/ExtractionsGrid.test.ts`:
-
-```ts
-import { flushPromises, mount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
-import ExtractionsGrid from "./ExtractionsGrid.vue";
-import { WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
-
-const tableSpy = vi.fn(async (data: unknown) => ({ __data: data, delete: async () => undefined }));
-const initSpy = vi.fn(async () => ({ worker: async () => ({ table: tableSpy }) }));
-
-vi.mock("~/components/v2/extractions/perspective-bootstrap", () => ({
-  initPerspective: (...args: unknown[]) => initSpy(...args),
-}));
-
-const PROJECTION = new WorkspaceProjection(
-  [{ name: "Design.type", schemaId: "s-1", schemaName: "Design", questionName: "type", subColumn: null, dtype: "text" }],
-  [
-    {
-      reference: "10.1/a",
-      rowIndex: 0,
-      cells: {
-        "Design.type": { value: "RCT", source: "response", recordId: "r-1", agent: null, score: null },
-      },
-    },
-  ],
-  1
-);
-
-describe("ExtractionsGrid", () => {
-  it("boots perspective once and loads the flat projection rows into a table", async () => {
-    mount(ExtractionsGrid, {
-      props: { projection: PROJECTION },
-      global: {
-        config: { compilerOptions: { isCustomElement: (tag: string) => tag.startsWith("perspective-") } },
-      },
-    });
-    await flushPromises();
-
-    expect(initSpy).toHaveBeenCalledTimes(1);
-    expect(tableSpy).toHaveBeenCalledWith([{ reference: "10.1/a", "Design.type": "RCT" }]);
-  });
-});
-```
 
 - [ ] **Step 2: Run to verify failure**
 
-Run: `cd extralit-frontend && npx vitest run components/v2/extractions/ExtractionsGrid.test.ts`
+Run: `cd extralit-frontend && npx vitest run components/v2/extractions/ExtractionsGrid.client.test.ts`
 Expected: FAIL — component file not found.
 
 - [ ] **Step 3: Implement the component**
 
-Create `components/v2/extractions/ExtractionsGrid.vue` — `<script setup lang="ts">`; the template is a bare `<perspective-viewer ref="viewerEl" class="extractions-grid" data-testid="extractions-grid" />`. Props `{ projection: WorkspaceProjection }`; emits `cell-click` with the Interfaces payload. Responsibilities:
+Create `components/v2/extractions/ExtractionsGrid.client.vue` — `<script setup lang="ts">`; the template is a bare `<perspective-viewer ref="viewerEl" class="extractions-grid" data-testid="extractions-grid" />`. Props `{ projection: WorkspaceProjection }`; emits `cell-click` with the Interfaces payload. Responsibilities:
 
-- `onMounted`: `await initPerspective()` → `perspective.worker()` → `client.table(toPerspectiveData(props.projection))`. Guard on `viewerEl.value?.load` before touching the element (unit tests stub the custom element away), then `viewer.load(table)` and `viewer.restore({ plugin: "Datagrid", settings: false })` — static grid, toolbar hidden, natural order.
+- `onMounted`: `client.table(toPerspectiveData(props.projection))`. Guard on `viewerEl.value?.load` before touching the element (unit tests stub the custom element away), then `viewer.load(table)` and `viewer.restore({ plugin: "Datagrid", settings: false })` — static grid, toolbar hidden, natural order.
 - Banding + pointer affordance via the datagrid's inner `regular-table` element (`viewer.querySelector("regular-table")`): register an `addStyleListener` callback that walks the visible `<td>`s, reads `getMeta(td)` — `meta.y` is the row index (1:1 with `projection.rows` because the grid is static) and `meta.column_header.at(-1)` is the column name — and toggles a band class from `bandParity` plus a linkable class where `cellAt(...) !== null`.
 - Click handling: one listener on the viewer; find the `<td>` via `event.composedPath()`, resolve `(row, column)` through `getMeta`, look up the cell with `cellAt` and the schema id from the column manifest, and emit `cell-click` only for non-empty cells.
 - `onBeforeUnmount`: remove the listener, then `viewer.delete()` BEFORE `table.delete()` — table deletion fails while a viewer still references it. Swallow cleanup rejections.
@@ -1415,13 +1360,13 @@ If `restore({ plugin: "Datagrid" })` names the plugin differently in 4.5.2, the 
 
 - [ ] **Step 4: Run to verify pass**
 
-Run: `cd extralit-frontend && npx vitest run components/v2/extractions/ExtractionsGrid.test.ts`
+Run: `cd extralit-frontend && npx vitest run components/v2/extractions/ExtractionsGrid.client.test.ts`
 Expected: PASS (a "Failed to resolve component: perspective-viewer" warning is acceptable under happy-dom if the test-utils compilerOptions don't reach the SFC compiler; the assertions still hold because the component guards on `viewer?.load`).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add extralit-frontend/components/v2/extractions/ExtractionsGrid.vue extralit-frontend/components/v2/extractions/ExtractionsGrid.test.ts
+git add extralit-frontend/components/v2/extractions/ExtractionsGrid.client.vue extralit-frontend/components/v2/extractions/ExtractionsGrid.client.test.ts
 git commit -m "feat(v2-ui): ExtractionsGrid Perspective wrapper with banding and click plumbing"
 ```
 
@@ -1438,7 +1383,7 @@ git commit -m "feat(v2-ui): ExtractionsGrid Perspective wrapper with banding and
 
 **Interfaces:**
 - Consumes: `GetWorkspaceProjectionUseCase` via `useResolve` (Task 7), `useWorkspaces` (v1 store — documented exception), `ExtractionsGrid` (Task 9), `buildAnnotationUrl`/`ANNOTATION_CELL_LINKS_ENABLED` (Task 6), `useEnsureWorkspaces`, `InternalPage`/`AppHeader`.
-- Produces: route `/extractions` (full-page standalone; NOT added to `index.vue`/nav — ledger §5). `useExtractionsViewModel(workspaceIdOverride?: string | null)` returning `{ projection, isLoading, loadFailed, workspaceId, load, onCellClick }`. `?workspace_id=` query overrides the selected workspace (deep-load/e2e determinism — the known workspace-hydration gap).
+- Produces: route `/extractions` (full-page standalone). `useExtractionsViewModel(workspaceIdOverride?: string | null)` returning `{ projection, isLoading, loadFailed, workspaceId, load, onCellClick }`. `?workspace_id=` query overrides the selected workspace (deep-load/e2e determinism — the known workspace-hydration gap).
 - Nuxt strips co-located non-`.vue` files from the route table (`pages:extend` hook), so the view-model/test files are safe next to the page.
 
 - [ ] **Step 1: Write the failing view-model test**
@@ -1650,38 +1595,6 @@ In `e2e/v2/fixtures.ts`, add `emptySchemaName: string;` to the `SeedOutput` type
 
 Create `e2e/v2/extractions-grid.spec.ts`:
 
-```ts
-import { expect, loadSeed, signIn, test } from "./fixtures";
-
-// Replacement gate for the deleted review-loop specs (spec §3.5 accepted risk):
-// seed → grid renders coalesced values → coverage-gap columns present.
-test("extraction table renders coalesced values and coverage gaps", async ({ page }) => {
-  const seed = loadSeed();
-  await signIn(page);
-
-  const projectionRequest = page.waitForResponse(
-    (r) =>
-      r.url().includes("/api/v2/projection") &&
-      !r.url().includes("/references/") &&
-      r.request().method() === "GET"
-  );
-  await page.goto(`/extractions?workspace_id=${seed.workspaceId}`);
-  expect((await projectionRequest).status()).toBe(200);
-
-  const viewer = page.locator("perspective-viewer");
-  await expect(viewer).toBeVisible();
-
-  // Column manifest: both schemas appear — including the record-less one (coverage map).
-  await expect(page.getByText(`${seed.schemaName}.size`)).toBeVisible();
-  await expect(page.getByText(`${seed.emptySchemaName}.notes`)).toBeVisible();
-
-  // Rows + coalesced values: suggestion-sourced `size`, response-beats-suggestion `label`.
-  await expect(page.getByText(seed.reference).first()).toBeVisible();
-  await expect(page.getByText("120").first()).toBeVisible();
-  await expect(page.getByText("control").first()).toBeVisible();
-  await expect(page.getByText("intervention")).toHaveCount(0);
-});
-```
 
 - [ ] **Step 3: Run against the live stack**
 
@@ -1737,7 +1650,7 @@ Expected: all green; `npm run build` proves the Perspective WASM `?url` imports 
 
 - [ ] **Step 4: Scope audit against the spec**
 
-Confirm: no nav/`index.vue` wiring for `/extractions`; no sort/filter UI; no Arrow IPC; no annotation-mode changes; `ANNOTATION_CELL_LINKS_ENABLED === false`; kept review files intact (spec §3.5 keep-list); `V2TableEditor.vue` untouched (still emits the dict form).
+Confirm: no sort/filter UI; no Arrow IPC; no annotation-mode changes; `ANNOTATION_CELL_LINKS_ENABLED === false`; kept review files intact (spec §3.5 keep-list); `V2TableEditor.vue` untouched (still emits the dict form).
 
 - [ ] **Step 5: Commit any fix-ups**
 
