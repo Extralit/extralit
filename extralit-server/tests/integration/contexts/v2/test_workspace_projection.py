@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from extralit_server.contexts.v2 import projection as projection_ctx
@@ -298,3 +300,62 @@ async def test_non_ascii_names_and_bindings_resolve(db):
     assert cells["Résumé.país"].value == "Côte d'Ivoire"
     assert cells["Résumé.résultats.café"].value == "noir"
     assert cells["Résumé.résultats.日本語"].value == "はい"
+
+
+async def test_table_fanout_through_the_response_path(db):
+    # Every other fan-out test seeds a *suggestion*, whose value_json is the row array directly.
+    # A response arrives double-wrapped instead -- {question_name: {"value": [...]}} -- so the
+    # rows only reach `table_arrays` if `json_extract(entry, '$.value')` unwraps the envelope
+    # first. Nothing else in this file exercises that seam.
+    workspace = await WorkspaceFactory.create()
+    schema, version = await _make_schema(workspace, "Outcomes")
+    await _add_question(schema, "results", qtype=QuestionType.table, columns=["value", "unit"])
+    rec = await V2RecordFactory.create(version=version, reference="10.1/a")
+    user = await UserFactory.create()
+    await V2ResponseFactory.create(
+        record=rec,
+        user=user,
+        status=ResponseStatus.submitted,
+        values={"results": {"value": [{"value": "12%", "unit": "pct"}, {"value": "8%", "unit": "pct"}]}},
+    )
+
+    view = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
+
+    assert len(view.rows) == 2  # fan-out happens on the response path too, not just suggestions
+    assert [r.cells["Outcomes.results.value"].value for r in view.rows] == ["12%", "8%"]
+    assert all(r.cells["Outcomes.results.value"].source == "response" for r in view.rows)
+    assert all(r.cells["Outcomes.results.unit"].value == "pct" for r in view.rows)
+
+
+async def test_tied_response_timestamps_resolve_deterministically(db):
+    # `updated_at` defaults to `datetime.utcnow`, so two users submitting back-to-back can share
+    # a timestamp exactly. Without the `response_id DESC` tiebreaker in `latest_responses` the
+    # winning envelope is whatever order Postgres happened to return -- a coin flip in prod and a
+    # flaky test here. Pin both timestamps to the same instant so the tiebreaker is the *only*
+    # thing deciding, then assert the documented rule (highest id wins) rather than a value.
+    workspace = await WorkspaceFactory.create()
+    schema, version = await _make_schema(workspace, "Design")
+    await _add_question(schema, "type")
+    rec = await V2RecordFactory.create(version=version, reference="10.1/a")
+    tied_at = datetime(2026, 7, 20, 12, 0, 0)
+    first = await V2ResponseFactory.create(
+        record=rec,
+        user=await UserFactory.create(),
+        status=ResponseStatus.submitted,
+        values={"type": {"value": "first"}},
+        updated_at=tied_at,
+    )
+    second = await V2ResponseFactory.create(
+        record=rec,
+        user=await UserFactory.create(),
+        status=ResponseStatus.submitted,
+        values={"type": {"value": "second"}},
+        updated_at=tied_at,
+    )
+    assert first.updated_at == second.updated_at
+    # The tiebreaker compares the ids as VARCHAR, matching how they are loaded into DuckDB.
+    expected = max((first, second), key=lambda r: str(r.id))
+
+    view = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
+
+    assert view.rows[0].cells["Design.type"].value == expected.values["type"]["value"]
