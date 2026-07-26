@@ -37,41 +37,6 @@ The Codespaces will automatically:
 
 Then, select from three different development environments through devcontainers, each optimized for different purposes:
 
-=== "Tilt on K8s (Recommended)"
-    This environment provides full-stack development with Kubernetes and live-reloading capabilities:
-
-    ```bash
-    # Initialize the Kubernetes cluster and deploy all services
-    tilt up
-    ```
-
-    Then, simply monitor the deployment in the Tilt UI. The URL will be available in the "Ports" tab, usually http://localhost:10350, or another URL in your VSCode Ports tab.
-
-    **Advanced Configuration:** You can customize your deployment by setting environment variables:
-
-    ```bash
-    # Use external database instead of deploying PostgreSQL
-    export EXTRALIT_DATABASE_URL="postgresql://user:password@external-host:5432/dbname"
-
-    # Use external S3-compatible storage instead of deploying MinIO
-    export S3_ENDPOINT="https://your-s3-endpoint"
-    export S3_ACCESS_KEY="your-access-key"
-    export S3_SECRET_KEY="your-secret-key"
-
-    # Use external OpenAI API key
-    export OPENAI_API_KEY="your-openai-api-key"
-
-    # Use external Weaviate instance
-    export WCS_HTTP_URL="https://your-weaviate-instance"
-    export WCS_GRPC_URL="grpc://your-weaviate-instance:50051"
-    export WCS_API_KEY="your-weaviate-api-key"
-
-    # Start Tilt with custom configuration
-    tilt up
-    ```
-
-    To edit the environment variables used by all services, go to `examples/deployments/k8s/extralit-configs.yaml`.
-
 === "Docker-Compose"
     This environment uses Docker Compose for a simpler, leaner setup without Kubernetes:
 

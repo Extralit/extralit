@@ -17,19 +17,6 @@ Please, review your backend and upgrade it if necessary.
 
 ## Launching
 
-### Using a proxy
-
-If you run Extralit behind a proxy by adding some extra prefix to expose the service, you should set the `EXTRALIT_BASE_URL`
-environment variable to properly route requests to the server application.
-
-For example, if your proxy exposes Extralit in the URL `https://my-proxy/custom-path-for-extralit`, you should launch the
-Extralit server with `EXTRALIT_BASE_URL=/custom-path-for-extralit`.
-
-NGINX and Traefik have been tested and are known to work with Extralit:
-
-- [NGINX example](https://github.com/extralit/extralit/tree/main/examples/deployments/docker/nginx)
-- [Traefik example](https://github.com/extralit/extralit/tree/main/examples/deployments/docker/traefik)
-
 ## Environment variables
 
 You can set the following environment variables to further configure your server and client.

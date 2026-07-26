@@ -5,7 +5,6 @@ mkdir -p /tmp/k3d-volumes/elasticsearch /tmp/k3d-volumes/postgresql /tmp/k3d-vol
 # Create k3d cluster for local development with ctlptl and Tilt
 if ! ctlptl get registry | grep -q "ctlptl-registry"; then
     ctlptl create registry ctlptl-registry --port=5005
-    ctlptl apply -f examples/deployments/k8s/k3d/k3d-config.yaml
 else
     echo 'Registry ctlptl-registry already exists. Skipping creation.'
 fi
@@ -20,18 +19,6 @@ if ! pip list | grep -q "extralit"; then
     uv pip install -e /workspaces/extralit/extralit/
 else
     echo 'Package 'extralit' is already installed. Skipping installation.'
-fi
-
-# Check if the upstream remote already exists
-git config --global --add safe.directory /workspaces/extralit
-if ! git remote get-url upstream &>/dev/null; then
-    echo 'Adding upstream remote...'
-    git remote add upstream https://github.com/argilla-io/argilla
-    git fetch upstream --no-tags
-    git update-index --assume-unchanged examples/deployments/k8s/extralit-configs.yaml
-    git update-index --assume-unchanged examples/deployments/k8s/extralit-deployment.yaml
-else
-    echo 'Upstream remote already exists. Skipping addition.'
 fi
 
 # Install precommit hooks

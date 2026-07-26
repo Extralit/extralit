@@ -12,19 +12,16 @@ You can visit the [Extralit documentation](https://docs.extralit.ai/dev/admin_gu
 
 ## Running the app
 
-This example is intended to be used locally. You can check [this space](https://huggingface.co/spaces/argilla/argilla-webhooks)
-for a remote example.
-
-First, you must start the argilla server. We recommend you to use the docker installation. You can run the following commands to start the argilla server:
+First, you must start the extralit server. We recommend you to use the docker installation. You can run the following commands to start the extralit server:
 ```bash
-mkdir argilla && cd argilla
-curl https://raw.githubusercontent.com/argilla-io/argilla/main/examples/deployments/docker/docker-compose.yaml -o docker-compose.yaml
+mkdir extralit && cd extralit
+curl https://raw.githubusercontent.com/extralit/extralit/main/docker-compose.yaml -o docker-compose.yaml
 docker compose up -d
 ```
 
 For more information on how to install the server, please refer to the [Extralit documentation](https://docs.extralit.ai/latest/getting_started).
 
-Once the argilla server is up and running, start the webhook server by running the following command:
+Once the extralit server is up and running, start the webhook server by running the following command:
 
 ```bash
 EXTRALIT_API_KEY=extralit.apikey \
@@ -32,7 +29,7 @@ WEBHOOK_SERVER_URL=http://host.docker.internal:8000 \
 uvicorn main:server
 ```
 
-The `EXTRALIT_API_KEY` environment variable should be set to the API key of the argilla server.
+The `EXTRALIT_API_KEY` environment variable should be set to the API key of the extralit server.
 The `WEBHOOK_SERVER_URL` environment variable should be set to the URL where the webhook server is running.
 In this case, we are using `http://host.docker.internal:8000` because the webhook calls will be done inside a docker container.
 
@@ -40,5 +37,5 @@ The application will remove all existing webhook listeners and create new ones f
 
 ## Testing the app
 
-When you start working with the argilla server, you can see the logs in the webhook server.
-You can test the webhook listeners by creating, updating, and deleting datasets, responses and records in the argilla server.
+When you start working with the extralit server, you can see the logs in the webhook server.
+You can test the webhook listeners by creating, updating, and deleting datasets, responses and records in the extralit server.

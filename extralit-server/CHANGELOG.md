@@ -161,9 +161,6 @@ These are the section headers that we use:
 - Added support for `TableField` and `es_field_for_record_field` for table fields.
 - Added `TableQuestion` and `TableQuestionSetting` to support table questions.
 
-### Changed
-- Changed envvars in Tilt k8s deployment at `examples/deployments/k8s/argilla-server-deployment.yaml`
-
 ### Fixed
 - Fixed elasticsearch reindexing errors with dynamic schema.
 
@@ -355,8 +352,6 @@ These are the section headers that we use:
 
 ### Fixed
 - Fixed the k8s-tilt devcontainer for extralit
-- Fixed the weaviate url for /examples/deployments/k8s/extralit-deployment.yaml
-
 
 ## [Extralit] [v0.2.1](https://github.com/extralit/extralit/compare/v0.2.0...v0.2.1)
 

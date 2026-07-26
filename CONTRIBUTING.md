@@ -45,7 +45,6 @@ Pick the environment that matches what you're working on:
 
 - **Tilt** (`Tiltfile`) — Recommended for active full-stack development. Brings up server + frontend + dependencies with live reload. Use this when iterating on backend and frontend together.
 - **`docker-compose.yaml`** — Quickest way to run a complete stack against fixed images. Use when you need a reproducible environment to demo or test against, but don't need code-level reload.
-- **`examples/deployments/k8s/`** — Reference manifests for production-style Kubernetes deployments. Use as a starting point for staging/prod, not for local iteration.
 - **Bare `uv sync` + `npm run dev`** — Fastest inner loop when only one component is in scope. See the per-component `CLAUDE.md` files.
 
 Thank you for contributing to Extralit! 🚀
