@@ -11,7 +11,7 @@ import { computed, defineComponent } from "vue";
 // falls through to the var() fallback and renders every status the same grey.
 //
 // The badge spans two disjoint vocabularies: schema status (draft|published, /schemas) and
-// v2 record status (pending|completed|discarded, V2RecordsTable). `published` and `completed`
+// v2 record status (pending|completed|discarded, RecordsTable). `published` and `completed`
 // share --fg-status-submitted — both are the terminal "done" state, and they never appear in
 // the same table, so the shared hue is not ambiguous in practice.
 export const STATUS_TOKENS: Record<string, string> = {
@@ -23,7 +23,7 @@ export const STATUS_TOKENS: Record<string, string> = {
 };
 
 export default defineComponent({
-  name: "V2StatusBadge",
+  name: "StatusBadge",
   props: { status: { type: String, required: true } },
   setup(props) {
     const color = computed(() => {

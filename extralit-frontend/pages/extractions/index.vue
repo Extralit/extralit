@@ -7,10 +7,10 @@
       <div class="extractions-page">
         <h1 class="extractions-page__title" v-text="$t('extractions.title')" />
 
-        <V2Empty v-if="!workspaceId" :message="$t('extractions.noWorkspace')" />
-        <V2Empty v-else-if="loadFailed" :message="$t('extractions.loadError')" />
+        <Empty v-if="!workspaceId" :message="$t('extractions.noWorkspace')" />
+        <Empty v-else-if="loadFailed" :message="$t('extractions.loadError')" />
         <BaseLoading v-else-if="isLoading || !hasLoaded" />
-        <V2Empty v-else-if="!projection || !projection.rows.length" :message="$t('extractions.empty')" />
+        <Empty v-else-if="!projection || !projection.rows.length" :message="$t('extractions.empty')" />
 
         <ExtractionsGrid v-else :projection="projection" @cell-click="onCellClick" @load-error="onGridLoadError" />
       </div>

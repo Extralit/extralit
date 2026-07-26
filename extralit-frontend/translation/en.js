@@ -135,7 +135,7 @@ export default {
   },
   // Deliberately separate from v1's recordStatus.*: the vocabularies are disjoint. This one
   // covers both v2 schema status (draft|published) and v2 record status
-  // (pending|completed|discarded) — the two sets V2StatusBadge renders.
+  // (pending|completed|discarded) — the two sets StatusBadge renders.
   v2Status: {
     draft: "Draft",
     published: "Published",

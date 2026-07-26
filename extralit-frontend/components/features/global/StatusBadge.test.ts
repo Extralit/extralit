@@ -2,10 +2,10 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
-import V2StatusBadge, { STATUS_TOKENS } from "./V2StatusBadge.vue";
+import StatusBadge, { STATUS_TOKENS } from "./StatusBadge.vue";
 
 const mountBadge = (status: string) =>
-  mount(V2StatusBadge, {
+  mount(StatusBadge, {
     props: { status },
     global: {
       stubs: {
@@ -18,7 +18,7 @@ const mountBadge = (status: string) =>
 const propOf = (status: string, prop: "color" | "text") =>
   mountBadge(status).findComponent({ name: "BaseBadge" }).props(prop);
 
-describe("V2StatusBadge colors", () => {
+describe("StatusBadge colors", () => {
   // The predecessor of this spec compared two *declaration strings* and asserted they
   // differed. They did — but both named tokens that assets/css/themes.css never defined
   // (--fg-status-active, --fg-status-danger), so both fell through to their var() fallback
@@ -49,7 +49,7 @@ describe("V2StatusBadge colors", () => {
   });
 });
 
-describe("V2StatusBadge token definitions", () => {
+describe("StatusBadge token definitions", () => {
   const themes = readFileSync(resolve(__dirname, "../../../assets/css/themes.css"), "utf8");
 
   // themes.css carries three independent token blocks. Defining a token in only some of them
@@ -74,7 +74,7 @@ describe("V2StatusBadge token definitions", () => {
   });
 });
 
-describe("V2StatusBadge label", () => {
+describe("StatusBadge label", () => {
   it.each(Object.keys(STATUS_TOKENS))("translates %s rather than rendering the raw server value", (status) => {
     expect(propOf(status, "text")).toBe(`t:v2Status.${status}`);
   });

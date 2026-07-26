@@ -26,8 +26,8 @@ const stubs = {
   AppHeader: { name: "AppHeader", template: "<div class='app-header' />" },
   BaseLoading: true,
   NuxtLink: { template: "<a><slot /></a>" },
-  V2StatusBadge: { name: "V2StatusBadge", template: "<span>{{ status }}</span>", props: ["status"] },
-  V2Empty: { name: "V2Empty", template: "<div>{{ message }}</div>", props: ["message"] },
+  StatusBadge: { name: "StatusBadge", template: "<span>{{ status }}</span>", props: ["status"] },
+  Empty: { name: "Empty", template: "<div>{{ message }}</div>", props: ["message"] },
 };
 
 describe("schemas list page", () => {

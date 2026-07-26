@@ -1,7 +1,7 @@
 <template>
-  <div class="v2-empty">
+  <div class="empty-state">
     <slot>
-      <p class="v2-empty__message" v-text="message" />
+      <p class="empty-state__message" v-text="message" />
     </slot>
   </div>
 </template>
@@ -10,13 +10,13 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "V2Empty",
+  name: "Empty",
   props: { message: { type: String, default: "" } },
 });
 </script>
 
 <style lang="scss" scoped>
-.v2-empty {
+.empty-state {
   display: flex;
   align-items: center;
   justify-content: center;

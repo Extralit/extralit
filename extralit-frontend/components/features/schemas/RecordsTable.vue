@@ -1,5 +1,5 @@
 <template>
-  <table class="v2-records-table">
+  <table class="records-table">
     <thead>
       <tr>
         <th v-text="$t('schemas.reference')" />
@@ -13,7 +13,7 @@
           <span :data-reference="record.reference">{{ record.reference }}</span>
         </td>
         <td v-for="column in columns" :key="column.name">{{ formatCell(record.fields[column.name]) }}</td>
-        <td><V2StatusBadge :status="record.status" /></td>
+        <td><StatusBadge :status="record.status" /></td>
       </tr>
     </tbody>
   </table>
@@ -40,7 +40,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.v2-records-table {
+.records-table {
   width: 100%;
   border-collapse: collapse;
 
