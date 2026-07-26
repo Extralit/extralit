@@ -10,7 +10,7 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "Empty",
+  name: "EmptyState",
   props: { message: { type: String, default: "" } },
 });
 </script>

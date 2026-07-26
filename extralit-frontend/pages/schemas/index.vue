@@ -7,10 +7,10 @@
       <div class="schemas-page">
         <h1 class="schemas-page__title" v-text="$t('schemas.title')" />
 
-        <Empty v-if="!selectedWorkspace" :message="$t('schemas.noWorkspace')" />
+        <EmptyState v-if="!selectedWorkspace" :message="$t('schemas.noWorkspace')" />
         <BaseLoading v-else-if="isLoading" />
-        <Empty v-else-if="loadFailed" :message="$t('schemas.loadError')" />
-        <Empty v-else-if="!schemas.length" :message="$t('schemas.empty')" />
+        <EmptyState v-else-if="loadFailed" :message="$t('schemas.loadError')" />
+        <EmptyState v-else-if="!schemas.length" :message="$t('schemas.empty')" />
 
         <table v-else class="schemas-page__table">
           <thead>

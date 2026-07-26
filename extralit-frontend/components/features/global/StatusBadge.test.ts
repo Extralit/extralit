@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
+import en from "~/translation/en";
 import StatusBadge, { STATUS_TOKENS } from "./StatusBadge.vue";
 
 const mountBadge = (status: string) =>
@@ -19,11 +21,6 @@ const propOf = (status: string, prop: "color" | "text") =>
   mountBadge(status).findComponent({ name: "BaseBadge" }).props(prop);
 
 describe("StatusBadge colors", () => {
-  // The predecessor of this spec compared two *declaration strings* and asserted they
-  // differed. They did — but both named tokens that assets/css/themes.css never defined
-  // (--fg-status-active, --fg-status-danger), so both fell through to their var() fallback
-  // and every status rendered the same grey. Asserting the resolved token per status, plus
-  // that the token actually exists, is what makes that failure mode visible.
   it.each([
     ["draft", "--fg-status-draft"],
     ["published", "--fg-status-submitted"],
@@ -37,44 +34,51 @@ describe("StatusBadge colors", () => {
   it("falls back to --fg-secondary for a status it does not know", () => {
     expect(propOf("something-new", "color")).toBe("var(--fg-secondary)");
   });
-
-  it("gives the statuses that share a table visibly different colors", () => {
-    // Schemas table renders draft|published; records table renders pending|completed|discarded.
-    // Within each table every status must be distinguishable. Across tables, published and
-    // completed deliberately share the "done" hue.
-    const distinct = (statuses: string[]) => new Set(statuses.map((s) => propOf(s, "color"))).size;
-
-    expect(distinct(["draft", "published"])).toBe(2);
-    expect(distinct(["pending", "completed", "discarded"])).toBe(3);
-  });
 });
 
+const themesPath = resolve(dirname(fileURLToPath(import.meta.url)), "../../../assets/css/themes.css");
+
+const parseBlocks = (css: string): { selector: string; tokens: Record<string, string> }[] =>
+  [...css.matchAll(/(?:^|\n)\s*([^{}\n][^{}]*?)\s*\{([^{}]*)\}/g)].map(([, selector, body]) => ({
+    selector: selector.trim(),
+    tokens: Object.fromEntries([...body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].map(([, k, v]) => [k, v.trim()])),
+  }));
+
+const STATUS_BLOCKS = parseBlocks(readFileSync(themesPath, "utf8")).filter(({ tokens }) =>
+  Object.keys(tokens).some((token) => token.startsWith("--fg-status-"))
+);
+
 describe("StatusBadge token definitions", () => {
-  const themes = readFileSync(resolve(__dirname, "../../../assets/css/themes.css"), "utf8");
+  it("finds every themes.css block that defines status tokens", () => {
+    expect(STATUS_BLOCKS.map((b) => b.selector)).toEqual([
+      ":root",
+      '[data-theme="dark"]',
+      '[data-theme="high-contrast"]',
+    ]);
+  });
 
-  // themes.css carries three independent token blocks. Defining a token in only some of them
-  // silently breaks the others, which is invisible in any DOM assertion.
-  const blocks = [
-    [":root", /^:root \{$/m],
-    ["dark", /^\[data-theme="dark"\] \{$/m],
-    ["high-contrast", /^\[data-theme="high-contrast"\] \{$/m],
-  ] as const;
-
-  it("finds all three theme blocks (guards this spec against a themes.css restructure)", () => {
-    for (const [name, pattern] of blocks) {
-      expect(themes, `theme block ${name} not found`).toMatch(pattern);
+  it.each([...new Set(Object.values(STATUS_TOKENS))])("defines %s in every one of those blocks", (token) => {
+    for (const { selector, tokens } of STATUS_BLOCKS) {
+      expect(tokens[token], `${token} is not defined in ${selector}`).toBeTruthy();
     }
   });
 
-  it.each([...new Set(Object.values(STATUS_TOKENS))])("defines %s in every theme block", (token) => {
-    // Count definitions rather than slicing blocks apart: every block that defines the token
-    // contributes one `--token:`, so the count must equal the number of blocks.
-    const definitions = themes.match(new RegExp(`^\\s*${token}\\s*:`, "gm")) ?? [];
-    expect(definitions.length).toBe(blocks.length);
-  });
+  it.each(STATUS_BLOCKS.map((block) => [block.selector, block] as const))(
+    "resolves each status to a distinct color value within its own table under %s",
+    (_selector, block) => {
+      const valueOf = (status: string) => block.tokens[STATUS_TOKENS[status]];
+
+      expect(new Set(["draft", "published"].map(valueOf)).size).toBe(2);
+      expect(new Set(["pending", "completed", "discarded"].map(valueOf)).size).toBe(3);
+    }
+  );
 });
 
 describe("StatusBadge label", () => {
+  it("has an en.js key for every status it can render", () => {
+    expect(Object.keys(en.v2Status).sort()).toEqual(Object.keys(STATUS_TOKENS).sort());
+  });
+
   it.each(Object.keys(STATUS_TOKENS))("translates %s rather than rendering the raw server value", (status) => {
     expect(propOf(status, "text")).toBe(`t:v2Status.${status}`);
   });
