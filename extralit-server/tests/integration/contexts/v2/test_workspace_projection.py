@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 import pytest
 
@@ -74,11 +75,22 @@ async def test_latest_submitted_response_any_user_beats_suggestion(db):
     await V2SuggestionFactory.create(record=rec, question=q, value="cohort", agent="gpt-x", score=0.9)
     user1 = await UserFactory.create()
     user2 = await UserFactory.create()
+    # Explicit, distinct timestamps: left to the TimestampMixin default (`datetime.utcnow`) these
+    # two land on the same instant, and the winner would fall through to the `response_id DESC`
+    # tiebreaker -- deterministic, but decided by a UUID rather than by the rule this test names.
     await V2ResponseFactory.create(
-        record=rec, user=user1, values={"type": {"value": "RCT-old"}}, status=ResponseStatus.submitted
+        record=rec,
+        user=user1,
+        values={"type": {"value": "RCT-old"}},
+        status=ResponseStatus.submitted,
+        updated_at=datetime(2026, 7, 20, 12, 0, 0),
     )
     await V2ResponseFactory.create(
-        record=rec, user=user2, values={"type": {"value": "RCT"}}, status=ResponseStatus.submitted
+        record=rec,
+        user=user2,
+        values={"type": {"value": "RCT"}},
+        status=ResponseStatus.submitted,
+        updated_at=datetime(2026, 7, 20, 12, 5, 0),
     )
 
     view = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
@@ -327,35 +339,60 @@ async def test_table_fanout_through_the_response_path(db):
     assert all(r.cells["Outcomes.results.unit"].value == "pct" for r in view.rows)
 
 
+# Explicit ids so both sort keys of `latest_responses` are controlled: the tiebreaker compares
+# them as VARCHAR (that is how they are loaded into DuckDB), and "...0b" > "...0a".
+_LOWER_ID = UUID("00000000-0000-0000-0000-0000000000aa")
+_HIGHER_ID = UUID("00000000-0000-0000-0000-0000000000bb")
+
+
+async def _two_responses(record, *, lower_at: datetime, higher_at: datetime):
+    """Two submitted responses on one record with pinned ids and timestamps."""
+    for response_id, value, updated_at in (
+        (_LOWER_ID, "lower-id", lower_at),
+        (_HIGHER_ID, "higher-id", higher_at),
+    ):
+        await V2ResponseFactory.create(
+            id=response_id,
+            record=record,
+            user=await UserFactory.create(),
+            status=ResponseStatus.submitted,
+            values={"type": {"value": value}},
+            updated_at=updated_at,
+        )
+
+
 async def test_tied_response_timestamps_resolve_deterministically(db):
     # `updated_at` defaults to `datetime.utcnow`, so two users submitting back-to-back can share
     # a timestamp exactly. Without the `response_id DESC` tiebreaker in `latest_responses` the
     # winning envelope is whatever order Postgres happened to return -- a coin flip in prod and a
     # flaky test here. Pin both timestamps to the same instant so the tiebreaker is the *only*
-    # thing deciding, then assert the documented rule (highest id wins) rather than a value.
+    # thing deciding, then assert the documented rule: greatest id wins.
     workspace = await WorkspaceFactory.create()
     schema, version = await _make_schema(workspace, "Design")
     await _add_question(schema, "type")
     rec = await V2RecordFactory.create(version=version, reference="10.1/a")
     tied_at = datetime(2026, 7, 20, 12, 0, 0)
-    first = await V2ResponseFactory.create(
-        record=rec,
-        user=await UserFactory.create(),
-        status=ResponseStatus.submitted,
-        values={"type": {"value": "first"}},
-        updated_at=tied_at,
-    )
-    second = await V2ResponseFactory.create(
-        record=rec,
-        user=await UserFactory.create(),
-        status=ResponseStatus.submitted,
-        values={"type": {"value": "second"}},
-        updated_at=tied_at,
-    )
-    assert first.updated_at == second.updated_at
-    # The tiebreaker compares the ids as VARCHAR, matching how they are loaded into DuckDB.
-    expected = max((first, second), key=lambda r: str(r.id))
+    await _two_responses(rec, lower_at=tied_at, higher_at=tied_at)
 
     view = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
 
-    assert view.rows[0].cells["Design.type"].value == expected.values["type"]["value"]
+    assert view.rows[0].cells["Design.type"].value == "higher-id"
+
+
+async def test_updated_at_dominates_the_response_id_tiebreaker(db):
+    # Pins the two keys' *precedence*, which the tie test above cannot: there, both orderings
+    # agree. Here the lower id carries the later timestamp, so `updated_at DESC, response_id DESC`
+    # and a bare `response_id DESC` disagree -- dropping or demoting `updated_at` fails this test.
+    workspace = await WorkspaceFactory.create()
+    schema, version = await _make_schema(workspace, "Design")
+    await _add_question(schema, "type")
+    rec = await V2RecordFactory.create(version=version, reference="10.1/a")
+    await _two_responses(
+        rec,
+        lower_at=datetime(2026, 7, 20, 12, 5, 0),  # later, on the *lower* id
+        higher_at=datetime(2026, 7, 20, 12, 0, 0),
+    )
+
+    view = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=50)
+
+    assert view.rows[0].cells["Design.type"].value == "lower-id"

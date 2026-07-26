@@ -123,11 +123,6 @@ import Home from "@/layouts/Home.vue";
 import { useHomeViewModel } from "./useHomeViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
-const NAVIGATION_TAB_ROUTES: Record<string, string> = {
-  schemas: "/schemas",
-  extractions: "/extractions",
-};
-
 export default {
   components: {
     Home,
@@ -143,8 +138,8 @@ export default {
       tabs: [
         { id: "datasets", name: this.$t("home.datasets") },
         { id: "documents", name: this.$t("home.documents") },
-        { id: "schemas", name: this.$t("schemas.title") },
-        { id: "extractions", name: this.$t("extractions.title") },
+        { id: "schemas", name: this.$t("schemas.title"), route: "/schemas" },
+        { id: "extractions", name: this.$t("extractions.title"), route: "/extractions" },
       ],
       // Import details modal state
       isImportDetailsModalVisible: false,
@@ -179,15 +174,13 @@ export default {
     },
 
     onTabChange(tabId) {
-      const route = NAVIGATION_TAB_ROUTES[tabId];
-      if (route) {
-        this.$router.push(route);
+      const selectedTab = this.tabs.find((tab) => tab.id === tabId);
+      if (!selectedTab) return;
+      if (selectedTab.route) {
+        this.$router.push(selectedTab.route);
         return;
       }
-      const selectedTab = this.tabs.find((tab) => tab.id === tabId);
-      if (selectedTab) {
-        this.activeTab = selectedTab;
-      }
+      this.activeTab = selectedTab;
     },
     handleImportSelected(importRecord) {
       this.goToImportConfiguration(importRecord.id);

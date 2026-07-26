@@ -32,6 +32,16 @@ let ready: Promise<typeof perspective> | null = null;
 // `Response`, and the failure re-emerges later as an unhandled rejection when `worker()`
 // awaits the stashed promise, with `ready` already memoized as *resolved*. Throwing here is
 // what puts an HTTP failure on the same path as a network failure.
+// Known limitation, accepted deliberately: this covers the *status*, not the bytes. A 200
+// carrying truncated or corrupt WASM still passes, and since `init_server` only stashes the
+// `Response`, the server half's compile failure resurfaces exactly as an unhandled rejection
+// from `worker()` with `ready` already memoized as resolved — the very mode the retry above
+// exists to kill. Reading the body here (`init_server(await response.arrayBuffer())`) would
+// close it, but both engines pass a `Response` to `WebAssembly.instantiateStreaming` (see
+// `@perspective-dev/client/dist/esm/perspective.js`), so materializing an ArrayBuffer first
+// gives up streaming compilation on every boot to catch a failure that only a corrupted CDN
+// object produces. Status errors are the reachable case and are handled; byte-level
+// corruption is knowingly out of reach.
 const assertOk = (response: Response, url: string): Response => {
   if (!response.ok) {
     throw new Error(`Perspective WASM fetch failed: ${url} → ${response.status}`);

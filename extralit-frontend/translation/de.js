@@ -111,12 +111,6 @@ export default {
     docs: "Dokumentation ansehen",
     logout: "Abmelden",
   },
-  extractions: {
-    title: "Extractions",
-    empty: "No extracted references in this workspace yet.",
-    noWorkspace: "Select a workspace to view its extraction table.",
-    loadError: "Could not load the extraction table.",
-  },
   settings: {
     title: "Datensatz-Einstellungen",
     datasetInfo: "Datensatz-Informationen",

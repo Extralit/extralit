@@ -1,4 +1,5 @@
 import { createPinia, setActivePinia } from "pinia";
+import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
@@ -106,6 +107,10 @@ describe("useExtractionsViewModel", () => {
     const { saveSelectedWorkspace } = useWorkspaces();
     const workspace = new Workspace("w-1", "Workspace 1");
     saveSelectedWorkspace(workspace);
+    // `saveSelectedWorkspace` queues `watch(workspaceId, load)` on Vue's scheduler. Flushing it
+    // explicitly after every selection change pins the watcher's contribution to the call count
+    // below, instead of leaving it to whichever `await` happens to drain the microtask queue.
+    await nextTick();
 
     const vm = useExtractionsViewModel();
     const load1 = vm.load();
@@ -113,8 +118,10 @@ describe("useExtractionsViewModel", () => {
     // Deselect, then reselect the *same* workspace while the original load is still running.
     // Both are ordinary workspace-selector firings.
     saveSelectedWorkspace(null);
+    await nextTick();
     await vm.load();
     saveSelectedWorkspace(workspace);
+    await nextTick();
     const load3 = vm.load();
 
     // Without the currency check in the dedupe guard, `inFlight.workspaceId === "w-1"` still
@@ -144,9 +151,32 @@ describe("useExtractionsViewModel", () => {
   });
 
   it("builds the annotation URL on cell click but does not navigate (guard off)", () => {
-    const vm = useExtractionsViewModel("w-1");
-    const url = vm.onCellClick({ schemaId: "s-1", reference: "10.1/a b" });
-    expect(url).toBe("/dataset/s-1/annotation-mode?_search=10.1%2Fa%20b");
+    // The URL assertion alone duplicates grid-adapter.test.ts and holds on *both* branches of
+    // the ANNOTATION_CELL_LINKS_ENABLED guard, so it cannot fail on this spec's actual claim.
+    // Stub the href setter so flipping the guard on (or deleting it) fails here.
+    const setHref = vi.fn();
+    const original = Object.getOwnPropertyDescriptor(window, "location");
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        get href() {
+          return "http://localhost/extractions";
+        },
+        set href(value: string) {
+          setHref(value);
+        },
+      },
+    });
+
+    try {
+      const vm = useExtractionsViewModel("w-1");
+      const url = vm.onCellClick({ schemaId: "s-1", reference: "10.1/a b" });
+
+      expect(url).toBe("/dataset/s-1/annotation-mode?_search=10.1%2Fa%20b");
+      expect(setHref).not.toHaveBeenCalled();
+    } finally {
+      if (original) Object.defineProperty(window, "location", original);
+    }
   });
 
   it("flags load failure when the grid reports a load-error after a successful projection load", async () => {

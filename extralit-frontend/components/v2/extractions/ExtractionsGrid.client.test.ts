@@ -101,6 +101,11 @@ describe("ExtractionsGrid", () => {
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
+    // `fakeRegularTable` appends a shadow host to `document.body` and nothing unmounts it.
+    // happy-dom shares one document across every spec in the file, so without this the hosts
+    // (and their shadow roots) accumulate and the next spec to query `document` for a `<style>`
+    // or a `<td>` sees leftovers from earlier ones.
+    document.body.innerHTML = "";
   });
 
   it("boots perspective once and loads the flat projection rows into a table", async () => {

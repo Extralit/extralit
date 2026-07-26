@@ -180,6 +180,8 @@ latest_responses AS (
     -- `response_id` is a tiebreaker, not decoration: TimestampMixin defaults `updated_at` to
     -- `datetime.utcnow`, so two users submitting back-to-back can land on the identical
     -- timestamp and the winner would otherwise be whatever order Postgres happened to return.
+    -- It buys stability, not latest-ness: a UUID carries no recency, so on a tie the winner is
+    -- the greatest `response_id` -- an arbitrary user, picked the same way every run.
     SELECT record_id, values_json
     FROM responses
     WHERE values_json IS NOT NULL
@@ -321,7 +323,8 @@ async def build_workspace_view(db: AsyncSession, *, workspace_id: UUID, offset: 
     Coalescing is record-level, intentionally (spec §3.2): the latest submitted response
     *envelope* per record wins outright, across all users. A question the winning envelope does
     not contain falls back to its suggestion even if an earlier submitted response answered it
-    — envelopes are never merged cell-by-cell.
+    — envelopes are never merged cell-by-cell. "Latest" is by `updated_at`; ties resolve to the
+    greatest `response_id`, which is deterministic but arbitrary with respect to authorship.
 
     "Across all users" is also what separates this from `build_reference_view`, which scopes to
     the requesting user's own responses; see its docstring for why the two intentionally differ.

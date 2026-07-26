@@ -339,6 +339,7 @@ const main = async () => {
 
   console.log(`\n${scenes.reduce((n, s) => n + s.checks.length, 0)} checks, ${failures.length} failed`);
   if (pageErrors.length) console.log(`page errors:\n${pageErrors.join("\n")}`);
+  if (consoleErrors.length) console.log(`console errors:\n${consoleErrors.join("\n")}`);
   if (failures.length) {
     console.log(`FAILURES:\n${failures.join("\n")}`);
   }
@@ -351,7 +352,21 @@ const main = async () => {
   if (pageErrors.length && !allowPageErrors) {
     console.log(`page errors are fatal (set DEMO_ALLOW_PAGE_ERRORS=1 to override)`);
   }
-  if (failures.length || (pageErrors.length && !allowPageErrors)) {
+  // `console.error` gets the same treatment, and for the same reason: the component this
+  // harness demos reports its worst failure that way — ExtractionsGrid logs
+  // "[ExtractionsGrid] failed to build the Perspective table…" and emits `load-error` rather
+  // than throwing — so an empty grid would sail past scene checks that don't count cells.
+  // Collecting these into `timeline.json` and the Outro while leaving them unable to fail the
+  // run made them read as a gated signal they weren't.
+  const allowConsoleErrors = process.env.DEMO_ALLOW_CONSOLE_ERRORS === "1";
+  if (consoleErrors.length && !allowConsoleErrors) {
+    console.log(`console errors are fatal (set DEMO_ALLOW_CONSOLE_ERRORS=1 to override)`);
+  }
+  if (
+    failures.length ||
+    (pageErrors.length && !allowPageErrors) ||
+    (consoleErrors.length && !allowConsoleErrors)
+  ) {
     process.exitCode = 1;
   }
 };
