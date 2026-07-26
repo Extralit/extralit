@@ -317,6 +317,13 @@ const main = async () => {
 
   const pageErrors = consoleLines.filter((l) => l.startsWith("[pageerror]"));
   const consoleErrors = consoleLines.filter((l) => l.startsWith("[error]"));
+  // Only errors this demo owns gate the run. The harness drives `npm run dev`, so Nuxt
+  // devtools, HMR and third-party libraries all log on the same `[error]` channel — treating
+  // every one as fatal would fail the pipeline on unrelated dev-server noise, and the only
+  // remedy would be switching off the very signal the gate exists for. `pageerror` needs no
+  // such filter because an uncaught app exception is unambiguous.
+  const OWNED_CONSOLE_ERROR = /^\[error\] \[(ExtractionsGrid|grid-adapter)\]/;
+  const ownedConsoleErrors = consoleErrors.filter((l) => OWNED_CONSOLE_ERROR.test(l));
 
   writeFileSync(join(OUT, "console.log"), consoleLines.join("\n"));
   writeFileSync(
@@ -329,6 +336,7 @@ const main = async () => {
         scenes,
         pageErrors,
         consoleErrors,
+        ownedConsoleErrors,
         totalChecks: scenes.reduce((n, s) => n + s.checks.length, 0),
         failures,
       },
@@ -339,7 +347,10 @@ const main = async () => {
 
   console.log(`\n${scenes.reduce((n, s) => n + s.checks.length, 0)} checks, ${failures.length} failed`);
   if (pageErrors.length) console.log(`page errors:\n${pageErrors.join("\n")}`);
+  // All console errors are reported (dev-server noise is still worth seeing in the log), but
+  // the owned subset is called out separately because only it can fail the run.
   if (consoleErrors.length) console.log(`console errors:\n${consoleErrors.join("\n")}`);
+  if (ownedConsoleErrors.length) console.log(`app console errors:\n${ownedConsoleErrors.join("\n")}`);
   if (failures.length) {
     console.log(`FAILURES:\n${failures.join("\n")}`);
   }
@@ -352,20 +363,20 @@ const main = async () => {
   if (pageErrors.length && !allowPageErrors) {
     console.log(`page errors are fatal (set DEMO_ALLOW_PAGE_ERRORS=1 to override)`);
   }
-  // `console.error` gets the same treatment, and for the same reason: the component this
+  // Owned `console.error`s get the same treatment, and for the same reason: the component this
   // harness demos reports its worst failure that way — ExtractionsGrid logs
   // "[ExtractionsGrid] failed to build the Perspective table…" and emits `load-error` rather
   // than throwing — so an empty grid would sail past scene checks that don't count cells.
   // Collecting these into `timeline.json` and the Outro while leaving them unable to fail the
   // run made them read as a gated signal they weren't.
   const allowConsoleErrors = process.env.DEMO_ALLOW_CONSOLE_ERRORS === "1";
-  if (consoleErrors.length && !allowConsoleErrors) {
-    console.log(`console errors are fatal (set DEMO_ALLOW_CONSOLE_ERRORS=1 to override)`);
+  if (ownedConsoleErrors.length && !allowConsoleErrors) {
+    console.log(`app console errors are fatal (set DEMO_ALLOW_CONSOLE_ERRORS=1 to override)`);
   }
   if (
     failures.length ||
     (pageErrors.length && !allowPageErrors) ||
-    (consoleErrors.length && !allowConsoleErrors)
+    (ownedConsoleErrors.length && !allowConsoleErrors)
   ) {
     process.exitCode = 1;
   }

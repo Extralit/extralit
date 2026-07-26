@@ -155,7 +155,13 @@ describe("useExtractionsViewModel", () => {
     // the ANNOTATION_CELL_LINKS_ENABLED guard, so it cannot fail on this spec's actual claim.
     // Stub the href setter so flipping the guard on (or deleting it) fails here.
     const setHref = vi.fn();
+    // happy-dom 20 exposes `location` as an own configurable accessor on `window`, so this
+    // descriptor is defined and the restore below works. The `delete` branch covers the other
+    // shape — an inherited prototype accessor, where the own descriptor would be `undefined`
+    // and a bare `if (original)` restore would silently leave the stub shadowing the real
+    // accessor for every later spec in the file (happy-dom shares one global across the file).
     const original = Object.getOwnPropertyDescriptor(window, "location");
+    const realHref = window.location.href;
     Object.defineProperty(window, "location", {
       configurable: true,
       value: {
@@ -175,8 +181,16 @@ describe("useExtractionsViewModel", () => {
       expect(url).toBe("/dataset/s-1/annotation-mode?_search=10.1%2Fa%20b");
       expect(setHref).not.toHaveBeenCalled();
     } finally {
-      if (original) Object.defineProperty(window, "location", original);
+      if (original) {
+        Object.defineProperty(window, "location", original);
+      } else {
+        delete (window as unknown as Record<string, unknown>).location;
+      }
     }
+
+    // Teardown actually restored the real `location` rather than leaving the stub in place —
+    // asserted, not assumed, because a leaked stub is inert until some later spec reads it.
+    expect(window.location.href).toBe(realHref);
   });
 
   it("flags load failure when the grid reports a load-error after a successful projection load", async () => {

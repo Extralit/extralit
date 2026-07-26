@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import HomePage from "./index.vue";
 
@@ -62,11 +64,19 @@ describe("home tab navigation", () => {
   it("gives every tab either a route or a panel branch, so none can render blank", () => {
     const { context } = makeContext();
     const tabs = context.tabs as Array<{ id: string; route?: string }>;
-    const PANEL_TAB_IDS = ["datasets", "documents"]; // the `home__tab-content` branches
+    // Read the panel ids out of the SFC's own `home__tab-content` branches rather than
+    // hand-copying them. A hardcoded list is asymmetric: adding a branch without updating it
+    // fails, but *removing* or renaming one leaves this green while that tab renders an empty
+    // panel — precisely the failure this test exists to catch.
+    // Resolved from the vitest root rather than `import.meta.url` — Vite rewrites the latter
+    // to a non-`file:` URL, which `readFileSync` rejects.
+    const source = readFileSync(resolve(process.cwd(), "pages/index.vue"), "utf8");
+    const panelTabIds = [...source.matchAll(/activeTab\.id === '([^']+)'/g)].map((match) => match[1]);
 
+    expect(panelTabIds.length).toBeGreaterThan(0); // the regex still matches the template
     expect(tabs.map((tab) => tab.id)).toEqual(["datasets", "documents", "schemas", "extractions"]);
     for (const tab of tabs) {
-      expect(Boolean(tab.route) || PANEL_TAB_IDS.includes(tab.id)).toBe(true);
+      expect(Boolean(tab.route) || panelTabIds.includes(tab.id)).toBe(true);
     }
   });
 });

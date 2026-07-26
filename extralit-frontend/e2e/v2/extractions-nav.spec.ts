@@ -27,6 +27,8 @@ test("home exposes an Extractions tab, after Datasets/Documents/Schemas, that op
   // Landed on the real page, not a blank route: its title renders regardless of whether the
   // selected workspace has any extractions. Scoped to the page's own <h1> rather than matched
   // by name alone — the breadcrumb trail also carries an "Extractions" crumb, and this
-  // assertion would only stay unambiguous for as long as breadcrumbs render as links.
-  await expect(page.locator("h1.extractions-page__title")).toBeVisible();
+  // assertion would only stay unambiguous for as long as breadcrumbs render as links. The
+  // text is still asserted, so a broken `extractions.title` lookup rendering the literal key
+  // fails here rather than passing on the class alone.
+  await expect(page.locator("h1.extractions-page__title")).toHaveText("Extractions");
 });
