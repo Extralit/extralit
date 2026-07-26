@@ -139,13 +139,6 @@ export default {
     noWorkspace: "Select a workspace to view its extraction table.",
     loadError: "Could not load the extraction table.",
   },
-  review: {
-    suggestion: "Suggestion",
-    response: "Response",
-    agent: "Agent",
-    score: "Score",
-    notApplicable: "Not applicable in this schema version",
-  },
   settings: {
     title: "Dataset settings",
     datasetInfo: "Dataset info",
