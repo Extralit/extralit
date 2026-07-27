@@ -14,8 +14,6 @@ from extralit_server.enums import (
     FieldType,
     MetadataPropertyType,
     OptionsOrder,
-    ResponseStatus,
-    SchemaStatus,
 )
 from extralit_server.models import (
     Dataset,
@@ -38,12 +36,6 @@ from extralit_server.models import (
     WorkspaceUser,
 )
 from extralit_server.models.base import DatabaseModel
-from extralit_server.models.v2 import Schema as SchemaModel
-from extralit_server.models.v2 import SchemaVersion as SchemaVersionModel
-from extralit_server.models.v2 import V2Question as V2QuestionModel
-from extralit_server.models.v2 import V2Record as V2RecordModel
-from extralit_server.models.v2 import V2Response as V2ResponseModel
-from extralit_server.models.v2 import V2Suggestion as V2SuggestionModel
 from extralit_server.webhooks.v1.enums import WebhookEvent
 from tests.database import SyncTestSession, TestSession
 
@@ -650,115 +642,3 @@ class MinioFileFactory(factory.Factory):
         client.get_object = mock_get_object
 
         return file
-
-
-class SchemaFactory(BaseFactory):
-    class Meta:
-        model = SchemaModel
-
-    name = factory.Sequence(lambda n: f"schema-{n}")
-    status = SchemaStatus.draft
-    workspace = factory.SubFactory(WorkspaceFactory)
-
-
-class SchemaVersionFactory(BaseFactory):
-    class Meta:
-        model = SchemaVersionModel
-
-    schema = factory.SubFactory(SchemaFactory)
-    version = factory.Sequence(lambda n: n + 1)
-    # The SubFactory result is a coroutine during attribute evaluation, so the object key
-    # is derived from `version` only here; the real `schemas/{id}/v{n}.json` key is computed
-    # by publish_version (the context owns persistence, not the factory).
-    object_key = factory.LazyAttribute(lambda o: f"schemas/v{o.version}.json")
-    etag = factory.Sequence(lambda n: f"etag-{n}")
-    checksum = factory.Sequence(lambda n: f"checksum-{n}")
-    columns_cache = factory.LazyFunction(list)  # fresh list per row, not a shared mutable default
-
-
-class V2RecordFactory(BaseFactory):
-    class Meta:
-        model = V2RecordModel
-
-    version = factory.SubFactory(SchemaVersionFactory)
-    reference = factory.Sequence(lambda n: f"ref-{n}")
-    external_id = factory.Sequence(lambda n: f"v2-external-{n}")
-    fields = factory.LazyFunction(dict)  # fresh dict per row, not a shared mutable default
-
-    @classmethod
-    async def _create(cls, model_class, *args, **kwargs):
-        # LazyAttribute cannot derive the FK columns because the SubFactory result is still a
-        # coroutine during attribute evaluation (see SchemaVersionFactory.object_key); await it
-        # here and wire schema_id/schema_version_id to the version's schema.
-        version = kwargs.get("version")
-        if inspect.isawaitable(version):
-            version = await version
-            kwargs["version"] = version
-        if version is not None:
-            kwargs.setdefault("schema_version_id", version.id)
-            kwargs.setdefault("schema_id", version.schema_id)
-        return await super()._create(model_class, *args, **kwargs)
-
-
-class V2QuestionFactory(BaseFactory):
-    class Meta:
-        model = V2QuestionModel
-
-    schema = factory.SubFactory(SchemaFactory)
-    name = factory.Sequence(lambda n: f"question-{n}")
-    title = factory.Sequence(lambda n: f"Question {n}")
-    type = QuestionType.text
-    columns = factory.LazyFunction(list)
-    settings = factory.LazyAttribute(lambda o: {"type": o.type.value})
-    required = False
-
-    @classmethod
-    async def _create(cls, model_class, *args, **kwargs):
-        schema = kwargs.get("schema")
-        if inspect.isawaitable(schema):
-            schema = await schema
-            kwargs["schema"] = schema
-        if schema is not None:
-            kwargs.setdefault("schema_id", schema.id)
-        return await super()._create(model_class, *args, **kwargs)
-
-
-class V2SuggestionFactory(BaseFactory):
-    class Meta:
-        model = V2SuggestionModel
-
-    record = factory.SubFactory(V2RecordFactory)
-    question = factory.SubFactory(V2QuestionFactory)
-    value = "suggested"
-
-    @classmethod
-    async def _create(cls, model_class, *args, **kwargs):
-        for key in ("record", "question"):
-            obj = kwargs.get(key)
-            if inspect.isawaitable(obj):
-                obj = await obj
-                kwargs[key] = obj
-            if obj is not None:
-                kwargs.setdefault(f"{key}_id", obj.id)
-        return await super()._create(model_class, *args, **kwargs)
-
-
-class V2ResponseFactory(BaseFactory):
-    class Meta:
-        model = V2ResponseModel
-
-    record = factory.SubFactory(V2RecordFactory)
-    user = factory.SubFactory(UserFactory)
-    values = factory.LazyFunction(dict)
-    status = ResponseStatus.submitted
-
-    @classmethod
-    async def _create(cls, model_class, *args, **kwargs):
-        for key in ("record", "user"):
-            obj = kwargs.get(key)
-            if inspect.isawaitable(obj):
-                obj = await obj
-                kwargs[key] = obj
-            if obj is not None:
-                kwargs.setdefault(f"{key}_id", obj.id)
-        return await super()._create(model_class, *args, **kwargs)
