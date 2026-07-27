@@ -8,6 +8,7 @@ from pydantic import TypeAdapter
 from sqlalchemy import (
     JSON,
     ForeignKey,
+    Index,
     PrimaryKeyConstraint,
     String,
     Text,
@@ -49,6 +50,7 @@ __all__ = [
     "Question",
     "Record",
     "Response",
+    "SchemaVersion",
     "Suggestion",
     "User",
     "Vector",
@@ -74,6 +76,7 @@ class Field(DatabaseModel):
     dataset: Mapped["Dataset"] = relationship(back_populates="fields")
 
     __table_args__ = (UniqueConstraint("name", "dataset_id", name="field_name_dataset_id_uq"),)
+    __upsertable_columns__ = {"title", "required", "settings"}
 
     @property
     def is_text(self) -> bool:
@@ -225,6 +228,10 @@ class Record(DatabaseModel):
         RecordStatusEnum, default=RecordStatus.pending, server_default=RecordStatus.pending, index=True
     )
     external_id: Mapped[str | None] = mapped_column(index=True)
+    # The source document identifier (DOI/PMID/filename) records were extracted from.
+    # Deliberately a plain indexed string, mirroring `Document.reference`: a reference may
+    # have no `documents` row yet, and the projection groups and paginates by this column.
+    reference: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
 
     dataset: Mapped["Dataset"] = relationship(back_populates="records")
@@ -253,7 +260,10 @@ class Record(DatabaseModel):
         order_by=Vector.inserted_at.asc(),
     )
 
-    __table_args__ = (UniqueConstraint("external_id", "dataset_id", name="record_external_id_dataset_id_uq"),)
+    __table_args__ = (
+        UniqueConstraint("external_id", "dataset_id", name="record_external_id_dataset_id_uq"),
+        Index("ix_records_dataset_id_reference", "dataset_id", "reference"),
+    )
 
     def is_completed(self) -> bool:
         return self.status == RecordStatus.completed
@@ -421,6 +431,9 @@ class Dataset(DatabaseModel):
     distribution: Mapped[dict] = mapped_column(MutableDict.as_mutable(JSON))
     metadata_: Mapped[dict | None] = mapped_column("metadata", JSON, nullable=True)
     workspace_id: Mapped[UUID] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
+    current_schema_version_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("schema_versions.id", ondelete="SET NULL", use_alter=True), nullable=True
+    )
     inserted_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(default=inserted_at_current_value, onupdate=datetime.utcnow)
     last_activity_at: Mapped[datetime] = mapped_column(
@@ -457,6 +470,12 @@ class Dataset(DatabaseModel):
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by=VectorSettings.inserted_at.asc(),
+    )
+    schema_versions: Mapped[list["SchemaVersion"]] = relationship(
+        back_populates="dataset",
+        order_by="SchemaVersion.version",
+        cascade="all, delete-orphan",
+        foreign_keys="SchemaVersion.dataset_id",
     )
 
     users: Mapped[list["User"]] = relationship(
@@ -512,6 +531,35 @@ class Dataset(DatabaseModel):
             f"last_activity_at={str(self.last_activity_at)!r}, "
             f"inserted_at={str(self.inserted_at)!r}, updated_at={str(self.updated_at)!r})"
         )
+
+
+class SchemaVersion(DatabaseModel):
+    """An immutable, object-store-backed Pandera schema body for a dataset.
+
+    The body itself lives in the workspace bucket at `object_key`; this row is the
+    pointer plus integrity metadata. The column manifest derived from the body is
+    materialized as `Field` rows on the dataset, so there is no cached copy here.
+    """
+
+    __tablename__ = "schema_versions"
+
+    dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
+    version: Mapped[int] = mapped_column(index=True)
+    object_key: Mapped[str] = mapped_column(Text)
+    object_version_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    etag: Mapped[str] = mapped_column(String)
+    checksum: Mapped[str] = mapped_column(String)
+    parent_version_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("schema_versions.id", ondelete="SET NULL"), nullable=True
+    )
+    created_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+    dataset: Mapped["Dataset"] = relationship(back_populates="schema_versions", foreign_keys=[dataset_id])
+
+    __table_args__ = (UniqueConstraint("dataset_id", "version", name="schema_version_dataset_id_version_uq"),)
+
+    def __repr__(self) -> str:
+        return f"SchemaVersion(id={self.id!s}, dataset_id={self.dataset_id!s}, version={self.version!r})"
 
 
 class WorkspaceUser(DatabaseModel):

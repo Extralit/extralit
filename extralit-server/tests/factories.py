@@ -26,6 +26,7 @@ from extralit_server.models import (
     QuestionType,
     Record,
     Response,
+    SchemaVersion,
     Suggestion,
     User,
     UserRole,
@@ -237,6 +238,17 @@ class DatasetUserFactory(BaseFactory):
     user = factory.SubFactory(UserFactory)
 
 
+class SchemaVersionFactory(BaseFactory):
+    class Meta:
+        model = SchemaVersion
+
+    dataset = factory.SubFactory(DatasetFactory)
+    version = 1
+    object_key = factory.LazyAttribute(lambda v: f"schemas/{v.dataset.id}/v{v.version}.json")
+    etag = "etag"
+    checksum = "checksum"
+
+
 class RecordSyncFactory(BaseSyncFactory):
     class Meta:
         model = Record
@@ -258,6 +270,7 @@ class RecordFactory(BaseFactory):
         "sentiment": "neutral",
     }
     external_id = factory.Sequence(lambda n: f"external-id-{n}")
+    reference = None
     dataset = factory.SubFactory(DatasetFactory)
 
 
@@ -358,6 +371,10 @@ class CustomFieldFactory(FieldFactory):
         "template": "<div>{{ value }}</div>",
         "advanced_mode": False,
     }
+
+
+class ColumnFieldFactory(FieldFactory):
+    settings = {"type": "column", "dtype": "str", "nullable": True}
 
 
 class MetadataPropertySyncFactory(BaseSyncFactory):
