@@ -475,6 +475,7 @@ class Dataset(DatabaseModel):
         back_populates="dataset",
         order_by="SchemaVersion.version",
         cascade="all, delete-orphan",
+        passive_deletes=True,
         foreign_keys="SchemaVersion.dataset_id",
     )
 

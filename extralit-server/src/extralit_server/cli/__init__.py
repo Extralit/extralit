@@ -12,7 +12,7 @@ app.add_typer(database_app, name="database")
 app.add_typer(search_engine_app, name="search-engine")
 app.command(name="worker", help="Starts rq workers")(worker)
 app.command(name="start", help="Starts the Extralit server")(start)
-app.command(name="openapi-dump", help="Dump the /api/v2 OpenAPI schema as JSON")(openapi_dump)
+app.command(name="openapi-dump", help="Dump the /api/v1 OpenAPI schema as JSON")(openapi_dump)
 
 if __name__ == "__main__":
     app()

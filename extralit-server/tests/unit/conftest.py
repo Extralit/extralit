@@ -92,7 +92,12 @@ async def async_client(
     async with AsyncClient(app=app, base_url="http://testserver") as async_client:
         yield async_client
 
-    app.dependency_overrides.clear()
+    # Clear from `api_v1` — that is where the overrides above were registered. Clearing
+    # `app.dependency_overrides` (the outer app) left them live past teardown, bound to a
+    # torn-down mocker mock. Pop only our own keys: tests/integration/conftest.py writes
+    # into this same dict.
+    for _dependency in (get_async_db, get_search_engine):
+        api_v1.dependency_overrides.pop(_dependency, None)
 
 
 @pytest.fixture(autouse=True)

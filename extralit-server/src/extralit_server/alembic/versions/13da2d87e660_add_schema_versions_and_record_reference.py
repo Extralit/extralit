@@ -4,6 +4,37 @@ Revision ID: 13da2d87e660
 Revises: 54d65879a68e
 Create Date: 2026-07-27 11:30:48.225356
 
+HISTORY WAS REWRITTEN HERE — databases built from `develop` need manual recovery.
+
+The v2->v1 fold deleted four revisions that are live on `origin/develop`:
+`9f3010c649c8`, `8136bc88ee3a`, `6393b1a01aa0`, `c1510e93882a`. Any database migrated
+before this branch has `alembic_version = 'c1510e93882a'`, a revision that no longer
+exists, so both `upgrade head` and `downgrade` fail with:
+
+    Can't locate revision identified by 'c1510e93882a'
+
+Extralit is pre-production, so no data-preserving path is provided. Recover by either:
+
+1. Dropping and rebuilding (preferred — also clears the six orphaned v2 tables
+   `schemas`, `schema_versions`, `v2_records`, `v2_questions`, `v2_responses`,
+   `v2_suggestions` and their enum types, which no migration drops any more):
+
+       # SQLite (the default; EXTRALIT_DATABASE_URL unset -> ~/.extralit/extralit.db)
+       rm -f ~/.extralit/extralit.db
+       # Postgres
+       dropdb extralit && createdb extralit
+       uv run alembic -c src/extralit_server/alembic.ini upgrade head
+
+2. Or, to keep an existing database, stamping past the gap and dropping the v2
+   leftovers by hand:
+
+       uv run alembic -c src/extralit_server/alembic.ini stamp 54d65879a68e
+       uv run alembic -c src/extralit_server/alembic.ini upgrade head
+       # then drop the six v2 tables + enum types manually
+
+   On Postgres option 2 additionally requires dropping the pre-existing `schema_versions`
+   table BEFORE upgrading — this revision's CREATE TABLE collides with the v2 table of the
+   same name.
 """
 
 import sqlalchemy as sa
@@ -43,6 +74,14 @@ def upgrade() -> None:
     op.create_index(op.f("ix_schema_versions_dataset_id"), "schema_versions", ["dataset_id"], unique=False)
     op.create_index(op.f("ix_schema_versions_version"), "schema_versions", ["version"], unique=False)
     op.add_column("datasets", sa.Column("current_schema_version_id", sa.Uuid(), nullable=True))
+    # The FK is added as a separate statement (not inline in create_table) to break the
+    # datasets <-> schema_versions cycle. Batch mode is required because SQLite cannot
+    # ALTER-add a constraint; note this differs from the deleted 9f3010c649c8, which used a
+    # dialect guard and simply carried no DB-level FK on SQLite. Batch mode recreates
+    # `datasets` on SQLite, and NAMING_CONVENTION rewrites the pre-existing workspace_id FK
+    # name on that path but not on Postgres — the two dialects end up with different
+    # constraint names for that FK. Harmless today (nothing looks it up by name), but it is
+    # why a round-trip test on both dialects is worth adding.
     with op.batch_alter_table("datasets", naming_convention=NAMING_CONVENTION) as batch_op:
         batch_op.create_foreign_key(
             DATASETS_SCHEMA_VERSION_FKEY, "schema_versions", ["current_schema_version_id"], ["id"], ondelete="SET NULL"

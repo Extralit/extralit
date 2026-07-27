@@ -42,4 +42,8 @@ async def async_client() -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(app=app, base_url="http://testserver") as client:
         yield client
 
-    api_v1.dependency_overrides.clear()
+    # Pop only what this fixture registered. `tests/unit/conftest.py`'s async_client writes
+    # into the same `api_v1.dependency_overrides` dict, so a blanket clear() here would wipe
+    # its keys — benign only while tests/integration happens to collect first, and broken
+    # under -p randomly or an explicit `pytest tests/unit tests/integration`.
+    api_v1.dependency_overrides.pop(get_async_db, None)

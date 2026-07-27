@@ -101,7 +101,10 @@ class TestRQGroupsWorkflowIntegration:
         """
         mocker.patch.object(db, "close", AsyncMock())
         mocker.patch("extralit_server.workflows.documents.AsyncSessionLocal", return_value=db)
-        yield
+        # Sharing the session means the row is visible through autoflush, so the SELECT below
+        # would pass even if create_document_workflow never committed. Hand the spy to the test
+        # so it can still pin the durability contract.
+        yield mocker.spy(db, "commit")
 
     async def test_create_document_workflow_with_rq_groups(
         self,
@@ -143,6 +146,11 @@ class TestRQGroupsWorkflowIntegration:
             mock_default_queue.prepare_data.assert_called_once()
             mock_ocr_queue.prepare_data.assert_called_once()
             mock_group.enqueue_many.assert_called()
+
+            # The workflow must persist from its own session. Without this the test passes
+            # even if create_document_workflow's `await db.commit()` is deleted, because the
+            # shared session autoflushes the pending INSERT on the SELECT above.
+            use_fixture_session_for_workflow.assert_awaited()
 
     async def test_workflow_status_tracking_with_rq_groups(self, db, test_document, mock_redis_connection):
         """Test workflow status tracking using RQ Groups."""

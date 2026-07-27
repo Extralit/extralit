@@ -1,9 +1,10 @@
 import pytest
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.enums import FieldType
 from extralit_server.models.database import Field, SchemaVersion
-from tests.factories import DatasetFactory, RecordFactory
+from tests.factories import DatasetFactory, RecordFactory, SchemaVersionFactory
 
 
 @pytest.mark.asyncio
@@ -38,8 +39,15 @@ class TestSchemaVersionModel:
     async def test_schema_version_number_is_unique_per_dataset(self, db: AsyncSession):
         dataset = await DatasetFactory.create()
         await SchemaVersion.create(db, dataset_id=dataset.id, version=1, object_key="k", etag="e", checksum="c")
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError, match=r"schema_version_dataset_id_version_uq|UNIQUE"):
             await SchemaVersion.create(db, dataset_id=dataset.id, version=1, object_key="k2", etag="e", checksum="c")
+
+    async def test_schema_version_factory_builds_a_row(self, db: AsyncSession):
+        # Pins the async-SubFactory constraint: a LazyAttribute that dereferences
+        # `dataset` sees an un-awaited coroutine, so object_key must not touch it.
+        version = await SchemaVersionFactory.create()
+        assert version.dataset_id is not None
+        assert version.object_key == "schemas/v1.json"
 
     async def test_record_carries_a_reference(self, db: AsyncSession):
         record = await RecordFactory.create(reference="10.1000/j.foo.2020.01")

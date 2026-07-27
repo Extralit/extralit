@@ -244,7 +244,10 @@ class SchemaVersionFactory(BaseFactory):
 
     dataset = factory.SubFactory(DatasetFactory)
     version = 1
-    object_key = factory.LazyAttribute(lambda v: f"schemas/{v.dataset.id}/v{v.version}.json")
+    # The SubFactory result is a coroutine during attribute evaluation (AsyncStepBuilder.build
+    # resolves pre-declarations before AsyncSQLAlchemyModelFactory._create awaits them), so
+    # `v.dataset.id` raises AttributeError here. Derive the key from `version` only.
+    object_key = factory.LazyAttribute(lambda v: f"schemas/v{v.version}.json")
     etag = "etag"
     checksum = "checksum"
 
@@ -374,7 +377,10 @@ class CustomFieldFactory(FieldFactory):
 
 
 class ColumnFieldFactory(FieldFactory):
-    settings = {"type": "column", "dtype": "str", "nullable": True}
+    # `dtype` mirrors `str(pandera.Column.dtype)`; "string" is one of the values the
+    # pandera/pandas round-trip actually emits (see index/mapping.py `_STRING_DTYPES`).
+    # "str" is not — never use it here or downstream mappings get tuned to a dead key.
+    settings = {"type": "column", "dtype": "string", "nullable": True}
 
 
 class MetadataPropertySyncFactory(BaseSyncFactory):
