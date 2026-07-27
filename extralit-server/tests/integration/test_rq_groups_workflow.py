@@ -1,7 +1,7 @@
 """Integration tests for complete workflow using RQ Groups."""
 
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
@@ -85,17 +85,32 @@ class TestRQGroupsWorkflowIntegration:
 
             yield mock_default, mock_ocr
 
-    @pytest.mark.skip(
-        reason="Pre-existing test-isolation gap, unrelated to the /api/v2 fold: "
-        "create_document_workflow() opens its own AsyncSessionLocal() connection, which "
-        "collides with the db fixture's nested-transaction connection under SQLite's "
-        "single-writer lock ('database is locked'). This test has never passed - it was "
-        "previously masked because the fixture referenced a non-existent `async_db` param "
-        "and errored at setup before reaching this code path. Needs either a session-injection "
-        "seam in create_document_workflow or a different isolation strategy; out of scope here."
-    )
+    @pytest.fixture
+    def use_fixture_session_for_workflow(self, db, mocker):
+        """create_document_workflow() (src/extralit_server/workflows/documents.py:36) opens its
+        own `AsyncSessionLocal()` connection rather than accepting an injected session. Under this
+        suite's nested-transaction test isolation (the `db` fixture in tests/conftest.py holds a
+        SAVEPOINT on one shared connection) that second, independent SQLite connection deadlocks
+        against the first ('database is locked').
+
+        Route `AsyncSessionLocal()` at the call site back onto this test's own `db` session
+        instead of opening a second connection - production code is untouched. `db.close` is
+        neutralized because `create_document_workflow`'s `async with AsyncSessionLocal() as db:`
+        block would otherwise close (and thus invalidate for the rest of the test) the shared
+        session on exit; the `db` fixture's own teardown still closes it for real afterwards.
+        """
+        mocker.patch.object(db, "close", AsyncMock())
+        mocker.patch("extralit_server.workflows.documents.AsyncSessionLocal", return_value=db)
+        yield
+
     async def test_create_document_workflow_with_rq_groups(
-        self, db, test_document, test_workspace, mock_redis_connection, mock_rq_queues
+        self,
+        db,
+        test_document,
+        test_workspace,
+        mock_redis_connection,
+        mock_rq_queues,
+        use_fixture_session_for_workflow,
     ):
         """Test creating document workflow with RQ Groups integration."""
         mock_default_queue, mock_ocr_queue = mock_rq_queues
@@ -371,10 +386,23 @@ class TestRQGroupsWorkflowIntegration:
             assert jobs_data[0]["workflow_step"] == "analysis_and_preprocess"
 
     @pytest.mark.skip(
-        reason="Same pre-existing SQLite 'database is locked' test-isolation gap as "
-        "test_create_document_workflow_with_rq_groups (see that test's skip reason)."
+        reason="Root cause: create_document_workflow() opens its own AsyncSessionLocal() "
+        "connection instead of accepting an injected session - see ENG-37 (test-session "
+        "architecture: workflows open their own AsyncSessionLocal). Routing AsyncSessionLocal() "
+        "onto the fixture's shared session (as done for test_create_document_workflow_with_rq_groups "
+        "above) does NOT fix this test specifically: it runs three create_document_workflow() calls "
+        "concurrently via asyncio.gather, and a single AsyncSession cannot be used by overlapping "
+        "coroutines - confirmed empirically, raises sqlalchemy.exc.IllegalStateChangeError "
+        "('bind() is already in progress'). Fixing this one needs either per-task sessions that "
+        "still serialize onto one connection, or the ENG-37 production seam; out of scope here."
     )
-    async def test_concurrent_workflow_processing(self, db, test_workspace, mock_redis_connection, mock_rq_queues):
+    async def test_concurrent_workflow_processing(
+        self,
+        db,
+        test_workspace,
+        mock_redis_connection,
+        mock_rq_queues,
+    ):
         """Test multiple concurrent workflows using RQ Groups."""
         _mock_default_queue, _mock_ocr_queue = mock_rq_queues
 
