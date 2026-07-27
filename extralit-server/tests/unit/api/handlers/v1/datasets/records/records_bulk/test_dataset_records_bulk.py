@@ -79,6 +79,7 @@ class TestDatasetRecordsBulk:
                     "status": RecordStatus.pending,
                     "dataset_id": str(dataset.id),
                     "external_id": record.external_id,
+                    "reference": record.reference,
                     "fields": record.fields,
                     "metadata": record.metadata_,
                     "inserted_at": record.inserted_at.isoformat(),
