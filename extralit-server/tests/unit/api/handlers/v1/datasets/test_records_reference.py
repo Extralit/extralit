@@ -55,6 +55,20 @@ class TestRecordReference:
         await db.refresh(record)
         assert record.reference == "keep"
 
+    async def test_bulk_upsert_clears_reference_with_explicit_null(
+        self, async_client, owner_auth_header, mock_search_engine, db
+    ):
+        dataset = await self._ready_dataset()
+        record = await RecordFactory.create(dataset=dataset, external_id="x1", reference="old")
+        response = await async_client.put(
+            f"/api/v1/datasets/{dataset.id}/records/bulk",
+            headers=owner_auth_header,
+            json={"items": [{"external_id": "x1", "reference": None}]},
+        )
+        assert response.status_code == 200, response.json()
+        await db.refresh(record)
+        assert record.reference is None
+
     async def test_list_records_filters_by_reference(self, async_client, owner_auth_header):
         dataset = await self._ready_dataset()
         await RecordFactory.create(dataset=dataset, reference="doi-a")
@@ -91,6 +105,20 @@ class TestRecordReference:
         assert response.status_code == 200, response.json()
         await db.refresh(record)
         assert record.reference == "keep"
+
+    async def test_patch_record_clears_reference_with_explicit_null(
+        self, async_client, owner_auth_header, mock_search_engine, db
+    ):
+        dataset = await self._ready_dataset()
+        record = await RecordFactory.create(dataset=dataset, reference="old")
+        response = await async_client.patch(
+            f"/api/v1/records/{record.id}",
+            headers=owner_auth_header,
+            json={"reference": None},
+        )
+        assert response.status_code == 200, response.json()
+        await db.refresh(record)
+        assert record.reference is None
 
     async def test_a_reference_may_contain_slashes(self, async_client, owner_auth_header, mock_search_engine):
         dataset = await self._ready_dataset()
