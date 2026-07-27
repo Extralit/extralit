@@ -32,7 +32,7 @@ class TestColumnFieldValidation:
             ],
         )
 
-    async def test_column_fields_accept_any_json_scalar(self):
+    async def test_column_fields_accept_values_a_text_field_would_reject(self):
         dataset = await self._dataset_with_column_fields()
         # A bare int/float/bool can never reach this validator at all: `RecordCreate.fields`
         # values are a schema-level union of `str | list[ChatFieldValue] | dict | None`

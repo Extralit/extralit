@@ -128,7 +128,7 @@ class ColumnFieldSettingsUpdate(UpdateSchema):
     nullable: bool | None = None
     review: dict[str, Any] | None = None
 
-    __non_nullable_fields__ = {"dtype"}
+    __non_nullable_fields__ = {"dtype", "nullable"}
 
 
 FieldSettings = Annotated[
