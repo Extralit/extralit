@@ -14,7 +14,7 @@ import pyarrow as pa
 
 # Identity/system columns present in every schema's Lance table, independent of the
 # user-defined columns. `text` is the concatenated string-cell blob the FTS index covers.
-SYSTEM_FIELDS = ["record_id", "reference", "schema_version_id", "status", "external_id", "text"]
+SYSTEM_FIELDS = ["record_id", "reference", "status", "external_id", "text"]
 
 # Observed pandera 0.32 / pandas 3.0 `str(column.dtype)` values -> Arrow types.
 # large_string is used for text so the FTS index has no 2GiB offset ceiling.
@@ -75,7 +75,6 @@ def arrow_schema_for(columns: list[dict[str, Any]]) -> pa.Schema:
     fields = [
         pa.field("record_id", pa.large_string()),
         pa.field("reference", pa.large_string()),
-        pa.field("schema_version_id", pa.large_string()),
         pa.field("status", pa.large_string()),
         pa.field("external_id", pa.large_string()),
     ]
@@ -110,7 +109,6 @@ def record_to_row(record: Any, columns: list[dict[str, Any]]) -> dict[str, Any]:
     row: dict[str, Any] = {
         "record_id": str(record.id),
         "reference": record.reference,
-        "schema_version_id": str(record.schema_version_id),
         "status": record.status.value if hasattr(record.status, "value") else str(record.status),
         "external_id": record.external_id,
     }

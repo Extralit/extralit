@@ -16,12 +16,11 @@ COLUMNS = [
 
 class _Rec:
     def __init__(self, title, year, reference="pmid:1", external_id=None):
-        from extralit_server.enums import V2RecordStatus
+        from extralit_server.enums import RecordStatus
 
         self.id = uuid4()
         self.reference = reference
-        self.schema_version_id = uuid4()
-        self.status = V2RecordStatus.pending
+        self.status = RecordStatus.pending
         self.external_id = external_id
         self.fields = {"title": title, "year": year}
 

@@ -3,7 +3,7 @@ from uuid import uuid4
 
 import pyarrow as pa
 
-from extralit_server.enums import V2RecordStatus
+from extralit_server.enums import RecordStatus
 from extralit_server.index import mapping
 
 COLUMNS = [
@@ -72,15 +72,13 @@ def test_record_to_row_fills_missing_cells_with_none():
     rec = SimpleNamespace(
         id=uuid4(),
         reference="pmid:1",
-        schema_version_id=uuid4(),
-        status=V2RecordStatus.pending,
+        status=RecordStatus.pending,
         external_id="x-1",
         fields={"title": "Deep Learning"},  # `year`/`score` absent
     )
     row = mapping.record_to_row(rec, COLUMNS)
     assert row["record_id"] == str(rec.id)
-    assert row["schema_version_id"] == str(rec.schema_version_id)
-    assert row["status"] == V2RecordStatus.pending.value
+    assert row["status"] == RecordStatus.pending.value
     assert row["title"] == "Deep Learning"
     assert row["year"] is None
     assert row["score"] is None
