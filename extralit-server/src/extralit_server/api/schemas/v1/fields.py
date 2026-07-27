@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, constr
@@ -106,8 +106,38 @@ class TableFieldSettingsUpdate(BaseModel):
     type: Literal[FieldType.table]
 
 
+class ColumnFieldSettings(BaseModel):
+    type: Literal[FieldType.column]
+    dtype: str
+    nullable: bool = True
+    # Opaque per-column review widget overlay, carried through to the client verbatim.
+    # Replaces the former SchemaVersion.review_widgets column.
+    review: dict[str, Any] | None = None
+
+
+class ColumnFieldSettingsCreate(BaseModel):
+    type: Literal[FieldType.column]
+    dtype: str
+    nullable: bool = True
+    review: dict[str, Any] | None = None
+
+
+class ColumnFieldSettingsUpdate(UpdateSchema):
+    type: Literal[FieldType.column]
+    dtype: str | None = None
+    nullable: bool | None = None
+    review: dict[str, Any] | None = None
+
+    __non_nullable_fields__ = {"dtype"}
+
+
 FieldSettings = Annotated[
-    TextFieldSettings | ImageFieldSettings | ChatFieldSettings | CustomFieldSettings | TableFieldSettings,
+    TextFieldSettings
+    | ImageFieldSettings
+    | ChatFieldSettings
+    | CustomFieldSettings
+    | TableFieldSettings
+    | ColumnFieldSettings,
     PydanticField(..., discriminator="type"),
 ]
 
@@ -116,7 +146,8 @@ FieldSettingsCreate = Annotated[
     | ImageFieldSettingsCreate
     | ChatFieldSettingsCreate
     | CustomFieldSettingsCreate
-    | TableFieldSettingsCreate,
+    | TableFieldSettingsCreate
+    | ColumnFieldSettingsCreate,
     PydanticField(..., discriminator="type"),
 ]
 
@@ -125,7 +156,8 @@ FieldSettingsUpdate = Annotated[
     | ImageFieldSettingsUpdate
     | ChatFieldSettingsUpdate
     | CustomFieldSettingsUpdate
-    | TableFieldSettingsUpdate,
+    | TableFieldSettingsUpdate
+    | ColumnFieldSettingsUpdate,
     PydanticField(..., discriminator="type"),
 ]
 

@@ -99,6 +99,10 @@ class Field(DatabaseModel):
         return self.settings.get("type") == FieldType.table
 
     @property
+    def is_column(self) -> bool:
+        return self.settings.get("type") == FieldType.column
+
+    @property
     def type(self) -> FieldType:
         return FieldType(self.settings["type"])
 

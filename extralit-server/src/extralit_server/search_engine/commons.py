@@ -149,6 +149,21 @@ def es_field_for_response_property(property: str) -> str:
     return f"responses.{property}"
 
 
+# Pandera dtype -> Elasticsearch field type for FieldType.column. Anything unlisted
+# indexes as text: a column's dtype is advisory for the index, and an unknown dtype
+# must not make the dataset unindexable.
+_ES_TYPE_BY_COLUMN_DTYPE = {
+    "int8": "long",
+    "int16": "long",
+    "int32": "long",
+    "int64": "long",
+    "float32": "double",
+    "float64": "double",
+    "bool": "boolean",
+    "datetime64[ns]": "date_nanos",
+}
+
+
 def es_mapping_for_field(field: Field) -> dict:
     field_type = field.settings["type"]
 
@@ -211,6 +226,18 @@ def es_mapping_for_field(field: Field) -> dict:
                 },
             }
         }
+    elif field.is_column:
+        dtype = field.settings.get("dtype", "")
+        es_type = _ES_TYPE_BY_COLUMN_DTYPE.get(dtype)
+        if es_type is None:
+            # Keyword sub-field so terms filters and sorting work on the column.
+            return {
+                es_field_for_record_field(field.name): {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+                }
+            }
+        return {es_field_for_record_field(field.name): {"type": es_type}}
     elif field.is_image:
         return {
             es_field_for_record_field(field.name): {
