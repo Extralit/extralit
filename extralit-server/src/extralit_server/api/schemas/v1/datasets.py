@@ -121,6 +121,7 @@ class Dataset(BaseModel):
     metadata: dict[str, Any] | None = None
     mapping: "DatasetMapping | None" = None
     workspace_id: UUID
+    current_schema_version_id: UUID | None = None
     last_activity_at: datetime
     inserted_at: datetime
     updated_at: datetime

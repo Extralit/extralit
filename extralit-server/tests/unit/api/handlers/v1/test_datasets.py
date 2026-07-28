@@ -66,6 +66,7 @@ from tests.factories import (
     RatingQuestionFactory,
     RecordFactory,
     ResponseFactory,
+    SchemaVersionFactory,
     SuggestionFactory,
     TermsMetadataPropertyFactory,
     TextFieldFactory,
@@ -106,6 +107,7 @@ class TestSuiteDatasets:
                     "metadata": None,
                     "mapping": None,
                     "workspace_id": str(dataset_a.workspace_id),
+                    "current_schema_version_id": None,
                     "last_activity_at": dataset_a.last_activity_at.isoformat(),
                     "inserted_at": dataset_a.inserted_at.isoformat(),
                     "updated_at": dataset_a.updated_at.isoformat(),
@@ -123,6 +125,7 @@ class TestSuiteDatasets:
                     "metadata": None,
                     "mapping": None,
                     "workspace_id": str(dataset_b.workspace_id),
+                    "current_schema_version_id": None,
                     "last_activity_at": dataset_b.last_activity_at.isoformat(),
                     "inserted_at": dataset_b.inserted_at.isoformat(),
                     "updated_at": dataset_b.updated_at.isoformat(),
@@ -140,6 +143,7 @@ class TestSuiteDatasets:
                     "metadata": None,
                     "mapping": None,
                     "workspace_id": str(dataset_c.workspace_id),
+                    "current_schema_version_id": None,
                     "last_activity_at": dataset_c.last_activity_at.isoformat(),
                     "inserted_at": dataset_c.inserted_at.isoformat(),
                     "updated_at": dataset_c.updated_at.isoformat(),
@@ -678,10 +682,26 @@ class TestSuiteDatasets:
             "metadata": None,
             "mapping": None,
             "workspace_id": str(dataset.workspace_id),
+            "current_schema_version_id": None,
             "last_activity_at": dataset.last_activity_at.isoformat(),
             "inserted_at": dataset.inserted_at.isoformat(),
             "updated_at": dataset.updated_at.isoformat(),
         }
+
+    async def test_get_dataset_with_current_schema_version_id(
+        self, async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict
+    ):
+        dataset = await DatasetFactory.create(name="dataset")
+        schema_version = await SchemaVersionFactory.create(dataset=dataset)
+
+        dataset.current_schema_version_id = schema_version.id
+        await db.commit()
+        await db.refresh(dataset)
+
+        response = await async_client.get(f"/api/v1/datasets/{dataset.id}", headers=owner_auth_header)
+
+        assert response.status_code == 200
+        assert response.json()["current_schema_version_id"] == str(schema_version.id)
 
     async def test_get_dataset_without_authentication(self, async_client: "AsyncClient"):
         dataset = await DatasetFactory.create()
@@ -891,6 +911,7 @@ class TestSuiteDatasets:
             "metadata": None,
             "mapping": None,
             "workspace_id": str(workspace.id),
+            "current_schema_version_id": None,
             "last_activity_at": datetime.fromisoformat(response_body["last_activity_at"]).isoformat(),
             "inserted_at": datetime.fromisoformat(response_body["inserted_at"]).isoformat(),
             "updated_at": datetime.fromisoformat(response_body["updated_at"]).isoformat(),
@@ -4496,6 +4517,7 @@ class TestSuiteDatasets:
             "metadata": None,
             "mapping": None,
             "workspace_id": str(dataset.workspace_id),
+            "current_schema_version_id": None,
             "last_activity_at": dataset.last_activity_at.isoformat(),
             "inserted_at": dataset.inserted_at.isoformat(),
             "updated_at": dataset.updated_at.isoformat(),
