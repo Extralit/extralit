@@ -1,5 +1,5 @@
 import { useStoreFor } from "@/v1/store/create";
-import { WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
+import { WorkspaceProjection } from "~/v1/domain/entities/projection/WorkspaceProjection";
 
 // Class name is the Pinia store key — must stay unique vs every v1/v2 useStoreFor class.
 class Extractions {

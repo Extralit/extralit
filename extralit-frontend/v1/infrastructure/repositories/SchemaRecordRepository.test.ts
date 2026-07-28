@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { AxiosInstance } from "axios";
-import { V2RecordRepository } from "./V2RecordRepository";
-import { SearchCriteria } from "~/v2/domain/entities/search/SearchCriteria";
+import { SchemaRecordRepository } from "./SchemaRecordRepository";
+import { SearchCriteria } from "~/v1/domain/entities/search/SearchCriteria";
 
 const BACKEND_RECORD = {
   id: "r-1",
@@ -15,12 +15,12 @@ const BACKEND_RECORD = {
   updated_at: "2026-01-01T00:00:00",
 };
 
-describe("V2RecordRepository", () => {
+describe("SchemaRecordRepository", () => {
   it("lists records with paging/reference params and maps the page", async () => {
     const axios = {
       get: vi.fn(async () => ({ data: { items: [BACKEND_RECORD], total: 12000 } })),
     } as unknown as AxiosInstance;
-    const repository = new V2RecordRepository(axios);
+    const repository = new SchemaRecordRepository(axios);
 
     const page = await repository.getRecords("s-1", { offset: 0, limit: 25, reference: "10.1000/j.x" });
 
@@ -34,7 +34,7 @@ describe("V2RecordRepository", () => {
 
   it("joins the include keys into a comma-separated query param", async () => {
     const axios = { get: vi.fn(async () => ({ data: { items: [], total: 0 } })) } as unknown as AxiosInstance;
-    const repository = new V2RecordRepository(axios);
+    const repository = new SchemaRecordRepository(axios);
 
     await repository.getRecords("s-1", { include: ["responses", "suggestions"] });
 
@@ -45,7 +45,7 @@ describe("V2RecordRepository", () => {
 
   it("defaults a null total (server TODO: not-yet-required field) to 0", async () => {
     const axios = { get: vi.fn(async () => ({ data: { items: [], total: null } })) } as unknown as AxiosInstance;
-    const repository = new V2RecordRepository(axios);
+    const repository = new SchemaRecordRepository(axios);
 
     const page = await repository.getRecords("s-1");
 
@@ -58,7 +58,7 @@ describe("V2RecordRepository", () => {
         data: { items: [{ record: BACKEND_RECORD, query_score: 0.8 }], total: 1 },
       })),
     } as unknown as AxiosInstance;
-    const repository = new V2RecordRepository(axios);
+    const repository = new SchemaRecordRepository(axios);
 
     const page = await repository.searchRecords("s-1", new SearchCriteria("fts terms", [], 10, 25));
 
@@ -73,7 +73,7 @@ describe("V2RecordRepository", () => {
 
   it("translates an eq filter into a terms filter scoped to the record entity", async () => {
     const axios = { post: vi.fn(async () => ({ data: { items: [], total: 0 } })) } as unknown as AxiosInstance;
-    const repository = new V2RecordRepository(axios);
+    const repository = new SchemaRecordRepository(axios);
 
     await repository.searchRecords("s-1", new SearchCriteria(null, [{ column: "status", op: "eq", value: "pending" }]));
 

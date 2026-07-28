@@ -1,8 +1,8 @@
 import type { AxiosInstance } from "axios";
-import { Schema } from "~/v2/domain/entities/schema/Schema";
-import { ColumnMeta, type ReviewOverlay } from "~/v2/domain/entities/schema/ColumnMeta";
-import { SchemaVersion } from "~/v2/domain/entities/schema/SchemaVersion";
-import { Question, type QuestionType } from "~/v2/domain/entities/question/Question";
+import { Schema } from "~/v1/domain/entities/schema/Schema";
+import { ColumnMeta, type ReviewOverlay } from "~/v1/domain/entities/schema/ColumnMeta";
+import { SchemaVersion } from "~/v1/domain/entities/schema/SchemaVersion";
+import { Question, type QuestionType } from "~/v1/domain/entities/schema/Question";
 
 // Hand-written response interfaces (no generated v1 client — see the 20 repositories under
 // v1/infrastructure/repositories/ for the same convention).

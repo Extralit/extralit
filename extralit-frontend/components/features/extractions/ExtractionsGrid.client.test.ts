@@ -1,7 +1,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ExtractionsGrid from "./ExtractionsGrid.client.vue";
-import { WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
+import { WorkspaceProjection } from "~/v1/domain/entities/projection/WorkspaceProjection";
 
 // Module-level so the `vi.mock` factory below (evaluated once, hoisted) can close over them.
 // Call counts and implementations are reset/re-established per spec in `beforeEach` — without

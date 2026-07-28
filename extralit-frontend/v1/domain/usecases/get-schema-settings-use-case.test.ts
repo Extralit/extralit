@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { GetSchemaSettingsUseCase } from "./get-schema-settings-use-case";
 import { Schema } from "../entities/schema/Schema";
 import { SchemaVersion } from "../entities/schema/SchemaVersion";
-import { Question } from "../entities/question/Question";
+import { Question } from "../entities/schema/Question";
 import { ColumnMeta } from "../entities/schema/ColumnMeta";
 
 const SCHEMA = new Schema("s-1", "sample_size", "ready", "w-1", "v-1", {}, "2026-01-01", "2026-01-01");

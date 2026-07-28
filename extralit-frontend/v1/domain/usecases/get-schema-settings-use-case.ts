@@ -1,8 +1,8 @@
 import { Schema } from "../entities/schema/Schema";
 import { SchemaVersion } from "../entities/schema/SchemaVersion";
-import { Question } from "../entities/question/Question";
+import { Question } from "../entities/schema/Question";
 import { ColumnMeta } from "../entities/schema/ColumnMeta";
-import { SchemaRepository } from "~/v2/infrastructure/repositories/SchemaRepository";
+import { SchemaRepository } from "~/v1/infrastructure/repositories/SchemaRepository";
 
 export interface SchemaSettings {
   schema: Schema;

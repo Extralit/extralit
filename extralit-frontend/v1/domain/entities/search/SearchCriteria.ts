@@ -54,7 +54,7 @@ export class SearchCriteria {
   ) {}
 
   // Body for `POST /datasets/{id}/records/search` — offset/limit travel as query params,
-  // not in this body (see V2RecordRepository.searchRecords).
+  // not in this body (see SchemaRecordRepository.searchRecords).
   toQueryBody() {
     // ge/le with null silently matches nothing server-side — drop them here.
     const activeFilters = this.filters.filter((f) => !((f.op === "ge" || f.op === "le") && f.value === null));

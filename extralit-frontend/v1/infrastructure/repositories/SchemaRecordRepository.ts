@@ -1,7 +1,7 @@
 import type { AxiosInstance } from "axios";
-import { V2Record, type V2RecordStatus } from "~/v2/domain/entities/record/V2Record";
-import { RecordsPage } from "~/v2/domain/entities/record/RecordsPage";
-import { SearchCriteria } from "~/v2/domain/entities/search/SearchCriteria";
+import { SchemaRecord, type SchemaRecordStatus } from "~/v1/domain/entities/schema/SchemaRecord";
+import { RecordsPage } from "~/v1/domain/entities/schema/RecordsPage";
+import { SearchCriteria } from "~/v1/domain/entities/search/SearchCriteria";
 
 // Hand-written response interfaces (no generated v1 client — see the 20 repositories under
 // v1/infrastructure/repositories/ for the same convention).
@@ -32,15 +32,15 @@ interface BackendSearchRecordsResult {
   total: number;
 }
 
-const toRecord = (backend: BackendRecord): V2Record =>
-  new V2Record(
+const toRecord = (backend: BackendRecord): SchemaRecord =>
+  new SchemaRecord(
     backend.id,
     backend.dataset_id,
     backend.reference,
     backend.external_id ?? null,
     (backend.fields ?? {}) as Record<string, unknown>,
     (backend.metadata ?? null) as Record<string, unknown> | null,
-    backend.status as V2RecordStatus,
+    backend.status as SchemaRecordStatus,
     backend.inserted_at,
     backend.updated_at
   );
@@ -64,7 +64,7 @@ export interface GetRecordsOptions {
   include?: RecordIncludeKey[];
 }
 
-export class V2RecordRepository {
+export class SchemaRecordRepository {
   constructor(private readonly axios: AxiosInstance) {}
 
   async getRecords(schemaId: string, options: GetRecordsOptions = {}): Promise<RecordsPage> {

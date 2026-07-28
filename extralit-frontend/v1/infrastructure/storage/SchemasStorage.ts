@@ -1,5 +1,5 @@
 import { useStoreFor } from "@/v1/store/create";
-import { Schema } from "~/v2/domain/entities/schema/Schema";
+import { Schema } from "~/v1/domain/entities/schema/Schema";
 
 // Class name is the Pinia store key — must stay unique vs every v1 useStoreFor class.
 class Schemas {

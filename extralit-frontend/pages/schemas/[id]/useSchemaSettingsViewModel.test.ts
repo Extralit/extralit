@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import Container from "ts-injecty";
 import { useResolveMock } from "~/v1/di/__mocks__/useResolveMock";
-import { GetSchemaSettingsUseCase } from "~/v2/domain/usecases/get-schema-settings-use-case";
-import { Schema } from "~/v2/domain/entities/schema/Schema";
+import { GetSchemaSettingsUseCase } from "~/v1/domain/usecases/get-schema-settings-use-case";
+import { Schema } from "~/v1/domain/entities/schema/Schema";
 import { useSchemaSettingsViewModel } from "./useSchemaSettingsViewModel";
 
 const SETTINGS = {

@@ -1,6 +1,6 @@
 import { onBeforeMount, ref } from "vue";
 import { useResolve } from "ts-injecty";
-import { GetSchemaSettingsUseCase, type SchemaSettings } from "~/v2/domain/usecases/get-schema-settings-use-case";
+import { GetSchemaSettingsUseCase, type SchemaSettings } from "~/v1/domain/usecases/get-schema-settings-use-case";
 
 export const useSchemaSettingsViewModel = (schemaId: string) => {
   const getSettingsUseCase = useResolve(GetSchemaSettingsUseCase);

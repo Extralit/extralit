@@ -21,12 +21,12 @@
 
 <script lang="ts">
 import { type PropType } from "vue";
-import { type V2Record } from "~/v2/domain/entities/record/V2Record";
-import { type ColumnMeta } from "~/v2/domain/entities/schema/ColumnMeta";
+import { type SchemaRecord } from "~/v1/domain/entities/schema/SchemaRecord";
+import { type ColumnMeta } from "~/v1/domain/entities/schema/ColumnMeta";
 
 export default {
   props: {
-    records: { type: Array as PropType<V2Record[]>, required: true },
+    records: { type: Array as PropType<SchemaRecord[]>, required: true },
     columns: { type: Array as PropType<ColumnMeta[]>, required: true },
   },
   methods: {

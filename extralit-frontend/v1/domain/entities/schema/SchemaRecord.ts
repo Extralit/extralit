@@ -1,6 +1,6 @@
-export type V2RecordStatus = "pending" | "completed" | "discarded";
+export type SchemaRecordStatus = "pending" | "completed" | "discarded";
 
-export class V2Record {
+export class SchemaRecord {
   constructor(
     public readonly id: string,
     public readonly datasetId: string,
@@ -8,7 +8,7 @@ export class V2Record {
     public readonly externalId: string | null,
     public readonly fields: Record<string, unknown>,
     public readonly metadata: Record<string, unknown> | null,
-    public readonly status: V2RecordStatus,
+    public readonly status: SchemaRecordStatus,
     // Naive ISO strings from the server — treat as UTC (spec §7 gotchas).
     public readonly insertedAt: string,
     public readonly updatedAt: string

@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GetWorkspaceProjectionUseCase, PROJECTION_PAGE_SIZE } from "./get-workspace-projection-use-case";
-import { useExtractions } from "~/v2/infrastructure/storage/ExtractionsStorage";
+import { useExtractions } from "~/v1/infrastructure/storage/ExtractionsStorage";
 
 const COLUMN = {
   name: "Design.type",

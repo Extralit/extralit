@@ -1,8 +1,8 @@
 import { computed, ref, shallowRef, watch } from "vue";
 import { useResolve } from "ts-injecty";
-import { GetWorkspaceProjectionUseCase } from "~/v2/domain/usecases/get-workspace-projection-use-case";
-import { type WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
-import { buildAnnotationUrl, ANNOTATION_CELL_LINKS_ENABLED } from "~/v2/domain/entities/projection/grid-adapter";
+import { GetWorkspaceProjectionUseCase } from "~/v1/domain/usecases/get-workspace-projection-use-case";
+import { type WorkspaceProjection } from "~/v1/domain/entities/projection/WorkspaceProjection";
+import { buildAnnotationUrl, ANNOTATION_CELL_LINKS_ENABLED } from "~/v1/domain/entities/projection/grid-adapter";
 // Documented v1 exception: workspace selection survives Phase 6 (see plan Global Constraints).
 import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 

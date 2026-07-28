@@ -1,6 +1,6 @@
 import { Schema } from "../entities/schema/Schema";
-import { SchemaRepository } from "~/v2/infrastructure/repositories/SchemaRepository";
-import { type useSchemas } from "~/v2/infrastructure/storage/SchemasStorage";
+import { SchemaRepository } from "~/v1/infrastructure/repositories/SchemaRepository";
+import { type useSchemas } from "~/v1/infrastructure/storage/SchemasStorage";
 
 export class GetSchemasUseCase {
   constructor(

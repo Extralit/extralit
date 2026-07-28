@@ -1,10 +1,10 @@
-import { ProjectionRepository } from "~/v2/infrastructure/repositories/ProjectionRepository";
+import { ProjectionRepository } from "~/v1/infrastructure/repositories/ProjectionRepository";
 import {
   WorkspaceProjection,
   type ProjectionColumn,
   type ProjectionGridRow,
-} from "~/v2/domain/entities/projection/WorkspaceProjection";
-import { type useExtractions } from "~/v2/infrastructure/storage/ExtractionsStorage";
+} from "~/v1/domain/entities/projection/WorkspaceProjection";
+import { type useExtractions } from "~/v1/infrastructure/storage/ExtractionsStorage";
 
 // The server's `limit` cap per page.
 export const PROJECTION_PAGE_SIZE = 100;

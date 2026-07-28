@@ -1,7 +1,7 @@
 import { computed, onBeforeMount, ref, watch } from "vue";
 import { useResolve } from "ts-injecty";
-import { GetSchemasUseCase } from "~/v2/domain/usecases/get-schemas-use-case";
-import { Schema } from "~/v2/domain/entities/schema/Schema";
+import { GetSchemasUseCase } from "~/v1/domain/usecases/get-schemas-use-case";
+import { Schema } from "~/v1/domain/entities/schema/Schema";
 // Documented v1 exception: workspace selection survives Phase 6 (see plan Global Constraints).
 import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 

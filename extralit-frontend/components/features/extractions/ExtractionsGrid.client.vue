@@ -6,8 +6,8 @@
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { type HTMLPerspectiveViewerElement } from "@perspective-dev/viewer";
 import { initPerspectiveClient } from "~/components/features/extractions/perspective-bootstrap";
-import { type WorkspaceProjection, type ProjectionGridCell } from "~/v2/domain/entities/projection/WorkspaceProjection";
-import { toPerspectiveData, cellAt, bandParity } from "~/v2/domain/entities/projection/grid-adapter";
+import { type WorkspaceProjection, type ProjectionGridCell } from "~/v1/domain/entities/projection/WorkspaceProjection";
+import { toPerspectiveData, cellAt, bandParity } from "~/v1/domain/entities/projection/grid-adapter";
 
 /**
  * Vue wrapper around `<perspective-viewer>` (§3.1/§3.3 extraction grid). The `.client.vue`
