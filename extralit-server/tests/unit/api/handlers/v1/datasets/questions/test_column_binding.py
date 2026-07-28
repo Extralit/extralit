@@ -1,6 +1,8 @@
 import pytest
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from tests.factories import DatasetFactory, FieldFactory
+from extralit_server.models import Question
+from tests.factories import DatasetFactory, FieldFactory, TextQuestionFactory
 
 
 @pytest.mark.asyncio
@@ -86,3 +88,46 @@ class TestQuestionColumnBinding:
             json={"name": "q", "title": "Q", "settings": {"type": "text", "use_markdown": False}},
         )
         assert response.status_code == 201, response.json()
+
+    async def test_patch_sets_a_valid_column_binding(self, db: AsyncSession, async_client, owner_auth_header):
+        dataset = await self._dataset_with_columns("population")
+        question = await TextQuestionFactory.create(dataset=dataset)
+
+        response = await async_client.patch(
+            f"/api/v1/questions/{question.id}",
+            headers=owner_auth_header,
+            json={"settings": {"type": "text", "use_markdown": False, "columns": ["population"]}},
+        )
+        assert response.status_code == 200, response.json()
+        assert response.json()["settings"]["columns"] == ["population"]
+
+        # Don't trust the response body alone — re-read the stored binding from the DB.
+        stored = await db.get(Question, question.id)
+        assert stored.settings.get("columns") == ["population"]
+
+    async def test_patch_rejects_an_invalid_column_binding(self, db: AsyncSession, async_client, owner_auth_header):
+        dataset = await self._dataset_with_columns("population")
+        question = await TextQuestionFactory.create(dataset=dataset)
+
+        response = await async_client.patch(
+            f"/api/v1/questions/{question.id}",
+            headers=owner_auth_header,
+            json={"settings": {"type": "text", "use_markdown": False, "columns": ["nope"]}},
+        )
+        assert response.status_code == 422
+        assert "nope" in response.text
+
+        # The rejected binding must not have been persisted.
+        stored = await db.get(Question, question.id)
+        assert stored.settings.get("columns") is None
+
+    async def test_patch_enforces_the_scalar_arity_rule(self, async_client, owner_auth_header):
+        dataset = await self._dataset_with_columns("a", "b")
+        question = await TextQuestionFactory.create(dataset=dataset)
+
+        response = await async_client.patch(
+            f"/api/v1/questions/{question.id}",
+            headers=owner_auth_header,
+            json={"settings": {"type": "text", "use_markdown": False, "columns": ["a", "b"]}},
+        )
+        assert response.status_code == 422
