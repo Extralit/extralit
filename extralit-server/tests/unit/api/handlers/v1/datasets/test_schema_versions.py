@@ -2,14 +2,53 @@ from unittest.mock import patch
 
 import pandera.pandas as pa
 import pytest
+from fastapi.encoders import jsonable_encoder
 
+from extralit_server.api.routes import api_v1
 from extralit_server.api.schemas.v1.files import ObjectMetadata
+from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import DatasetStatus
-from tests.factories import AnnotatorFactory, DatasetFactory, WorkspaceFactory
+from extralit_server.jobs.queues import HIGH_QUEUE
+from extralit_server.search_engine import get_search_engine
+from extralit_server.webhooks.v1.datasets import build_dataset_event
+from extralit_server.webhooks.v1.enums import DatasetEvent
+from tests.factories import (
+    AdminFactory,
+    AnnotatorFactory,
+    DatasetFactory,
+    RatingQuestionFactory,
+    TextFieldFactory,
+    WebhookFactory,
+    WorkspaceFactory,
+)
 
 
 def _body() -> str:
     return pa.DataFrameSchema({"population": pa.Column(str, nullable=True)}).to_json()
+
+
+class _FieldsReadingSearchEngine:
+    """Fake engine whose `create_index` actually reads `dataset.fields` -- unlike
+    `mocker.AsyncMock(SearchEngine)` (the suite-wide `mock_search_engine` fixture), which never
+    touches the ORM and so cannot express Critical 1's bug.
+
+    The handler loads `dataset` with only `Dataset.workspace` eagerly loaded
+    (handlers/v1/datasets/schema_versions.py). Without `contexts/schema_versions.publish_version`
+    refreshing `dataset.fields` after the commit, this engine's `create_index` would either blow
+    up on an unloaded lazy relationship (`MissingGreenlet` on an `AsyncSession`) or observe a
+    stale, empty collection -- `Field.upsert_many` is a Core `INSERT ... RETURNING` that never
+    appends to an already-loaded `dataset.fields`, and `expire_on_commit=False` means the commit
+    doesn't refresh it either.
+    """
+
+    def __init__(self):
+        self.observed_field_names: list[str] | None = None
+
+    async def create_index(self, dataset):
+        self.observed_field_names = sorted(field.name for field in dataset.fields)
+
+    async def index_exists(self, dataset) -> bool:
+        return False
 
 
 @pytest.fixture(autouse=True)
@@ -87,6 +126,147 @@ class TestPublishSchemaVersion:
         assert [f["name"] for f in fields.json()["items"]] == ["population"]
         # NOT "str" — see Task 6 Step 1; pandera emits "string"/"string[pyarrow]"/"object".
         assert fields.json()["items"][0]["settings"]["dtype"] in {"string", "string[pyarrow]", "object"}
+
+    async def test_admin_member_can_publish(self, async_client, owner_auth_header):
+        # T7: DatasetPolicy.publish grants owner OR admin-member (dataset_policy.py:110-114);
+        # the admin branch was untested on this endpoint.
+        workspace = await WorkspaceFactory.create()
+        admin = await AdminFactory.create(workspaces=[workspace])
+        dataset = await DatasetFactory.create(workspace=workspace, status=DatasetStatus.draft)
+
+        response = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers={API_KEY_HEADER_NAME: admin.api_key},
+            json={"body": _body()},
+        )
+        assert response.status_code == 201, response.json()
+
+    async def test_admin_outside_the_workspace_cannot_publish(self, async_client):
+        # T7: no cross-workspace/non-member-denied case existed for this endpoint.
+        workspace = await WorkspaceFactory.create()
+        other_workspace = await WorkspaceFactory.create()
+        admin = await AdminFactory.create(workspaces=[other_workspace])
+        dataset = await DatasetFactory.create(workspace=workspace, status=DatasetStatus.draft)
+
+        response = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers={API_KEY_HEADER_NAME: admin.api_key},
+            json={"body": _body()},
+        )
+        assert response.status_code == 403
+
+    async def test_publish_refreshes_dataset_fields_before_creating_the_index(self, async_client, owner_auth_header):
+        """Critical 1 pin. See `_FieldsReadingSearchEngine` for why an `AsyncMock` can't."""
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        fake_engine = _FieldsReadingSearchEngine()
+
+        async def override_get_search_engine():
+            yield fake_engine
+
+        api_v1.dependency_overrides[get_search_engine] = override_get_search_engine
+        try:
+            response = await async_client.post(
+                f"/api/v1/datasets/{dataset.id}/schema-versions",
+                headers=owner_auth_header,
+                json={"body": _body()},
+            )
+        finally:
+            api_v1.dependency_overrides.pop(get_search_engine, None)
+
+        assert response.status_code == 201, response.json()
+        assert fake_engine.observed_field_names == ["population"]
+
+    async def test_republishing_does_not_500(self, async_client, owner_auth_header, mock_search_engine):
+        # Critical 2. Real backends' `indices.create` raises `resource_already_exists_exception`
+        # on a second call for the same dataset (es_index_name_for_dataset is stable per
+        # dataset id). Simulate that here: configure the mock the same way, so that if
+        # `publish_version` ever called `create_index` unconditionally again, this request
+        # would fail loudly instead of silently passing.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        first = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert first.status_code == 201, first.json()
+
+        mock_search_engine.index_exists.return_value = True
+        mock_search_engine.create_index.side_effect = AssertionError("must not recreate an existing index")
+
+        second = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert second.status_code == 201, second.json()
+        assert second.json()["version"] == 2
+
+    async def test_publish_schema_version_on_a_dataset_already_published_via_put_publish(
+        self, async_client, owner_auth_header, mock_search_engine
+    ):
+        # Critical 2's second broken flow: PUT /datasets/{id}/publish already created the
+        # index; a *first* schema-versions publish on that same dataset must not try to
+        # recreate it.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        await TextFieldFactory.create(dataset=dataset, required=True)
+        await RatingQuestionFactory.create(dataset=dataset, required=True)
+
+        publish = await async_client.put(f"/api/v1/datasets/{dataset.id}/publish", headers=owner_auth_header)
+        assert publish.status_code == 200, publish.json()
+        mock_search_engine.create_index.assert_awaited_once()
+
+        mock_search_engine.index_exists.return_value = True
+        mock_search_engine.create_index.side_effect = AssertionError("must not recreate an existing index")
+
+        response = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert response.status_code == 201, response.json()
+
+    async def test_republishing_with_a_changed_column_dtype_returns_422(
+        self, async_client, owner_auth_header, mock_search_engine
+    ):
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        first = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert first.status_code == 201, first.json()
+
+        changed_body = pa.DataFrameSchema({"population": pa.Column(pa.Int64, nullable=True)}).to_json()
+        response = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": changed_body},
+        )
+        assert response.status_code == 422
+        assert "population" in response.text
+
+    async def test_publish_schema_version_enqueues_webhook_dataset_published_event(
+        self, db, async_client, owner_auth_header, mock_search_engine
+    ):
+        # Important 3: publish_version flips status -> ready but, before this fix, never
+        # notified -- extraction datasets went ready silently while annotation datasets
+        # (contexts/datasets.py::publish_dataset) fired correctly.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        webhook = await WebhookFactory.create(events=[DatasetEvent.published])
+
+        response = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert response.status_code == 201, response.json()
+
+        event = await build_dataset_event(db, DatasetEvent.published, dataset)
+
+        assert HIGH_QUEUE.count == 1
+        assert HIGH_QUEUE.jobs[0].args[0] == webhook.id
+        assert HIGH_QUEUE.jobs[0].args[1] == DatasetEvent.published
+        assert HIGH_QUEUE.jobs[0].args[3] == jsonable_encoder(event.data)
 
 
 @pytest.mark.asyncio

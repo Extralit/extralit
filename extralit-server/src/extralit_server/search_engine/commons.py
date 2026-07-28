@@ -339,6 +339,10 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
         index_name = es_index_name_for_dataset(dataset)
         await self._create_index_request(index_name, mappings, settings)
 
+    async def index_exists(self, dataset: Dataset) -> bool:
+        index_name = es_index_name_for_dataset(dataset)
+        return await self._index_exists_request(index_name)
+
     async def delete_index(self, dataset: Dataset):
         index_name = es_index_name_for_dataset(dataset)
 

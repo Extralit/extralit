@@ -18,6 +18,8 @@ from extralit_server.enums import DatasetStatus, FieldType
 from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.models.database import Dataset, Field, SchemaVersion
 from extralit_server.search_engine import SearchEngine
+from extralit_server.webhooks.v1.datasets import notify_dataset_event as notify_dataset_event_v1
+from extralit_server.webhooks.v1.enums import DatasetEvent
 
 if TYPE_CHECKING:
     from types_aiobotocore_s3.client import S3Client
@@ -63,6 +65,36 @@ async def _next_version_number(db: AsyncSession, dataset_id: UUID) -> int:
     return max((await db.execute(stmt)).scalars().all(), default=0) + 1
 
 
+async def _reject_dtype_changes(db: AsyncSession, dataset_id: UUID, field_payloads: list[dict[str, Any]]) -> None:
+    """Enforce column dtype immutability: a republish may add new columns but must not change
+    the dtype of a column that is already a `Field` -- schemas and column dtypes are immutable,
+    the same property LanceDB has.
+
+    Only checked against existing `column`-type fields. A Pandera column colliding by name with
+    an existing `text`/`image`/`chat` field is a separate, deferred concern -- see
+    docs/superpowers/plans/2026-07-26-fold-followups.md.
+    """
+    stmt = select(Field.name, Field.settings).where(Field.dataset_id == dataset_id)
+    existing_column_dtypes = {
+        name: field_settings["dtype"]
+        for name, field_settings in (await db.execute(stmt)).all()
+        if field_settings.get("type") == FieldType.column
+    }
+
+    for payload in field_payloads:
+        name = payload["name"]
+        if name not in existing_column_dtypes:
+            continue
+
+        existing_dtype = existing_column_dtypes[name]
+        new_dtype = payload["settings"]["dtype"]
+        if existing_dtype != new_dtype:
+            raise UnprocessableEntityError(
+                f"column {name!r} cannot change dtype from {existing_dtype!r} to {new_dtype!r} -- "
+                "schema columns are immutable once published"
+            )
+
+
 async def publish_version(
     db: AsyncSession,
     search_engine: SearchEngine,
@@ -77,6 +109,9 @@ async def publish_version(
     """Upload a body, register the version, materialize its column fields, publish the dataset."""
     # Parse before any write so an invalid body leaves no version row and no S3 object.
     field_payloads = derive_column_fields(body, review_widgets)
+
+    # Reject dtype changes before any write too, for the same reason.
+    await _reject_dtype_changes(db, dataset.id, field_payloads)
 
     next_version = await _next_version_number(db, dataset.id)
     key = object_key_for(dataset.id, next_version)
@@ -114,8 +149,33 @@ async def publish_version(
     await dataset.update(db, current_schema_version_id=version.id, status=DatasetStatus.ready, autocommit=False)
     await db.commit()
 
+    # `Field.upsert_many` is a Core `INSERT ... RETURNING` (models/mixins.py) that does not
+    # append to an already-loaded `dataset.fields` collection, and `expire_on_commit=False`
+    # (database.py) means the commit above doesn't refresh it either. Without this refresh,
+    # `create_index` -> `_configure_index_mappings` (search_engine/commons.py) iterates a
+    # *stale* (or entirely unloaded, on a dataset fetched without `Dataset.fields` eager-loaded)
+    # collection: on an AsyncSession an unloaded lazy relationship raises `MissingGreenlet`, and
+    # a stale-but-loaded one silently builds a `"dynamic": "strict"` index with no properties for
+    # any column, so every subsequent record write is rejected at index time.
+    await db.refresh(dataset, ["fields"])
+
     # Post-commit, outside the transaction -- the repo-wide convention for index side effects.
-    await search_engine.create_index(dataset)
+    #
+    # `create_index` is NOT idempotent: both backends issue a bare `indices.create` that raises
+    # `resource_already_exists_exception` on a second call for the same dataset, since
+    # `es_index_name_for_dataset` is stable per dataset id. That makes every republish -- and
+    # every schema-version publish on a dataset already published via `PUT /datasets/{id}/publish`
+    # -- fail unconditionally. Guard with an explicit existence check (not a blanket-swallowed
+    # 400, which would also hide a genuine mapping error on a real first create).
+    if not await search_engine.index_exists(dataset):
+        await search_engine.create_index(dataset)
+    # else: the index already exists. Evolving its mapping for any newly-declared columns
+    # (`put_mapping`) is explicitly out of scope for this fold -- see
+    # docs/superpowers/plans/2026-07-26-fold-followups.md. A column added by this republish is
+    # tracked as a `Field` row but is not yet queryable in the search index until that follow-up
+    # lands (or LanceDB supersedes ES for this dataset shape entirely).
+
+    await notify_dataset_event_v1(db, DatasetEvent.published, dataset)
 
     return version
 

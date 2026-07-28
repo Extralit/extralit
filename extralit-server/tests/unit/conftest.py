@@ -38,7 +38,13 @@ def opensearch(elasticsearch_config: dict) -> Generator[OpenSearch, None, None]:
 
 @pytest.fixture(scope="function")
 def mock_search_engine(mocker) -> Generator["SearchEngine", None, None]:
-    return mocker.AsyncMock(SearchEngine)
+    engine = mocker.AsyncMock(SearchEngine)
+    # Sane default: "no index yet", matching the common case (first publish). An unconfigured
+    # AsyncMock attribute resolves truthy (a MagicMock), which would otherwise make every
+    # `schema_versions.publish_version` caller believe the index already exists and skip
+    # `create_index` -- see contexts/schema_versions.py's create-if-absent republish guard.
+    engine.index_exists.return_value = False
+    return engine
 
 
 @pytest_asyncio.fixture(scope="function")

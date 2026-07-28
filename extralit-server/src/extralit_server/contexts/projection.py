@@ -282,14 +282,23 @@ async def build_workspace_view(db: AsyncSession, *, workspace_id: UUID, offset: 
         questions_by_dataset.setdefault(question.dataset_id, []).append(question)
     columns = _build_columns(list(datasets), questions_by_dataset)
 
+    # `Record.reference` is nullable in v1 (v2's `V2Record.reference` was NOT NULL). Excluding
+    # NULL from both the count and the paged `group_by` keeps them in sync: without this, the
+    # `group_by` below forms a NULL group that `count(distinct(...))` doesn't count but that
+    # still occupies a page slot, and `Record.reference.in_(references)` at :308 never matches
+    # NULL, so that slot silently returns no rows.
     total_references = (
-        await db.execute(select(func.count(distinct(Record.reference))).where(Record.dataset_id.in_(dataset_ids)))
+        await db.execute(
+            select(func.count(distinct(Record.reference))).where(
+                Record.dataset_id.in_(dataset_ids), Record.reference.is_not(None)
+            )
+        )
     ).scalar_one()
     references = (
         (
             await db.execute(
                 select(Record.reference)
-                .where(Record.dataset_id.in_(dataset_ids))
+                .where(Record.dataset_id.in_(dataset_ids), Record.reference.is_not(None))
                 .group_by(Record.reference)
                 .order_by(Record.reference)
                 .offset(offset)

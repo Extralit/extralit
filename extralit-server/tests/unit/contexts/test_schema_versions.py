@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pandera.pandas as pa
 import pytest
@@ -6,7 +6,9 @@ from sqlalchemy import select
 
 from extralit_server.contexts import schema_versions
 from extralit_server.enums import DatasetStatus, FieldType
+from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.models.database import Field
+from extralit_server.webhooks.v1.enums import DatasetEvent
 from tests.factories import DatasetFactory
 
 
@@ -151,6 +153,85 @@ class TestPublishVersion:
             )
         assert dataset.current_schema_version_id is None
         assert await _fields_for(db, dataset.id) == []
+
+    async def test_republishing_does_not_recreate_an_existing_index(self, db, mock_search_engine):
+        # Critical 2. Real backends' `indices.create` raises `resource_already_exists_exception`
+        # on a second call for the same dataset. Simulate that here so that, if
+        # `publish_version` ever called `create_index` unconditionally again, this test fails
+        # loudly instead of merely not noticing a silently-swallowed error.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
+        mock_search_engine.create_index.assert_awaited_once()
+
+        mock_search_engine.index_exists.return_value = True
+        mock_search_engine.create_index.side_effect = AssertionError("must not recreate an existing index")
+
+        v2 = await schema_versions.publish_version(
+            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
+        )
+        assert v2.version == 2
+        mock_search_engine.create_index.assert_awaited_once()  # still just the one call, from the first publish
+
+    async def test_publishing_a_schema_version_on_an_already_published_dataset_works(self, db, mock_search_engine):
+        # Critical 2's second broken flow: PUT /datasets/{id}/publish (contexts/datasets.py)
+        # already created the index and set the dataset ready. A *first* schema-versions
+        # publish on that same dataset must not try to recreate the index.
+        dataset = await DatasetFactory.create(status=DatasetStatus.ready)
+        mock_search_engine.index_exists.return_value = True
+        mock_search_engine.create_index.side_effect = AssertionError("must not recreate an existing index")
+
+        version = await schema_versions.publish_version(
+            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
+        )
+        assert version.version == 1
+        assert dataset.status == DatasetStatus.ready
+
+    async def test_republishing_with_a_changed_column_dtype_is_rejected(self, db, mock_search_engine):
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
+
+        changed_body = pa.DataFrameSchema(
+            {
+                "population": pa.Column(pa.Int64, nullable=True),  # was string
+                "n_arms": pa.Column(pa.Int64, nullable=False),
+            }
+        ).to_json()
+
+        with pytest.raises(UnprocessableEntityError, match="population"):
+            await schema_versions.publish_version(
+                db, mock_search_engine, _s3_client(), dataset, body=changed_body, bucket="ws"
+            )
+
+        # Rejected before any write: no second version, no dtype mutation on the existing field.
+        assert [v.version for v in await schema_versions.list_versions(db, dataset)] == [1]
+        fields_by_name = {f.name: f for f in await _fields_for(db, dataset.id)}
+        assert fields_by_name["population"].settings["dtype"] in {"string", "string[pyarrow]", "object"}
+
+    async def test_republishing_with_an_unchanged_column_dtype_is_allowed(self, db, mock_search_engine):
+        # New columns are legal; unchanged existing columns are legal. Only a *changed* dtype
+        # on an existing column is rejected.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
+        v2 = await schema_versions.publish_version(
+            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
+        )
+        assert v2.version == 2
+
+    async def test_publish_notifies_the_dataset_published_webhook_event(self, db, mock_search_engine):
+        # Important 3: publish_version flips status -> ready but never notified
+        # `DatasetEvent.published` -- unlike contexts/datasets.py::publish_dataset, which does.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+
+        with patch("extralit_server.contexts.schema_versions.notify_dataset_event_v1") as mock_notify:
+            mock_notify.return_value = []
+            await schema_versions.publish_version(
+                db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
+            )
+
+        mock_notify.assert_awaited_once()
+        awaited_args = mock_notify.await_args.args
+        assert awaited_args[1] == DatasetEvent.published
+        assert awaited_args[2] is dataset
 
     async def test_publish_of_a_column_less_body_still_creates_a_version(self, db, mock_search_engine):
         # `derive_column_fields` legally returns an empty list for a column-less body;

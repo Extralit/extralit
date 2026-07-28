@@ -13,10 +13,23 @@ realistic malaria-systematic-review workspace that exercises every grid affordan
 Idempotent: each schema is dropped and recreated, so re-running produces the same grid.
 
 Usage:  uv run --project ../../extralit-server python seed_demo_workspace.py --output <path>
+
+*** BROKEN as of the v2 -> v1 fold (branch feat/ENG-36-server-v2-to-v1) ***
+Every call below (recreate_schema, add_question, and main's bulk-upsert/suggestions/
+responses/rebuild-index/projection calls) targets /api/v2/* routes. Those routes were
+deleted in that fold ("refactor(server)!: delete models/v2", "refactor(server)!: delete
+contexts/v2, validators/v2, and cli/index") and folded into differently-shaped /api/v1
+endpoints (schema-versions instead of schemas, fields instead of columns, etc.). This
+script was NOT repointed -- that is real work, tracked as its own follow-up: see
+"Repointing demo/seed_demo_workspace.py" in
+docs/superpowers/plans/2026-07-26-fold-followups.md. It is not part of any CI gate.
+`main()` exits immediately rather than failing obscurely partway through a demo-workspace
+build; do not remove that guard without doing the repointing work first.
 """
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import httpx
@@ -403,4 +416,13 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    print(
+        "seed_demo_workspace.py is broken: every request in this script targets /api/v2/*\n"
+        "routes deleted by the v1 fold (feat/ENG-36-server-v2-to-v1). It has not been\n"
+        "repointed at /api/v1 -- see 'Repointing demo/seed_demo_workspace.py' in\n"
+        "docs/superpowers/plans/2026-07-26-fold-followups.md before using or fixing this file.",
+        file=sys.stderr,
+    )
+    raise SystemExit(1)
+
     main()

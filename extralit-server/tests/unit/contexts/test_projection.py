@@ -244,6 +244,27 @@ async def test_pagination_counts_references_not_rows(db):
     assert [r.reference for r in page.rows] == ["10.1/2", "10.1/3"]  # ordered by reference
 
 
+async def test_null_reference_records_do_not_burn_a_page_slot(db):
+    # v1's `Record.reference` is nullable (v2's `V2Record.reference` was NOT NULL). A record
+    # with no reference must be excluded from both the reference count and the paged reference
+    # list -- otherwise `group_by(Record.reference)` forms a NULL group that occupies a page
+    # slot but `Record.reference.in_([..., None])` never matches it, silently returning fewer
+    # rows than `limit` on some page.
+    workspace = await WorkspaceFactory.create()
+    dataset = await schema_backed_dataset(workspace, name="Design")
+    await _add_question(dataset, "type")
+    for i in range(3):
+        await RecordFactory.create(dataset=dataset, reference=f"10.1/{i}")
+    await RecordFactory.create(dataset=dataset, reference=None)
+
+    first_page = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=0, limit=2)
+    assert first_page.total_references == 3
+    assert [r.reference for r in first_page.rows] == ["10.1/0", "10.1/1"]
+
+    second_page = await projection_ctx.build_workspace_view(db, workspace_id=workspace.id, offset=2, limit=2)
+    assert [r.reference for r in second_page.rows] == ["10.1/2"]
+
+
 async def test_query_count_is_constant_regardless_of_reference_count(db, monkeypatch):
     workspace = await WorkspaceFactory.create()
     dataset = await schema_backed_dataset(workspace, name="Design")

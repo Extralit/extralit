@@ -15,8 +15,14 @@ class QuestionColumnBindingValidator:
 
     Column fields are materialized from the dataset's Pandera schema version at publish
     time (contexts/schema_versions.derive_column_fields), so `dataset.fields` is the
-    authoritative manifest. Requires `dataset.fields` to be eagerly loaded — every
-    question handler already preloads it.
+    authoritative manifest. Requires `dataset.fields` to be eagerly loaded (e.g.
+    `selectinload(Dataset.fields)`) by the caller before invoking this validator — this
+    class does not, and cannot, load it itself. Every question handler happens to preload
+    it today, but that is a call-site obligation, not a guarantee this validator enforces:
+    a new caller that forgets the eager load gets `MissingGreenlet` on an AsyncSession the
+    first time `dataset.fields` above is touched (the same failure mode as Critical 1 in
+    `contexts/schema_versions.publish_version`, which this docstring's earlier, over-broad
+    claim helped hide from review).
     """
 
     @classmethod
