@@ -1,8 +1,9 @@
-"""Pure, I/O-free helpers mapping v2 schema columns and records to a Lance row layout.
+"""Pure, I/O-free helpers mapping schema columns and records to a Lance row layout.
 
-No LanceDB, DB, or object-store access — given a `columns_cache` (from
-`SchemaVersion.columns_cache`) and a record, build the Arrow schema and row dicts the
-index engine writes. The Lance table for a schema is the union (superset) of columns
+No LanceDB, DB, or object-store access — given a column manifest (the list of column
+dicts derived from a schema version's `Field` rows) and a record, build the Arrow
+schema and row dicts the LanceDB index engine writes (see ENG-36 for wiring this engine
+in as a `SearchEngine`). The Lance table for a schema is the union (superset) of columns
 across its versions plus system/identity columns and a derived `text` column that
 carries the BM25 full-text index.
 """

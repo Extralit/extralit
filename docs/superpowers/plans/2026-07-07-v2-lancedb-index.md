@@ -1,5 +1,7 @@
 # v2 LanceDB Index Engine Implementation Plan (Phase 3 of 6)
 
+> **Historical note (2026-07-26):** The `/api/v2` parallel tree described in this document was folded back into `/api/v1`. See `docs/superpowers/plans/2026-07-26-fold-v2-into-v1.md`. This document is kept as a historical record; its API paths, models, and file references may no longer exist.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a LanceDB-backed index engine that derives one Lance table per v2 schema from Postgres, exposing full-text (BM25) + scalar-filter search over records via `POST /api/v2/schemas/{id}/records:search`, kept in sync best-effort on write and rebuildable from Postgres.

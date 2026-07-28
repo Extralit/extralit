@@ -127,7 +127,7 @@ class Settings(BaseSettings):
     lancedb_uri: str | None = Field(
         default=None,
         validate_default=True,
-        description="URI for the LanceDB index store (v2). Defaults to `{home_path}/lance`. "
+        description="URI for the LanceDB index store (see ENG-36). Defaults to `{home_path}/lance`. "
         "A local path works on the compose named volume and HF-Spaces persistent storage; "
         "an s3:// URI is accepted by lancedb.connect but unsupported/unvalidated for now.",
     )

@@ -1,8 +1,9 @@
-"""v2 index engine interface — a small, v2-shaped abstraction over the physical index.
+"""LanceDB index engine interface — a small abstraction over the physical index.
 
-Deliberately NOT the v1 `search_engine.base.SearchEngine` ABC: that one is typed on v1
-models (Dataset, MetadataProperty, Response) and stays untouched until Phase 6. This
-engine speaks schema ids, column caches, and plain row dicts, so it never imports v1.
+Deliberately NOT the `search_engine.base.SearchEngine` ABC: that one is typed on the
+ORM models (Dataset, MetadataProperty, Response) and stays untouched until ENG-36, which
+registers `LanceIndexEngine` as a `SearchEngine` implementation. This engine speaks
+schema ids, column manifests, and plain row dicts, so it never imports the ORM models.
 """
 
 import dataclasses

@@ -1,5 +1,7 @@
 # Python SDK v2 — schema-centric client, agentic CLI, async performance
 
+> **Historical note (2026-07-26):** The `/api/v2` parallel tree described in this document was folded back into `/api/v1`. See `docs/superpowers/plans/2026-07-26-fold-v2-into-v1.md`. This document is kept as a historical record; its API paths, models, and file references may no longer exist.
+
 **Date:** 2026-07-13
 **Status:** Approved design, pending implementation plan
 **Companions:** `2026-06-27-schema-centric-data-model-design.md` (server model),

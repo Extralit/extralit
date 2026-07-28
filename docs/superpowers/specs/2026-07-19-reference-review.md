@@ -1,5 +1,7 @@
 # Handoff — ReferenceReview slice: design/correctness interrogation brief
 
+> **Historical note (2026-07-26):** The `/api/v2` parallel tree described in this document was folded back into `/api/v1`. See `docs/superpowers/plans/2026-07-26-fold-v2-into-v1.md`. This document is kept as a historical record; its API paths, models, and file references may no longer exist.
+
 **Date:** 2026-07-19
 **Context branch:** `polish/v2-ui-shell-integration` (PR #232). The ReferenceReview slice itself is **already on `develop`** (merged via #230).
 **Goal of next session:** interrogate the Presentation, Domain/infra, and Backend layers for **user design, API design, correctness, and performance** — then decide whether to redesign-in-place, or replace.
