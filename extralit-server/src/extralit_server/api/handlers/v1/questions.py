@@ -10,7 +10,7 @@ from extralit_server.api.schemas.v1.questions import Question as QuestionSchema
 from extralit_server.api.schemas.v1.questions import QuestionUpdate
 from extralit_server.contexts import questions
 from extralit_server.database import get_async_db
-from extralit_server.models import Question, User
+from extralit_server.models import Dataset, Question, User
 from extralit_server.security import auth
 
 router = APIRouter(tags=["questions"])
@@ -24,7 +24,11 @@ async def update_question(
     question_update: QuestionUpdate,
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
-    question = await Question.get_or_raise(db, question_id, options=[selectinload(Question.dataset)])
+    question = await Question.get_or_raise(
+        db,
+        question_id,
+        options=[selectinload(Question.dataset).selectinload(Dataset.fields)],
+    )
 
     await authorize(current_user, QuestionPolicy.update(question))
 

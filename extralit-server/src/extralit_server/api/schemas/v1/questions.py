@@ -89,18 +89,21 @@ class TextQuestionSettings(BaseModel):
     type: Literal[QuestionType.text]
     use_markdown: bool = False
     use_table: bool = False
+    columns: list[str] | None = None
 
 
 class TextQuestionSettingsCreate(BaseModel):
     type: Literal[QuestionType.text]
     use_markdown: bool = False
     use_table: bool = False
+    columns: list[str] | None = None
 
 
 class TextQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.text]
     use_markdown: bool | None = None
     use_table: bool | None = None
+    columns: list[str] | None = None
 
     __non_nullable_fields__ = {"use_markdown", "use_table"}
 
@@ -268,14 +271,17 @@ class SpanQuestionSettingsUpdate(UpdateSchema):
 
 class TableQuestionSettings(BaseModel):
     type: Literal[QuestionType.table]
+    columns: list[str] | None = None
 
 
 class TableQuestionSettingsCreate(BaseModel):
     type: Literal[QuestionType.table]
+    columns: list[str] | None = None
 
 
 class TableQuestionSettingsUpdate(UpdateSchema):
     type: Literal[QuestionType.table]
+    columns: list[str] | None = None
 
     __non_nullable_fields__ = {}
 
