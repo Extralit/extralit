@@ -1,10 +1,10 @@
-"""Seed deterministic v2 fixtures for the frontend e2e suite.
+"""Seed deterministic extraction fixtures for the frontend e2e suite.
 
 Usage (from extralit-frontend/):
-    uv run --project ../extralit-server python e2e/v2/seed/seed_v2_e2e.py \
+    uv run --project ../extralit-server python e2e/extraction/seed/seed_v2_e2e.py \
         --api-url http://localhost:6900 --username extralit --password 12345678
 
-Writes e2e/v2/seed/seed-output.json. Idempotent: deletes and recreates the e2e schema.
+Writes e2e/extraction/seed/seed-output.json. Idempotent: deletes and recreates the e2e dataset.
 """
 
 import argparse
@@ -46,7 +46,7 @@ def main() -> None:
     with httpx.Client(base_url=args.api_url, timeout=30) as client:
         token = (
             client.post(
-                "/api/v2/token",
+                "/api/v1/token",
                 data={"username": args.username, "password": args.password},
             )
             .raise_for_status()
@@ -66,34 +66,40 @@ def main() -> None:
                 .json()
             )
 
-        # Schema: recreate for determinism.
-        schemas = (
-            client.get("/api/v2/schemas", params={"workspace_id": workspace["id"]})
+        # Dataset: recreate for determinism.
+        existing_datasets = (
+            client.get("/api/v1/me/datasets", params={"workspace_id": workspace["id"]})
             .raise_for_status()
             .json()["items"]
         )
-        for schema in schemas:
-            if schema["name"] in (SCHEMA_NAME, EMPTY_SCHEMA_NAME):
-                client.delete(f"/api/v2/schemas/{schema['id']}").raise_for_status()
-        schema = (
+        for existing in existing_datasets:
+            if existing["name"] in (SCHEMA_NAME, EMPTY_SCHEMA_NAME):
+                client.delete(f"/api/v1/datasets/{existing['id']}").raise_for_status()
+        dataset = (
             client.post(
-                "/api/v2/schemas",
+                "/api/v1/datasets",
                 json={"name": SCHEMA_NAME, "workspace_id": workspace["id"]},
             )
             .raise_for_status()
             .json()
         )
 
-        client.post(
-            f"/api/v2/schemas/{schema['id']}/versions", json={"body": BODY}
-        ).raise_for_status()
-
+        # Questions must be created while the dataset is still a draft:
+        # `POST .../schema-versions` below flips status to `ready`, and
+        # `QuestionCreateValidator._validate_dataset_is_not_ready` rejects question
+        # creation once a dataset is published. Column bindings can't be set yet either
+        # — the `size`/`label`/`country` Fields don't exist until the schema version
+        # materializes them (`QuestionColumnBindingValidator` checks against
+        # `dataset.fields`) — so create bare questions here and PATCH the `size`
+        # question's `columns` binding on afterwards. `label_selection` questions don't
+        # support column bindings at all (only text/table questions do), so `label`
+        # never gets one.
         questions = {}
-        for name, qtype, settings in [
-            ("size", "text", {}),
+        for name, title, settings in [
+            ("size", "Size", {"type": "text"}),
             (
                 "label",
-                "label_selection",
+                "Label",
                 {
                     "type": "label_selection",
                     "options": [
@@ -109,16 +115,14 @@ def main() -> None:
         ]:
             question = (
                 client.post(
-                    f"/api/v2/schemas/{schema['id']}/questions",
+                    f"/api/v1/datasets/{dataset['id']}/questions",
                     json={
                         "name": name,
-                        "title": name.title(),
-                        "type": qtype,
-                        "columns": [name],
+                        "title": title,
                         "settings": settings,
                         # Neither question is required: the seeded submitted response below
                         # answers only `label` (to prove response-beats-suggestion there while
-                        # `size` stays suggestion-sourced) and `PUT .../responses` rejects a
+                        # `size` stays suggestion-sourced) and `POST .../responses` rejects a
                         # submitted envelope missing any required question's value.
                         "required": False,
                     },
@@ -128,9 +132,25 @@ def main() -> None:
             )
             questions[name] = {"id": question["id"], "name": question["name"]}
 
+        # Publish: uploads the Pandera body to object storage, materializes
+        # size/label/country as column Fields, and flips the dataset to `ready` — a
+        # dataset must be ready before records can be bulk-upserted
+        # (`RecordsBulkCreateValidator._validate_dataset_is_ready`).
+        client.post(
+            f"/api/v1/datasets/{dataset['id']}/schema-versions", json={"body": BODY}
+        ).raise_for_status()
+
+        # Now that the `size` column Field exists, bind the `size` question to it.
+        # `QuestionUpdateValidator` (unlike the create validator) does not gate on
+        # dataset readiness, so this PATCH is legal post-publish.
+        client.patch(
+            f"/api/v1/questions/{questions['size']['id']}",
+            json={"settings": {"type": "text", "columns": ["size"]}},
+        ).raise_for_status()
+
         records = (
-            client.post(
-                f"/api/v2/schemas/{schema['id']}/records:bulk-upsert",
+            client.put(
+                f"/api/v1/datasets/{dataset['id']}/records/bulk",
                 json={
                     "items": [
                         {
@@ -166,7 +186,7 @@ def main() -> None:
         record = records[0]
 
         client.put(
-            f"/api/v2/records/{record['id']}/suggestions",
+            f"/api/v1/records/{record['id']}/suggestions",
             json={
                 "question_id": questions["size"]["id"],
                 "value": "120",
@@ -179,7 +199,7 @@ def main() -> None:
         # (spec §3.2 response-beats-suggestion), so the grid proves it, not just the
         # per-reference review form.
         client.put(
-            f"/api/v2/records/{record['id']}/suggestions",
+            f"/api/v1/records/{record['id']}/suggestions",
             json={
                 "question_id": questions["label"]["id"],
                 "value": "intervention",
@@ -187,41 +207,48 @@ def main() -> None:
                 "agent": "e2e-seeder",
             },
         ).raise_for_status()
-        client.put(
-            f"/api/v2/records/{record['id']}/responses",
+        client.post(
+            f"/api/v1/records/{record['id']}/responses",
             json={"values": {"label": {"value": "control"}}, "status": "submitted"},
         ).raise_for_status()
 
-        # Fresh index so the search scenario has something to find.
-        client.post(f"/api/v2/schemas/{schema['id']}:rebuild-index").raise_for_status()
+        # No rebuild-index step: v1 indexes on write, unlike v2's explicit
+        # `:rebuild-index` action.
 
         # Coverage-map schema (spec §3.1): one question, zero records.
-        empty_schema = (
+        empty_dataset = (
             client.post(
-                "/api/v2/schemas",
+                "/api/v1/datasets",
                 json={"name": EMPTY_SCHEMA_NAME, "workspace_id": workspace["id"]},
             )
             .raise_for_status()
             .json()
         )
+        notes_question = (
+            client.post(
+                f"/api/v1/datasets/{empty_dataset['id']}/questions",
+                json={
+                    "name": "notes",
+                    "title": "Notes",
+                    "settings": {"type": "text"},
+                    "required": False,
+                },
+            )
+            .raise_for_status()
+            .json()
+        )
         client.post(
-            f"/api/v2/schemas/{empty_schema['id']}/versions", json={"body": EMPTY_BODY}
+            f"/api/v1/datasets/{empty_dataset['id']}/schema-versions",
+            json={"body": EMPTY_BODY},
         ).raise_for_status()
-        client.post(
-            f"/api/v2/schemas/{empty_schema['id']}/questions",
-            json={
-                "name": "notes",
-                "title": "Notes",
-                "type": "text",
-                "columns": ["notes"],
-                "settings": {},
-                "required": False,
-            },
+        client.patch(
+            f"/api/v1/questions/{notes_question['id']}",
+            json={"settings": {"type": "text", "columns": ["notes"]}},
         ).raise_for_status()
 
     output = {
         "workspaceId": workspace["id"],
-        "schemaId": schema["id"],
+        "schemaId": dataset["id"],
         "schemaName": SCHEMA_NAME,
         "emptySchemaName": EMPTY_SCHEMA_NAME,
         "reference": REFERENCE,

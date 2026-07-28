@@ -29,7 +29,7 @@ export const loadSeed = (): SeedOutput => {
     throw new Error(
       `seed-output.json is missing required key(s): ${missing.join(", ")}. ` +
         "This usually means it was written by an older version of the seeder — re-run " +
-        "`npm run e2e:v2:seed` to regenerate it."
+        "`npm run e2e:extraction:seed` to regenerate it."
     );
   }
   return parsed as SeedOutput;
@@ -57,7 +57,7 @@ export const test = base.extend<object, { browser: Browser }>({
 export const expect = test.expect;
 
 // Real-backend sign-in through the actual UI: this is seam A — the first bearer-token
-// client of /api/v2. No route mocking anywhere in e2e/v2.
+// client of /api/v1. No route mocking anywhere in e2e/extraction.
 export const signIn = async (page: import("@playwright/test").Page) => {
   const { username, password } = credentials();
   await page.goto("/sign-in");

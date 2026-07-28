@@ -1,6 +1,6 @@
 """Seed a richer, demo-grade v2 workspace for the /extractions grid demo video.
 
-Unlike e2e/v2/seed/seed_v2_e2e.py (a minimal, assertion-shaped fixture), this builds a
+Unlike e2e/extraction/seed/seed_v2_e2e.py (a minimal, assertion-shaped fixture), this builds a
 realistic malaria-systematic-review workspace that exercises every grid affordance:
 
   * `study_characteristics` — 3 scalar questions, agent suggestions with scores

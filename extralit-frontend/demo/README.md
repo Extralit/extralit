@@ -48,7 +48,7 @@ specific run; committing it would let stale captions render against a fresh reco
 
 ## What the seed is shaped to prove
 
-`e2e/v2/seed/seed_v2_e2e.py` is a minimal assertion fixture. This one is a realistic
+`e2e/extraction/seed/seed_v2_e2e.py` is a minimal assertion fixture. This one is a realistic
 systematic review, shaped so every grid affordance has something to show:
 
 - **`study_characteristics`** — scalar questions with scored agent suggestions.

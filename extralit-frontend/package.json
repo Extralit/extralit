@@ -19,8 +19,8 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
-        "e2e:v2:seed": "uv run --project ../extralit-server python e2e/v2/seed/seed_v2_e2e.py",
-        "e2e:v2": "playwright test --project=v2"
+        "e2e:extraction:seed": "uv run --project ../extralit-server python e2e/extraction/seed/seed_v2_e2e.py",
+        "e2e:extraction": "playwright test --project=extraction"
     },
     "dependencies": {
         "@codescouts/events": "^1.0.2",

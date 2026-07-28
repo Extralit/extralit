@@ -49,19 +49,20 @@ npm run e2e:report       # View test report
 > `npx playwright install chromium`; no `install-deps`/sudo needed), so the headless gate
 > can run locally as well as in CI.
 
-## v2 e2e suite (`e2e/v2/`, real backend — the v2 slice's integration gate)
+## extraction e2e suite (`e2e/extraction/`, real backend — the extraction slice's integration gate)
 
-Separate Playwright project (`--project=v2`, `testMatch: v2/**/*.spec.ts`); the legacy
-Argilla specs above are **not** a v2 gate. No network mocking — it exercises real bearer
-auth on `/api/v2`, slashed-DOI encoding, the suggestion→response loop, drafts and search
-freshness. Env knobs (see `e2e/v2/fixtures.ts`): `E2E_API_URL` (default `http://localhost:6900`),
-`E2E_BASE_URL`/`BASE_URL` (default `http://localhost:3000`), `E2E_USERNAME`/`E2E_PASSWORD`
-(default `extralit`/`12345678`), optional `E2E_CDP_URL` to drive a remote chromium.
+Separate Playwright project (`--project=extraction`, `testMatch: extraction/**/*.spec.ts`);
+the legacy Argilla specs above are **not** an extraction gate. No network mocking — it
+exercises real bearer auth on `/api/v1`, slashed-DOI encoding, the suggestion→response loop,
+drafts and search freshness. Env knobs (see `e2e/extraction/fixtures.ts`): `E2E_API_URL`
+(default `http://localhost:6900`), `E2E_BASE_URL`/`BASE_URL` (default `http://localhost:3000`),
+`E2E_USERNAME`/`E2E_PASSWORD` (default `extralit`/`12345678`), optional `E2E_CDP_URL` to drive
+a remote chromium.
 
 ```bash
-npm run e2e:v2:seed   # uv run ../extralit-server python e2e/v2/seed/seed_v2_e2e.py
-npm run dev -- --host # dev server reachable from the browser
-npm run e2e:v2        # playwright test --project=v2 (local chromium)
+npm run e2e:extraction:seed   # uv run ../extralit-server python e2e/extraction/seed/seed_v2_e2e.py
+npm run dev -- --host         # dev server reachable from the browser
+npm run e2e:extraction        # playwright test --project=extraction (local chromium)
 ```
 
 Requires the full stack up with the server on :6900. On the Orin host the backing services
