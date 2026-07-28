@@ -146,6 +146,10 @@ async def publish_version(
             autocommit=False,
         )
 
+    # Captured before `dataset.update` flips `status` -- the webhook below must fire only on
+    # the actual draft -> ready transition, not on every republish of an already-ready dataset.
+    was_already_ready = dataset.is_ready
+
     await dataset.update(db, current_schema_version_id=version.id, status=DatasetStatus.ready, autocommit=False)
     await db.commit()
 
@@ -153,11 +157,13 @@ async def publish_version(
     # append to an already-loaded `dataset.fields` collection, and `expire_on_commit=False`
     # (database.py) means the commit above doesn't refresh it either. Without this refresh,
     # `create_index` -> `_configure_index_mappings` (search_engine/commons.py) iterates a
-    # *stale* (or entirely unloaded, on a dataset fetched without `Dataset.fields` eager-loaded)
-    # collection: on an AsyncSession an unloaded lazy relationship raises `MissingGreenlet`, and
-    # a stale-but-loaded one silently builds a `"dynamic": "strict"` index with no properties for
-    # any column, so every subsequent record write is rejected at index time.
-    await db.refresh(dataset, ["fields"])
+    # *stale* (or entirely unloaded, on a dataset fetched without those relationships
+    # eager-loaded) collection: on an AsyncSession an unloaded lazy relationship raises
+    # `MissingGreenlet`, and a stale-but-loaded one silently builds a `"dynamic": "strict"`
+    # index missing properties for whatever it didn't see, so subsequent record writes touching
+    # that gap are rejected at index time. `_configure_index_mappings` reads FOUR relationships
+    # (search_engine/commons.py) -- all four must be refreshed, not just `fields`.
+    await db.refresh(dataset, ["fields", "metadata_properties", "vectors_settings", "questions"])
 
     # Post-commit, outside the transaction -- the repo-wide convention for index side effects.
     #
@@ -175,7 +181,12 @@ async def publish_version(
     # tracked as a `Field` row but is not yet queryable in the search index until that follow-up
     # lands (or LanceDB supersedes ES for this dataset shape entirely).
 
-    await notify_dataset_event_v1(db, DatasetEvent.published, dataset)
+    if not was_already_ready:
+        # Fire only on the draft -> ready transition, matching contexts/datasets.py::publish_dataset's
+        # semantics (draft-gated by DatasetPublishValidator, so it can only ever fire once).
+        # publish_version has no such gate -- it's legal to call repeatedly for version 2..n --
+        # so without this guard every republish would re-fire `published` for an already-ready dataset.
+        await notify_dataset_event_v1(db, DatasetEvent.published, dataset)
 
     return version
 

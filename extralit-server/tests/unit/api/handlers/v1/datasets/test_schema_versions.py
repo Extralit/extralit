@@ -10,14 +10,22 @@ from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import DatasetStatus
 from extralit_server.jobs.queues import HIGH_QUEUE
 from extralit_server.search_engine import get_search_engine
+from extralit_server.search_engine.commons import (
+    es_field_for_metadata_property,
+    es_field_for_record_field,
+    es_field_for_vector_settings,
+)
+from extralit_server.search_engine.elasticsearch import ElasticSearchEngine
 from extralit_server.webhooks.v1.datasets import build_dataset_event
 from extralit_server.webhooks.v1.enums import DatasetEvent
 from tests.factories import (
     AdminFactory,
     AnnotatorFactory,
     DatasetFactory,
+    IntegerMetadataPropertyFactory,
     RatingQuestionFactory,
     TextFieldFactory,
+    VectorSettingsFactory,
     WebhookFactory,
     WorkspaceFactory,
 )
@@ -27,25 +35,40 @@ def _body() -> str:
     return pa.DataFrameSchema({"population": pa.Column(str, nullable=True)}).to_json()
 
 
-class _FieldsReadingSearchEngine:
-    """Fake engine whose `create_index` actually reads `dataset.fields` -- unlike
-    `mocker.AsyncMock(SearchEngine)` (the suite-wide `mock_search_engine` fixture), which never
-    touches the ORM and so cannot express Critical 1's bug.
+class _RealMappingSearchEngine:
+    """Fake engine whose `create_index` calls the REAL `ElasticSearchEngine._configure_index_mappings`
+    -- unlike `mocker.AsyncMock(SearchEngine)` (the suite-wide `mock_search_engine` fixture),
+    which never touches the ORM and so cannot express Critical 1's bug at all.
+
+    `_configure_index_mappings` (search_engine/commons.py) is a pure function of the ORM
+    object: it reads FOUR relationships off `dataset` (`fields`, `metadata_properties`,
+    `vectors_settings`, `questions`) and needs no live cluster connection to run, so this fake
+    can call the real production code path directly instead of hand-picking which relationships
+    to check. That matters: a hand-rolled fake that only reads `.fields` (an earlier version of
+    this fake) passed against a build of `publish_version` that only refreshed `.fields` and
+    left the other three relationships unloaded -- i.e. it passed against a still-broken
+    endpoint. Delegating to the real method means this test automatically covers any
+    relationship `_configure_index_mappings` reads today AND any it reads in the future (e.g. a
+    fifth relationship added later), without anyone having to remember to update this fake.
 
     The handler loads `dataset` with only `Dataset.workspace` eagerly loaded
     (handlers/v1/datasets/schema_versions.py). Without `contexts/schema_versions.publish_version`
-    refreshing `dataset.fields` after the commit, this engine's `create_index` would either blow
-    up on an unloaded lazy relationship (`MissingGreenlet` on an `AsyncSession`) or observe a
-    stale, empty collection -- `Field.upsert_many` is a Core `INSERT ... RETURNING` that never
-    appends to an already-loaded `dataset.fields`, and `expire_on_commit=False` means the commit
-    doesn't refresh it either.
+    refreshing every relationship `_configure_index_mappings` reads after the commit, this
+    engine's `create_index` blows up on the first unloaded lazy relationship it touches --
+    `MissingGreenlet` on an `AsyncSession`.
     """
 
     def __init__(self):
-        self.observed_field_names: list[str] | None = None
+        # number_of_shards/replicas are required dataclass fields but irrelevant here --
+        # `_configure_index_mappings` never reads them. `config` needs a `hosts` entry only so
+        # `AsyncElasticsearch.__init__` doesn't raise; no request is ever sent to it.
+        self._engine = ElasticSearchEngine(
+            number_of_shards=1, number_of_replicas=0, config={"hosts": ["http://localhost:9200"]}
+        )
+        self.observed_mappings: dict | None = None
 
     async def create_index(self, dataset):
-        self.observed_field_names = sorted(field.name for field in dataset.fields)
+        self.observed_mappings = self._engine._configure_index_mappings(dataset)
 
     async def index_exists(self, dataset) -> bool:
         return False
@@ -155,10 +178,21 @@ class TestPublishSchemaVersion:
         )
         assert response.status_code == 403
 
-    async def test_publish_refreshes_dataset_fields_before_creating_the_index(self, async_client, owner_auth_header):
-        """Critical 1 pin. See `_FieldsReadingSearchEngine` for why an `AsyncMock` can't."""
-        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        fake_engine = _FieldsReadingSearchEngine()
+    async def test_publish_refreshes_every_relationship_create_index_reads_before_creating_the_index(
+        self, async_client, owner_auth_header
+    ):
+        """Critical 1 pin. See `_RealMappingSearchEngine` for why this must call the real
+        `_configure_index_mappings` rather than hand-read a chosen subset of relationships.
+        """
+        workspace = await WorkspaceFactory.create()
+        dataset = await DatasetFactory.create(workspace=workspace, status=DatasetStatus.draft)
+        # One of each relationship `_configure_index_mappings` reads besides `fields` (which
+        # the schema-versions publish itself populates via the "population" column below).
+        metadata_property = await IntegerMetadataPropertyFactory.create(dataset=dataset)
+        vector_settings = await VectorSettingsFactory.create(dataset=dataset)
+        question = await RatingQuestionFactory.create(dataset=dataset)
+
+        fake_engine = _RealMappingSearchEngine()
 
         async def override_get_search_engine():
             yield fake_engine
@@ -174,7 +208,16 @@ class TestPublishSchemaVersion:
             api_v1.dependency_overrides.pop(get_search_engine, None)
 
         assert response.status_code == 201, response.json()
-        assert fake_engine.observed_field_names == ["population"]
+        properties = fake_engine.observed_mappings["properties"]
+        # dataset.fields (the "population" column projected from this publish's body)
+        assert es_field_for_record_field("population") in properties
+        # dataset.metadata_properties
+        assert es_field_for_metadata_property(metadata_property) in properties
+        # dataset.vectors_settings
+        assert es_field_for_vector_settings(vector_settings) in properties
+        # dataset.questions (suggestions + responses mappings)
+        assert f"suggestions.{question.name}" in properties
+        assert question.name in properties["responses"]["properties"]
 
     async def test_republishing_does_not_500(self, async_client, owner_auth_header, mock_search_engine):
         # Critical 2. Real backends' `indices.create` raises `resource_already_exists_exception`
@@ -267,6 +310,37 @@ class TestPublishSchemaVersion:
         assert HIGH_QUEUE.jobs[0].args[0] == webhook.id
         assert HIGH_QUEUE.jobs[0].args[1] == DatasetEvent.published
         assert HIGH_QUEUE.jobs[0].args[3] == jsonable_encoder(event.data)
+
+    async def test_republishing_does_not_refire_the_webhook_dataset_published_event(
+        self, async_client, owner_auth_header, mock_search_engine
+    ):
+        # Minor found in re-review: publish_version has no draft-gate (unlike
+        # contexts/datasets.py::publish_dataset, which can only fire once because
+        # DatasetPublishValidator rejects publishing an already-ready dataset). Without
+        # tracking the pre-update status, every republish (version 2..n) would re-fire
+        # `published` for a dataset that was already ready.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        webhook = await WebhookFactory.create(events=[DatasetEvent.published])
+
+        first = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert first.status_code == 201, first.json()
+        assert HIGH_QUEUE.count == 1
+
+        second = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert second.status_code == 201, second.json()
+        assert second.json()["version"] == 2
+
+        # Still just the one job, from the first publish's draft -> ready transition.
+        assert HIGH_QUEUE.count == 1
+        assert HIGH_QUEUE.jobs[0].args[0] == webhook.id
 
 
 @pytest.mark.asyncio

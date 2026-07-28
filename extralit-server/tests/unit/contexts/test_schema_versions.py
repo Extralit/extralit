@@ -233,6 +233,25 @@ class TestPublishVersion:
         assert awaited_args[1] == DatasetEvent.published
         assert awaited_args[2] is dataset
 
+    async def test_republishing_does_not_renotify_the_dataset_published_webhook_event(self, db, mock_search_engine):
+        # publish_version has no draft-gate (contexts/datasets.py::publish_dataset can only
+        # fire once because DatasetPublishValidator rejects publishing an already-ready
+        # dataset). Without tracking the pre-update status, every republish would re-fire
+        # `published` for a dataset that's already ready.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+
+        with patch("extralit_server.contexts.schema_versions.notify_dataset_event_v1") as mock_notify:
+            mock_notify.return_value = []
+            await schema_versions.publish_version(
+                db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
+            )
+            v2 = await schema_versions.publish_version(
+                db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
+            )
+
+        assert v2.version == 2
+        mock_notify.assert_awaited_once()  # still just the one call, from the first publish
+
     async def test_publish_of_a_column_less_body_still_creates_a_version(self, db, mock_search_engine):
         # `derive_column_fields` legally returns an empty list for a column-less body;
         # `Field.upsert_many` raises on an empty `objects` list, so publish_version must
