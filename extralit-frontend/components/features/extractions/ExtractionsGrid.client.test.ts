@@ -25,8 +25,8 @@ const PROJECTION = new WorkspaceProjection(
   [
     {
       name: "Design.type",
-      schemaId: "s-1",
-      schemaName: "Design",
+      datasetId: "s-1",
+      datasetName: "Design",
       questionName: "type",
       subColumn: null,
       dtype: "text",
@@ -50,8 +50,8 @@ const PROJECTION_2 = new WorkspaceProjection(
   [
     {
       name: "Design.type",
-      schemaId: "s-2",
-      schemaName: "Design",
+      datasetId: "s-2",
+      datasetName: "Design",
       questionName: "type",
       subColumn: null,
       dtype: "text",
@@ -212,8 +212,8 @@ describe("ExtractionsGrid", () => {
       [
         {
           name: "Design.type",
-          schemaId: "s-1",
-          schemaName: "Design",
+          datasetId: "s-1",
+          datasetName: "Design",
           questionName: "type",
           subColumn: null,
           dtype: "text",

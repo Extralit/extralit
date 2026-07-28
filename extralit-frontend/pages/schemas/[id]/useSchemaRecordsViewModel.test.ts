@@ -13,11 +13,12 @@ import { ColumnMeta } from "~/v2/domain/entities/schema/ColumnMeta";
 import { SearchCriteria } from "~/v2/domain/entities/search/SearchCriteria";
 import { useSchemaRecordsViewModel } from "./useSchemaRecordsViewModel";
 
-const RECORD = new V2Record("r-1", "s-1", "v-1", "10.1000/j.x", null, { title: "A study" }, null, "pending", "", "");
+const RECORD = new V2Record("r-1", "s-1", "10.1000/j.x", null, { title: "A study" }, null, "pending", "", "");
 const SETTINGS = {
-  schema: new Schema("s-1", "sample_size", "published", "w-1", "v-1", {}, "", ""),
-  versions: [new SchemaVersion("v-1", "s-1", 1, [new ColumnMeta("title", "str", false, null)], {}, "")],
+  schema: new Schema("s-1", "sample_size", "ready", "w-1", "v-1", {}, "", ""),
+  versions: [new SchemaVersion("v-1", "s-1", 1, "")],
   questions: [],
+  columns: [new ColumnMeta("title", "str", false, null)],
 };
 
 describe("useSchemaRecordsViewModel", () => {
@@ -38,13 +39,13 @@ describe("useSchemaRecordsViewModel", () => {
     const vm = useSchemaRecordsViewModel("s-1");
     await vm.search();
     expect(list).toHaveBeenCalledWith("s-1", { offset: 0, limit: 25 });
-    expect(vm.isApproximateTotal.value).toBe(false);
 
     vm.searchText.value = "malaria";
     await vm.search();
     expect(search).toHaveBeenCalled();
-    expect((search.mock.calls[0] as unknown as [string, SearchCriteria])[1].toQueryBody().text).toBe("malaria");
-    expect(vm.isApproximateTotal.value).toBe(true);
+    expect((search.mock.calls[0] as unknown as [string, SearchCriteria])[1].toQueryBody().query).toEqual({
+      text: { q: "malaria" },
+    });
   });
 
   it("passes the status filter through the search path", async () => {
@@ -57,8 +58,8 @@ describe("useSchemaRecordsViewModel", () => {
     vm.statusFilter.value = "pending";
     await vm.search();
 
-    expect((search.mock.calls[0] as unknown as [string, SearchCriteria])[1].toQueryBody().filters).toEqual([
-      { column: "status", op: "eq", value: "pending" },
-    ]);
+    expect((search.mock.calls[0] as unknown as [string, SearchCriteria])[1].toQueryBody().filters).toEqual({
+      and: [{ type: "terms", scope: { entity: "record", property: "status" }, values: ["pending"] }],
+    });
   });
 });

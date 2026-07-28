@@ -1,7 +1,7 @@
 export interface ProjectionColumn {
-  name: string; // flat "Schema.question" / "Schema.question.subcol"
-  schemaId: string;
-  schemaName: string;
+  name: string; // flat "Dataset.question" / "Dataset.question.subcol"
+  datasetId: string;
+  datasetName: string;
   questionName: string;
   subColumn: string | null;
   dtype: string;

@@ -204,7 +204,7 @@ function handleClick(event: Event): void {
   if (!cell || !row || !column) {
     return;
   }
-  emit("cell-click", { cell, reference: row.reference, schemaId: column.schemaId, columnName: at.columnName });
+  emit("cell-click", { cell, reference: row.reference, schemaId: column.datasetId, columnName: at.columnName });
 }
 
 /**

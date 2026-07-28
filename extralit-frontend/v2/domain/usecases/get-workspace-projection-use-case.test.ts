@@ -5,8 +5,8 @@ import { useExtractions } from "~/v2/infrastructure/storage/ExtractionsStorage";
 
 const COLUMN = {
   name: "Design.type",
-  schemaId: "s-1",
-  schemaName: "Design",
+  datasetId: "s-1",
+  datasetName: "Design",
   questionName: "type",
   subColumn: null,
   dtype: "text",
@@ -15,16 +15,16 @@ const COLUMN = {
 // Deliberately reverse-alphabetical so a `.sort()` regression on the manifest would be caught.
 const COLUMN_ZEBRA = {
   name: "Zebra.count",
-  schemaId: "s-2",
-  schemaName: "Zebra",
+  datasetId: "s-2",
+  datasetName: "Zebra",
   questionName: "count",
   subColumn: null,
   dtype: "number",
 };
 const COLUMN_APPLE = {
   name: "Apple.type",
-  schemaId: "s-3",
-  schemaName: "Apple",
+  datasetId: "s-3",
+  datasetName: "Apple",
   questionName: "type",
   subColumn: null,
   dtype: "text",

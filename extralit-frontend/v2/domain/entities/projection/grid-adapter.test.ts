@@ -18,11 +18,18 @@ const cell = (value: unknown): ProjectionGridCell => ({
 });
 
 const COLUMNS = [
-  { name: "Design.type", schemaId: "s-1", schemaName: "Design", questionName: "type", subColumn: null, dtype: "text" },
+  {
+    name: "Design.type",
+    datasetId: "s-1",
+    datasetName: "Design",
+    questionName: "type",
+    subColumn: null,
+    dtype: "text",
+  },
   {
     name: "Outcomes.results.value",
-    schemaId: "s-2",
-    schemaName: "Outcomes",
+    datasetId: "s-2",
+    datasetName: "Outcomes",
     questionName: "results",
     subColumn: "value",
     dtype: "table",
@@ -54,16 +61,16 @@ describe("toPerspectiveData", () => {
     const orderColumns = [
       {
         name: "Zebra.value",
-        schemaId: "s-2",
-        schemaName: "Zebra",
+        datasetId: "s-2",
+        datasetName: "Zebra",
         questionName: "value",
         subColumn: null,
         dtype: "text",
       },
       {
         name: "Apple.value",
-        schemaId: "s-1",
-        schemaName: "Apple",
+        datasetId: "s-1",
+        datasetName: "Apple",
         questionName: "value",
         subColumn: null,
         dtype: "text",

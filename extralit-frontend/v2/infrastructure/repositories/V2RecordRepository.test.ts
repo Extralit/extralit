@@ -5,8 +5,7 @@ import { SearchCriteria } from "~/v2/domain/entities/search/SearchCriteria";
 
 const BACKEND_RECORD = {
   id: "r-1",
-  schema_id: "s-1",
-  schema_version_id: "v-1",
+  dataset_id: "s-1",
   reference: "10.1000/j.x",
   external_id: null,
   fields: { title: "A study" },
@@ -26,30 +25,61 @@ describe("V2RecordRepository", () => {
     const page = await repository.getRecords("s-1", { offset: 0, limit: 25, reference: "10.1000/j.x" });
 
     expect((axios.get as ReturnType<typeof vi.fn>).mock.calls[0]).toEqual([
-      "/v2/schemas/s-1/records",
-      { params: { offset: 0, limit: 25, reference: "10.1000/j.x" } },
+      "/v1/datasets/s-1/records",
+      { params: { offset: 0, limit: 25, reference: "10.1000/j.x", include: undefined } },
     ]);
     expect(page.items[0].reference).toBe("10.1000/j.x");
     expect(page.total).toBe(12000);
   });
 
-  it("posts search criteria to the :search custom verb", async () => {
+  it("joins the include keys into a comma-separated query param", async () => {
+    const axios = { get: vi.fn(async () => ({ data: { items: [], total: 0 } })) } as unknown as AxiosInstance;
+    const repository = new V2RecordRepository(axios);
+
+    await repository.getRecords("s-1", { include: ["responses", "suggestions"] });
+
+    expect((axios.get as ReturnType<typeof vi.fn>).mock.calls[0][1]).toEqual({
+      params: { offset: undefined, limit: undefined, reference: undefined, include: "responses,suggestions" },
+    });
+  });
+
+  it("defaults a null total (server TODO: not-yet-required field) to 0", async () => {
+    const axios = { get: vi.fn(async () => ({ data: { items: [], total: null } })) } as unknown as AxiosInstance;
+    const repository = new V2RecordRepository(axios);
+
+    const page = await repository.getRecords("s-1");
+
+    expect(page.total).toBe(0);
+  });
+
+  it("posts search criteria to /records/search, offset/limit as query params, and returns the authoritative total", async () => {
+    const axios = {
+      post: vi.fn(async () => ({
+        data: { items: [{ record: BACKEND_RECORD, query_score: 0.8 }], total: 1 },
+      })),
+    } as unknown as AxiosInstance;
+    const repository = new V2RecordRepository(axios);
+
+    const page = await repository.searchRecords("s-1", new SearchCriteria("fts terms", [], 10, 25));
+
+    expect((axios.post as ReturnType<typeof vi.fn>).mock.calls[0]).toEqual([
+      "/v1/datasets/s-1/records/search",
+      { query: { text: { q: "fts terms" } }, filters: null },
+      { params: { offset: 10, limit: 25 } },
+    ]);
+    expect(page.items[0].reference).toBe("10.1000/j.x");
+    expect(page.total).toBe(1);
+  });
+
+  it("translates an eq filter into a terms filter scoped to the record entity", async () => {
     const axios = { post: vi.fn(async () => ({ data: { items: [], total: 0 } })) } as unknown as AxiosInstance;
     const repository = new V2RecordRepository(axios);
 
-    await repository.searchRecords("s-1", new SearchCriteria("fts terms"));
+    await repository.searchRecords("s-1", new SearchCriteria(null, [{ column: "status", op: "eq", value: "pending" }]));
 
-    expect((axios.post as ReturnType<typeof vi.fn>).mock.calls[0]).toEqual([
-      "/v2/schemas/s-1/records:search",
-      { text: "fts terms", filters: [], offset: 0, limit: 50 },
-    ]);
-  });
-
-  it("returns the indexed count from :rebuild-index", async () => {
-    const axios = { post: vi.fn(async () => ({ data: { indexed: 42 } })) } as unknown as AxiosInstance;
-    const repository = new V2RecordRepository(axios);
-
-    await expect(repository.rebuildIndex("s-1")).resolves.toBe(42);
-    expect(axios.post).toHaveBeenCalledWith("/v2/schemas/s-1:rebuild-index");
+    expect((axios.post as ReturnType<typeof vi.fn>).mock.calls[0][1]).toEqual({
+      query: null,
+      filters: { and: [{ type: "terms", scope: { entity: "record", property: "status" }, values: ["pending"] }] },
+    });
   });
 });

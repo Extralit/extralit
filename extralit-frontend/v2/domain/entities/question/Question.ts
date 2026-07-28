@@ -18,7 +18,9 @@ export class Question {
     public readonly title: string,
     public readonly description: string | null,
     public readonly type: QuestionType,
-    public readonly columns: string[],
+    // Column bindings live at `settings.columns` server-side (text/table questions only,
+    // never span) rather than on the top-level Question — null for every other question type.
+    public readonly columns: string[] | null,
     public readonly settings: Record<string, unknown>,
     public readonly required: boolean
   ) {}

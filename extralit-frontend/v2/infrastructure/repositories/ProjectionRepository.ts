@@ -1,27 +1,35 @@
 import type { AxiosInstance } from "axios";
-import type { components } from "../api/generated/v2-api";
 import { type ProjectionColumn, type ProjectionGridRow } from "../../domain/entities/projection/WorkspaceProjection";
 
-type BackendProjectionView = components["schemas"]["ProjectionView"];
-type BackendWorkspaceProjection = components["schemas"]["WorkspaceProjection"];
+// Hand-written response interfaces (no generated v1 client — see the 20 repositories under
+// v1/infrastructure/repositories/ for the same convention).
+interface BackendWorkspaceProjectionColumn {
+  name: string;
+  dataset_id: string;
+  dataset_name: string;
+  question_name: string;
+  sub_column: string | null;
+  dtype: string;
+}
 
-export interface ProjectionCellDto {
-  questionName: string;
+interface BackendWorkspaceProjectionCell {
   value: unknown;
-  source: "response" | "suggestion" | null;
+  source: "response" | "suggestion";
+  record_id: string;
+  agent: string | null;
+  score: number | number[] | null;
 }
 
-export interface ProjectionRecordDto {
-  recordId: string;
-  schemaId: string;
+interface BackendWorkspaceProjectionRow {
   reference: string;
-  cells: ProjectionCellDto[];
+  row_index: number;
+  cells: Record<string, BackendWorkspaceProjectionCell>;
 }
 
-export interface ProjectionViewDto {
-  reference: string;
-  records: ProjectionRecordDto[];
-  totalRecords: number;
+interface BackendWorkspaceProjection {
+  columns: BackendWorkspaceProjectionColumn[];
+  rows: BackendWorkspaceProjectionRow[];
+  total_references: number;
 }
 
 export interface WorkspaceProjectionPageDto {
@@ -33,38 +41,16 @@ export interface WorkspaceProjectionPageDto {
 export class ProjectionRepository {
   constructor(private readonly axios: AxiosInstance) {}
 
-  async getProjection(reference: string, workspaceId: string): Promise<ProjectionViewDto> {
-    // DOIs contain slashes — always percent-encode the path param (spec §7 / seam B).
-    const { data } = await this.axios.get<BackendProjectionView>(
-      `/v2/projection/references/${encodeURIComponent(reference)}`,
-      { params: { workspace_id: workspaceId } }
-    );
-    return {
-      reference: data.reference,
-      totalRecords: data.total_records,
-      records: data.records.map((r) => ({
-        recordId: r.record_id,
-        schemaId: r.schema_id,
-        reference: r.reference,
-        cells: r.cells.map((c) => ({
-          questionName: c.question_name,
-          value: c.value ?? null,
-          source: (c.source ?? null) as "response" | "suggestion" | null,
-        })),
-      })),
-    };
-  }
-
   async getWorkspaceProjection(workspaceId: string, offset = 0, limit = 50): Promise<WorkspaceProjectionPageDto> {
-    const { data } = await this.axios.get<BackendWorkspaceProjection>("/v2/projection", {
+    const { data } = await this.axios.get<BackendWorkspaceProjection>("/v1/me/datasets/projection", {
       params: { workspace_id: workspaceId, offset, limit },
     });
     return {
       // Column order is server-defined (schema definition order, not alphabetical) — preserve as-is.
       columns: data.columns.map((c) => ({
         name: c.name,
-        schemaId: c.schema_id,
-        schemaName: c.schema_name,
+        datasetId: c.dataset_id,
+        datasetName: c.dataset_name,
         questionName: c.question_name,
         subColumn: c.sub_column ?? null,
         dtype: c.dtype,

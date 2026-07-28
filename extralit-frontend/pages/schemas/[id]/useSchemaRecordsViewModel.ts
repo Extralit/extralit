@@ -25,13 +25,11 @@ export const useSchemaRecordsViewModel = (schemaId: string) => {
   const currentOffset = ref(0);
 
   const hasQuery = computed(() => Boolean(searchText.value.trim() || statusFilter.value));
-  const isApproximateTotal = ref(false);
 
   const loadSettings = async () => {
     const settings = await getSettingsUseCase.execute(schemaId);
     schema.value = settings.schema;
-    const currentVersion = settings.versions.find((v) => v.id === settings.schema.currentVersionId);
-    columns.value = currentVersion?.columnsCache ?? [];
+    columns.value = settings.columns;
   };
 
   const search = async () => {
@@ -43,10 +41,8 @@ export const useSchemaRecordsViewModel = (schemaId: string) => {
           : [];
         const criteria = new SearchCriteria(searchText.value.trim() || null, filters, currentOffset.value, PAGE_SIZE);
         page.value = await searchRecordsUseCase.execute(schemaId, criteria);
-        isApproximateTotal.value = true;
       } else {
         page.value = await getRecordsUseCase.execute(schemaId, { offset: currentOffset.value, limit: PAGE_SIZE });
-        isApproximateTotal.value = false;
       }
     } finally {
       isLoading.value = false;
@@ -71,7 +67,6 @@ export const useSchemaRecordsViewModel = (schemaId: string) => {
     statusFilter,
     currentOffset,
     pageSize: PAGE_SIZE,
-    isApproximateTotal,
     search,
     goToOffset,
   };

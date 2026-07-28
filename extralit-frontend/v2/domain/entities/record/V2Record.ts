@@ -3,9 +3,8 @@ export type V2RecordStatus = "pending" | "completed" | "discarded";
 export class V2Record {
   constructor(
     public readonly id: string,
-    public readonly schemaId: string,
-    public readonly schemaVersionId: string,
-    public readonly reference: string,
+    public readonly datasetId: string,
+    public readonly reference: string | null,
     public readonly externalId: string | null,
     public readonly fields: Record<string, unknown>,
     public readonly metadata: Record<string, unknown> | null,

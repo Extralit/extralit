@@ -55,18 +55,11 @@
                 <tr v-for="question in settings.questions" :key="question.id">
                   <td>{{ question.name }}</td>
                   <td>{{ question.type }}</td>
-                  <td>{{ question.columns.join(", ") }}</td>
+                  <td>{{ (question.columns ?? []).join(", ") }}</td>
                   <td>{{ question.required ? "✓" : "" }}</td>
                 </tr>
               </tbody>
             </table>
-          </section>
-
-          <section>
-            <BaseButton class="primary" :disabled="isRebuilding" @on-click="rebuildIndex">
-              {{ $t("schemas.rebuildIndex") }}
-            </BaseButton>
-            <p class="schema-settings__hint" v-text="$t('schemas.rebuildIndexHint')" />
           </section>
         </template>
       </div>
@@ -88,12 +81,10 @@ export default {
     const route = useRoute();
     const viewModel = useSchemaSettingsViewModel(String(route.params.id));
 
-    const currentColumns = computed(() => {
-      const current = viewModel.settings.value?.versions.find(
-        (v) => v.id === viewModel.settings.value?.schema.currentVersionId
-      );
-      return current?.columnsCache ?? [];
-    });
+    // Column manifest belongs to the schema's current version, but is sourced independently
+    // of `versions` (see GetSchemaSettingsUseCase / SchemaRepository.getColumns) — so it's
+    // simply the settings payload's `columns`, not a per-version lookup.
+    const currentColumns = computed(() => viewModel.settings.value?.columns ?? []);
 
     const { ensureWorkspaces } = useEnsureWorkspaces();
     const { schemasBreadcrumbs } = useV2Breadcrumbs();
