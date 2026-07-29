@@ -1,13 +1,13 @@
 import { Schema } from "../entities/schema/Schema";
 import { SchemaVersion } from "../entities/schema/SchemaVersion";
-import { Question } from "../entities/schema/Question";
+import { SchemaQuestion } from "../entities/schema/SchemaQuestion";
 import { ColumnMeta } from "../entities/schema/ColumnMeta";
 import { SchemaRepository } from "~/v1/infrastructure/repositories/SchemaRepository";
 
 export interface SchemaSettings {
   schema: Schema;
   versions: SchemaVersion[];
-  questions: Question[];
+  questions: SchemaQuestion[];
   // The current version's column manifest — sourced separately from `Field` rows since the
   // v1 fold moved it off `SchemaVersion` (see SchemaRepository.getColumns).
   columns: ColumnMeta[];

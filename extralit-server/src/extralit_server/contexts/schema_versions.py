@@ -177,9 +177,17 @@ async def publish_version(
         await search_engine.create_index(dataset)
     # else: the index already exists. Evolving its mapping for any newly-declared columns
     # (`put_mapping`) is explicitly out of scope for this fold -- see
-    # docs/superpowers/plans/2026-07-26-fold-followups.md. A column added by this republish is
-    # tracked as a `Field` row but is not yet queryable in the search index until that follow-up
-    # lands (or LanceDB supersedes ES for this dataset shape entirely).
+    # docs/superpowers/plans/2026-07-26-fold-followups.md.
+    #
+    # The consequence is a WRITE failure, not merely a query gap. `_configure_index_mappings`
+    # sets `"dynamic": "strict"` at the mapping root and `_mapping_for_fields` adds no override
+    # (unlike `metadata`), while `_map_record_to_es_document` -> `_map_record_fields_to_es`
+    # emits an entry for every `dataset.fields` row (search_engine/commons.py). So after a
+    # republish that adds a column, the next record write carries `fields.<new_column>` into a
+    # strict index with no mapping for it and Elasticsearch rejects it with
+    # `strict_dynamic_mapping_exception` -- `PUT /datasets/{id}/records/bulk` fails outright.
+    # Until `put_mapping` lands, a republish that introduces new column names leaves the
+    # dataset unwritable.
 
     if not was_already_ready:
         # Fire only on the draft -> ready transition, matching contexts/datasets.py::publish_dataset's
@@ -187,6 +195,13 @@ async def publish_version(
         # publish_version has no such gate -- it's legal to call repeatedly for version 2..n --
         # so without this guard every republish would re-fire `published` for an already-ready dataset.
         await notify_dataset_event_v1(db, DatasetEvent.published, dataset)
+    else:
+        # A republish is still a real mutation -- `current_schema_version_id` is reassigned and
+        # new `Field` rows are materialized -- so it gets `updated`, the event
+        # contexts/datasets.py::update_dataset fires for any other dataset attribute change.
+        # Without this a consumer subscribed to both events hears about version 1 and never
+        # learns that versions 2..n exist.
+        await notify_dataset_event_v1(db, DatasetEvent.updated, dataset)
 
     return version
 

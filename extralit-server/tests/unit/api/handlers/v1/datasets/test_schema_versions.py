@@ -253,10 +253,18 @@ class TestPublishSchemaVersion:
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
         await TextFieldFactory.create(dataset=dataset, required=True)
         await RatingQuestionFactory.create(dataset=dataset, required=True)
+        # This is the *other* duplicate-`published` flow: PUT /publish already fired the
+        # event, so the schema-version publish that follows must not fire it a second time.
+        # It is also what distinguishes the implemented `was_already_ready` guard from a
+        # plausible "this is not version 1" alternative, which would pass the two-versions
+        # test and still re-fire here.
+        webhook = await WebhookFactory.create(events=[DatasetEvent.published])
 
         publish = await async_client.put(f"/api/v1/datasets/{dataset.id}/publish", headers=owner_auth_header)
         assert publish.status_code == 200, publish.json()
         mock_search_engine.create_index.assert_awaited_once()
+        assert HIGH_QUEUE.count == 1
+        assert HIGH_QUEUE.jobs[0].args[0] == webhook.id
 
         mock_search_engine.index_exists.return_value = True
         mock_search_engine.create_index.side_effect = AssertionError("must not recreate an existing index")
@@ -267,6 +275,7 @@ class TestPublishSchemaVersion:
             json={"body": _body()},
         )
         assert response.status_code == 201, response.json()
+        assert HIGH_QUEUE.count == 1
 
     async def test_republishing_with_a_changed_column_dtype_returns_422(
         self, async_client, owner_auth_header, mock_search_engine
@@ -341,6 +350,39 @@ class TestPublishSchemaVersion:
         # Still just the one job, from the first publish's draft -> ready transition.
         assert HIGH_QUEUE.count == 1
         assert HIGH_QUEUE.jobs[0].args[0] == webhook.id
+
+    async def test_republishing_fires_the_webhook_dataset_updated_event(
+        self, db, async_client, owner_auth_header, mock_search_engine
+    ):
+        # The counterpart to the test above: suppressing `published` on a republish must not
+        # leave the republish silent. `current_schema_version_id` is reassigned and new
+        # `Field` rows are materialized, so a consumer subscribed to both events has to be
+        # able to learn that versions 2..n exist.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        webhook = await WebhookFactory.create(events=[DatasetEvent.published, DatasetEvent.updated])
+
+        first = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert first.status_code == 201, first.json()
+        assert HIGH_QUEUE.count == 1
+        assert HIGH_QUEUE.jobs[0].args[1] == DatasetEvent.published
+
+        second = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert second.status_code == 201, second.json()
+
+        # The event type differs between the first publish and the republish.
+        assert HIGH_QUEUE.count == 2
+        assert HIGH_QUEUE.jobs[1].args[0] == webhook.id
+        assert HIGH_QUEUE.jobs[1].args[1] == DatasetEvent.updated
+        event = await build_dataset_event(db, DatasetEvent.updated, dataset)
+        assert HIGH_QUEUE.jobs[1].args[3] == jsonable_encoder(event.data)
 
 
 @pytest.mark.asyncio

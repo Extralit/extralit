@@ -233,11 +233,13 @@ class TestPublishVersion:
         assert awaited_args[1] == DatasetEvent.published
         assert awaited_args[2] is dataset
 
-    async def test_republishing_does_not_renotify_the_dataset_published_webhook_event(self, db, mock_search_engine):
+    async def test_republishing_notifies_updated_rather_than_published(self, db, mock_search_engine):
         # publish_version has no draft-gate (contexts/datasets.py::publish_dataset can only
         # fire once because DatasetPublishValidator rejects publishing an already-ready
         # dataset). Without tracking the pre-update status, every republish would re-fire
-        # `published` for a dataset that's already ready.
+        # `published` for a dataset that's already ready. But suppressing it entirely would
+        # make the republish silent, so version 2..n gets `updated` instead -- the event
+        # contexts/datasets.py::update_dataset fires for any other dataset mutation.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
 
         with patch("extralit_server.contexts.schema_versions.notify_dataset_event_v1") as mock_notify:
@@ -250,7 +252,11 @@ class TestPublishVersion:
             )
 
         assert v2.version == 2
-        mock_notify.assert_awaited_once()  # still just the one call, from the first publish
+        assert [call.args[1] for call in mock_notify.await_args_list] == [
+            DatasetEvent.published,
+            DatasetEvent.updated,
+        ]
+        assert all(call.args[2] is dataset for call in mock_notify.await_args_list)
 
     async def test_publish_of_a_column_less_body_still_creates_a_version(self, db, mock_search_engine):
         # `derive_column_fields` legally returns an empty list for a column-less body;

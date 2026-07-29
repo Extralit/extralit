@@ -7,11 +7,9 @@ test("extraction table renders coalesced values and coverage gaps", async ({ pag
   await signIn(page);
 
   const projectionRequest = page.waitForResponse(
-    // ProjectionRepository -> GET /api/v1/me/datasets/projection .
-    (r) =>
-      r.url().includes("/api/v1/me/datasets/projection") &&
-      !r.url().includes("/references/") &&
-      r.request().method() === "GET"
+    // ProjectionRepository -> GET /api/v1/me/datasets/projection, the only route
+    // api/handlers/v1/projection.py declares.
+    (r) => r.url().includes("/api/v1/me/datasets/projection") && r.request().method() === "GET"
   );
   await page.goto(`/extractions?workspace_id=${seed.workspaceId}`);
   expect((await projectionRequest).status()).toBe(200);

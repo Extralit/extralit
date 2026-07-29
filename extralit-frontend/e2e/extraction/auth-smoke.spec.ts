@@ -1,7 +1,7 @@
 import { expect, loadSeed, signIn, test } from "./fixtures";
 
-// Seam A (spec §10.1-A): first bearer-token client of /api/v1 — no server test sends
-// Authorization: Bearer or a CORS Origin to this route. Nothing here is mocked.
+// Seam A (spec §10.1-A): gates that a real UI sign-in produces a bearer token which the
+// schemas-list request carries end-to-end against a live /api/v1. Nothing here is mocked.
 test("signs in with a bearer token, lists schemas, opens records", async ({ page }) => {
   const seed = loadSeed();
 
@@ -12,13 +12,16 @@ test("signs in with a bearer token, lists schemas, opens records", async ({ page
     localStorage.setItem("extralit-selected-workspace-id", workspaceId);
   }, seed.workspaceId);
 
-  const schemasRequest = page.waitForResponse(
-    // SchemaRepository.getSchemas() -> GET /api/v1/me/datasets?workspace_id=... . Matched with
-    // a regex (not .includes()) so a sub-route sharing the "/me/datasets" prefix (e.g.
-    // /me/datasets/{id}/metrics) can't be mistaken for the list call.
-    (r) => /\/api\/v1\/me\/datasets(\?|$)/.test(r.url()) && r.request().method() === "GET"
-  );
   await signIn(page);
+
+  // Armed only AFTER signIn: /api/v1/me/datasets has a second in-app caller,
+  // DatasetRepository.fetchFeedbackDatasets(), which fires param-less on the post-login
+  // landing page. Arming earlier latches onto that one instead and the assertions below
+  // would describe the home page's request rather than the schemas page's. The
+  // `workspace_id` param is what distinguishes SchemaRepository.getSchemas() from it.
+  const schemasRequest = page.waitForResponse(
+    (r) => /\/api\/v1\/me\/datasets\?[^/]*workspace_id=/.test(r.url()) && r.request().method() === "GET"
+  );
   await page.goto("/schemas");
 
   const schemasResponse = await schemasRequest;

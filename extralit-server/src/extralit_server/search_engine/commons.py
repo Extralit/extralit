@@ -159,7 +159,11 @@ _ES_TYPE_BY_COLUMN_DTYPE = {
     "int64": "long",
     "float32": "double",
     "float64": "double",
+    # pandas emits "bool" for a numpy bool column and "boolean" for the nullable extension
+    # dtype; both are the same logical type and must map identically, or a term filter on
+    # the column behaves differently depending on which spelling the Pandera body used.
     "bool": "boolean",
+    "boolean": "boolean",
     "datetime64[ns]": "date_nanos",
 }
 

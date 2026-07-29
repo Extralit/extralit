@@ -2,7 +2,7 @@ import type { AxiosInstance } from "axios";
 import { Schema } from "~/v1/domain/entities/schema/Schema";
 import { ColumnMeta, type ReviewOverlay } from "~/v1/domain/entities/schema/ColumnMeta";
 import { SchemaVersion } from "~/v1/domain/entities/schema/SchemaVersion";
-import { Question, type QuestionType } from "~/v1/domain/entities/schema/Question";
+import { SchemaQuestion, type SchemaQuestionType } from "~/v1/domain/entities/schema/SchemaQuestion";
 
 // Hand-written response interfaces (no generated v1 client — see the 20 repositories under
 // v1/infrastructure/repositories/ for the same convention).
@@ -97,14 +97,14 @@ const toSchema = (backend: BackendDataset): Schema =>
 const toVersion = (backend: BackendSchemaVersion): SchemaVersion =>
   new SchemaVersion(backend.id, backend.dataset_id, backend.version, backend.inserted_at);
 
-const toQuestion = (backend: BackendQuestion): Question =>
-  new Question(
+const toQuestion = (backend: BackendQuestion): SchemaQuestion =>
+  new SchemaQuestion(
     backend.id,
     backend.dataset_id,
     backend.name,
     backend.title,
     backend.description ?? null,
-    backend.settings.type as QuestionType,
+    backend.settings.type as SchemaQuestionType,
     backend.settings.columns ?? null,
     (backend.settings ?? {}) as Record<string, unknown>,
     backend.required
@@ -131,7 +131,7 @@ export class SchemaRepository {
     return data.map(toVersion);
   }
 
-  async getQuestions(schemaId: string): Promise<Question[]> {
+  async getQuestions(schemaId: string): Promise<SchemaQuestion[]> {
     const { data } = await this.axios.get<BackendQuestions>(`/v1/datasets/${schemaId}/questions`);
     return data.items.map(toQuestion);
   }

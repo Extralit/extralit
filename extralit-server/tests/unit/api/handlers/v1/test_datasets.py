@@ -294,7 +294,6 @@ class TestSuiteDatasets:
         assert response.status_code == 404
         assert response.json() == {"detail": f"Dataset with id `{dataset_id}` not found"}
 
-    @pytest.mark.skip(reason="Failing due to missing 'use_table' field in text question settings")
     async def test_list_dataset_questions(self, async_client: "AsyncClient", owner_auth_header: dict):
         dataset = await DatasetFactory.create()
         text_question = await TextQuestionFactory.create(
@@ -323,7 +322,7 @@ class TestSuiteDatasets:
                     "title": "Text Question",
                     "description": "Question Description",
                     "required": True,
-                    "settings": {"type": "text", "use_markdown": False},
+                    "settings": {"type": "text", "use_markdown": False, "use_table": False, "columns": None},
                     "dataset_id": str(text_question.dataset_id),
                     "inserted_at": text_question.inserted_at.isoformat(),
                     "updated_at": text_question.updated_at.isoformat(),
