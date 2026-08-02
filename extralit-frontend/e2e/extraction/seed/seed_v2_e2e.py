@@ -84,22 +84,31 @@ def main() -> None:
             .json()
         )
 
-        # Questions must be created while the dataset is still a draft:
-        # `POST .../schema-versions` below flips status to `ready`, and
-        # `QuestionCreateValidator._validate_dataset_is_not_ready` rejects question
-        # creation once a dataset is published. Column bindings can't be set yet either
-        # — the `size`/`label`/`country` Fields don't exist until the schema version
-        # materializes them (`QuestionColumnBindingValidator` checks against
-        # `dataset.fields`) — so create bare questions here and PATCH the `size`
-        # question's `columns` binding on afterwards. `label_selection` questions don't
-        # support column bindings at all (only text/table questions do), so `label`
-        # never gets one.
+        # The schema version comes first, while the dataset is still a draft: it uploads the
+        # Pandera body to object storage and materializes size/label/country as column
+        # `Field`s, without touching the dataset's status. Questions can then be created with
+        # their `columns` bindings already set, because the columns they bind to now exist
+        # (`QuestionColumnBindingValidator` checks against `dataset.fields`) and the dataset is
+        # still a draft (`QuestionCreateValidator._validate_dataset_is_not_ready`).
+        client.post(
+            f"/api/v1/datasets/{dataset['id']}/schema-versions", json={"body": BODY}
+        ).raise_for_status()
+
+        # `label_selection` questions don't support column bindings (only text/table
+        # questions do), so `label` never gets one.
         questions = {}
-        for name, title, settings in [
-            ("size", "Size", {"type": "text"}),
+        for name, title, required, settings in [
+            ("size", "Size", False, {"type": "text", "columns": ["size"]}),
             (
                 "label",
                 "Label",
+                # Exactly one required question, which `DatasetPublishValidator` demands
+                # before `PUT /publish` will take the dataset to `ready`. It has to be
+                # `label`: the seeded submitted response below answers only `label` (to prove
+                # response-beats-suggestion there while `size` stays suggestion-sourced), and
+                # `POST .../responses` rejects a submitted envelope missing any required
+                # question's value.
+                True,
                 {
                     "type": "label_selection",
                     "options": [
@@ -120,11 +129,7 @@ def main() -> None:
                         "name": name,
                         "title": title,
                         "settings": settings,
-                        # Neither question is required: the seeded submitted response below
-                        # answers only `label` (to prove response-beats-suggestion there while
-                        # `size` stays suggestion-sourced) and `POST .../responses` rejects a
-                        # submitted envelope missing any required question's value.
-                        "required": False,
+                        "required": required,
                     },
                 )
                 .raise_for_status()
@@ -132,21 +137,10 @@ def main() -> None:
             )
             questions[name] = {"id": question["id"], "name": question["name"]}
 
-        # Publish: uploads the Pandera body to object storage, materializes
-        # size/label/country as column Fields, and flips the dataset to `ready` — a
-        # dataset must be ready before records can be bulk-upserted
+        # `PUT /publish` is the sole draft -> ready transition and the sole creator of the
+        # search index. A dataset must be ready before records can be bulk-upserted
         # (`RecordsBulkCreateValidator._validate_dataset_is_ready`).
-        client.post(
-            f"/api/v1/datasets/{dataset['id']}/schema-versions", json={"body": BODY}
-        ).raise_for_status()
-
-        # Now that the `size` column Field exists, bind the `size` question to it.
-        # `QuestionUpdateValidator` (unlike the create validator) does not gate on
-        # dataset readiness, so this PATCH is legal post-publish.
-        client.patch(
-            f"/api/v1/questions/{questions['size']['id']}",
-            json={"settings": {"type": "text", "columns": ["size"]}},
-        ).raise_for_status()
+        client.put(f"/api/v1/datasets/{dataset['id']}/publish").raise_for_status()
 
         records = (
             client.put(
@@ -224,27 +218,23 @@ def main() -> None:
             .raise_for_status()
             .json()
         )
-        notes_question = (
-            client.post(
-                f"/api/v1/datasets/{empty_dataset['id']}/questions",
-                json={
-                    "name": "notes",
-                    "title": "Notes",
-                    "settings": {"type": "text"},
-                    "required": False,
-                },
-            )
-            .raise_for_status()
-            .json()
-        )
+        # Same order as above: schema version (draft) -> bound question -> publish.
         client.post(
             f"/api/v1/datasets/{empty_dataset['id']}/schema-versions",
             json={"body": EMPTY_BODY},
         ).raise_for_status()
-        client.patch(
-            f"/api/v1/questions/{notes_question['id']}",
-            json={"settings": {"type": "text", "columns": ["notes"]}},
+        client.post(
+            f"/api/v1/datasets/{empty_dataset['id']}/questions",
+            json={
+                "name": "notes",
+                "title": "Notes",
+                "settings": {"type": "text", "columns": ["notes"]},
+                # `DatasetPublishValidator` needs at least one required question; this
+                # dataset has no records, so nothing has to answer it.
+                "required": True,
+            },
         ).raise_for_status()
+        client.put(f"/api/v1/datasets/{empty_dataset['id']}/publish").raise_for_status()
 
     output = {
         "workspaceId": workspace["id"],

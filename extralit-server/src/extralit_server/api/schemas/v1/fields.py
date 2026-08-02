@@ -122,15 +122,6 @@ class ColumnFieldSettingsCreate(BaseModel):
     review: dict[str, Any] | None = None
 
 
-class ColumnFieldSettingsUpdate(UpdateSchema):
-    type: Literal[FieldType.column]
-    dtype: str | None = None
-    nullable: bool | None = None
-    review: dict[str, Any] | None = None
-
-    __non_nullable_fields__ = {"dtype", "nullable"}
-
-
 FieldSettings = Annotated[
     TextFieldSettings
     | ImageFieldSettings
@@ -151,13 +142,17 @@ FieldSettingsCreate = Annotated[
     PydanticField(..., discriminator="type"),
 ]
 
+# No `column` member: a column field is derived from the dataset's Pandera schema version
+# (contexts/schema_versions.derive_column_fields), so `PATCH /fields/{id}` must not be able to
+# change its dtype out of band -- that would contradict the immutability
+# `contexts/schema_versions._reject_incompatible_columns` enforces at publish time. Republish
+# the schema version instead. A PATCH against a column field is rejected by the discriminator.
 FieldSettingsUpdate = Annotated[
     TextFieldSettingsUpdate
     | ImageFieldSettingsUpdate
     | ChatFieldSettingsUpdate
     | CustomFieldSettingsUpdate
-    | TableFieldSettingsUpdate
-    | ColumnFieldSettingsUpdate,
+    | TableFieldSettingsUpdate,
     PydanticField(..., discriminator="type"),
 ]
 

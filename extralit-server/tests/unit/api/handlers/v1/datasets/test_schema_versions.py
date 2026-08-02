@@ -44,18 +44,9 @@ class _RealMappingSearchEngine:
     object: it reads FOUR relationships off `dataset` (`fields`, `metadata_properties`,
     `vectors_settings`, `questions`) and needs no live cluster connection to run, so this fake
     can call the real production code path directly instead of hand-picking which relationships
-    to check. That matters: a hand-rolled fake that only reads `.fields` (an earlier version of
-    this fake) passed against a build of `publish_version` that only refreshed `.fields` and
-    left the other three relationships unloaded -- i.e. it passed against a still-broken
-    endpoint. Delegating to the real method means this test automatically covers any
+    to check. Delegating to the real method means this test automatically covers any
     relationship `_configure_index_mappings` reads today AND any it reads in the future (e.g. a
     fifth relationship added later), without anyone having to remember to update this fake.
-
-    The handler loads `dataset` with only `Dataset.workspace` eagerly loaded
-    (handlers/v1/datasets/schema_versions.py). Without `contexts/schema_versions.publish_version`
-    refreshing every relationship `_configure_index_mappings` reads after the commit, this
-    engine's `create_index` blows up on the first unloaded lazy relationship it touches --
-    `MissingGreenlet` on an `AsyncSession`.
     """
 
     def __init__(self):
@@ -178,19 +169,29 @@ class TestPublishSchemaVersion:
         )
         assert response.status_code == 403
 
-    async def test_publish_refreshes_every_relationship_create_index_reads_before_creating_the_index(
-        self, async_client, owner_auth_header
+    async def test_published_columns_reach_the_search_index_mapping(
+        self, async_client, owner_auth_header, mock_search_engine
     ):
-        """Critical 1 pin. See `_RealMappingSearchEngine` for why this must call the real
-        `_configure_index_mappings` rather than hand-read a chosen subset of relationships.
+        """The column fields a schema version materializes must appear in the index mapping
+        that `PUT /datasets/{id}/publish` builds -- that publish is the only `create_index`
+        caller, and the mapping it builds is `"dynamic": "strict"`, so a column missing from it
+        makes the dataset unwritable for that column. See `_RealMappingSearchEngine` for why
+        this calls the real `_configure_index_mappings` rather than hand-reading a subset.
         """
         workspace = await WorkspaceFactory.create()
         dataset = await DatasetFactory.create(workspace=workspace, status=DatasetStatus.draft)
         # One of each relationship `_configure_index_mappings` reads besides `fields` (which
-        # the schema-versions publish itself populates via the "population" column below).
+        # the schema-versions publish below populates via the "population" column).
         metadata_property = await IntegerMetadataPropertyFactory.create(dataset=dataset)
         vector_settings = await VectorSettingsFactory.create(dataset=dataset)
-        question = await RatingQuestionFactory.create(dataset=dataset)
+        question = await RatingQuestionFactory.create(dataset=dataset, required=True)
+
+        version = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": _body()},
+        )
+        assert version.status_code == 201, version.json()
 
         fake_engine = _RealMappingSearchEngine()
 
@@ -199,15 +200,11 @@ class TestPublishSchemaVersion:
 
         api_v1.dependency_overrides[get_search_engine] = override_get_search_engine
         try:
-            response = await async_client.post(
-                f"/api/v1/datasets/{dataset.id}/schema-versions",
-                headers=owner_auth_header,
-                json={"body": _body()},
-            )
+            response = await async_client.put(f"/api/v1/datasets/{dataset.id}/publish", headers=owner_auth_header)
         finally:
             api_v1.dependency_overrides.pop(get_search_engine, None)
 
-        assert response.status_code == 201, response.json()
+        assert response.status_code == 200, response.json()
         properties = fake_engine.observed_mappings["properties"]
         # dataset.fields (the "population" column projected from this publish's body)
         assert es_field_for_record_field("population") in properties
@@ -220,11 +217,9 @@ class TestPublishSchemaVersion:
         assert question.name in properties["responses"]["properties"]
 
     async def test_republishing_does_not_500(self, async_client, owner_auth_header, mock_search_engine):
-        # Critical 2. Real backends' `indices.create` raises `resource_already_exists_exception`
-        # on a second call for the same dataset (es_index_name_for_dataset is stable per
-        # dataset id). Simulate that here: configure the mock the same way, so that if
-        # `publish_version` ever called `create_index` unconditionally again, this request
-        # would fail loudly instead of silently passing.
+        # `create_index` is not idempotent on real backends (es_index_name_for_dataset is
+        # stable per dataset id), which is one reason publishing a schema version does not
+        # touch the index at all. Assert the mock stays untouched across both publishes.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
         first = await async_client.post(
             f"/api/v1/datasets/{dataset.id}/schema-versions",
@@ -233,9 +228,6 @@ class TestPublishSchemaVersion:
         )
         assert first.status_code == 201, first.json()
 
-        mock_search_engine.index_exists.return_value = True
-        mock_search_engine.create_index.side_effect = AssertionError("must not recreate an existing index")
-
         second = await async_client.post(
             f"/api/v1/datasets/{dataset.id}/schema-versions",
             headers=owner_auth_header,
@@ -243,21 +235,18 @@ class TestPublishSchemaVersion:
         )
         assert second.status_code == 201, second.json()
         assert second.json()["version"] == 2
+        mock_search_engine.create_index.assert_not_awaited()
 
-    async def test_publish_schema_version_on_a_dataset_already_published_via_put_publish(
+    async def test_publish_schema_version_on_a_dataset_already_published_via_put_publish_returns_422(
         self, async_client, owner_auth_header, mock_search_engine
     ):
-        # Critical 2's second broken flow: PUT /datasets/{id}/publish already created the
-        # index; a *first* schema-versions publish on that same dataset must not try to
-        # recreate it.
+        # A dataset published as an annotation dataset already has a `"dynamic": "strict"`
+        # index, and nothing evolves that mapping afterwards, so it cannot retroactively gain
+        # schema columns. The 422 keeps that failure at the publish call rather than surfacing
+        # later as a rejected record write.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
         await TextFieldFactory.create(dataset=dataset, required=True)
         await RatingQuestionFactory.create(dataset=dataset, required=True)
-        # This is the *other* duplicate-`published` flow: PUT /publish already fired the
-        # event, so the schema-version publish that follows must not fire it a second time.
-        # It is also what distinguishes the implemented `was_already_ready` guard from a
-        # plausible "this is not version 1" alternative, which would pass the two-versions
-        # test and still re-fire here.
         webhook = await WebhookFactory.create(events=[DatasetEvent.published])
 
         publish = await async_client.put(f"/api/v1/datasets/{dataset.id}/publish", headers=owner_auth_header)
@@ -266,15 +255,13 @@ class TestPublishSchemaVersion:
         assert HIGH_QUEUE.count == 1
         assert HIGH_QUEUE.jobs[0].args[0] == webhook.id
 
-        mock_search_engine.index_exists.return_value = True
-        mock_search_engine.create_index.side_effect = AssertionError("must not recreate an existing index")
-
         response = await async_client.post(
             f"/api/v1/datasets/{dataset.id}/schema-versions",
             headers=owner_auth_header,
             json={"body": _body()},
         )
-        assert response.status_code == 201, response.json()
+        assert response.status_code == 422
+        assert "cannot be added to a published dataset" in response.text
         assert HIGH_QUEUE.count == 1
 
     async def test_republishing_with_a_changed_column_dtype_returns_422(
@@ -297,14 +284,13 @@ class TestPublishSchemaVersion:
         assert response.status_code == 422
         assert "population" in response.text
 
-    async def test_publish_schema_version_enqueues_webhook_dataset_published_event(
+    async def test_publish_schema_version_enqueues_webhook_dataset_updated_event(
         self, db, async_client, owner_auth_header, mock_search_engine
     ):
-        # Important 3: publish_version flips status -> ready but, before this fix, never
-        # notified -- extraction datasets went ready silently while annotation datasets
-        # (contexts/datasets.py::publish_dataset) fired correctly.
+        # A schema version reassigns `current_schema_version_id` and materializes `Field`
+        # rows, so it is a dataset mutation -- `updated`, the same event update_dataset fires.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        webhook = await WebhookFactory.create(events=[DatasetEvent.published])
+        webhook = await WebhookFactory.create(events=[DatasetEvent.updated])
 
         response = await async_client.post(
             f"/api/v1/datasets/{dataset.id}/schema-versions",
@@ -313,76 +299,53 @@ class TestPublishSchemaVersion:
         )
         assert response.status_code == 201, response.json()
 
-        event = await build_dataset_event(db, DatasetEvent.published, dataset)
+        event = await build_dataset_event(db, DatasetEvent.updated, dataset)
 
         assert HIGH_QUEUE.count == 1
         assert HIGH_QUEUE.jobs[0].args[0] == webhook.id
-        assert HIGH_QUEUE.jobs[0].args[1] == DatasetEvent.published
+        assert HIGH_QUEUE.jobs[0].args[1] == DatasetEvent.updated
         assert HIGH_QUEUE.jobs[0].args[3] == jsonable_encoder(event.data)
 
-    async def test_republishing_does_not_refire_the_webhook_dataset_published_event(
+    async def test_publishing_a_schema_version_never_fires_dataset_published(
         self, async_client, owner_auth_header, mock_search_engine
     ):
-        # Minor found in re-review: publish_version has no draft-gate (unlike
-        # contexts/datasets.py::publish_dataset, which can only fire once because
-        # DatasetPublishValidator rejects publishing an already-ready dataset). Without
-        # tracking the pre-update status, every republish (version 2..n) would re-fire
-        # `published` for a dataset that was already ready.
+        # `published` belongs to `PUT /datasets/{id}/publish` alone. Publishing a schema
+        # version leaves the dataset a draft, so a consumer subscribed only to `published`
+        # hears nothing until the dataset is actually published.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        webhook = await WebhookFactory.create(events=[DatasetEvent.published])
+        await WebhookFactory.create(events=[DatasetEvent.published])
 
-        first = await async_client.post(
-            f"/api/v1/datasets/{dataset.id}/schema-versions",
-            headers=owner_auth_header,
-            json={"body": _body()},
-        )
-        assert first.status_code == 201, first.json()
-        assert HIGH_QUEUE.count == 1
+        for expected_version in (1, 2):
+            response = await async_client.post(
+                f"/api/v1/datasets/{dataset.id}/schema-versions",
+                headers=owner_auth_header,
+                json={"body": _body()},
+            )
+            assert response.status_code == 201, response.json()
+            assert response.json()["version"] == expected_version
 
-        second = await async_client.post(
-            f"/api/v1/datasets/{dataset.id}/schema-versions",
-            headers=owner_auth_header,
-            json={"body": _body()},
-        )
-        assert second.status_code == 201, second.json()
-        assert second.json()["version"] == 2
+        assert HIGH_QUEUE.count == 0
 
-        # Still just the one job, from the first publish's draft -> ready transition.
-        assert HIGH_QUEUE.count == 1
-        assert HIGH_QUEUE.jobs[0].args[0] == webhook.id
-
-    async def test_republishing_fires_the_webhook_dataset_updated_event(
-        self, db, async_client, owner_auth_header, mock_search_engine
+    async def test_every_republish_fires_the_webhook_dataset_updated_event(
+        self, async_client, owner_auth_header, mock_search_engine
     ):
-        # The counterpart to the test above: suppressing `published` on a republish must not
-        # leave the republish silent. `current_schema_version_id` is reassigned and new
-        # `Field` rows are materialized, so a consumer subscribed to both events has to be
-        # able to learn that versions 2..n exist.
+        # Without this a consumer subscribed to `updated` learns about version 1 and never
+        # learns that versions 2..n exist.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        webhook = await WebhookFactory.create(events=[DatasetEvent.published, DatasetEvent.updated])
+        webhook = await WebhookFactory.create(events=[DatasetEvent.updated])
 
-        first = await async_client.post(
-            f"/api/v1/datasets/{dataset.id}/schema-versions",
-            headers=owner_auth_header,
-            json={"body": _body()},
-        )
-        assert first.status_code == 201, first.json()
-        assert HIGH_QUEUE.count == 1
-        assert HIGH_QUEUE.jobs[0].args[1] == DatasetEvent.published
+        for expected_version in (1, 2):
+            response = await async_client.post(
+                f"/api/v1/datasets/{dataset.id}/schema-versions",
+                headers=owner_auth_header,
+                json={"body": _body()},
+            )
+            assert response.status_code == 201, response.json()
+            assert response.json()["version"] == expected_version
 
-        second = await async_client.post(
-            f"/api/v1/datasets/{dataset.id}/schema-versions",
-            headers=owner_auth_header,
-            json={"body": _body()},
-        )
-        assert second.status_code == 201, second.json()
-
-        # The event type differs between the first publish and the republish.
         assert HIGH_QUEUE.count == 2
-        assert HIGH_QUEUE.jobs[1].args[0] == webhook.id
-        assert HIGH_QUEUE.jobs[1].args[1] == DatasetEvent.updated
-        event = await build_dataset_event(db, DatasetEvent.updated, dataset)
-        assert HIGH_QUEUE.jobs[1].args[3] == jsonable_encoder(event.data)
+        assert [job.args[0] for job in HIGH_QUEUE.jobs] == [webhook.id, webhook.id]
+        assert [job.args[1] for job in HIGH_QUEUE.jobs] == [DatasetEvent.updated, DatasetEvent.updated]
 
 
 @pytest.mark.asyncio

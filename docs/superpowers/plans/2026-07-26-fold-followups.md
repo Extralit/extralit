@@ -43,6 +43,46 @@ For the record, so these are not re-derived from the closed reviews:
   `workspace_id` param only `getSchemas` sends. Also dropped the dead `/references/` guard in
   `extractions-grid.spec.ts` and the stale "first bearer-token client" rationale.
 
+## 0b. Closed in the 2026-08-01 simplification pass
+
+Four items below were closed by simplifying `contexts/schema_versions.publish_version` rather
+than by completing them. The change: **`publish_version` no longer flips `dataset.status`.**
+`PUT /datasets/{id}/publish` is now the sole draft -> ready transition and the sole
+`create_index` caller, so a schema-backed dataset gets the same lifecycle, the same
+`DatasetPublishValidator` checks and the same index-creation path as an annotation one.
+
+The working order is now the obvious one, and it needs no PATCH-after dance:
+
+```
+POST /datasets                          -> draft
+POST /datasets/{id}/schema-versions     -> columns materialized as Field rows, still draft
+POST /datasets/{id}/questions           -> settings["columns"] bound at creation time
+PUT  /datasets/{id}/publish             -> ready + create_index
+PUT  /datasets/{id}/records/bulk
+```
+
+- **§8 (`ready` with zero questions) — resolved** by option (c). `publish_version` cannot put
+  a dataset in any status, so the permanently-unconfigurable state is unreachable and the
+  create-before-publish ordering is gone. `e2e/extraction/seed/seed_v2_e2e.py` follows the
+  order above; one question per dataset is now `required` because `DatasetPublishValidator`
+  demands it.
+- **§1 (republish leaves the dataset unwritable) — resolved** by option (b). A column that is
+  not already a `Field` is rejected with a 422 when `dataset.is_ready`, in the same pre-write
+  pass as the dtype check. The mapping-evolution work itself is still open; see §1 below for
+  what lifting the restriction would take. Corollary worth knowing: an annotation dataset
+  already published via `PUT /publish` can no longer become schema-backed, because every
+  column of a first version is a new column.
+- **§3 (column/annotation field name collision) — resolved.** A column whose name matches an
+  existing non-column `Field` is rejected in the same pass instead of silently overwriting it.
+- **§9's `ColumnFieldSettingsUpdate` untested dict-merge — resolved by deletion.** The schema
+  is gone and `column` is no longer a member of the `FieldSettingsUpdate` union, so
+  `PATCH /fields/{id}` can no longer change a column's dtype out of band — which had directly
+  contradicted the immutability enforced at publish. Republishing the schema version is the
+  only way to change a column.
+
+The three checks now live in `contexts/schema_versions._reject_incompatible_columns` (which
+replaces `_reject_dtype_changes`), one query and one pass, before any write.
+
 ## 1. ES mapping evolution: `put_mapping` for republish-added columns is not implemented
 
 **What's missing:** `contexts/schema_versions.publish_version` now guards `create_index` with
@@ -51,6 +91,11 @@ skips index creation entirely. That is correct for *not crashing*, but it means 
 by a republish (a legal operation — dtypes are immutable, but new columns are always allowed)
 is tracked as a `Field` row and nowhere else. It is not added to the Elasticsearch/OpenSearch
 mapping.
+
+**Status 2026-08-01: the consequence is now a 422 at publish, not a later write failure.**
+Option (b) below was taken — see §0b. What remains open is the mapping evolution itself: until
+it lands, a published dataset simply cannot gain columns. The rest of this section is the
+original analysis, kept because it is what the implementer of `put_mapping` needs.
 
 **Corrected 2026-07-28 — the consequence is a write failure, not a query gap.** This doc
 previously hedged that values would be "silently dropped or rejected … depending on how the
@@ -108,9 +153,12 @@ every publish and deleting the `Field` rows that dropped out, checking first whe
 the binding? reject the publish?), or (b) deciding pruning is undesirable and instead exposing
 "declared by current version" vs. "declared by some prior version" as a `Field` attribute.
 
-## 3. Name collision: a Pandera column colliding with an existing annotation field
+## 3. Name collision: a Pandera column colliding with an existing annotation field — RESOLVED 2026-08-01
 
-**What's missing:** `Field.upsert_many`'s conflict target is `(Field.name, Field.dataset_id)`.
+**Resolved** in `contexts/schema_versions._reject_incompatible_columns` exactly as the "what it
+would take" paragraph below describes. Retained for the rationale.
+
+**What was missing:** `Field.upsert_many`'s conflict target is `(Field.name, Field.dataset_id)`.
 If a Pandera schema declares a column whose name matches an existing `text`/`image`/`chat`/
 `custom`/`table` field (created via `POST /datasets/{id}/fields`, not via a schema version),
 the upsert overwrites that field's `settings` with `{"type": "column", "dtype": ..., ...}` —
@@ -140,11 +188,11 @@ and needs a v1-shaped replacement:
   a "schema" is now just a `Dataset` with a schema version.
 - `POST /api/v2/schemas/{id}/versions` → `POST /api/v1/datasets/{id}/schema-versions`
   (`api/handlers/v1/datasets/schema_versions.py`).
-- `POST /api/v2/schemas/{id}/questions` → `POST /api/v1/datasets/{id}/questions`, and per Task
-  15's finding (`progress.md` Task 15 entry), questions must be created *before* publish and
-  PATCHed with `columns` bindings *after* — `QuestionCreateValidator._validate_dataset_is_not_ready`
-  rejects binding creation once the dataset is `ready`, which `publish_version` sets
-  unconditionally.
+- `POST /api/v2/schemas/{id}/questions` → `POST /api/v1/datasets/{id}/questions`, created with
+  their `columns` bindings inline, after the schema version and before `PUT /publish` — see the
+  lifecycle in §0b, and `e2e/extraction/seed/seed_v2_e2e.py` for a worked example.
+- A `PUT /api/v1/datasets/{id}/publish` step, which has no v2 counterpart: v2's schema publish
+  implied it. Needs at least one `required` question.
 - `POST /api/v2/schemas/{id}/records:bulk-upsert` → the v1 records bulk-upsert endpoint, with
   `reference` moved from being implicit to an explicit field (`api/schemas/v1/records.py`).
 - `PUT /api/v2/records/{id}/suggestions` / `.../responses` → the v1 suggestions/responses
@@ -265,7 +313,12 @@ variant, so the inconsistency is internal to this change.
 changes an existing v1 route's authorization for annotation datasets too. Needs a call before
 implementation, plus a policy-level test pinning the intended role either way.
 
-## 8. DECISION NEEDED — `publish_version` can create a `ready` dataset with zero questions
+## 8. RESOLVED 2026-08-01 — `publish_version` no longer touches `dataset.status`
+
+**Decided: option (c).** `PUT /datasets/{id}/publish` is the sole draft -> ready transition.
+See §0b for the resulting lifecycle. The section below is the original finding.
+
+### Original finding — `publish_version` can create a `ready` dataset with zero questions
 
 **Severity: High** as filed (roborev jobs 286/287/290), **partially resolved in practice.**
 
@@ -341,9 +394,8 @@ each with the job it came from. None block merge.
   (`tests/unit/contexts/test_schema_versions.py:150`, `tests/unit/validators/test_column_fields.py:68`);
   narrow to the typed exception with `match=`. Several new assertions also lack `match=`
   anchors (`test_field_settings.py`).
-- **(285)** The `ColumnFieldSettingsUpdate` dict-merge path — the entire reason that schema is
-  partial — is untested. Nothing asserts a `dtype`-only PATCH preserves the stored
-  `nullable`/`review`, so a switch to `fill(replace_dict=True)` would pass the whole suite.
+- ~~**(285)** The `ColumnFieldSettingsUpdate` dict-merge path is untested.~~ **Resolved
+  2026-08-01 by deletion** — see §0b. Columns are not PATCHable at all now.
 - **(291)** `test_patch_rejects_an_invalid_column_binding`'s non-persistence assertion is vacuous:
   `TextQuestionFactory.settings` never sets `columns`, so `stored.settings.get("columns") is None`
   holds whether or not the PATCH was rejected. Seed a valid binding first.

@@ -9,7 +9,7 @@ from extralit_server.enums import DatasetStatus, FieldType
 from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.models.database import Field
 from extralit_server.webhooks.v1.enums import DatasetEvent
-from tests.factories import DatasetFactory
+from tests.factories import DatasetFactory, TextFieldFactory
 
 
 def _body() -> str:
@@ -81,114 +81,84 @@ class TestDeriveColumnFields:
         assert schema_versions.derive_column_fields(_empty_body()) == []
 
 
+def _wider_body() -> str:
+    return pa.DataFrameSchema(
+        {
+            "population": pa.Column(str, nullable=True),
+            "n_arms": pa.Column(pa.Int64, nullable=False),
+            "outcome": pa.Column(str, nullable=True),
+        }
+    ).to_json()
+
+
 @pytest.mark.asyncio
 class TestPublishVersion:
-    async def test_publish_creates_version_one_and_marks_the_dataset_ready(self, db, mock_search_engine):
+    async def test_publish_creates_version_one_and_leaves_the_dataset_a_draft(self, db):
+        # Publishing a schema version is not publishing the dataset: `PUT /datasets/{id}/publish`
+        # stays the sole draft -> ready transition, so a schema-backed dataset gets the same
+        # DatasetPublishValidator checks as an annotation one and stays configurable until then.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        version = await schema_versions.publish_version(
-            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-        )
+        version = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
         assert version.version == 1
         assert version.dataset_id == dataset.id
         assert dataset.current_schema_version_id == version.id
-        assert dataset.status == DatasetStatus.ready
+        assert dataset.status == DatasetStatus.draft
 
-    async def test_publish_materializes_column_fields(self, db, mock_search_engine):
+    async def test_publish_materializes_column_fields(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
         fields = await _fields_for(db, dataset.id)
         assert {f.name for f in fields} == {"population", "n_arms"}
         assert all(f.settings["type"] == FieldType.column for f in fields)
 
-    async def test_republishing_is_idempotent_for_unchanged_columns(self, db, mock_search_engine):
+    async def test_republishing_is_idempotent_for_unchanged_columns(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
-        v2 = await schema_versions.publish_version(
-            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-        )
+        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        v2 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
         assert v2.version == 2
         fields = await _fields_for(db, dataset.id)
         assert len(fields) == 2  # upserted, not duplicated
 
-    async def test_republishing_adds_newly_declared_columns(self, db, mock_search_engine):
+    async def test_republishing_adds_newly_declared_columns_while_still_a_draft(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
-        wider = pa.DataFrameSchema(
-            {
-                "population": pa.Column(str, nullable=True),
-                "n_arms": pa.Column(pa.Int64, nullable=False),
-                "outcome": pa.Column(str, nullable=True),
-            }
-        ).to_json()
-        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=wider, bucket="ws")
+        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _s3_client(), dataset, body=_wider_body(), bucket="ws")
         fields = await _fields_for(db, dataset.id)
         assert {f.name for f in fields} == {"population", "n_arms", "outcome"}
 
-    async def test_second_version_links_the_first_as_parent(self, db, mock_search_engine):
+    async def test_second_version_links_the_first_as_parent(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        v1 = await schema_versions.publish_version(
-            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-        )
-        v2 = await schema_versions.publish_version(
-            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-        )
+        v1 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        v2 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
         assert v2.parent_version_id == v1.id
 
-    async def test_publish_creates_the_search_index(self, db, mock_search_engine):
+    async def test_publish_uploads_the_body_under_a_versioned_key(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
-        mock_search_engine.create_index.assert_awaited()
-
-    async def test_publish_uploads_the_body_under_a_versioned_key(self, db, mock_search_engine):
-        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        s3 = _s3_client()
-        version = await schema_versions.publish_version(db, mock_search_engine, s3, dataset, body=_body(), bucket="ws")
+        version = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
         assert version.object_key == f"schemas/{dataset.id}/v1.json"
 
-    async def test_invalid_body_is_rejected_before_anything_is_written(self, db, mock_search_engine):
+    async def test_invalid_body_is_rejected_before_anything_is_written(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        with pytest.raises(Exception):
-            await schema_versions.publish_version(
-                db, mock_search_engine, _s3_client(), dataset, body="{not pandera}", bucket="ws"
-            )
+        with pytest.raises(UnprocessableEntityError, match="not a valid Pandera DataFrameSchema"):
+            await schema_versions.publish_version(db, _s3_client(), dataset, body="{not pandera}", bucket="ws")
         assert dataset.current_schema_version_id is None
         assert await _fields_for(db, dataset.id) == []
 
-    async def test_republishing_does_not_recreate_an_existing_index(self, db, mock_search_engine):
-        # Critical 2. Real backends' `indices.create` raises `resource_already_exists_exception`
-        # on a second call for the same dataset. Simulate that here so that, if
-        # `publish_version` ever called `create_index` unconditionally again, this test fails
-        # loudly instead of merely not noticing a silently-swallowed error.
-        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
-        mock_search_engine.create_index.assert_awaited_once()
-
-        mock_search_engine.index_exists.return_value = True
-        mock_search_engine.create_index.side_effect = AssertionError("must not recreate an existing index")
-
-        v2 = await schema_versions.publish_version(
-            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-        )
-        assert v2.version == 2
-        mock_search_engine.create_index.assert_awaited_once()  # still just the one call, from the first publish
-
-    async def test_publishing_a_schema_version_on_an_already_published_dataset_works(self, db, mock_search_engine):
-        # Critical 2's second broken flow: PUT /datasets/{id}/publish (contexts/datasets.py)
-        # already created the index and set the dataset ready. A *first* schema-versions
-        # publish on that same dataset must not try to recreate the index.
+    async def test_a_first_schema_version_on_an_already_published_dataset_is_rejected(self, db):
+        # Corollary of the rule above, and the reason the schema version must be published
+        # while the dataset is still a draft: every column of a first version is a new column,
+        # so an annotation dataset already published via PUT /datasets/{id}/publish (index
+        # created, mapping strict) cannot retroactively become schema-backed.
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
-        mock_search_engine.index_exists.return_value = True
-        mock_search_engine.create_index.side_effect = AssertionError("must not recreate an existing index")
 
-        version = await schema_versions.publish_version(
-            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-        )
-        assert version.version == 1
-        assert dataset.status == DatasetStatus.ready
+        with pytest.raises(UnprocessableEntityError, match="cannot be added to a published dataset"):
+            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
 
-    async def test_republishing_with_a_changed_column_dtype_is_rejected(self, db, mock_search_engine):
+        assert dataset.current_schema_version_id is None
+
+    async def test_republishing_with_a_changed_column_dtype_is_rejected(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
 
         changed_body = pa.DataFrameSchema(
             {
@@ -197,92 +167,102 @@ class TestPublishVersion:
             }
         ).to_json()
 
-        with pytest.raises(UnprocessableEntityError, match="population"):
-            await schema_versions.publish_version(
-                db, mock_search_engine, _s3_client(), dataset, body=changed_body, bucket="ws"
-            )
+        with pytest.raises(UnprocessableEntityError, match="cannot change dtype"):
+            await schema_versions.publish_version(db, _s3_client(), dataset, body=changed_body, bucket="ws")
 
         # Rejected before any write: no second version, no dtype mutation on the existing field.
         assert [v.version for v in await schema_versions.list_versions(db, dataset)] == [1]
         fields_by_name = {f.name: f for f in await _fields_for(db, dataset.id)}
         assert fields_by_name["population"].settings["dtype"] in {"string", "string[pyarrow]", "object"}
 
-    async def test_republishing_with_an_unchanged_column_dtype_is_allowed(self, db, mock_search_engine):
-        # New columns are legal; unchanged existing columns are legal. Only a *changed* dtype
-        # on an existing column is rejected.
+    async def test_republishing_with_an_unchanged_column_dtype_is_allowed(self, db):
+        # Unchanged existing columns are always legal. Only a *changed* dtype is rejected.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
-        v2 = await schema_versions.publish_version(
-            db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-        )
+        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        v2 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
         assert v2.version == 2
 
-    async def test_publish_notifies_the_dataset_published_webhook_event(self, db, mock_search_engine):
-        # Important 3: publish_version flips status -> ready but never notified
-        # `DatasetEvent.published` -- unlike contexts/datasets.py::publish_dataset, which does.
+    async def test_adding_a_column_to_a_published_dataset_is_rejected(self, db):
+        # The search index mapping is built with `"dynamic": "strict"` on the draft -> ready
+        # transition and nothing evolves it afterwards, so a column added post-publish would
+        # leave the dataset unwritable at `PUT /datasets/{id}/records/bulk`. Reject at publish
+        # so the failure stays at the call that caused it.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        await dataset.update(db, status=DatasetStatus.ready)
+
+        with pytest.raises(UnprocessableEntityError, match="cannot be added to a published dataset"):
+            await schema_versions.publish_version(db, _s3_client(), dataset, body=_wider_body(), bucket="ws")
+
+        assert [v.version for v in await schema_versions.list_versions(db, dataset)] == [1]
+        assert {f.name for f in await _fields_for(db, dataset.id)} == {"population", "n_arms"}
+
+    async def test_a_column_colliding_with_an_annotation_field_is_rejected(self, db):
+        # `Field.upsert_many` keys on (name, dataset_id), so without this check the upsert
+        # would rewrite the text field's settings into a column -- silently dropping it from
+        # record value validation, since column fields are deliberately not value-validated.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        await TextFieldFactory.create(name="population", dataset=dataset)
+
+        with pytest.raises(UnprocessableEntityError, match="collides with an existing text field"):
+            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+
+        assert await schema_versions.list_versions(db, dataset) == []
+        fields_by_name = {f.name: f for f in await _fields_for(db, dataset.id)}
+        assert fields_by_name["population"].settings["type"] == FieldType.text
+
+    async def test_publish_notifies_the_dataset_updated_webhook_event(self, db):
+        # A schema version is a dataset mutation, so it gets `updated` -- the same event
+        # update_dataset fires for any other attribute change. `published` belongs to
+        # contexts/datasets.py::publish_dataset alone, now that this no longer flips status.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
 
         with patch("extralit_server.contexts.schema_versions.notify_dataset_event_v1") as mock_notify:
             mock_notify.return_value = []
-            await schema_versions.publish_version(
-                db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-            )
+            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
 
         mock_notify.assert_awaited_once()
         awaited_args = mock_notify.await_args.args
-        assert awaited_args[1] == DatasetEvent.published
+        assert awaited_args[1] == DatasetEvent.updated
         assert awaited_args[2] is dataset
 
-    async def test_republishing_notifies_updated_rather_than_published(self, db, mock_search_engine):
-        # publish_version has no draft-gate (contexts/datasets.py::publish_dataset can only
-        # fire once because DatasetPublishValidator rejects publishing an already-ready
-        # dataset). Without tracking the pre-update status, every republish would re-fire
-        # `published` for a dataset that's already ready. But suppressing it entirely would
-        # make the republish silent, so version 2..n gets `updated` instead -- the event
-        # contexts/datasets.py::update_dataset fires for any other dataset mutation.
+    async def test_every_republish_notifies_updated_too(self, db):
+        # Without this a consumer subscribed to `updated` hears about version 1 and never
+        # learns that versions 2..n exist.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
 
         with patch("extralit_server.contexts.schema_versions.notify_dataset_event_v1") as mock_notify:
             mock_notify.return_value = []
-            await schema_versions.publish_version(
-                db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-            )
-            v2 = await schema_versions.publish_version(
-                db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-            )
+            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+            v2 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
 
         assert v2.version == 2
         assert [call.args[1] for call in mock_notify.await_args_list] == [
-            DatasetEvent.published,
+            DatasetEvent.updated,
             DatasetEvent.updated,
         ]
         assert all(call.args[2] is dataset for call in mock_notify.await_args_list)
 
-    async def test_publish_of_a_column_less_body_still_creates_a_version(self, db, mock_search_engine):
+    async def test_publish_of_a_column_less_body_still_creates_a_version(self, db):
         # `derive_column_fields` legally returns an empty list for a column-less body;
         # `Field.upsert_many` raises on an empty `objects` list, so publish_version must
         # skip the upsert call rather than blow up on a degenerate-but-valid schema.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        version = await schema_versions.publish_version(
-            db, mock_search_engine, _s3_client(), dataset, body=_empty_body(), bucket="ws"
-        )
+        version = await schema_versions.publish_version(db, _s3_client(), dataset, body=_empty_body(), bucket="ws")
         assert version.version == 1
-        assert dataset.status == DatasetStatus.ready
         assert await _fields_for(db, dataset.id) == []
 
 
 @pytest.mark.asyncio
 class TestReadVersions:
-    async def test_list_versions_is_ordered_by_version_number(self, db, mock_search_engine):
+    async def test_list_versions_is_ordered_by_version_number(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
         for _ in range(3):
-            await schema_versions.publish_version(
-                db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws"
-            )
+            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
         assert [v.version for v in await schema_versions.list_versions(db, dataset)] == [1, 2, 3]
 
-    async def test_get_version_by_number(self, db, mock_search_engine):
+    async def test_get_version_by_number(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, mock_search_engine, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
         assert (await schema_versions.get_version_by_number(db, dataset.id, 1)).version == 1
         assert await schema_versions.get_version_by_number(db, dataset.id, 99) is None

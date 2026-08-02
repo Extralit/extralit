@@ -14,10 +14,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.contexts import files as files_ctx
-from extralit_server.enums import DatasetStatus, FieldType
+from extralit_server.enums import FieldType
 from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.models.database import Dataset, Field, SchemaVersion
-from extralit_server.search_engine import SearchEngine
 from extralit_server.webhooks.v1.datasets import notify_dataset_event as notify_dataset_event_v1
 from extralit_server.webhooks.v1.enums import DatasetEvent
 
@@ -65,28 +64,48 @@ async def _next_version_number(db: AsyncSession, dataset_id: UUID) -> int:
     return max((await db.execute(stmt)).scalars().all(), default=0) + 1
 
 
-async def _reject_dtype_changes(db: AsyncSession, dataset_id: UUID, field_payloads: list[dict[str, Any]]) -> None:
-    """Enforce column dtype immutability: a republish may add new columns but must not change
-    the dtype of a column that is already a `Field` -- schemas and column dtypes are immutable,
-    the same property LanceDB has.
+async def _reject_incompatible_columns(
+    db: AsyncSession, dataset: Dataset, field_payloads: list[dict[str, Any]]
+) -> None:
+    """Reject a body that cannot be reconciled with the dataset's existing `Field` rows.
 
-    Only checked against existing `column`-type fields. A Pandera column colliding by name with
-    an existing `text`/`image`/`chat` field is a separate, deferred concern -- see
-    docs/superpowers/plans/2026-07-26-fold-followups.md.
+    Three rules, checked in one pass before any write so a rejected publish leaves behind
+    neither a version row nor an S3 object:
+
+    * A column must not collide with an annotation field. `Field.upsert_many` keys on
+      `(name, dataset_id)`, so an upsert over a `text`/`image`/`chat`/`custom`/`table` field
+      of the same name would rewrite its settings into a column -- silently dropping it from
+      record value validation, since column fields are deliberately not value-validated.
+    * A column's dtype is immutable once published, the same property LanceDB has.
+    * A republish must not introduce a new column once the dataset is `ready`. The search
+      index is created with `"dynamic": "strict"` on the draft -> ready transition and
+      nothing evolves its mapping afterwards, so a new column would leave the dataset
+      unwritable: the next record write carries `fields.<new_column>` into a strict index
+      with no mapping for it and is rejected outright. Rejecting here keeps the failure at
+      the call that caused it. Lifting this needs `put_mapping` on republish -- see
+      docs/superpowers/plans/2026-07-26-fold-followups.md.
     """
-    stmt = select(Field.name, Field.settings).where(Field.dataset_id == dataset_id)
-    existing_column_dtypes = {
-        name: field_settings["dtype"]
-        for name, field_settings in (await db.execute(stmt)).all()
-        if field_settings.get("type") == FieldType.column
-    }
+    stmt = select(Field.name, Field.settings).where(Field.dataset_id == dataset.id)
+    existing = dict((await db.execute(stmt)).all())
 
     for payload in field_payloads:
         name = payload["name"]
-        if name not in existing_column_dtypes:
+        settings = existing.get(name)
+
+        if settings is None:
+            if dataset.is_ready:
+                raise UnprocessableEntityError(
+                    f"column {name!r} cannot be added to a published dataset -- "
+                    "the search index mapping is fixed when the dataset is published"
+                )
             continue
 
-        existing_dtype = existing_column_dtypes[name]
+        if settings.get("type") != FieldType.column:
+            raise UnprocessableEntityError(
+                f"column {name!r} collides with an existing {settings.get('type')} field of the same name"
+            )
+
+        existing_dtype = settings["dtype"]
         new_dtype = payload["settings"]["dtype"]
         if existing_dtype != new_dtype:
             raise UnprocessableEntityError(
@@ -97,7 +116,6 @@ async def _reject_dtype_changes(db: AsyncSession, dataset_id: UUID, field_payloa
 
 async def publish_version(
     db: AsyncSession,
-    search_engine: SearchEngine,
     s3_client: "S3Client",
     dataset: Dataset,
     *,
@@ -106,12 +124,11 @@ async def publish_version(
     review_widgets: dict[str, dict[str, Any]] | None = None,
     created_by: UUID | None = None,
 ) -> SchemaVersion:
-    """Upload a body, register the version, materialize its column fields, publish the dataset."""
-    # Parse before any write so an invalid body leaves no version row and no S3 object.
+    """Upload a body, register the version, and materialize its column fields."""
+    # Parse and validate before any write so a rejected publish leaves no version row and
+    # no S3 object.
     field_payloads = derive_column_fields(body, review_widgets)
-
-    # Reject dtype changes before any write too, for the same reason.
-    await _reject_dtype_changes(db, dataset.id, field_payloads)
+    await _reject_incompatible_columns(db, dataset, field_payloads)
 
     next_version = await _next_version_number(db, dataset.id)
     key = object_key_for(dataset.id, next_version)
@@ -146,62 +163,18 @@ async def publish_version(
             autocommit=False,
         )
 
-    # Captured before `dataset.update` flips `status` -- the webhook below must fire only on
-    # the actual draft -> ready transition, not on every republish of an already-ready dataset.
-    was_already_ready = dataset.is_ready
-
-    await dataset.update(db, current_schema_version_id=version.id, status=DatasetStatus.ready, autocommit=False)
+    # Publishing a schema version deliberately does NOT publish the dataset:
+    # `PUT /datasets/{id}/publish` stays the sole draft -> ready transition, and so the sole
+    # caller of `create_index`. A schema-backed dataset therefore gets the same lifecycle and
+    # the same `DatasetPublishValidator` checks as an annotation one, and its questions can be
+    # created -- column bindings and all -- after the columns exist and before it is published.
+    await dataset.update(db, current_schema_version_id=version.id, autocommit=False)
     await db.commit()
 
-    # `Field.upsert_many` is a Core `INSERT ... RETURNING` (models/mixins.py) that does not
-    # append to an already-loaded `dataset.fields` collection, and `expire_on_commit=False`
-    # (database.py) means the commit above doesn't refresh it either. Without this refresh,
-    # `create_index` -> `_configure_index_mappings` (search_engine/commons.py) iterates a
-    # *stale* (or entirely unloaded, on a dataset fetched without those relationships
-    # eager-loaded) collection: on an AsyncSession an unloaded lazy relationship raises
-    # `MissingGreenlet`, and a stale-but-loaded one silently builds a `"dynamic": "strict"`
-    # index missing properties for whatever it didn't see, so subsequent record writes touching
-    # that gap are rejected at index time. `_configure_index_mappings` reads FOUR relationships
-    # (search_engine/commons.py) -- all four must be refreshed, not just `fields`.
-    await db.refresh(dataset, ["fields", "metadata_properties", "vectors_settings", "questions"])
-
-    # Post-commit, outside the transaction -- the repo-wide convention for index side effects.
-    #
-    # `create_index` is NOT idempotent: both backends issue a bare `indices.create` that raises
-    # `resource_already_exists_exception` on a second call for the same dataset, since
-    # `es_index_name_for_dataset` is stable per dataset id. That makes every republish -- and
-    # every schema-version publish on a dataset already published via `PUT /datasets/{id}/publish`
-    # -- fail unconditionally. Guard with an explicit existence check (not a blanket-swallowed
-    # 400, which would also hide a genuine mapping error on a real first create).
-    if not await search_engine.index_exists(dataset):
-        await search_engine.create_index(dataset)
-    # else: the index already exists. Evolving its mapping for any newly-declared columns
-    # (`put_mapping`) is explicitly out of scope for this fold -- see
-    # docs/superpowers/plans/2026-07-26-fold-followups.md.
-    #
-    # The consequence is a WRITE failure, not merely a query gap. `_configure_index_mappings`
-    # sets `"dynamic": "strict"` at the mapping root and `_mapping_for_fields` adds no override
-    # (unlike `metadata`), while `_map_record_to_es_document` -> `_map_record_fields_to_es`
-    # emits an entry for every `dataset.fields` row (search_engine/commons.py). So after a
-    # republish that adds a column, the next record write carries `fields.<new_column>` into a
-    # strict index with no mapping for it and Elasticsearch rejects it with
-    # `strict_dynamic_mapping_exception` -- `PUT /datasets/{id}/records/bulk` fails outright.
-    # Until `put_mapping` lands, a republish that introduces new column names leaves the
-    # dataset unwritable.
-
-    if not was_already_ready:
-        # Fire only on the draft -> ready transition, matching contexts/datasets.py::publish_dataset's
-        # semantics (draft-gated by DatasetPublishValidator, so it can only ever fire once).
-        # publish_version has no such gate -- it's legal to call repeatedly for version 2..n --
-        # so without this guard every republish would re-fire `published` for an already-ready dataset.
-        await notify_dataset_event_v1(db, DatasetEvent.published, dataset)
-    else:
-        # A republish is still a real mutation -- `current_schema_version_id` is reassigned and
-        # new `Field` rows are materialized -- so it gets `updated`, the event
-        # contexts/datasets.py::update_dataset fires for any other dataset attribute change.
-        # Without this a consumer subscribed to both events hears about version 1 and never
-        # learns that versions 2..n exist.
-        await notify_dataset_event_v1(db, DatasetEvent.updated, dataset)
+    # A schema version is a dataset mutation, so it gets `updated` -- the same event
+    # contexts/datasets.py::update_dataset fires for any other attribute change. `published`
+    # belongs to publish_dataset alone.
+    await notify_dataset_event_v1(db, DatasetEvent.updated, dataset)
 
     return version
 

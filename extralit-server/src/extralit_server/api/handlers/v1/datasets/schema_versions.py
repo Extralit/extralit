@@ -12,7 +12,6 @@ from extralit_server.contexts import schema_versions
 from extralit_server.database import get_async_db
 from extralit_server.errors.future import NotFoundError
 from extralit_server.models import Dataset, User
-from extralit_server.search_engine import SearchEngine, get_search_engine
 from extralit_server.security import auth
 
 router = APIRouter()
@@ -28,7 +27,6 @@ async def publish_schema_version(
     dataset_id: UUID,
     version_create: SchemaVersionCreate,
     db: Annotated[AsyncSession, Depends(get_async_db)],
-    search_engine: Annotated[SearchEngine, Depends(get_search_engine)],
     s3_client=Depends(files_ctx.get_s3_client),
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
@@ -37,7 +35,6 @@ async def publish_schema_version(
 
     return await schema_versions.publish_version(
         db,
-        search_engine,
         s3_client,
         dataset,
         body=version_create.body,

@@ -4,8 +4,6 @@ Revision ID: 13da2d87e660
 Revises: 54d65879a68e
 Create Date: 2026-07-27 11:30:48.225356
 
-HISTORY WAS REWRITTEN HERE — databases built from `develop` need manual recovery.
-
 The v2->v1 fold deleted four revisions that are live on `origin/develop`:
 `9f3010c649c8`, `8136bc88ee3a`, `6393b1a01aa0`, `c1510e93882a`. Any database migrated
 before this branch has `alembic_version = 'c1510e93882a'`, a revision that no longer
