@@ -1,30 +1,63 @@
 # Canonicalize author identities for `git shortlog`, `git log`, and AUTHORS
-# generation. Two kinds of entries below:
+# generation.
 #
-#   1. Same email, differing display names (mechanically safe to merge).
-#   2. One person committing from several addresses over time.
+# Every canonical name below appears verbatim in existing history. Where a
+# contributor used several forms, the entry picks the fullest one they actually
+# wrote; no name is inferred from a username, email local-part, or GitHub login.
 #
 # Note: GitHub's contributor graph does NOT read this file. It links commits to
 # accounts by the commit author email. To consolidate a split graph, add every
 # address below to the corresponding GitHub account's verified email list.
+#
+# Deliberately NOT merged, because the evidence is ambiguous:
+#   - `kursathalat` <86690946+kursathalat@...> and `Kürşat Aktaş`
+#     <kursat.ce@gmail.com> may be one person, but the surnames differ.
+#   - `Leire Aguirre Eguiluz` and `Leire Rosado` <34123971+leireropl@...> are
+#     treated as different people; the surnames differ.
+#   - `José Francisco Calvo` is not `Francisco Aranda`.
+#   - 42 commits authored as `you <you@example.com>` cannot be attributed.
 
-# --- Maintainer, committing from personal, university, and IDM addresses ---
+# --- Maintainer: personal, university, and IDM addresses ---
 Jonny Tran <4750391+JonnyTran@users.noreply.github.com>
 Jonny Tran <4750391+JonnyTran@users.noreply.github.com> <nhat.c.tran@gmail.com>
 Jonny Tran <4750391+JonnyTran@users.noreply.github.com> <nhat.tran@mavs.uta.edu>
 Jonny Tran <4750391+JonnyTran@users.noreply.github.com> <jonny.tran@gatesfoundation.org>
 Jonny Tran <4750391+JonnyTran@users.noreply.github.com> <146238514+JTran-IDM@users.noreply.github.com>
 
-# --- Same-email name normalization (upstream Argilla contributors) ---
+# --- Upstream contributors: multiple addresses, one person ---
 Francisco Aranda <francis@argilla.io>
-Francisco Aranda <francisco@recogn.ai>
-Francisco Aranda <frascuchon@gmail.com>
+Francisco Aranda <francis@argilla.io> <francisco@recogn.ai>
+Francisco Aranda <francis@argilla.io> <frascuchon@gmail.com>
+Francisco Aranda <francis@argilla.io> <2518789+frascuchon@users.noreply.github.com>
+David Carreto Fidalgo <david@recogn.ai>
+David Carreto Fidalgo <david@recogn.ai> <david.carreto.fidalgo@mpcdf.mpg.de>
+David Carreto Fidalgo <david@recogn.ai> <davidcarretofidalgo@proton.me>
+David Carreto Fidalgo <david@recogn.ai> <davidc.fidalgo@gmail.com>
+Leire Aguirre Eguiluz <leire@argilla.io>
+Leire Aguirre Eguiluz <leire@argilla.io> <leire@recogn.ai>
+Leire Aguirre Eguiluz <leire@argilla.io> <leireaguirrework@gmail.com>
+Ben Burtenshaw <ben@argilla.io>
+Ben Burtenshaw <ben@argilla.io> <benjamin.burtenshaw@huggingface.co>
+Ben Burtenshaw <ben@argilla.io> <b.burtenshaw@faktion.com>
+Ben Burtenshaw <ben@argilla.io> <ben.burtenshaw@gmail.com>
+Daniel Vila Suero <daniel@argilla.io>
+Daniel Vila Suero <daniel@argilla.io> <daniel@recogn.ai>
+Daniel Vila Suero <daniel@argilla.io> <daniel.vila@huggingface.co>
+Alvaro Bartolome <alvaro@argilla.io>
+Alvaro Bartolome <alvaro@argilla.io> <alvarobartt@yahoo.com>
+José Francisco Calvo <jose@argilla.io>
+José Francisco Calvo <jose@argilla.io> <josefranciscocalvo@gmail.com>
+Tom Aarsen <37621491+tomaarsen@users.noreply.github.com>
+Tom Aarsen <37621491+tomaarsen@users.noreply.github.com> <Cubiegamedev@gmail.com>
+Thomas Chaigneau <t.chaigneau.tc@gmail.com>
+Thomas Chaigneau <t.chaigneau.tc@gmail.com> <thomas@wordcab.com>
+Dianne Ting <109550569+LiChiaTing@users.noreply.github.com>
+Dianne Ting <109550569+LiChiaTing@users.noreply.github.com> <LiChiaTing@users.noreply.github.com>
+
+# --- Same email, differing display names ---
 David Berenstein <david.m.berenstein@gmail.com>
-David Fidalgo <david@recogn.ai>
 Gabriel Martín Blázquez <gmartinbdev@gmail.com>
 Ignacio Talavera <ignaciotalaveracepeda@gmail.com>
-Leire Aguirre <leire@argilla.io>
-Leire Aguirre <leire@recogn.ai>
-Dianne Ting <109550569+LiChiaTing@users.noreply.github.com>
 Ashutosh Singh <karns7844@gmail.com>
-Kursat Halat <86690946+kursathalat@users.noreply.github.com>
+kursathalat <86690946+kursathalat@users.noreply.github.com>
+Copilot <198982749+Copilot@users.noreply.github.com>
