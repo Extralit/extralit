@@ -5,9 +5,10 @@
 Security fixes land on the latest minor release and on `develop`. Older minor
 versions do not receive backported patches.
 
-| Version | Supported |
+| Release or branch | Supported |
 | --- | --- |
 | 0.6.x | Yes |
+| develop | Yes |
 | < 0.6 | No |
 
 ## Reporting a vulnerability
