@@ -31,6 +31,14 @@ Key Features:
 
 Start extracting smarter with Extralit! 🚀
 
+## Project background
+
+Extralit began at the [Institute for Disease Modeling](https://www.idmod.org/) at the Gates Foundation, where disease models depend on structured evidence extracted from thousands of papers. See [NOTICE](NOTICE) for attribution details.
+
+It builds on [Argilla](https://github.com/argilla-io/argilla) (Apache-2.0), whose original authors have stepped back from active feature development. Extralit carries that codebase forward for scientific literature extraction, and has since migrated it to Vue 3 / Nuxt 4 with a consolidated API and versioned schema storage.
+
+Extralit mentored [Google Summer of Code 2025](https://summerofcode.withgoogle.com/) contributors under the Open Science Labs umbrella organization.
+
 ## Recent News
 
 - **May 2025**: Extralit selected for Google Summer of Code 2025! We're working on Scientific PDF Data Extraction and Interactive Schema Editor UI projects.

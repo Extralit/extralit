@@ -1,0 +1,30 @@
+# Canonicalize author identities for `git shortlog`, `git log`, and AUTHORS
+# generation. Two kinds of entries below:
+#
+#   1. Same email, differing display names (mechanically safe to merge).
+#   2. One person committing from several addresses over time.
+#
+# Note: GitHub's contributor graph does NOT read this file. It links commits to
+# accounts by the commit author email. To consolidate a split graph, add every
+# address below to the corresponding GitHub account's verified email list.
+
+# --- Maintainer, committing from personal, university, and IDM addresses ---
+Jonny Tran <4750391+JonnyTran@users.noreply.github.com>
+Jonny Tran <4750391+JonnyTran@users.noreply.github.com> <nhat.c.tran@gmail.com>
+Jonny Tran <4750391+JonnyTran@users.noreply.github.com> <nhat.tran@mavs.uta.edu>
+Jonny Tran <4750391+JonnyTran@users.noreply.github.com> <jonny.tran@gatesfoundation.org>
+Jonny Tran <4750391+JonnyTran@users.noreply.github.com> <146238514+JTran-IDM@users.noreply.github.com>
+
+# --- Same-email name normalization (upstream Argilla contributors) ---
+Francisco Aranda <francis@argilla.io>
+Francisco Aranda <francisco@recogn.ai>
+Francisco Aranda <frascuchon@gmail.com>
+David Berenstein <david.m.berenstein@gmail.com>
+David Fidalgo <david@recogn.ai>
+Gabriel Martín Blázquez <gmartinbdev@gmail.com>
+Ignacio Talavera <ignaciotalaveracepeda@gmail.com>
+Leire Aguirre <leire@argilla.io>
+Leire Aguirre <leire@recogn.ai>
+Dianne Ting <109550569+LiChiaTing@users.noreply.github.com>
+Ashutosh Singh <karns7844@gmail.com>
+Kursat Halat <86690946+kursathalat@users.noreply.github.com>
