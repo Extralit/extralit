@@ -24,8 +24,8 @@ impact you believe it has. A partial report is more useful than no report.
 - **Acknowledgement within 5 business days.**
 - **An assessment within 15 business days**, saying whether we consider it a
   vulnerability and what severity we assign.
-- **Fix and disclosure coordinated with you.** We will credit you in the advisory
-  unless you ask us not to.
+- **Fix and disclosure coordinated with you.** We will credit you in the
+  published security advisory unless you ask us not to.
 
 Extralit is maintained by a small team. These are the timelines we hold
 ourselves to, not a commercial SLA.
