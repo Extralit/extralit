@@ -14,18 +14,14 @@ versions do not receive backported patches.
 
 Report privately. Do not open a public issue for a security problem.
 
-Email **contact@extralit.ai**. If GitHub private vulnerability reporting is
-enabled on this repository, you may instead
-[file an advisory](https://github.com/Extralit/extralit/security/advisories/new);
-if that page is not available to you, use the email address above.
+Email **contact@extralit.ai**.
 
 Include what you have: affected version or commit, reproduction steps, and the
 impact you believe it has. A partial report is more useful than no report.
 
 ## What to expect
 
-- **Acknowledgement within 5 business days.** If you do not hear back, email
-  contact@extralit.ai directly.
+- **Acknowledgement within 5 business days.**
 - **An assessment within 15 business days**, saying whether we consider it a
   vulnerability and what severity we assign.
 - **Fix and disclosure coordinated with you.** We will credit you in the advisory
@@ -36,10 +32,12 @@ ourselves to, not a commercial SLA.
 
 ## Scope
 
-In scope: the Extralit server, Python SDK, and frontend in this repository. Also
-in scope is the Hugging Face Spaces deployment bundle, which lives in the
-separate [extralit-hf-space](https://github.com/Extralit/extralit-hf-space)
-repository (included here as a submodule) and reports through this policy.
+In scope: the Extralit server, Python SDK, and frontend in this repository.
+
+The Hugging Face Spaces deployment bundle lives in the separate
+[extralit-hf-space](https://github.com/Extralit/extralit-hf-space) repository and
+is included here as a submodule. It is maintained by the same team, and reports
+about it are accepted at the address above.
 
 Out of scope: vulnerabilities in upstream dependencies with no Extralit-specific
 exploit path (report those upstream), and findings against third-party instances
