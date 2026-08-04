@@ -1,5 +1,6 @@
 from unittest.mock import AsyncMock, patch
 
+import pandas as pd
 import pandera.pandas as pa
 import pytest
 from sqlalchemy import select
@@ -74,6 +75,24 @@ class TestDeriveColumnFields:
         # `required` gates annotator input; a column is an ingestion input, never required.
         for field in schema_versions.derive_column_fields(_body()):
             assert field["required"] is False
+
+    def test_a_pandas_extension_dtype_keeps_its_capitalized_spelling(self):
+        # A column declared with a pandas extension dtype (`pd.Int64Dtype()`, the ordinary
+        # way to get a nullable integer column) reports "Int64", not "int64", and that
+        # spelling survives to_json/from_json into `Field.settings["dtype"]`. Folding it back
+        # onto the numpy spelling is what `search_engine.commons.normalize_column_dtype`
+        # exists for -- without it the column indexes as text and loses range queries.
+        # Pinned here so the two halves cannot drift apart.
+        body = pa.DataFrameSchema({"n": pa.Column(pd.Int64Dtype(), nullable=True)}).to_json()
+        derived = schema_versions.derive_column_fields(body)
+        assert derived[0]["settings"]["dtype"] == "Int64"
+
+    def test_the_numpy_dtype_spelling_is_unaffected_by_nullability(self):
+        # The counterpart: `nullable=True` on a plain numpy dtype does NOT change the
+        # spelling, so the two are genuinely distinct declarations rather than one implying
+        # the other.
+        body = pa.DataFrameSchema({"n": pa.Column(pa.Int64, nullable=True)}).to_json()
+        assert schema_versions.derive_column_fields(body)[0]["settings"]["dtype"] == "int64"
 
     def test_column_less_body_derives_no_fields(self):
         # A syntactically valid Pandera body with zero declared columns is a legal,

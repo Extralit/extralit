@@ -10,6 +10,12 @@ on the run rather than a hand-authored claim about it.
 
 ## Run it
 
+> **Currently disabled.** `seed_demo_workspace.py` still targets the `/api/v2` routes the
+> v2-into-v1 fold deleted, so `run-demo.sh` refuses to start rather than failing partway
+> through. Repointing the seed at `/api/v1` is tracked as "Repointing
+> demo/seed_demo_workspace.py" in `docs/superpowers/plans/2026-07-26-fold-followups.md`. The
+> rest of this section describes how the harness works once that lands.
+
 Needs the full stack up — server on `:6900`, `npm run dev` on `:3000` — plus `ffmpeg` and
 `ffprobe` on `PATH`. See the root `CLAUDE.md` for stack setup.
 

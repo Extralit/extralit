@@ -60,6 +60,22 @@ def derive_column_fields(
 
 
 async def _next_version_number(db: AsyncSession, dataset_id: UUID) -> int:
+    """Allocate the next version number, serializing concurrent publishes for this dataset.
+
+    The `SELECT ... FOR UPDATE` is what makes the allocation safe, and it must be held for
+    the rest of the transaction. Without it two concurrent publishes read the same max and
+    both derive the same `object_key` from it, so both `put_object` to the SAME key: the
+    write that lands second overwrites the first's body even after the first publisher's
+    `SchemaVersion` row -- carrying a checksum computed from its own body -- has committed.
+    The committed row would then point at content that does not match its checksum, breaking
+    the immutability this model exists to provide. The unique constraint alone does not save
+    us: it fires at `db.flush()`, long after the object was overwritten.
+
+    On SQLite the dialect emits no `FOR UPDATE` clause (its single-writer model already
+    serializes), so this is a no-op there rather than an error.
+    """
+    await db.execute(select(Dataset.id).where(Dataset.id == dataset_id).with_for_update())
+
     stmt = select(SchemaVersion.version).where(SchemaVersion.dataset_id == dataset_id)
     return max((await db.execute(stmt)).scalars().all(), default=0) + 1
 

@@ -11,6 +11,18 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRONTEND="$(dirname "$HERE")"
+
+# Refuse up front rather than at the seed step. `seed_demo_workspace.py` still targets the
+# /api/v2 routes the v1 fold deleted and exits 1 unconditionally, so this pipeline cannot
+# succeed -- and without this guard it would first create (and, on a rerun, delete) the output
+# directory before failing. Drop this block in the same change that repoints the seed.
+cat >&2 <<'DISABLED'
+run-demo.sh is disabled: demo/seed_demo_workspace.py has not been repointed at /api/v1
+after the v2->v1 fold, so the pipeline cannot get past its first step.
+See "Repointing demo/seed_demo_workspace.py" in
+docs/superpowers/plans/2026-07-26-fold-followups.md.
+DISABLED
+exit 1
 # Default outside the repo: recordings are large binaries and must never be committed.
 OUT="${DEMO_OUT:-${TMPDIR:-/tmp}/extralit-extractions-demo}"
 

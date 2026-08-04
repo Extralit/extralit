@@ -5,7 +5,7 @@ Prereqs: full local stack up (`docker-compose up -d`, server on :6900), then:
 1. Seed:      `npm run e2e:extraction:seed`
 2. Dev server reachable from the browser container: `npm run dev -- --host`
 3. Run:
-   ```
+   ```bash
    E2E_CDP_URL=http://ccui:9222 \
    E2E_BASE_URL=http://<this-host-lan-ip>:3000 \
    npm run e2e:extraction

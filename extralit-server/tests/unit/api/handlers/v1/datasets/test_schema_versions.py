@@ -6,6 +6,7 @@ from fastapi.encoders import jsonable_encoder
 
 from extralit_server.api.routes import api_v1
 from extralit_server.api.schemas.v1.files import ObjectMetadata
+from extralit_server.api.schemas.v1.schema_versions import SCHEMA_VERSION_BODY_MAX_LENGTH
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.enums import DatasetStatus
 from extralit_server.jobs.queues import HIGH_QUEUE
@@ -103,6 +104,17 @@ class TestPublishSchemaVersion:
             f"/api/v1/datasets/{dataset.id}/schema-versions",
             headers=owner_auth_header,
             json={"body": "{not pandera}"},
+        )
+        assert response.status_code == 422
+
+    async def test_publish_returns_422_for_an_oversized_body(self, async_client, owner_auth_header):
+        # The body is parsed in-process and then uploaded whole, so one request sizes both
+        # the parse and the object write. Rejected by the request schema, before either.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        response = await async_client.post(
+            f"/api/v1/datasets/{dataset.id}/schema-versions",
+            headers=owner_auth_header,
+            json={"body": "x" * (SCHEMA_VERSION_BODY_MAX_LENGTH + 1)},
         )
         assert response.status_code == 422
 

@@ -53,7 +53,7 @@ than by completing them. The change: **`publish_version` no longer flips `datase
 
 The working order is now the obvious one, and it needs no PATCH-after dance:
 
-```
+```text
 POST /datasets                          -> draft
 POST /datasets/{id}/schema-versions     -> columns materialized as Field rows, still draft
 POST /datasets/{id}/questions           -> settings["columns"] bound at creation time
@@ -85,36 +85,32 @@ replaces `_reject_dtype_changes`), one query and one pass, before any write.
 
 ## 1. ES mapping evolution: `put_mapping` for republish-added columns is not implemented
 
-**What's missing:** `contexts/schema_versions.publish_version` now guards `create_index` with
-an `index_exists` check (Critical 2's fix), so a republish against an already-existing index
-skips index creation entirely. That is correct for *not crashing*, but it means a column added
-by a republish (a legal operation — dtypes are immutable, but new columns are always allowed)
-is tracked as a `Field` row and nowhere else. It is not added to the Elasticsearch/OpenSearch
-mapping.
+**The contract today (2026-08-01, option (b)):** a schema version that declares a column the
+dataset does not already have is rejected with a 422 once the dataset is `ready`
+(`contexts/schema_versions._reject_incompatible_columns`). A published dataset therefore
+cannot gain columns at all, and an annotation dataset already published via
+`PUT /datasets/{id}/publish` cannot retroactively become schema-backed, since every column of
+a first version is a new column. See §0b.
 
-**Status 2026-08-01: the consequence is now a 422 at publish, not a later write failure.**
-Option (b) below was taken — see §0b. What remains open is the mapping evolution itself: until
-it lands, a published dataset simply cannot gain columns. The rest of this section is the
-original analysis, kept because it is what the implementer of `put_mapping` needs.
+**What's still missing:** the mapping evolution itself. Until it lands, that 422 is the whole
+story — there is no path that adds a column to a published dataset's index.
 
-**Corrected 2026-07-28 — the consequence is a write failure, not a query gap.** This doc
-previously hedged that values would be "silently dropped or rejected … depending on how the
-record write path handles unmapped fields". The answer is deterministic and checkable:
-`_configure_index_mappings` sets `"dynamic": "strict"` at the mapping root and
+**Why the 422 exists (historical analysis, 2026-07-28).** Kept because it is what the
+implementer of `put_mapping` needs, and because it is the argument for the restriction. The
+index mapping is built once, on the draft → ready transition, and nothing evolves it
+afterwards. `_configure_index_mappings` sets `"dynamic": "strict"` at the mapping root and
 `_mapping_for_fields` adds no override of its own (unlike `metadata`), while
 `_map_record_to_es_document` → `_map_record_fields_to_es` emits an entry for *every*
-`dataset.fields` row. So the next record write after such a republish carries
-`fields.<new_column>` into a strict index with no mapping for it and Elasticsearch rejects it
-with `strict_dynamic_mapping_exception` — `PUT /datasets/{id}/records/bulk` fails outright.
-**Until this item lands, a republish that introduces new column names leaves the dataset
-unwritable.** The interim options are (a) accept that and document it (current state — the code
-comment in `publish_version` now says so), or (b) reject a republish that introduces new column
-names with an `UnprocessableEntityError` in the same pre-write pass as `_reject_dtype_changes`,
-so the failure stays localized to the publish call instead of surfacing later at an unrelated
-endpoint. (b) is a semantic narrowing of "new columns are always allowed" and needs a decision.
+`dataset.fields` row. So a record write after a column was added would carry
+`fields.<new_column>` into a strict index with no mapping for it, and Elasticsearch would
+reject it with `strict_dynamic_mapping_exception` — `PUT /datasets/{id}/records/bulk` failing
+outright, at an endpoint unrelated to the publish that caused it. Rejecting at publish keeps
+the failure where it belongs. The alternative considered and not taken was to accept the
+unwritable state and document it.
 
-**Why it wasn't done here:** explicitly out of scope per the human partner's decision for this
-fix wave — "Do not attempt to fix ES mapping evolution now."
+**Why the real fix wasn't done here:** explicitly out of scope per the human partner's
+decision for this fix wave — "Do not attempt to fix ES mapping evolution now." Lifting the
+422 is gated on it.
 
 **What it would take:** on a republish where `index_exists` is true, diff the newly-derived
 `field_payloads` against the fields that existed before the upsert, and call
@@ -209,25 +205,26 @@ and needs a v1-shaped replacement:
 Not part of any CI gate (confirmed in `progress.md`'s Task 15 leftover note), so this can be
 scheduled independently of any test-suite concern.
 
-## 5. `_next_version_number` max()+1 race
+## 5. `_next_version_number` max()+1 race — RESOLVED 2026-08-03
 
-**Location:** `contexts/schema_versions.py::_next_version_number`.
+**Fixed** in `contexts/schema_versions._next_version_number`, which now takes a
+`SELECT ... FOR UPDATE` on the dataset row before allocating, so publishes for one dataset
+serialize for the rest of the transaction. On SQLite the dialect emits no `FOR UPDATE` clause
+(its single-writer model already serializes), so this is a no-op there rather than an error.
 
-```python
-async def _next_version_number(db: AsyncSession, dataset_id: UUID) -> int:
-    stmt = select(SchemaVersion.version).where(SchemaVersion.dataset_id == dataset_id)
-    return max((await db.execute(stmt)).scalars().all(), default=0) + 1
-```
+**This section originally understated the damage** (CodeRabbit, PR #236). It recorded the
+consequence as a losing request that rolls back cleanly, leaving "an orphaned S3 object" —
+annoying but harmless, hence "worth fixing only if concurrent publish is a real usage
+pattern". That is wrong. `object_key_for(dataset_id, next_version)` is derived from the
+version number, so two publishers that read the same max also `put_object` to the **same
+key**. The write that lands second overwrites the first's body — and it can do so *after* the
+first publisher's `SchemaVersion` row, carrying a checksum computed from its own body, has
+already committed. The committed row then points at content that does not match its checksum,
+breaking exactly the immutability the model exists to provide. The unique constraint does not
+save us: it fires at `db.flush()`, long after the object was overwritten.
 
-Two concurrent `POST /datasets/{id}/schema-versions` calls for the same dataset can both read
-the same max and both attempt to insert the same `(dataset_id, version)` — the second loses to
-the `SchemaVersion` unique constraint with a raw `IntegrityError`. Confirmed (ledger, Task 6
-minor (a)) to roll back cleanly; the only residue is an orphaned S3 object at
-`schemas/{dataset_id}/v{n}.json` from the loser's `put_object` call, which happened before the
-DB insert. Worth fixing only if concurrent publish to the same dataset is a real usage pattern
-(e.g. two agents racing to publish); the fix is a `SELECT ... FOR UPDATE` on a per-dataset lock
-row, or moving version assignment into the same statement as the insert
-(`INSERT ... SELECT max(version)+1 ...`) to make it atomic.
+Silent corruption of a committed row outranks a stray object, so this was fixed rather than
+deferred.
 
 ## 6. Remaining deferred minors carried over from the ledger
 
