@@ -75,7 +75,7 @@ For each issue you're addressing, it's advisable to create a new branch. GitHub 
 
 Navigate to your issue and on the right column, select `Create a branch`.
 
-After the new window pops up, the branch will be named after the issue, include a prefix such as feature/, bug/, or docs/ to facilitate quick recognition of the issue type. In the `Repository destination`, pick your fork ( [your-github-username]/extralit), and then select `Change branch source` to specify the source branch for creating the new one. Complete the process by clicking `Create branch`.
+After the new window pops up, the branch will be named after the issue, include a prefix such as `feat/`, `fix/`, or `docs/` to facilitate quick recognition of the issue type. In the `Repository destination`, pick your fork ( [your-github-username]/extralit), and then select `Change branch source` to specify the source branch for creating the new one. Complete the process by clicking `Create branch`.
 
 > 🤔 Extralit is trunk-based: `main` is the single source branch for everything — features, fixes, and documentation alike. Always set the branch source to `main`.
 

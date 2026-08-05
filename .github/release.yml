@@ -8,7 +8,8 @@
 changelog:
   exclude:
     authors:
-      - dependabot
+      # Exact logins — GitHub matches these verbatim, so the `[bot]` suffix is required.
+      - dependabot[bot]
       - github-actions[bot]
   categories:
     - title: ✨ Features

@@ -56,7 +56,8 @@ jobs:
           case "$role" in
             admin | maintain) ;;
             *)
-              echo "::error::'$ACTOR' needs admin or maintain to cut a release (has '$role')"
+              # Leads with the phrase release_guide.md tells operators to look for.
+              echo "::error::Not authorized: '$ACTOR' needs admin or maintain to cut a release (has '$role')."
               exit 1
               ;;
           esac
@@ -73,6 +74,7 @@ jobs:
       tag: ${{ steps.validate.outputs.tag }}
       base_sha: ${{ steps.base.outputs.sha }}
       already_done: ${{ steps.converged.outputs.already_done }}
+      release_sha: ${{ steps.base.outputs.release_sha }}
     steps:
       - name: Validate version
         id: validate
@@ -95,10 +97,24 @@ jobs:
           ref: main
           # Full history + tags: the convergence check reads out an existing tag's commit.
           fetch-depth: 0
+          # This job only reads. Nothing here needs a credential in .git/config.
+          persist-credentials: false
 
-      - name: Resolve base commit
+      - name: Resolve base commit and the current release pointer
         id: base
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+          # The lease value for `cut`'s push. Empty when `release` does not exist yet (first
+          # release) — git reads an empty <expect> as "the ref must not already exist". Asked of
+          # the API rather than a local ref so it doesn't depend on what checkout happened to fetch.
+          release_sha=$(gh api "repos/$REPO/git/ref/heads/release" --jq .object.sha 2>/dev/null || true)
+          echo "Current refs/heads/release: ${release_sha:-<does not exist>}"
+          echo "release_sha=$release_sha" >> "$GITHUB_OUTPUT"
 
       - name: Check whether this release already happened
         id: converged
@@ -116,15 +132,26 @@ jobs:
 
           # The tag exists. It's a converged re-run only if the commit it points at actually
           # carries this version; anything else is a collision a human has to resolve.
-          git checkout -q "$TAG"
-          if python3 scripts/bump_version.py check --expect "$VERSION" > /dev/null 2>&1; then
-            git checkout -q "$BASE_SHA"
+          #
+          # Read the version straight out of the tag's tree. Deliberately NOT `git checkout $TAG`
+          # + `bump_version.py`: that executes code from a commit this job did not vet, which is
+          # exactly what github-release.yml is designed to avoid. `|| true` because the step runs
+          # under `pipefail` and an old tag may predate one of these paths — a missing file must
+          # read as a mismatch, not abort the step.
+          at_tag() { git show "$TAG:$1" 2>/dev/null || true; }
+          py_version() { at_tag "$1" | sed -n 's/^__version__[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p'; }
+
+          sdk=$(py_version extralit/src/extralit/_version.py)
+          server=$(py_version extralit-server/src/extralit_server/_version.py)
+          frontend=$(at_tag extralit-frontend/package.json | jq -r '.version // empty')
+
+          if [[ "$sdk" == "$VERSION" && "$server" == "$VERSION" && "$frontend" == "$VERSION" ]]; then
             echo "Tag $TAG already points at a commit stamped $VERSION — nothing to do."
             echo "already_done=true" >> "$GITHUB_OUTPUT"
           else
-            git checkout -q "$BASE_SHA"
-            echo "::error::Tag $TAG exists but its commit is not stamped $VERSION. \
-          If this is recovery, delete the tag first: git push origin :refs/tags/$TAG"
+            echo "::error::Tag $TAG already exists at a different commit \
+          ($(git rev-parse --short "$TAG^{commit}") — sdk=${sdk:-?} server=${server:-?} frontend=${frontend:-?}, \
+          expected $VERSION). If this is recovery, delete the tag first: git push origin :refs/tags/$TAG"
             exit 1
           fi
 
@@ -140,22 +167,27 @@ jobs:
           runs=$(gh api "repos/$REPO/actions/runs?head_sha=$BASE_SHA&per_page=100" \
             --jq '[.workflow_runs[] | select(.name != "Release") | {name, status, conclusion}]')
 
+          # All three branches lead with "CI is not green on main" — the phrase release_guide.md
+          # tells operators to search the log for — then say which of the three cases it is.
           total=$(jq length <<< "$runs")
           if [[ "$total" -eq 0 ]]; then
-            echo "::error::No workflow runs found for $BASE_SHA. Nothing has validated this commit \
-          — wait for CI, or re-run with skip_ci_check=true if it genuinely has no applicable workflows."
+            echo "::error::CI is not green on main ($BASE_SHA): no workflow runs found at all. \
+          Nothing has validated this commit — wait for CI, or re-run with skip_ci_check=true if it \
+          genuinely has no applicable workflows."
             exit 1
           fi
 
           pending=$(jq -r '[.[] | select(.status != "completed") | .name] | join(", ")' <<< "$runs")
           if [[ -n "$pending" ]]; then
-            echo "::error::CI is still running on $BASE_SHA: $pending. Wait for it to finish."
+            echo "::error::CI is not green on main ($BASE_SHA): still running — $pending. \
+          Wait for it to finish."
             exit 1
           fi
 
           failed=$(jq -r '[.[] | select(.conclusion | IN("success","skipped","neutral") | not) | .name] | join(", ")' <<< "$runs")
           if [[ -n "$failed" ]]; then
-            echo "::error::CI is not green on $BASE_SHA: $failed. Fix it, or re-run with skip_ci_check=true."
+            echo "::error::CI is not green on main ($BASE_SHA): failing — $failed. \
+          Fix it, or re-run with skip_ci_check=true."
             exit 1
           fi
 
@@ -228,6 +260,8 @@ jobs:
         env:
           VERSION: ${{ needs.plan.outputs.version }}
           TAG: ${{ needs.plan.outputs.tag }}
+          # What `plan` saw at refs/heads/release; empty if the branch doesn't exist yet.
+          RELEASE_SHA: ${{ needs.plan.outputs.release_sha }}
           # Scoped to this step alone — see persist-credentials above. Actions masks it in logs.
           TOKEN: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
         run: |
@@ -245,7 +279,17 @@ jobs:
 
           # --atomic: either all three refs move or none do. A stale `main` fails the whole push
           # rather than leaving a tag with no branch (or worse, a release with no tag).
-          git push --atomic "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+          #
+          # `release` is a production *pointer*, not a branch that accumulates work, so it moves
+          # deliberately rather than by fast-forward — otherwise a rollback (release_guide.md
+          # force-moves it back to an earlier tag) can leave it off `main`'s ancestry and abort
+          # the next release *after* the version was already stamped and committed. The lease is
+          # scoped to this one ref, so `main` and the tag stay strictly non-forced; if anyone
+          # moved `release` since `plan` read it, the push is rejected instead of clobbering.
+          # An empty RELEASE_SHA means "must not already exist" — the first release.
+          git push --atomic \
+            --force-with-lease=refs/heads/release:"$RELEASE_SHA" \
+            "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
             "HEAD:refs/heads/main" \
             "HEAD:refs/heads/release" \
             "refs/tags/$TAG"

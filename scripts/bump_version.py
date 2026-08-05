@@ -67,6 +67,10 @@ class VersionFile:
 
     def write(self, version: str) -> bool:
         """Rewrite in place. Returns True if the file changed."""
+        # `cmd_set` writes before it reads anything, so without this a missing file would make a
+        # raw FileNotFoundError traceback the first output of a release run.
+        if not self.path.exists():
+            die(f"{self.rel}: file not found")
         text = self.path.read_text()
         new_text, count = self.pattern.subn(
             lambda m: f"{m.group(1)}{version}{m.group(3)}", text, count=1

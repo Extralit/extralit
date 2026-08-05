@@ -85,10 +85,12 @@ branches from `main` and squash-merges back via PR. There is no `develop` branch
 | `main` | trunk; every merged PR | `extralit-dev/develop` (dev HF Space) |
 | `release` | long-lived production pointer, moved only by `release.yml` | `extralit/public-demo` |
 | `vX.Y.Z` tag | the release itself | PyPI, versioned docs, GitHub Release |
-| PR | preview | ephemeral `extralit-dev/pr-N` |
+| PR (non-fork) | preview | ephemeral `extralit-dev/pr-N` |
 
 Branch names: `feat/*`, `fix/*`, `docs/*`, short-lived. PR titles use the matching
-`feat:` / `fix:` / `docs:` / `chore:` prefix — release notes are generated from them.
+`feat:` / `fix:` / `docs:` / `chore:` prefix. Note the generated release notes group PRs by
+**label**, not by title prefix (see `.github/release.yml`) — label a PR to place it under a
+heading; the title convention is for humans.
 
 **Never push to `release` or create tags by hand.** Releases are one dispatch:
 
