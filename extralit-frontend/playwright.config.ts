@@ -23,29 +23,29 @@ export default defineConfig({
   },
 
   projects: [
-    // Legacy Argilla specs — kept out of the v2 suite (they are not a v2 gate).
+    // Legacy Argilla specs — kept out of the extraction suite (they are not a gate for it).
     {
       name: "chromium",
-      testIgnore: "v2/**",
+      testIgnore: "extraction/**",
       use: { ...devices["Desktop Chrome"] },
     },
 
     {
       name: "firefox",
-      testIgnore: "v2/**",
+      testIgnore: "extraction/**",
       use: { ...devices["Desktop Firefox"] },
     },
 
     {
       name: "webkit",
-      testIgnore: "v2/**",
+      testIgnore: "extraction/**",
       use: { ...devices["Desktop Safari"] },
     },
 
-    // v2 vertical slice, real backend, no network mocks. Run with `playwright test --project=v2`.
+    // Extraction vertical slice, real backend, no network mocks. Run with `playwright test --project=extraction`.
     {
-      name: "v2",
-      testMatch: "v2/**/*.spec.ts",
+      name: "extraction",
+      testMatch: "extraction/**/*.spec.ts",
       retries: 0, // real backend: retries mask seeding/state bugs
       use: {
         ...devices["Desktop Chrome"],

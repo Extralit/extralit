@@ -36,10 +36,19 @@ class TestDatasetQuestions:
     @pytest.mark.parametrize(
         ("settings", "expected_settings"),
         [
-            ({"type": "text"}, {"type": "text", "use_markdown": False, "use_table": False}),
-            ({"type": "text", "use_markdown": True}, {"type": "text", "use_markdown": True, "use_table": False}),
-            ({"type": "text", "use_markdown": False}, {"type": "text", "use_markdown": False, "use_table": False}),
-            ({"type": "text", "use_table": True}, {"type": "text", "use_markdown": False, "use_table": True}),
+            ({"type": "text"}, {"type": "text", "use_markdown": False, "use_table": False, "columns": None}),
+            (
+                {"type": "text", "use_markdown": True},
+                {"type": "text", "use_markdown": True, "use_table": False, "columns": None},
+            ),
+            (
+                {"type": "text", "use_markdown": False},
+                {"type": "text", "use_markdown": False, "use_table": False, "columns": None},
+            ),
+            (
+                {"type": "text", "use_table": True},
+                {"type": "text", "use_markdown": False, "use_table": True, "columns": None},
+            ),
             (
                 {
                     "type": "rating",

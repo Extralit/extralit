@@ -38,7 +38,13 @@ def opensearch(elasticsearch_config: dict) -> Generator[OpenSearch, None, None]:
 
 @pytest.fixture(scope="function")
 def mock_search_engine(mocker) -> Generator["SearchEngine", None, None]:
-    return mocker.AsyncMock(SearchEngine)
+    engine = mocker.AsyncMock(SearchEngine)
+    # Sane default: "no index yet", matching the common case (first publish). An unconfigured
+    # AsyncMock attribute resolves truthy (a MagicMock), which would otherwise make every
+    # `schema_versions.publish_version` caller believe the index already exists and skip
+    # `create_index` -- see contexts/schema_versions.py's create-if-absent republish guard.
+    engine.index_exists.return_value = False
+    return engine
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -92,7 +98,12 @@ async def async_client(
     async with AsyncClient(app=app, base_url="http://testserver") as async_client:
         yield async_client
 
-    app.dependency_overrides.clear()
+    # Clear from `api_v1` — that is where the overrides above were registered. Clearing
+    # `app.dependency_overrides` (the outer app) left them live past teardown, bound to a
+    # torn-down mocker mock. Pop only our own keys: tests/integration/conftest.py writes
+    # into this same dict.
+    for _dependency in (get_async_db, get_search_engine):
+        api_v1.dependency_overrides.pop(_dependency, None)
 
 
 @pytest.fixture(autouse=True)

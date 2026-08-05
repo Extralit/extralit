@@ -43,6 +43,9 @@ from extralit_server.api.handlers.v1 import (
     oauth2 as oauth2_v1,
 )
 from extralit_server.api.handlers.v1 import (
+    projection as projection_v1,
+)
+from extralit_server.api.handlers.v1 import (
     questions as questions_v1,
 )
 from extralit_server.api.handlers.v1 import (
@@ -90,6 +93,9 @@ def create_api_v1():
     for router in [
         info_v1.router,
         authentication_v1.router,
+        # Registered before datasets_v1: /me/datasets/projection is a static path that must
+        # not be swallowed by any /me/datasets/{dataset_id}-style route declared later.
+        projection_v1.router,
         datasets_v1.router,
         fields_v1.router,
         questions_v1.router,

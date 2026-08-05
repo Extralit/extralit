@@ -5,9 +5,9 @@ import HomePage from "./index.vue";
 
 /**
  * Covers the pure part of the home tab bar: which tab ids navigate and which swap the panel
- * below the bar. That mapping was previously pinned only by `e2e/v2/extractions-nav.spec.ts`,
+ * below the bar. That mapping was previously pinned only by `e2e/extraction/extractions-nav.spec.ts`,
  * which needs a live server and a dev frontend and runs under a separate Playwright project
- * (`npm run e2e:v2`) rather than `npm test` — so a tab that routed nowhere surfaced only when
+ * (`npm run e2e:extraction`) rather than `npm test` — so a tab that routed nowhere surfaced only when
  * someone ran the full stack.
  *
  * `onTabChange` and `data()` are plain options, so they are exercised against a hand-built

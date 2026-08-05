@@ -35,15 +35,12 @@
 
         <BaseLoading v-if="isLoading" />
         <template v-else>
-          <p v-if="page.items.length" class="schema-detail__total">
-            <template v-if="isApproximateTotal">{{ $t("schemas.totalApproximate", { total: page.total }) }}</template>
-            <template v-else>{{ page.total }}</template>
-          </p>
+          <p v-if="page.items.length" class="schema-detail__total">{{ page.total }}</p>
           <RecordsTable v-if="page.items.length" :records="page.items" :columns="columns" />
           <EmptyState v-else :message="$t('schemas.noResults')" />
 
-          <!-- Pager stays outside the results branch so advancing onto an empty page (approximate
-               totals let "next" run one page too far) still shows a way back instead of a dead-end. -->
+          <!-- Pager stays outside the results branch so advancing onto an empty page still
+               shows a way back instead of a dead-end. -->
           <div v-if="currentOffset > 0 || page.items.length >= pageSize" class="schema-detail__pager">
             <BaseButton
               class="secondary small"
@@ -51,7 +48,8 @@
               @click="goToOffset(currentOffset - pageSize)"
               >‹</BaseButton
             >
-            <!-- total is approximate: allow next only while a full page keeps coming back -->
+            <!-- `total` is now authoritative (v1's Elasticsearch-backed search), but we still
+                 gate "next" on a full page rather than an offset/total comparison. -->
             <BaseButton
               class="secondary small"
               :disabled="page.items.length < pageSize"

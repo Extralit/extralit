@@ -11,6 +11,18 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRONTEND="$(dirname "$HERE")"
+
+# Refuse up front rather than at the seed step. `seed_demo_workspace.py` still targets the
+# /api/v2 routes the v1 fold deleted and exits 1 unconditionally, so this pipeline cannot
+# succeed -- and without this guard it would first create (and, on a rerun, delete) the output
+# directory before failing. Drop this block in the same change that repoints the seed.
+cat >&2 <<'DISABLED'
+run-demo.sh is disabled: demo/seed_demo_workspace.py has not been repointed at /api/v1
+after the v2->v1 fold, so the pipeline cannot get past its first step.
+See "Repointing demo/seed_demo_workspace.py" in
+docs/superpowers/plans/2026-07-26-fold-followups.md.
+DISABLED
+exit 1
 # Default outside the repo: recordings are large binaries and must never be committed.
 OUT="${DEMO_OUT:-${TMPDIR:-/tmp}/extralit-extractions-demo}"
 
@@ -38,17 +50,17 @@ echo "==> seeding demo workspaces"
 uv run --project "$FRONTEND/../extralit-server" python "$HERE/seed_demo_workspace.py" \
   --output "$OUT/demo-seed.json"
 
-# The v2 e2e seed supplies the second workspace the "switch workspace" scene swaps into.
-if [ ! -f "$FRONTEND/e2e/v2/seed/seed-output.json" ]; then
-  echo "==> seeding the v2 e2e workspace (needed for the workspace-swap scene)"
-  (cd "$FRONTEND" && npm run --silent e2e:v2:seed)
+# The extraction e2e seed supplies the second workspace the "switch workspace" scene swaps into.
+if [ ! -f "$FRONTEND/e2e/extraction/seed/seed-output.json" ]; then
+  echo "==> seeding the extraction e2e workspace (needed for the workspace-swap scene)"
+  (cd "$FRONTEND" && npm run --silent e2e:extraction:seed)
 fi
 
 echo "==> recording (headless chromium, live backend)"
 node "$HERE/record-demo.mjs" \
   --out "$OUT" \
   --seed "$OUT/demo-seed.json" \
-  --e2e-seed "$FRONTEND/e2e/v2/seed/seed-output.json"
+  --e2e-seed "$FRONTEND/e2e/extraction/seed/seed-output.json"
 
 echo "==> transcoding + generating the composition's data module"
 node "$HERE/build-timeline.mjs" --out "$OUT"

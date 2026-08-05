@@ -274,6 +274,7 @@ async def list_dataset_records(
     include: Annotated[RecordIncludeParam | None, Depends(parse_record_include_param)],
     offset: int = 0,
     limit: Annotated[int, Query(ge=1, le=LIST_DATASET_RECORDS_LIMIT_LE)] = LIST_DATASET_RECORDS_LIMIT_DEFAULT,
+    reference: Annotated[str | None, Query(description="Filter records by exact `reference` match")] = None,
     current_user: User = Security(auth.get_current_user),
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id)
@@ -304,6 +305,7 @@ async def list_dataset_records(
         dataset_id=dataset.id,
         offset=offset,
         limit=limit,
+        reference=reference,
         **include_args,
     )
 

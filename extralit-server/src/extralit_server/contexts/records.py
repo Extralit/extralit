@@ -31,6 +31,7 @@ async def list_dataset_records(
     with_vectors: bool | list[str] = False,
     with_response_suggestions: bool = False,
     workspace_user_ids: Iterable[UUID] | None = None,
+    reference: str | None = None,
 ) -> tuple[Sequence[Record], int]:
     query = _build_list_records_query(
         dataset_id=dataset_id,
@@ -41,10 +42,15 @@ async def list_dataset_records(
         with_vectors=with_vectors,
         with_response_suggestions=with_response_suggestions,
         workspace_user_ids=workspace_user_ids,
+        reference=reference,
     )
 
     records = (await db.scalars(query)).unique().all()
-    total = await db.scalar(select(func.count(Record.id)).filter_by(dataset_id=dataset_id))
+
+    total_query = select(func.count(Record.id)).filter_by(dataset_id=dataset_id)
+    if reference is not None:
+        total_query = total_query.filter(Record.reference == reference)
+    total = await db.scalar(total_query)
 
     return records, total
 
@@ -91,8 +97,12 @@ def _build_list_records_query(
     with_vectors: bool | list[str] = False,
     with_response_suggestions: bool = False,
     workspace_user_ids: Iterable[UUID] | None = None,
+    reference: str | None = None,
 ) -> Select:
     query = select(Record).filter_by(dataset_id=dataset_id)
+
+    if reference is not None:
+        query = query.filter(Record.reference == reference)
 
     if with_response_suggestions and workspace_user_ids:
         query = query.outerjoin(
@@ -157,6 +167,9 @@ async def update_record(
 
     if record_update.is_set("metadata"):
         record.metadata_ = record_update.metadata
+
+    if record_update.is_set("reference"):
+        record.reference = record_update.reference
 
     if record_update.is_set("suggestions"):
         # Delete all suggestions and replace them with the new ones

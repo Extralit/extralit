@@ -44,6 +44,15 @@ class RecordValidatorBase(ABC):
         cls._validate_image_fields(dataset=dataset, fields=fields)
         cls._validate_chat_fields(dataset=dataset, fields=fields)
         cls._validate_custom_fields(dataset=dataset, fields=fields)
+        # No `_validate_column_fields` collector, deliberately. A column field is an
+        # extraction input declared by the dataset's Pandera schema version, not an
+        # annotator-editable answer: `Field.settings["dtype"]` exists to type the search
+        # index, not to gate ingestion. Because every collector above selects its fields
+        # with `filter(lambda field: field.is_<type>, dataset.fields)`, column fields fall
+        # through all of them and are never value-validated — while
+        # `_validate_extra_fields` still requires them to be declared, and editable
+        # columns are validated on the Question/Response path by ResponseValueValidator.
+        # Do not "fix" this by adding a collector.
 
     @classmethod
     def _validate_non_empty_fields(cls, fields: dict[str, str]) -> None:

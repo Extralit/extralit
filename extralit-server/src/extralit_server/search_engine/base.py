@@ -222,6 +222,17 @@ class SearchEngine(metaclass=ABCMeta):
         pass
 
     @abstractmethod
+    async def index_exists(self, dataset: Dataset) -> bool:
+        """Whether `dataset`'s index already exists.
+
+        `create_index` is NOT idempotent -- both backends issue a bare `indices.create`
+        (elasticsearch.py, opensearch.py) that raises `resource_already_exists_exception` on a
+        second call for the same dataset, since `es_index_name_for_dataset` is stable per
+        dataset. Callers that may run against an already-published dataset (e.g. republishing a
+        schema version) must check this first rather than relying on `create_index` to no-op.
+        """
+
+    @abstractmethod
     async def delete_index(self, dataset: Dataset):
         pass
 

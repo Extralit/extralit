@@ -10,6 +10,10 @@ class FieldType(StrEnum):
     chat = "chat"
     custom = "custom"
     table = "table"
+    # A column declared by the dataset's Pandera schema version. Carries a dtype for the
+    # index mapping and is deliberately not value-validated: columns are extraction inputs,
+    # not annotator-editable answers. Editable columns get a Question bound to them instead.
+    column = "column"
 
 
 class ResponseStatus(StrEnum):
@@ -95,17 +99,3 @@ class SimilarityOrder(StrEnum):
 class OptionsOrder(StrEnum):
     natural = "natural"
     suggestion = "suggestion"
-
-
-class SchemaStatus(StrEnum):
-    draft = "draft"
-    published = "published"
-
-
-class V2RecordStatus(StrEnum):
-    """v2 record status. Distinct from v1 RecordStatus: adds `discarded` and maps to its
-    own PG enum type (v2_record_status_enum) so v1's record_status_enum is untouched."""
-
-    pending = "pending"
-    completed = "completed"
-    discarded = "discarded"

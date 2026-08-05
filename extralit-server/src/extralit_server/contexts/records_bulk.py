@@ -43,6 +43,7 @@ class CreateRecordsBulk:
                 fields=jsonable_encoder(record_create.fields),
                 metadata_=record_create.metadata,
                 external_id=record_create.external_id,
+                reference=record_create.reference,
                 dataset_id=dataset.id,
             )
             for record_create in bulk_create.items
@@ -165,6 +166,7 @@ class UpsertRecordsBulk(CreateRecordsBulk):
                     fields=jsonable_encoder(record_upsert.fields),
                     metadata_=record_upsert.metadata,
                     external_id=record_upsert.external_id,
+                    reference=record_upsert.reference,
                     dataset_id=dataset.id,
                 )
             else:
@@ -172,6 +174,8 @@ class UpsertRecordsBulk(CreateRecordsBulk):
                     record.metadata_ = record_upsert.metadata
                 if record_upsert.is_set("fields"):
                     record.fields = jsonable_encoder(record_upsert.fields)
+                if record_upsert.is_set("reference"):
+                    record.reference = record_upsert.reference
 
                 if self._db.is_modified(record):
                     record.updated_at = datetime.utcnow()

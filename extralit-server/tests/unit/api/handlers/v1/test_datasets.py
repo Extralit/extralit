@@ -66,6 +66,7 @@ from tests.factories import (
     RatingQuestionFactory,
     RecordFactory,
     ResponseFactory,
+    SchemaVersionFactory,
     SuggestionFactory,
     TermsMetadataPropertyFactory,
     TextFieldFactory,
@@ -106,6 +107,7 @@ class TestSuiteDatasets:
                     "metadata": None,
                     "mapping": None,
                     "workspace_id": str(dataset_a.workspace_id),
+                    "current_schema_version_id": None,
                     "last_activity_at": dataset_a.last_activity_at.isoformat(),
                     "inserted_at": dataset_a.inserted_at.isoformat(),
                     "updated_at": dataset_a.updated_at.isoformat(),
@@ -123,6 +125,7 @@ class TestSuiteDatasets:
                     "metadata": None,
                     "mapping": None,
                     "workspace_id": str(dataset_b.workspace_id),
+                    "current_schema_version_id": None,
                     "last_activity_at": dataset_b.last_activity_at.isoformat(),
                     "inserted_at": dataset_b.inserted_at.isoformat(),
                     "updated_at": dataset_b.updated_at.isoformat(),
@@ -140,6 +143,7 @@ class TestSuiteDatasets:
                     "metadata": None,
                     "mapping": None,
                     "workspace_id": str(dataset_c.workspace_id),
+                    "current_schema_version_id": None,
                     "last_activity_at": dataset_c.last_activity_at.isoformat(),
                     "inserted_at": dataset_c.inserted_at.isoformat(),
                     "updated_at": dataset_c.updated_at.isoformat(),
@@ -290,7 +294,6 @@ class TestSuiteDatasets:
         assert response.status_code == 404
         assert response.json() == {"detail": f"Dataset with id `{dataset_id}` not found"}
 
-    @pytest.mark.skip(reason="Failing due to missing 'use_table' field in text question settings")
     async def test_list_dataset_questions(self, async_client: "AsyncClient", owner_auth_header: dict):
         dataset = await DatasetFactory.create()
         text_question = await TextQuestionFactory.create(
@@ -319,7 +322,7 @@ class TestSuiteDatasets:
                     "title": "Text Question",
                     "description": "Question Description",
                     "required": True,
-                    "settings": {"type": "text", "use_markdown": False},
+                    "settings": {"type": "text", "use_markdown": False, "use_table": False, "columns": None},
                     "dataset_id": str(text_question.dataset_id),
                     "inserted_at": text_question.inserted_at.isoformat(),
                     "updated_at": text_question.updated_at.isoformat(),
@@ -678,10 +681,26 @@ class TestSuiteDatasets:
             "metadata": None,
             "mapping": None,
             "workspace_id": str(dataset.workspace_id),
+            "current_schema_version_id": None,
             "last_activity_at": dataset.last_activity_at.isoformat(),
             "inserted_at": dataset.inserted_at.isoformat(),
             "updated_at": dataset.updated_at.isoformat(),
         }
+
+    async def test_get_dataset_with_current_schema_version_id(
+        self, async_client: "AsyncClient", db: "AsyncSession", owner_auth_header: dict
+    ):
+        dataset = await DatasetFactory.create(name="dataset")
+        schema_version = await SchemaVersionFactory.create(dataset=dataset)
+
+        dataset.current_schema_version_id = schema_version.id
+        await db.commit()
+        await db.refresh(dataset)
+
+        response = await async_client.get(f"/api/v1/datasets/{dataset.id}", headers=owner_auth_header)
+
+        assert response.status_code == 200
+        assert response.json()["current_schema_version_id"] == str(schema_version.id)
 
     async def test_get_dataset_without_authentication(self, async_client: "AsyncClient"):
         dataset = await DatasetFactory.create()
@@ -891,6 +910,7 @@ class TestSuiteDatasets:
             "metadata": None,
             "mapping": None,
             "workspace_id": str(workspace.id),
+            "current_schema_version_id": None,
             "last_activity_at": datetime.fromisoformat(response_body["last_activity_at"]).isoformat(),
             "inserted_at": datetime.fromisoformat(response_body["inserted_at"]).isoformat(),
             "updated_at": datetime.fromisoformat(response_body["updated_at"]).isoformat(),
@@ -3361,6 +3381,7 @@ class TestSuiteDatasets:
                         "fields": {"input": "input_a", "output": "output_a"},
                         "metadata": None,
                         "external_id": records[0].external_id,
+                        "reference": records[0].reference,
                         "dataset_id": str(records[0].dataset_id),
                         "inserted_at": records[0].inserted_at.isoformat(),
                         "updated_at": records[0].updated_at.isoformat(),
@@ -3374,6 +3395,7 @@ class TestSuiteDatasets:
                         "fields": {"input": "input_b", "output": "output_b"},
                         "metadata": {"unit": "test"},
                         "external_id": records[1].external_id,
+                        "reference": records[1].reference,
                         "dataset_id": str(records[1].dataset_id),
                         "inserted_at": records[1].inserted_at.isoformat(),
                         "updated_at": records[1].updated_at.isoformat(),
@@ -3695,6 +3717,7 @@ class TestSuiteDatasets:
                         },
                         "metadata": None,
                         "external_id": records[0].external_id,
+                        "reference": records[0].reference,
                         "dataset_id": str(records[0].dataset_id),
                         "inserted_at": records[0].inserted_at.isoformat(),
                         "updated_at": records[0].updated_at.isoformat(),
@@ -3711,6 +3734,7 @@ class TestSuiteDatasets:
                         },
                         "metadata": {"unit": "test"},
                         "external_id": records[1].external_id,
+                        "reference": records[1].reference,
                         "dataset_id": str(records[1].dataset_id),
                         "inserted_at": records[1].inserted_at.isoformat(),
                         "updated_at": records[1].updated_at.isoformat(),
@@ -3845,6 +3869,7 @@ class TestSuiteDatasets:
                         "fields": {"text": "This is a text", "sentiment": "neutral"},
                         "metadata": None,
                         "external_id": record_a.external_id,
+                        "reference": record_a.reference,
                         "vectors": {
                             "vector-a": [1.0, 2.0, 3.0],
                             "vector-b": [4.0, 5.0],
@@ -3862,6 +3887,7 @@ class TestSuiteDatasets:
                         "fields": {"text": "This is a text", "sentiment": "neutral"},
                         "metadata": None,
                         "external_id": record_b.external_id,
+                        "reference": record_b.reference,
                         "vectors": {
                             "vector-b": [1.0, 2.0],
                         },
@@ -3878,6 +3904,7 @@ class TestSuiteDatasets:
                         "fields": {"text": "This is a text", "sentiment": "neutral"},
                         "metadata": None,
                         "external_id": record_c.external_id,
+                        "reference": record_c.reference,
                         "vectors": {},
                         "dataset_id": str(record_c.dataset_id),
                         "inserted_at": record_c.inserted_at.isoformat(),
@@ -3942,6 +3969,7 @@ class TestSuiteDatasets:
                         "fields": {"text": "This is a text", "sentiment": "neutral"},
                         "metadata": None,
                         "external_id": record_a.external_id,
+                        "reference": record_a.reference,
                         "vectors": {
                             "vector-a": [1.0, 2.0, 3.0],
                             "vector-b": [4.0, 5.0],
@@ -3959,6 +3987,7 @@ class TestSuiteDatasets:
                         "fields": {"text": "This is a text", "sentiment": "neutral"},
                         "metadata": None,
                         "external_id": record_b.external_id,
+                        "reference": record_b.reference,
                         "vectors": {
                             "vector-b": [1.0, 2.0],
                         },
@@ -3975,6 +4004,7 @@ class TestSuiteDatasets:
                         "fields": {"text": "This is a text", "sentiment": "neutral"},
                         "metadata": None,
                         "external_id": record_c.external_id,
+                        "reference": record_c.reference,
                         "vectors": {},
                         "dataset_id": str(record_c.dataset_id),
                         "inserted_at": record_c.inserted_at.isoformat(),
@@ -4486,6 +4516,7 @@ class TestSuiteDatasets:
             "metadata": None,
             "mapping": None,
             "workspace_id": str(dataset.workspace_id),
+            "current_schema_version_id": None,
             "last_activity_at": dataset.last_activity_at.isoformat(),
             "inserted_at": dataset.inserted_at.isoformat(),
             "updated_at": dataset.updated_at.isoformat(),

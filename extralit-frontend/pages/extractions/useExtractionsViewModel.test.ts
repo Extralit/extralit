@@ -1,7 +1,7 @@
 import { createPinia, setActivePinia } from "pinia";
 import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { WorkspaceProjection } from "~/v2/domain/entities/projection/WorkspaceProjection";
+import { WorkspaceProjection } from "~/v1/domain/entities/projection/WorkspaceProjection";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 

@@ -5,9 +5,46 @@ from extralit_server.api.schemas.v1.questions import (
     QuestionUpdate,
     SpanQuestionSettings,
 )
-from extralit_server.enums import QuestionType
+from extralit_server.enums import FieldType, QuestionType
 from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.models.database import Dataset, Question
+
+
+class QuestionColumnBindingValidator:
+    """Validate a question's `settings["columns"]` against the dataset's declared columns.
+
+    Column fields are materialized from the dataset's Pandera schema version at publish
+    time (contexts/schema_versions.derive_column_fields), so `dataset.fields` is the
+    authoritative manifest. Requires `dataset.fields` to be eagerly loaded (e.g.
+    `selectinload(Dataset.fields)`) by the caller before invoking this validator — this
+    class does not, and cannot, load it itself. Every question handler happens to preload
+    it today, but that is a call-site obligation, not a guarantee this validator enforces:
+    a new caller that forgets the eager load gets `MissingGreenlet` on an AsyncSession the
+    first time `dataset.fields` above is touched (the same failure mode as Critical 1 in
+    `contexts/schema_versions.publish_version`, which this docstring's earlier, over-broad
+    claim helped hide from review).
+    """
+
+    @classmethod
+    def validate(cls, settings: dict, dataset: Dataset) -> None:
+        columns = settings.get("columns")
+        if columns is None:
+            return
+
+        if not columns:
+            raise UnprocessableEntityError("question column binding cannot be empty")
+
+        declared = {field.name for field in dataset.fields if field.settings.get("type") == FieldType.column}
+        unknown = [column for column in columns if column not in declared]
+        if unknown:
+            raise UnprocessableEntityError(
+                f"question binds to columns not declared by the dataset schema: {', '.join(sorted(unknown))}"
+            )
+
+        if settings.get("type") != QuestionType.table and len(columns) != 1:
+            raise UnprocessableEntityError(
+                f"a {settings.get('type')} question must bind to exactly one column, got {len(columns)}"
+            )
 
 
 class QuestionCreateValidator:
@@ -15,6 +52,7 @@ class QuestionCreateValidator:
     def validate(cls, question_create: QuestionCreate, dataset: Dataset):
         cls._validate_dataset_is_not_ready(dataset)
         cls._validate_span_question_settings(question_create, dataset)
+        QuestionColumnBindingValidator.validate(question_create.settings.model_dump(), dataset)
 
     @staticmethod
     def _validate_dataset_is_not_ready(dataset):
@@ -55,6 +93,8 @@ class QuestionUpdateValidator:
     @classmethod
     def validate(cls, question_update: QuestionUpdate, question: Question):
         cls._validate_question_settings(question_update, question.parsed_settings)
+        if question_update.settings is not None:
+            QuestionColumnBindingValidator.validate(question_update.settings.model_dump(), question.dataset)
 
     @classmethod
     def _validate_question_settings(cls, question_update: QuestionUpdate, question_settings: QuestionSettings):

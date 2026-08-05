@@ -1,8 +1,9 @@
-"""Pure, I/O-free helpers mapping v2 schema columns and records to a Lance row layout.
+"""Pure, I/O-free helpers mapping schema columns and records to a Lance row layout.
 
-No LanceDB, DB, or object-store access — given a `columns_cache` (from
-`SchemaVersion.columns_cache`) and a record, build the Arrow schema and row dicts the
-index engine writes. The Lance table for a schema is the union (superset) of columns
+No LanceDB, DB, or object-store access — given a column manifest (the list of column
+dicts derived from a schema version's `Field` rows) and a record, build the Arrow
+schema and row dicts the LanceDB index engine writes (see ENG-36 for wiring this engine
+in as a `SearchEngine`). The Lance table for a schema is the union (superset) of columns
 across its versions plus system/identity columns and a derived `text` column that
 carries the BM25 full-text index.
 """
@@ -14,7 +15,7 @@ import pyarrow as pa
 
 # Identity/system columns present in every schema's Lance table, independent of the
 # user-defined columns. `text` is the concatenated string-cell blob the FTS index covers.
-SYSTEM_FIELDS = ["record_id", "reference", "schema_version_id", "status", "external_id", "text"]
+SYSTEM_FIELDS = ["record_id", "reference", "status", "external_id", "text"]
 
 # Observed pandera 0.32 / pandas 3.0 `str(column.dtype)` values -> Arrow types.
 # large_string is used for text so the FTS index has no 2GiB offset ceiling.
@@ -75,7 +76,6 @@ def arrow_schema_for(columns: list[dict[str, Any]]) -> pa.Schema:
     fields = [
         pa.field("record_id", pa.large_string()),
         pa.field("reference", pa.large_string()),
-        pa.field("schema_version_id", pa.large_string()),
         pa.field("status", pa.large_string()),
         pa.field("external_id", pa.large_string()),
     ]
@@ -110,7 +110,6 @@ def record_to_row(record: Any, columns: list[dict[str, Any]]) -> dict[str, Any]:
     row: dict[str, Any] = {
         "record_id": str(record.id),
         "reference": record.reference,
-        "schema_version_id": str(record.schema_version_id),
         "status": record.status.value if hasattr(record.status, "value") else str(record.status),
         "external_id": record.external_id,
     }

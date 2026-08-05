@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, constr
@@ -106,8 +106,29 @@ class TableFieldSettingsUpdate(BaseModel):
     type: Literal[FieldType.table]
 
 
+class ColumnFieldSettings(BaseModel):
+    type: Literal[FieldType.column]
+    dtype: str
+    nullable: bool = True
+    # Opaque per-column review widget overlay, carried through to the client verbatim.
+    # Replaces the former SchemaVersion.review_widgets column.
+    review: dict[str, Any] | None = None
+
+
+class ColumnFieldSettingsCreate(BaseModel):
+    type: Literal[FieldType.column]
+    dtype: str
+    nullable: bool = True
+    review: dict[str, Any] | None = None
+
+
 FieldSettings = Annotated[
-    TextFieldSettings | ImageFieldSettings | ChatFieldSettings | CustomFieldSettings | TableFieldSettings,
+    TextFieldSettings
+    | ImageFieldSettings
+    | ChatFieldSettings
+    | CustomFieldSettings
+    | TableFieldSettings
+    | ColumnFieldSettings,
     PydanticField(..., discriminator="type"),
 ]
 
@@ -116,10 +137,16 @@ FieldSettingsCreate = Annotated[
     | ImageFieldSettingsCreate
     | ChatFieldSettingsCreate
     | CustomFieldSettingsCreate
-    | TableFieldSettingsCreate,
+    | TableFieldSettingsCreate
+    | ColumnFieldSettingsCreate,
     PydanticField(..., discriminator="type"),
 ]
 
+# No `column` member: a column field is derived from the dataset's Pandera schema version
+# (contexts/schema_versions.derive_column_fields), so `PATCH /fields/{id}` must not be able to
+# change its dtype out of band -- that would contradict the immutability
+# `contexts/schema_versions._reject_incompatible_columns` enforces at publish time. Republish
+# the schema version instead. A PATCH against a column field is rejected by the discriminator.
 FieldSettingsUpdate = Annotated[
     TextFieldSettingsUpdate
     | ImageFieldSettingsUpdate
