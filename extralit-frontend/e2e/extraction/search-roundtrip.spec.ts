@@ -16,8 +16,16 @@ test("FTS finds the seeded record; filters and empty results render gracefully",
     await expect(page.getByText(seed.reference)).toBeVisible({ timeout: 2_000 });
   }).toPass({ timeout: 30_000 }); // eventual consistency window
 
-  // Filtered search: status filter travels through the :search body.
+  // Filtered search: the status filter travels through the :search body *and* is honoured.
+  // The seeded record is `completed`, not `pending`: seed_v2_e2e.py submits a response to the
+  // required `label` question, and under the default `overlap: 1` distribution a single
+  // submitted response completes the record. Both directions are asserted because only the
+  // negative one has teeth — a filter that never reached the backend would leave the record
+  // visible under `pending` as well, so a lone positive assertion would pass on a dropped filter.
   await page.locator("select").selectOption("pending");
+  await expect(page.getByText(seed.reference)).toHaveCount(0);
+
+  await page.locator("select").selectOption("completed");
   await expect(page.getByText(seed.reference)).toBeVisible();
 
   // Graceful empty state — copy must not claim "0 records exist" (total is approximate).
