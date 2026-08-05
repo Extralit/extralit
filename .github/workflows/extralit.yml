@@ -1,7 +1,9 @@
 name: Build Extralit Package & Publish
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.sha }}
+  # Keyed on the ref, not the sha: a release pushes `main`, `release` and the tag at the same
+  # commit, so a sha-keyed group would make those runs cancel each other at random.
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 on:
@@ -10,9 +12,15 @@ on:
   push:
     branches:
       - main
-      - develop
-      - feat/**
-      - releases/**
+      - release
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+    paths:
+      - "extralit/**"
+      - "!extralit/docs/**"
+      - "!extralit/mkdocs.yml"
+
+  pull_request:
     paths:
       - "extralit/**"
       - "!extralit/docs/**"
@@ -24,7 +32,6 @@ permissions:
 
 jobs:
   build:
-    if: github.event.pull_request.draft == false
     services:
       extralit-container:
         image: extralitdev/extralit-hf-space:latest
@@ -133,7 +140,8 @@ jobs:
   publish_release:
     name: Publish Release
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+    # Tags are the only thing that publishes. release.yml creates them; never push one by hand.
+    if: startsWith(github.ref, 'refs/tags/v')
 
     permissions:
       # This permission is needed for private repositories.
@@ -167,7 +175,7 @@ jobs:
 
       - name: Read package info
         run: |
-          PACKAGE_VERSION=$(grep '__version__' src/extralit/_version.py | cut -d'"' -f2)
+          PACKAGE_VERSION=$(python3 "$GITHUB_WORKSPACE/scripts/bump_version.py" check)
           PACKAGE_NAME="extralit"
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
           echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
@@ -184,6 +192,5 @@ jobs:
           pip3 install --index-url https://test.pypi.org/simple --no-deps  $PACKAGE_NAME==$PACKAGE_VERSION
 
       - name: Publish Package to PyPI 🥩
-        if: github.ref == 'refs/heads/main'
         run: |
           uv publish --token ${{ secrets.AR_PYPI_API_TOKEN }} dist/*

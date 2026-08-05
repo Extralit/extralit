@@ -1,7 +1,9 @@
 name: Build Extralit server package
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.sha }}
+  # Keyed on the ref, not the sha: a release pushes `main`, `release` and the tag at the same
+  # commit, so a sha-keyed group would make those runs cancel each other at random.
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 on:
@@ -10,9 +12,13 @@ on:
   push:
     branches:
       - main
-      - develop
-      - feat/**
-      - releases/**
+      - release
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+    paths:
+      - "extralit-server/**"
+
+  pull_request:
     paths:
       - "extralit-server/**"
 
@@ -22,7 +28,6 @@ permissions:
 jobs:
   build:
     name: Build `extralit-server` package
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
 
     defaults:
@@ -128,11 +133,9 @@ jobs:
 
       # The server no longer builds the frontend from source. The live UI is published to Vercel
       # by extralit-frontend.yml; here we just bake a prebuilt SPA into the wheel as the bundled
-      # fallback UI (main for release builds, else develop).
+      # fallback UI. Always sourced from `main` (see the action for why).
       - name: Download prebuilt frontend statics
         uses: ./.github/actions/download-frontend-artifact
-        with:
-          branch: ${{ github.ref_name == 'main' && 'main' || 'develop' }}
 
       - name: Build package
         run: |
@@ -152,28 +155,26 @@ jobs:
   build_docker_images:
     name: Build docker images
     uses: ./.github/workflows/extralit-server.build-docker-images.yml
-    if: |
-      github.ref == 'refs/heads/main'
-      || github.ref == 'refs/heads/develop'
-      || contains(github.ref, 'releases/')
-      || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && !github.event.pull_request.draft)
+    # Branch pushes (`main`, `release`) and manual dispatch only. PRs get tests here and nothing
+    # else — their preview images are built by extralit-frontend.build-push-dev.yml on
+    # `ready_for_review`. Tags only publish to PyPI; the image was already built from `release`.
+    if: github.ref_type == 'branch' && github.event_name != 'pull_request'
     needs:
       - build
     with:
-      is_release: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
-      publish_latest: ${{ github.ref == 'refs/heads/main' }}
+      is_release: ${{ github.ref_name == 'release' }}
+      publish_latest: ${{ github.ref_name == 'release' }}
     secrets: inherit
 
   # This job will publish extralit-server python package into PyPI repository
   publish_release:
     name: Publish Release
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+    # Tags are the only thing that publishes. release.yml creates them; never push one by hand.
+    if: startsWith(github.ref, 'refs/tags/v')
 
     needs:
       - build
-      - build_docker_images
 
     defaults:
       run:
@@ -203,7 +204,7 @@ jobs:
 
       - name: Read package info
         run: |
-          PACKAGE_VERSION=$(grep '__version__' src/extralit_server/_version.py | cut -d'"' -f2)
+          PACKAGE_VERSION=$(python3 "$GITHUB_WORKSPACE/scripts/bump_version.py" check)
           PACKAGE_NAME="extralit-server"
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
           echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
@@ -220,6 +221,5 @@ jobs:
           pip install --index-url https://test.pypi.org/simple --no-deps  $PACKAGE_NAME==$PACKAGE_VERSION
 
       - name: Publish Package to PyPI 🥩
-        if: github.ref == 'refs/heads/main'
         run: |
           uv publish --token ${{ secrets.AR_PYPI_API_TOKEN }} dist/*

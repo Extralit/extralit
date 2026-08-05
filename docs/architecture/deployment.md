@@ -139,8 +139,10 @@ Triggered by push to `main`/`release`, by pull requests, or manually
 2. **Downloads the prebuilt frontend SPA** via the
    [`download-frontend-artifact`](../../.github/actions/download-frontend-artifact)
    composite action, which fetches the latest successful `extralit-frontend.yml`
-   artifact for the relevant branch (`release` on a release build, otherwise
-   `main`). The server does **not** run `npm`.
+   artifact for `main` — **always `main`**, release builds included, because the
+   action needs a *previously successful* run on the branch it names and `release`
+   only ever carries a commit that already landed on `main`. The server does
+   **not** run `npm`.
 3. Copies `extralit-frontend/.output/public` into `src/extralit_server/static`,
    asserts `index.html` exists, then `uv build` → uploads the `extralit-server`
    wheel artifact.
@@ -155,7 +157,13 @@ Triggered by push to `main`/`release`, by pull requests, or manually
 ### Job `build_docker_images` → `extralit-server.build-docker-images.yml`
 File: [`.github/workflows/extralit-server.build-docker-images.yml`](../../.github/workflows/extralit-server.build-docker-images.yml)
 
-Runs on `main` / `release` / `workflow_dispatch` / non-fork non-draft PRs.
+Runs on branch pushes (`main` / `release`) and `workflow_dispatch` only —
+`github.ref_type == 'branch' && github.event_name != 'pull_request'`. **PRs run
+tests and nothing else here;** their preview images come from
+`extralit-frontend.build-push-dev.yml` (§3a), which is the only caller that
+passes `pr_number`. Tag pushes are excluded too: the image was already built from
+the `release` push at the same SHA, and a tag-triggered build would dispatch
+`branch=vX.Y.Z`, which `resolve-env` would turn into a junk preview Space.
 
 | Input                  | `is_release` (`release` branch) | dev (`main` / PR)               |
 | ---------------------- | ------------------------------- | ------------------------------- |
@@ -438,10 +446,12 @@ The cross-repo `client-payload` carries the handoff state:
 - **Two Docker orgs.** `extralit/*` = release (from `release`), `extralitdev/*` =
   dev (from `main`/PRs). The Space's `EXTRALIT_SERVER_IMAGE` env var picks which
   base it builds on.
-- **A release fires `extralit-server.yml` twice.** The atomic push updates `main`
-  and `release` at the same SHA. The workflow's `concurrency.group` is keyed on
-  `github.ref` (not `github.sha`) precisely so the two runs don't cancel each
-  other; one extra dev-Space rebuild per release is the accepted cost.
+- **A release fires `extralit-server.yml` three times.** The atomic push updates
+  `main`, `release` and the `vX.Y.Z` tag at the same SHA. The workflow's
+  `concurrency.group` is keyed on `github.ref` (not `github.sha`) precisely so
+  those runs don't cancel each other. They do different work: `release` builds and
+  ships the production image, the tag publishes to PyPI, and `main` rebuilds the
+  dev Space — one extra dev-Space rebuild per release is the accepted cost.
 - **Cross-repo token.** The handoff depends on
   `secrets.GH_ACTIONS_REPOSITORY_DISPATCH` (a PAT with dispatch rights on
   `extralit/extralit-hf-space`). If the Space stops updating after merges,
