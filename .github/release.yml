@@ -1,0 +1,35 @@
+# Categorises the notes GitHub generates for a release (`--generate-notes` in
+# .github/workflows/github-release.yml).
+#
+# NOTE: GitHub categorises by PR **label**, not by PR-title prefix. The `feat:` / `fix:` /
+# `docs:` / `chore:` title convention in extralit/docs/community/contributor.md is for humans
+# and stays unenforced — to make a PR land under a heading below, give it the matching label.
+# Anything unlabelled still shows up, under "Other changes".
+changelog:
+  exclude:
+    authors:
+      - dependabot
+      - github-actions[bot]
+  categories:
+    - title: ✨ Features
+      labels:
+        - enhancement
+        - feature
+    - title: 🐛 Fixes
+      labels:
+        - bug
+        - fix
+    - title: 📚 Documentation
+      labels:
+        - documentation
+    - title: 🧹 Maintenance
+      labels:
+        - refactor
+        - refactoring
+        - infrastructure
+        - deployment
+        - chore
+    # Catch-all. Must stay last — GitHub assigns each PR to the first matching category.
+    - title: Other changes
+      labels:
+        - "*"

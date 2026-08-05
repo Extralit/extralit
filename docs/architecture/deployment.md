@@ -111,6 +111,7 @@ on **`pull_request`**.
 | `extralit/` (SDK)   | `extralit.yml`                    | `extralit/**` (excl. `docs/`, `mkdocs.yml`)   | `extralit` PyPI wheel                               | No²               |
 | `extralit/docs/`    | `extralit.docs.yml`               | `extralit/docs/**`, `mkdocs.yml`              | Versioned docs via `mike` → `gh-pages`              | No                |
 | *(whole repo)*      | `release.yml`                     | manual dispatch only                          | version stamp on `main` + `release` + `vX.Y.Z` tag  | **Yes** (indirectly) |
+| *(none)*            | `github-release.yml`              | `vX.Y.Z` tag                                  | GitHub Release, once PyPI serves both packages      | No³ |
 | `extralit-hf-space/`| `build-hf-space.yml` *(other repo)* | repository_dispatch / manual                | `extralit-hf-space` Docker image + Space restart/deploy | **Yes** (terminal) |
 
 ¹ The frontend's own workflow tests, lints, and uploads a prerendered SPA
@@ -123,6 +124,15 @@ a release — but a frontend-only **PR** *does* get an ephemeral preview (see §
 ² The SDK is published to PyPI and is *consumed by* the demo's CI for
 integration tests (it spins up `extralitdev/extralit-hf-space:latest` as a
 service container), but SDK changes never rebuild the Space image.
+
+³ [`github-release.yml`](../../.github/workflows/github-release.yml) runs **zero
+project code** — no checkout, no install, no build. It holds `contents: write`
+and fires on a tag, so a malicious tagged commit must have nothing there to
+execute. It polls PyPI for both packages first and only then runs `gh release
+create --verify-tag --generate-notes`, so a release is never announced before it
+is installable and `gh` can never mint a tag of its own. Note headings come from
+PR **labels** via [`.github/release.yml`](../../.github/release.yml) — the
+`feat:`/`fix:` title convention is for humans and is not what GitHub reads.
 
 ---
 

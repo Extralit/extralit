@@ -1,0 +1,267 @@
+name: Release
+
+# The whole release, in one dispatch:
+#
+#   gh workflow run release.yml -f version=X.Y.Z                    # dry run (the default): plan only
+#   gh workflow run release.yml -f version=X.Y.Z -f dry_run=false   # cut it
+#
+# `cut` stamps the version and pushes `main`, `release` and `vX.Y.Z` in ONE atomic push, so all
+# three always agree. Everything downstream is driven by those refs and lives in other workflows:
+# `release` → production image → extralit/public-demo; the tag → PyPI, versioned docs, GitHub Release.
+#
+# Re-running with the same version is safe: `plan` detects a converged release and `cut` no-ops.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "X.Y.Z (no leading v)"
+        required: true
+        type: string
+      dry_run:
+        description: "Plan only — push nothing"
+        type: boolean
+        default: true
+      skip_ci_check:
+        description: "Skip the green-CI assertion (use deliberately)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  # Never two releases at once, and never cancel one halfway through its atomic push.
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    name: Authorize
+    # Forks are inert: a fork's dispatch can't move this repo's refs, so don't pretend to try.
+    if: github.repository == 'Extralit/extralit'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require admin or maintain
+        env:
+          # The PAT can always read collaborator permissions; GITHUB_TOKEN may not, depending on
+          # repo settings. Falls back so a fresh checkout of this repo still works.
+          GH_TOKEN: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH || github.token }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          role=$(gh api "repos/$REPO/collaborators/$ACTOR/permission" --jq .role_name)
+          echo "$ACTOR has role '$role' on $REPO"
+          case "$role" in
+            admin | maintain) ;;
+            *)
+              echo "::error::'$ACTOR' needs admin or maintain to cut a release (has '$role')"
+              exit 1
+              ;;
+          esac
+
+  plan:
+    name: Plan
+    needs: authorize
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
+      tag: ${{ steps.validate.outputs.tag }}
+      base_sha: ${{ steps.base.outputs.sha }}
+      already_done: ${{ steps.converged.outputs.already_done }}
+    steps:
+      - name: Validate version
+        id: validate
+        env:
+          # Never interpolate ${{ inputs.* }} straight into a run: body — bind it to env first.
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          # Deliberately the same shape scripts/bump_version.py accepts, so the two can't disagree.
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::version must be X.Y.Z with no leading 'v' (got '$VERSION')"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          # Full history + tags: the convergence check reads out an existing tag's commit.
+          fetch-depth: 0
+
+      - name: Resolve base commit
+        id: base
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether this release already happened
+        id: converged
+        env:
+          TAG: ${{ steps.validate.outputs.tag }}
+          VERSION: ${{ steps.validate.outputs.version }}
+          BASE_SHA: ${{ steps.base.outputs.sha }}
+        run: |
+          set -euo pipefail
+          if ! git rev-parse -q --verify "refs/tags/$TAG^{commit}" > /dev/null; then
+            echo "Tag $TAG does not exist yet — this is a fresh release."
+            echo "already_done=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # The tag exists. It's a converged re-run only if the commit it points at actually
+          # carries this version; anything else is a collision a human has to resolve.
+          git checkout -q "$TAG"
+          if python3 scripts/bump_version.py check --expect "$VERSION" > /dev/null 2>&1; then
+            git checkout -q "$BASE_SHA"
+            echo "Tag $TAG already points at a commit stamped $VERSION — nothing to do."
+            echo "already_done=true" >> "$GITHUB_OUTPUT"
+          else
+            git checkout -q "$BASE_SHA"
+            echo "::error::Tag $TAG exists but its commit is not stamped $VERSION. \
+          If this is recovery, delete the tag first: git push origin :refs/tags/$TAG"
+            exit 1
+          fi
+
+      - name: Assert CI is green on the base commit
+        if: ${{ !inputs.skip_ci_check }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE_SHA: ${{ steps.base.outputs.sha }}
+        run: |
+          set -euo pipefail
+          # Filter out this workflow, otherwise a dispatch from `main` waits on its own run forever.
+          runs=$(gh api "repos/$REPO/actions/runs?head_sha=$BASE_SHA&per_page=100" \
+            --jq '[.workflow_runs[] | select(.name != "Release") | {name, status, conclusion}]')
+
+          total=$(jq length <<< "$runs")
+          if [[ "$total" -eq 0 ]]; then
+            echo "::error::No workflow runs found for $BASE_SHA. Nothing has validated this commit \
+          — wait for CI, or re-run with skip_ci_check=true if it genuinely has no applicable workflows."
+            exit 1
+          fi
+
+          pending=$(jq -r '[.[] | select(.status != "completed") | .name] | join(", ")' <<< "$runs")
+          if [[ -n "$pending" ]]; then
+            echo "::error::CI is still running on $BASE_SHA: $pending. Wait for it to finish."
+            exit 1
+          fi
+
+          failed=$(jq -r '[.[] | select(.conclusion | IN("success","skipped","neutral") | not) | .name] | join(", ")' <<< "$runs")
+          if [[ -n "$failed" ]]; then
+            echo "::error::CI is not green on $BASE_SHA: $failed. Fix it, or re-run with skip_ci_check=true."
+            exit 1
+          fi
+
+          echo "All $total workflow run(s) on $BASE_SHA are green."
+
+      - name: Write the plan
+        env:
+          VERSION: ${{ steps.validate.outputs.version }}
+          TAG: ${{ steps.validate.outputs.tag }}
+          BASE_SHA: ${{ steps.base.outputs.sha }}
+          ALREADY_DONE: ${{ steps.converged.outputs.already_done }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          SKIP_CI_CHECK: ${{ inputs.skip_ci_check }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [[ "$DRY_RUN" == "true" ]]; then mode='**DRY RUN** — nothing will be pushed'; else mode='**EXECUTE**'; fi
+
+          {
+            echo "## Release plan"
+            echo
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| Mode | $mode |"
+            echo "| Version | \`$VERSION\` |"
+            echo "| Tag | \`$TAG\` |"
+            echo "| Base commit | [\`${BASE_SHA:0:12}\`](https://github.com/$REPO/commit/$BASE_SHA) on \`main\` |"
+            echo "| Converged already | \`$ALREADY_DONE\` |"
+            echo "| CI check | $([[ "$SKIP_CI_CHECK" == "true" ]] && echo 'skipped by request' || echo 'green') |"
+            echo
+            if [[ "$ALREADY_DONE" == "true" ]]; then
+              echo "\`$TAG\` already points at a commit stamped \`$VERSION\`. Every job below is a no-op."
+            elif [[ "$DRY_RUN" == "true" ]]; then
+              echo "Re-run with \`-f dry_run=false\` to stamp \`$VERSION\` and push"
+              echo "\`main\`, \`release\` and \`$TAG\` atomically."
+            else
+              echo "Stamping \`$VERSION\` onto \`${BASE_SHA:0:12}\` and pushing"
+              echo "\`main\`, \`release\` and \`$TAG\` atomically."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  cut:
+    name: Cut
+    needs: [authorize, plan]
+    if: ${{ !inputs.dry_run && needs.plan.outputs.already_done != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the base commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.base_sha }}
+          # A PAT (or App token), NOT GITHUB_TOKEN: pushes made with GITHUB_TOKEN emit no
+          # downstream `push` events, so the tag would never trigger PyPI, docs, or the Release.
+          token: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
+          fetch-depth: 0
+
+      - name: Stamp the version
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+        run: |
+          set -euo pipefail
+          python3 scripts/bump_version.py set --version "$VERSION"
+          python3 scripts/bump_version.py check --expect "$VERSION"
+
+      - name: Commit and push main + release + tag
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Empty when re-running after a partial failure that already stamped and committed.
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git commit -aqm "release: $TAG"
+          else
+            echo "Already stamped at $VERSION; reusing $(git rev-parse --short HEAD)."
+          fi
+          git tag "$TAG"
+
+          # --atomic: either all three refs move or none do. A stale `main` fails the whole push
+          # rather than leaving a tag with no branch (or worse, a release with no tag).
+          git push --atomic origin \
+            "HEAD:refs/heads/main" \
+            "HEAD:refs/heads/release" \
+            "refs/tags/$TAG"
+
+      - name: What happens next
+        env:
+          TAG: ${{ needs.plan.outputs.tag }}
+          VERSION: ${{ needs.plan.outputs.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          {
+            echo "## Released \`$TAG\`"
+            echo
+            echo "\`main\`, \`release\` and \`$TAG\` now point at the same commit. Watch:"
+            echo
+            echo "- [Actions](https://github.com/$REPO/actions) — \`release\` builds the multi-arch"
+            echo "  production image and restarts the public demo; \`$TAG\` publishes to PyPI,"
+            echo "  deploys the \`${VERSION%.*}\` docs, and creates the GitHub Release."
+            echo "- <https://extralit-public-demo.hf.space/api/v1/status> — should report \`$VERSION\`."
+            echo "- <https://pypi.org/project/extralit/$VERSION/> and"
+            echo "  <https://pypi.org/project/extralit-server/$VERSION/>"
+            echo
+            echo "To roll back: re-point \`release\` at the previous tag and restart the Space."
+          } >> "$GITHUB_STEP_SUMMARY"

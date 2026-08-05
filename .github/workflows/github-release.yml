@@ -1,0 +1,70 @@
+name: GitHub Release
+
+# Creates the GitHub Release for a vX.Y.Z tag, but only once PyPI actually serves that version —
+# a release note that links to an uninstallable version is worse than a late one.
+#
+# This workflow deliberately runs ZERO project code: no checkout, no install, no build. It holds
+# `contents: write` and is triggered by a tag, so a malicious tagged commit must have nothing here
+# to execute. Everything it needs (the tag, .github/release.yml) is read server-side by `gh`.
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: github-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    # PyPI publishing is driven by this same tag push, so the wait below is for a sibling run,
+    # not a finished one. Generous, because extralit-server publishes behind a full test suite.
+    timeout-minutes: 90
+    steps:
+      - name: Wait for PyPI to serve this version
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          version="${VERSION#v}"
+          for pkg in extralit extralit-server; do
+            echo "::group::Waiting for $pkg==$version"
+            for attempt in $(seq 1 60); do
+              if curl -fsS -o /dev/null "https://pypi.org/pypi/$pkg/$version/json"; then
+                echo "$pkg==$version is live on PyPI (attempt $attempt)."
+                break
+              fi
+              if [[ "$attempt" -eq 60 ]]; then
+                echo "::endgroup::"
+                echo "::error::$pkg==$version never appeared on PyPI after 30 min. \
+          Check the publish job on this tag; the GitHub Release is deliberately not created."
+                exit 1
+              fi
+              sleep 30
+            done
+            echo "::endgroup::"
+          done
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$REPO" > /dev/null 2>&1; then
+            echo "Release $TAG already exists; nothing to do."
+            exit 0
+          fi
+          # --verify-tag: `gh` refuses to mint a tag of its own, so a release can only ever
+          # describe a tag that release.yml already pushed.
+          # Published, not drafted: `-f dry_run=false` on release.yml WAS the human decision.
+          # Add --draft here if you'd rather curate the notes before they go public.
+          gh release create "$TAG" --repo "$REPO" --verify-tag --generate-notes --title "$TAG"
+          echo "Created https://github.com/$REPO/releases/tag/$TAG" >> "$GITHUB_STEP_SUMMARY"
