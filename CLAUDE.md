@@ -74,6 +74,36 @@ cd extralit && uv run pytest tests         # SDK tests
 cd extralit-frontend && npm run test       # Frontend tests
 ```
 
+## Branching
+
+Trunk-based. **`main` is the trunk and the default branch** — every change, code or docs,
+branches from `main` and squash-merges back via PR. There is no `develop` branch and no
+`releases/**` branches.
+
+| Ref | Role | Deploys to |
+|---|---|---|
+| `main` | trunk; every merged PR | `extralit-dev/develop` (dev HF Space) |
+| `release` | long-lived production pointer, moved only by `release.yml` | `extralit/public-demo` |
+| `vX.Y.Z` tag | the release itself | PyPI, versioned docs, GitHub Release |
+| PR | preview | ephemeral `extralit-dev/pr-N` |
+
+Branch names: `feat/*`, `fix/*`, `docs/*`, short-lived. PR titles use the matching
+`feat:` / `fix:` / `docs:` / `chore:` prefix — release notes are generated from them.
+
+**Never push to `release` or create tags by hand.** Releases are one dispatch:
+
+```bash
+gh workflow run release.yml -f version=X.Y.Z                    # dry run (the default)
+gh workflow run release.yml -f version=X.Y.Z -f dry_run=false   # cut it
+```
+
+That stamps the version via `scripts/bump_version.py` and pushes `main`, `release`, and the
+tag atomically. The version lives in three files — always change it with
+`python scripts/bump_version.py set --version X.Y.Z`, never by hand.
+
+See `docs/architecture/deployment.md` for the full pipeline and
+`extralit/docs/community/release_guide.md` for the release runbook.
+
 ## Git Workgrees
 When creating a git workgree, place it at `.worktree/<branch-name>` relative to the repo root, normalizing `/` to `-` in the branch-name.
 
