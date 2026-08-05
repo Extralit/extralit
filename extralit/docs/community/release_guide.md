@@ -32,7 +32,7 @@ Once `dry_run=false` succeeds, one commit stamping the version lands on `main`, 
 | --- | --- |
 | push to `release` | multi-arch `extralit/extralit-server:v0.7.0` + `:latest`, then the HF Space rebuild that restarts **`extralit/public-demo`** |
 | push to tag `v0.7.0` | `extralit` and `extralit-server` published to PyPI |
-| push to tag `v0.7.0` | versioned docs at `docs.extralit.ai/0.7/`, with `stable` re-pointed at it |
+| push to tag `v0.7.0` | versioned docs at `docs.extralit.ai/v0.7/`, with `stable` re-pointed at it |
 | push to tag `v0.7.0` | a GitHub Release with notes generated from merged PR titles |
 
 The GitHub Release step waits until PyPI actually serves both packages before publishing, so a release is never announced before it's installable.
@@ -46,7 +46,7 @@ curl -s https://extralit-public-demo.hf.space/api/v1/status | jq .version  # 0.7
 gh release view v0.7.0
 ```
 
-Docs land at [docs.extralit.ai/0.7/](https://docs.extralit.ai/0.7/), and `stable` should redirect there.
+Docs land at [docs.extralit.ai/v0.7/](https://docs.extralit.ai/v0.7/), and `stable` should redirect there.
 
 ## If something goes wrong
 

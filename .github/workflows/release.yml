@@ -210,6 +210,10 @@ jobs:
           # A PAT (or App token), NOT GITHUB_TOKEN: pushes made with GITHUB_TOKEN emit no
           # downstream `push` events, so the tag would never trigger PyPI, docs, or the Release.
           token: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
+          # The next step runs repository code (bump_version.py). This token pushes straight to
+          # `main`/`release`/tags past branch protection, so don't leave it in .git/config while
+          # that happens — the push step below supplies it explicitly, and only to itself.
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Stamp the version
@@ -224,6 +228,8 @@ jobs:
         env:
           VERSION: ${{ needs.plan.outputs.version }}
           TAG: ${{ needs.plan.outputs.tag }}
+          # Scoped to this step alone — see persist-credentials above. Actions masks it in logs.
+          TOKEN: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
@@ -239,7 +245,7 @@ jobs:
 
           # --atomic: either all three refs move or none do. A stale `main` fails the whole push
           # rather than leaving a tag with no branch (or worse, a release with no tag).
-          git push --atomic origin \
+          git push --atomic "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
             "HEAD:refs/heads/main" \
             "HEAD:refs/heads/release" \
             "refs/tags/$TAG"
@@ -258,7 +264,7 @@ jobs:
             echo
             echo "- [Actions](https://github.com/$REPO/actions) — \`release\` builds the multi-arch"
             echo "  production image and restarts the public demo; \`$TAG\` publishes to PyPI,"
-            echo "  deploys the \`${VERSION%.*}\` docs, and creates the GitHub Release."
+            echo "  deploys the \`v${VERSION%.*}\` docs, and creates the GitHub Release."
             echo "- <https://extralit-public-demo.hf.space/api/v1/status> — should report \`$VERSION\`."
             echo "- <https://pypi.org/project/extralit/$VERSION/> and"
             echo "  <https://pypi.org/project/extralit-server/$VERSION/>"

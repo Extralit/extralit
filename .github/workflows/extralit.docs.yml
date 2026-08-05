@@ -80,7 +80,16 @@ jobs:
         run: |
           version=$(echo $TAG_VERSION | awk -F \. {'print $1"."$2'})
           echo "Deploying version ${version}"
-          # `stable` as an alias of X.Y, --update-aliases so it moves off the previous release.
+          # One-time migration, then a permanent no-op: the pre-trunk workflow published `stable`
+          # as its own *version* (a duplicate copy of the docs). mike refuses an alias whose name
+          # collides with a version, and --update-aliases only re-points names that are already
+          # aliases — so without this the first tagged release fails outright. Once `stable` is an
+          # alias it no longer appears as a version and this matches nothing.
+          if uv run mike list --json | jq -e '.[] | select(.version == "stable")' > /dev/null; then
+            echo "Retiring the legacy 'stable' version so it can become an alias"
+            uv run mike delete stable --push
+          fi
+          # `stable` as an alias of vX.Y, --update-aliases so it moves off the previous release.
           uv run mike deploy "$version" stable --update-aliases --push
         if: startsWith(github.ref, 'refs/tags/')
         env:
