@@ -45,7 +45,13 @@ SpanQuestionResponseValue = Annotated[
 MultiLabelSelectionQuestionResponseValue = list[str]
 RatingQuestionResponseValue = StrictInt
 TextAndLabelSelectionQuestionResponseValue = StrictStr
-TableQuestionResponseValue = dict[str, Any]
+# Additive contract (spec §3.4): a bare dict is the 1-row case, `list[dict]` is N rows. The
+# read side already depends on both — `contexts/projection.py::table_arrays` normalizes a
+# bare dict into a one-element array before fanning rows out — so restricting this to `dict`
+# made the multi-row values the extraction grid exists to display unwritable. Kept last in
+# `ResponseValueTypes` so the stricter span/ranking item models still win the union match for
+# their own shapes rather than being flattened into bare dicts.
+TableQuestionResponseValue = Union[dict[str, Any], list[dict[str, Any]]]
 
 ResponseValueTypes = Union[
     SpanQuestionResponseValue,

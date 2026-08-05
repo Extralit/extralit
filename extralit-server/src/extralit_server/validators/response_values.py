@@ -10,9 +10,11 @@ from extralit_server.api.schemas.v1.questions import (
 from extralit_server.api.schemas.v1.responses import (
     MultiLabelSelectionQuestionResponseValue,
     RankingQuestionResponseValue,
+    RankingQuestionResponseValueItem,
     RatingQuestionResponseValue,
     ResponseValueTypes,
     SpanQuestionResponseValue,
+    SpanQuestionResponseValueItem,
     TableQuestionResponseValue,
     TextAndLabelSelectionQuestionResponseValue,
 )
@@ -152,6 +154,13 @@ class RankingQuestionResponseValueValidator:
             raise UnprocessableEntityError(
                 f"ranking question expects a list of values, found {type(self._response_value)}"
             )
+        # Same blind-union fallthrough as the span validator above: a malformed ranking item
+        # parses as a table row and would otherwise reach `.rank`/`.value` as a plain dict.
+        for value_item in self._response_value:
+            if not isinstance(value_item, RankingQuestionResponseValueItem):
+                raise UnprocessableEntityError(
+                    f"ranking question expects a list of ranking items, found {type(value_item)}"
+                )
 
     def _validate_all_rankings_are_present_when_submitted(
         self, ranking_question_settings: RankingQuestionSettings, response_status: ResponseStatus | None = None
@@ -221,6 +230,15 @@ class SpanQuestionResponseValueValidator:
             raise UnprocessableEntityError(
                 f"span question expects a list of values, found {type(self._response_value)}"
             )
+        # `ResponseValueTypes` is a blind union — it is parsed before the question type is
+        # known — and its table member (`list[dict]`) matches any list of objects. So a span
+        # item that fails `SpanQuestionResponseValueItem` (bad start/end, missing keys) is no
+        # longer a parse error: it falls through to the table member and arrives here as a
+        # plain dict. Reject it explicitly rather than reaching for `.start`/`.label` on a
+        # dict further down, which would surface as a 500 instead of this 422.
+        for value_item in self._response_value:
+            if not isinstance(value_item, SpanQuestionResponseValueItem):
+                raise UnprocessableEntityError(f"span question expects a list of span items, found {type(value_item)}")
 
     def _validate_question_settings_field_is_present_at_record(
         self, span_question_settings: SpanQuestionSettings, record: Record
@@ -280,10 +298,14 @@ class TableQuestionResponseValueValidator:
         self._validate_columns_are_available_at_question_settings(table_question_settings)
 
     def _validate_value_type(self) -> None:
-        if not isinstance(self._response_value, dict):
-            raise UnprocessableEntityError(
-                f"table question expects a dictionary of values, found {type(self._response_value)}"
-            )
+        # Additive contract (spec §3.4): a bare dict is the 1-row case, a list is N rows.
+        # Restored from the deleted `validators/v2/values.py::_validate_table` (046a3069f);
+        # the fold kept only the read half of this contract (see the module docstring on
+        # tests/unit/validators/test_table_response_values.py).
+        rows = self._response_value if isinstance(self._response_value, list) else [self._response_value]
+        for row in rows:
+            if not isinstance(row, dict):
+                raise UnprocessableEntityError(f"table question expects a dict of values per row, found {type(row)}")
 
     def _validate_columns_are_available_at_question_settings(
         self, table_question_settings: TableQuestionSettings
