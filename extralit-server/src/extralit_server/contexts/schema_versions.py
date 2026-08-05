@@ -60,7 +60,7 @@ def derive_column_fields(
 
 
 async def _next_version_number(db: AsyncSession, dataset_id: UUID) -> int:
-    """Allocate the next version number, serializing concurrent publishes for this dataset.
+    """Allocate the next version number, serializing concurrent publishes on PostgreSQL.
 
     The `SELECT ... FOR UPDATE` is what makes the allocation safe, and it must be held for
     the rest of the transaction. Without it two concurrent publishes read the same max and
@@ -71,8 +71,16 @@ async def _next_version_number(db: AsyncSession, dataset_id: UUID) -> int:
     the immutability this model exists to provide. The unique constraint alone does not save
     us: it fires at `db.flush()`, long after the object was overwritten.
 
-    On SQLite the dialect emits no `FOR UPDATE` clause (its single-writer model already
-    serializes), so this is a no-op there rather than an error.
+    **The guarantee is PostgreSQL-only.** SQLAlchemy's SQLite dialect compiles the row lock
+    away entirely -- the emitted SQL is a bare SELECT, not an error -- and pysqlite opens
+    transactions DEFERRED, so a read takes no lock either. Two concurrent publishes on SQLite
+    therefore still read the same max and still overwrite each other's object; the losing
+    INSERT then fails on the unique constraint or with `database is locked`, by which point
+    the object is already corrupt. SQLite is the default `database_url` (settings.py), so
+    this is a real gap on a default deployment, not a test-only artifact -- it is simply not
+    closed by this function. Closing it needs a dialect-conditional `BEGIN IMMEDIATE` (or
+    moving allocation into the INSERT), deferred as its own design question -- see
+    docs/superpowers/plans/2026-07-26-fold-followups.md.
     """
     await db.execute(select(Dataset.id).where(Dataset.id == dataset_id).with_for_update())
 

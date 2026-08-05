@@ -4,11 +4,12 @@ import pandas as pd
 import pandera.pandas as pa
 import pytest
 from sqlalchemy import select
+from sqlalchemy.dialects import postgresql, sqlite
 
 from extralit_server.contexts import schema_versions
 from extralit_server.enums import DatasetStatus, FieldType
 from extralit_server.errors.future import UnprocessableEntityError
-from extralit_server.models.database import Field
+from extralit_server.models.database import Dataset, Field
 from extralit_server.webhooks.v1.enums import DatasetEvent
 from tests.factories import DatasetFactory, TextFieldFactory
 
@@ -270,6 +271,46 @@ class TestPublishVersion:
         version = await schema_versions.publish_version(db, _s3_client(), dataset, body=_empty_body(), bucket="ws")
         assert version.version == 1
         assert await _fields_for(db, dataset.id) == []
+
+
+class TestVersionAllocationLocking:
+    """Pin both halves of the version-allocation race story.
+
+    The unit suite runs on SQLite, which cannot exercise real row locking, so these assert
+    the two statically checkable facts the guarantee rests on rather than simulating a race.
+    """
+
+    def test_the_row_lock_reaches_postgresql_and_is_dropped_by_sqlite(self):
+        # This asymmetry IS the documented gap: SQLAlchemy compiles `with_for_update()` away
+        # on SQLite silently rather than raising, so the allocation is serialized on
+        # PostgreSQL only. If SQLite ever gains a rendering for it, this fails and the
+        # caveat in `_next_version_number` and fold-followups section 5 should be revisited.
+        stmt = select(Dataset.id).with_for_update()
+        assert "FOR UPDATE" in str(stmt.compile(dialect=postgresql.dialect()))
+        assert "FOR UPDATE" not in str(stmt.compile(dialect=sqlite.dialect()))
+
+
+@pytest.mark.asyncio
+class TestVersionAllocationLockingStatement:
+    async def test_publish_takes_a_row_lock_before_allocating(self, db):
+        # Guards the PostgreSQL half: without this locking read, two publishers derive the
+        # same version number, hence the same object key, and overwrite each other's body
+        # after one has already committed a checksum for its own. Asserting the statement is
+        # issued is the most this suite can do on SQLite.
+        dataset = await DatasetFactory.create(status=DatasetStatus.draft)
+        executed = []
+        original_execute = db.execute
+
+        async def _spy(statement, *args, **kwargs):
+            executed.append(statement)
+            return await original_execute(statement, *args, **kwargs)
+
+        with patch.object(db, "execute", _spy):
+            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+
+        assert any(getattr(statement, "_for_update_arg", None) is not None for statement in executed), (
+            "publish_version must take a row lock before allocating a version number"
+        )
 
 
 @pytest.mark.asyncio

@@ -205,12 +205,27 @@ and needs a v1-shaped replacement:
 Not part of any CI gate (confirmed in `progress.md`'s Task 15 leftover note), so this can be
 scheduled independently of any test-suite concern.
 
-## 5. `_next_version_number` max()+1 race — RESOLVED 2026-08-03
+## 5. `_next_version_number` max()+1 race — FIXED ON POSTGRESQL 2026-08-03, OPEN ON SQLITE
 
-**Fixed** in `contexts/schema_versions._next_version_number`, which now takes a
+**Fixed on PostgreSQL** in `contexts/schema_versions._next_version_number`, which now takes a
 `SELECT ... FOR UPDATE` on the dataset row before allocating, so publishes for one dataset
-serialize for the rest of the transaction. On SQLite the dialect emits no `FOR UPDATE` clause
-(its single-writer model already serializes), so this is a no-op there rather than an error.
+serialize for the rest of the transaction.
+
+**Still open on SQLite** — and an earlier revision of this section wrongly claimed otherwise
+(CodeRabbit, PR #236), on two counts. SQLAlchemy's SQLite dialect compiles the row lock away
+entirely, so the emitted SQL is a bare `SELECT` (verified: the statement renders with
+`FOR UPDATE` under the `postgresql` dialect and without it under `sqlite`). And SQLite's
+single-writer model does *not* stand in for the lock, because pysqlite opens transactions
+DEFERRED: the read takes no lock at all, so two concurrent publishes read the same max, derive
+the same `object_key`, and overwrite each other's object exactly as described below. The losing
+INSERT then fails on the unique constraint or with `database is locked` — after the object is
+already corrupt.
+
+This matters more than a test-only caveat would: `sqlite+aiosqlite` is the **default**
+`database_url` (`settings.py`), so a default deployment runs unprotected. Closing it needs a
+dialect-conditional `BEGIN IMMEDIATE` on the publish transaction, or moving allocation into the
+INSERT itself (`INSERT ... SELECT max(version)+1 ...`) so read and write are one statement.
+Deferred as its own design question rather than guessed at here.
 
 **This section originally understated the damage** (CodeRabbit, PR #236). It recorded the
 consequence as a losing request that rolls back cleanly, leaving "an orphaned S3 object" —
