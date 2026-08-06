@@ -122,7 +122,15 @@ jobs:
           # The lease value for `cut`'s push. Empty when `release` does not exist yet (first
           # release) — git reads an empty <expect> as "the ref must not already exist". Asked of
           # the API rather than a local ref so it doesn't depend on what checkout happened to fetch.
-          release_sha=$(gh api "repos/$REPO/git/ref/heads/release" --jq .object.sha 2>/dev/null || true)
+          #
+          # `gh api` prints its error body to STDOUT on a 404, so `... || true` captured the literal
+          # {"message":"Not Found",...} as the lease and git aborted with "cannot parse expected
+          # object name". Require a clean exit AND a sha-shaped result before trusting it, so a
+          # malformed response can only ever fall back to "must not exist" — never to a bad lease.
+          release_sha=""
+          if sha=$(gh api "repos/$REPO/git/ref/heads/release" --jq .object.sha 2>/dev/null); then
+            [[ "$sha" =~ ^[0-9a-f]{40}$ ]] && release_sha="$sha"
+          fi
           echo "Current refs/heads/release: ${release_sha:-<does not exist>}"
           echo "release_sha=$release_sha" >> "$GITHUB_OUTPUT"
 
