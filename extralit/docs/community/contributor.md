@@ -52,7 +52,7 @@ Below, you can see an example of the `Feature request` template. Once you choose
 
 After having reported the issue, you can start working on it. For that, you will need to create a fork of the project. To do that, click on the `Fork` button.
 
-Now, fill in the information. Remember to uncheck the `Copy develop branch only` if you are going to work in or from another branch (for instance, to fix documentation the `main` branch is used). Then, click on `Create fork`.
+Now, fill in the information. Leave `Copy the main branch only` checked — `main` is the only branch you need, whatever kind of change you're making. Then, click on `Create fork`.
 
 Now, you will be redirected to your fork. You can see that you are in your fork because the name of the repository will be your `username/extralit`, and it will indicate `forked from extralit/extralit`.
 
@@ -71,13 +71,13 @@ cd extralit
 
 For each issue you're addressing, it's advisable to create a new branch. GitHub offers a straightforward method to streamline this process.
 
-> ⚠️ Never work directly on the `main` or `develop` branch. Always create a new branch for your changes.
+> ⚠️ Never work directly on the `main` branch. Always create a new branch for your changes.
 
 Navigate to your issue and on the right column, select `Create a branch`.
 
-After the new window pops up, the branch will be named after the issue, include a prefix such as feature/, bug/, or docs/ to facilitate quick recognition of the issue type. In the `Repository destination`, pick your fork ( [your-github-username]/extralit), and then select `Change branch source` to specify the source branch for creating the new one. Complete the process by clicking `Create branch`.
+After the new window pops up, the branch will be named after the issue, include a prefix such as `feat/`, `fix/`, or `docs/` to facilitate quick recognition of the issue type. In the `Repository destination`, pick your fork ( [your-github-username]/extralit), and then select `Change branch source` to specify the source branch for creating the new one. Complete the process by clicking `Create branch`.
 
-> 🤔 Remember that the `main` branch is only used to work with the documentation. For any other changes, use the `develop` branch.
+> 🤔 Extralit is trunk-based: `main` is the single source branch for everything — features, fixes, and documentation alike. Always set the branch source to `main`.
 
 Now, locally change to the new branch you just created.
 
@@ -144,7 +144,7 @@ Come back to GitHub, navigate to the original repository where you created your 
 
 First, click on `compare across forks` and select the right repositories and branches.
 
-> In the base repository, keep in mind to select either `main` or `develop` based on the modifications made. In the head repository, indicate your forked repository and the branch corresponding to the issue.
+> In the base repository, select `main` — it is the base for every kind of change. In the head repository, indicate your forked repository and the branch corresponding to the issue.
 
 Then, fill in the pull request template. You should add a prefix to the PR name as we did with the branch above. If you are working on a new feature, you can name your PR as `feat: TITLE`. If your PR consists of a solution for a bug, you can name your PR as `bug: TITLE` And, if your work is for improving the documentation, you can name your PR as `docs: TITLE`.
 
@@ -168,7 +168,7 @@ Congratulations 🎉🎊 We thank you 🤩
 
 Once your PR is merged, your contributions will be publicly visible on the [Extralit GitHub](https://github.com/extralit/extralit#contributors).
 
-Additionally, we will include your changes in the next release based on our [development branch](https://github.com/extralit/extralit/tree/develop).
+Additionally, your changes ship in the next release cut from our [trunk](https://github.com/extralit/extralit/tree/main).
 
 ## Additional resources
 

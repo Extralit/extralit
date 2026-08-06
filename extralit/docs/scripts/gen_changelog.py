@@ -6,7 +6,7 @@ import requests
 
 REPOSITORY = "Extralit/extralit"
 CHANGELOG_PATH = "extralit/CHANGELOG.md"
-RETRIEVED_BRANCH = "develop"
+RETRIEVED_BRANCH = "main"
 
 DATA_PATH = "community/changelog.md"
 

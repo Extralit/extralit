@@ -6,7 +6,7 @@ name: Deploy PR preview HF Space
 # Deliberately decoupled from extralit-server.yml so it does NOT run on every push:
 #   - auto:   only when a PR (touching the server or frontend) is marked "ready for review"
 #   - manual: workflow_dispatch with a PR number, to (re)deploy a preview on demand
-# main/develop deploys keep flowing through extralit-server.yml as before.
+# main/release deploys keep flowing through extralit-server.yml as before.
 
 on:
   # Note: `ready_for_review` only fires on a draft→ready transition. A PR opened
@@ -66,11 +66,9 @@ jobs:
 
       # No pytest here — preview-only path. The live frontend preview for this PR is published to
       # Vercel by extralit-frontend.yml; the HF Space only needs a bundled fallback UI, so bake
-      # the prebuilt develop frontend artifact instead of rebuilding from source.
+      # the prebuilt frontend artifact from `main` instead of rebuilding from source.
       - name: Download prebuilt frontend statics
         uses: ./.github/actions/download-frontend-artifact
-        with:
-          branch: develop
 
       - name: Build package
         run: |
@@ -102,7 +100,7 @@ jobs:
     secrets: inherit
 
   # Opportunistic: this PR has its own ephemeral HF Space (extralit-dev/pr-<n>), so point the
-  # PR's Vercel preview at it instead of the shared develop backend. Vercel's native Git
+  # PR's Vercel preview at it instead of the shared dev backend. Vercel's native Git
   # integration builds the preview; we just set a branch-scoped Preview env var (read by
   # extralit-frontend/vercel.ts at build time) and redeploy the branch's latest preview so it
   # takes effect now. Best-effort — never blocks the preview pipeline.

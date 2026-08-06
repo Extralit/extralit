@@ -6,62 +6,78 @@ hide:
 
 # Extralit Release Guide
 
-This guide provides a simplified, step-by-step process for creating a new release of Extralit. Follow these steps to ensure a smooth and consistent release process.
+Releasing Extralit is one workflow dispatch. You do not create branches, edit version files, push tags, or draft release notes by hand — `release.yml` does all of it, and refuses to run if the state isn't right.
 
-**Tips:**
-- Always update the version in `src/extralit/_version.py` before tagging.
-- Use clear, descriptive release notes.
-- Coordinate with other maintainers if needed.
+## Cut a release
 
-## 1. Prepare the Release Branch
+```sh
+# 1. Rehearse. Validates everything and prints a plan, but pushes nothing.
+gh workflow run release.yml -f version=0.7.0
 
-- Ensure all features and fixes for the release are merged into `develop`.
-- Create a release branch from `develop`:
-  ```sh
-  git checkout develop
-  git pull origin develop
-  git checkout -b releases/vX.Y.Z
-  git push origin releases/vX.Y.Z
-  ```
+# 2. Read the plan in the run summary, then cut it for real.
+gh workflow run release.yml -f version=0.7.0 -f dry_run=false
+```
 
-## 2. Open Pull Requests
+`dry_run` defaults to **true**, so the first command is the safe default and a bare `gh workflow run release.yml -f version=…` can never publish anything. Watch either run with `gh run watch`.
 
-- Open a PR from `releases/vX.Y.Z` into `develop` (if any last-minute fixes are needed), merge it.
-- Open a PR from `develop` into `main`.
-- Use "Squash and merge" for a clean history if desired.
+The plan table in the run summary tells you the version, the tag, the exact commit on `main` being released, whether the release is already converged, and whether the run is in `DRY RUN` or `EXECUTE` mode. Read it before step 2.
 
-## 3. Merge and Tag the Release
+You can also run both from the **Actions → Release** page if you prefer the UI.
 
-- After merging into `main`, checkout `main` locally and pull the latest changes:
-  ```sh
-  git checkout main
-  git pull origin main
-  ```
-- Tag the release:
-  ```sh
-  git tag vX.Y.Z
-  git push origin vX.Y.Z
-  ```
+## What happens automatically
 
-## 4. Create the GitHub Release
+Once `dry_run=false` succeeds, one commit stamping the version lands on `main`, `release`, and the tag `v0.7.0` — all three at the same SHA, pushed atomically. That single push then drives everything else in parallel:
 
-- Go to the [GitHub Releases page](https://github.com/extralit/extralit/releases).
-- Click "Draft a new release".
-- Set the tag to `vX.Y.Z`.
-- Add release notes (see previous releases for examples).
-- Publish the release.
+| Trigger | Result |
+| --- | --- |
+| push to `release` | multi-arch `extralit/extralit-server:v0.7.0` + `:latest`, then the HF Space rebuild that restarts **`extralit/public-demo`** |
+| push to tag `v0.7.0` | `extralit` and `extralit-server` published to PyPI |
+| push to tag `v0.7.0` | versioned docs at `docs.extralit.ai/v0.7/`, with `stable` re-pointed at it |
+| push to tag `v0.7.0` | a GitHub Release with notes generated from merged PR titles |
 
-## 5. Verify the Release
+The GitHub Release step waits until PyPI actually serves both packages before publishing, so a release is never announced before it's installable.
 
-- Monitor GitHub Actions to ensure the release workflow completes successfully.
-- Check [PyPI](https://pypi.org/project/extralit/) to confirm the new version is published.
-- Test the CLI:
-  ```sh
-  pip install --upgrade extralit
-  extralit --help
-  ```
+## Verify
 
-## 6. Announce the Release
+```sh
+git ls-remote origin refs/heads/main refs/heads/release refs/tags/v0.7.0   # all three at one SHA
+pip index versions extralit
+curl -s https://extralit-public-demo.hf.space/api/v1/status | jq .version  # 0.7.0
+gh release view v0.7.0
+```
 
-- Share the release notes with the community (Slack, GitHub Discussions, etc.).
+Docs land at [docs.extralit.ai/v0.7/](https://docs.extralit.ai/v0.7/), and `stable` should redirect there.
 
+## If something goes wrong
+
+The workflow reports exactly which precondition failed.
+
+**"Tag v0.7.0 already exists at a different commit."** A previous attempt got partway. If that tag is genuinely wrong, delete it and re-run:
+
+```sh
+git push origin :refs/tags/v0.7.0 && git tag -d v0.7.0
+```
+
+If the tag is correct and already points at a commit stamped `0.7.0`, the workflow instead reports **`Converged already: true`** and does nothing. Re-running a completed release is always safe — that's the property that makes recovery possible.
+
+**"CI is not green on `main`."** The workflow refuses to release an untested commit and tells you whether checks are failing, still running, or absent entirely. Wait for them, or override deliberately:
+
+```sh
+gh workflow run release.yml -f version=0.7.0 -f dry_run=false -f skip_ci_check=true
+```
+
+**"Not authorized."** Cutting a release requires `admin` or `maintain` on the repository.
+
+## Roll back
+
+Production follows the `release` branch, so rolling back means moving it and restarting the Space — no revert commit, no new version:
+
+```sh
+git push --force-with-lease origin v0.6.1^{commit}:refs/heads/release
+```
+
+That rebuilds and redeploys `extralit/public-demo` from the previous release. PyPI releases cannot be un-published — if a bad version reached PyPI, yank it there and cut a fixed patch release instead.
+
+## Announce
+
+Share the generated release notes with the community (Slack, GitHub Discussions).

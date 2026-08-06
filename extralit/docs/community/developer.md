@@ -44,11 +44,11 @@ Once you have your environment set up, you can return to this guide to learn mor
 
 The Extralit repository has a monorepo structure, which means that all the components are located in the same repository: [`extralit/extralit`](https://github.com/extralit/extralit). This repo is divided into the following folders:
 
-- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/develop/extralit): The Extralit SDK
-- [`extralit/docs/`](https://github.com/extralit/extralit/tree/develop/extralit/docs): The documentation project
-- [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/develop/extralit-server): The FastAPI server project for annotation
-- [`extralit-frontend/`](https://github.com/extralit/extralit/tree/develop/extralit-frontend): The Vue.js annotation UI project
-- [`examples`](https://github.com/extralit/extralit/tree/develop/examples): Example resources for deployments, scripts and notebooks
+- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/main/extralit): The Extralit SDK
+- [`extralit/docs/`](https://github.com/extralit/extralit/tree/main/extralit/docs): The documentation project
+- [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/main/extralit-server): The FastAPI server project for annotation
+- [`extralit-frontend/`](https://github.com/extralit/extralit/tree/main/extralit-frontend): The Vue.js annotation UI project
+- [`examples`](https://github.com/extralit/extralit/tree/main/examples): Example resources for deployments, scripts and notebooks
 
 !!! note "How to contribute?"
     Before starting to develop, we recommend reading our [contribution guide](contributor.md) to understand the contribution process and the guidelines to follow. Once you have [cloned the Extralit repository](contributor.md#fork-the-extralit-repository) and [checked out to the correct branch](contributor.md#create-a-new-branch), you can start setting up your development environment.
@@ -144,8 +144,8 @@ uv run pytest tests/integration --disable-warnings --cov=extralit
 
 Documentation is essential to provide users with a comprehensive guide about Extralit.
 
-!!! note "From `main` or `develop`?"
-    If you are updating, improving, or fixing the current documentation without a code change, work on the `main` branch. For new features or bug fixes that require documentation, use the `develop` branch.
+!!! note "Which branch?"
+    `main` — always. Extralit is trunk-based, so documentation-only changes and code changes both branch from `main` and merge back into it. Docs published from `main` appear at `docs.extralit.ai/latest`; a `docs/**` branch additionally gets its own hidden preview build.
 
 To contribute to the documentation and generate it locally, ensure you installed the development dependencies as shown in the ["Set up the Python environment"](#set-up-the-python-environment) section, and run the following command to create the development server with `mkdocs`:
 
@@ -281,7 +281,7 @@ app.add_typer(mycommand.app, name="mycommand")
 
 - Create commands that fit into existing workflows
 - Follow consistent naming and structure patterns
-- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/develop/extralit/src/extralit/cli/rich.py#L115) function to print tables in a rich format
+- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/main/extralit/src/extralit/cli/rich.py#L115) function to print tables in a rich format
 - Use sensible defaults to minimize required input
 - Follow the Unix philosophy: commands should do one thing well
 

@@ -32,9 +32,8 @@ jobs:
 
       - name: Read package info
         id: package-info
-        working-directory: extralit-server
         run: |
-          PACKAGE_VERSION=$(grep '__version__' src/extralit_server/_version.py | cut -d'"' -f2)
+          PACKAGE_VERSION=$(python3 scripts/bump_version.py check)
           PACKAGE_NAME="extralit-server"
           echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_OUTPUT
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_OUTPUT

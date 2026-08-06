@@ -8,9 +8,13 @@ description: >-
 
 inputs:
   branch:
-    description: Branch whose latest successful frontend build to fetch (main or develop).
+    # Always `main`, including for release builds: this action needs a *previously successful*
+    # run on the branch, and `release` only ever gets the commit that is already on `main`.
+    # Sourcing from `release` would fetch the previous release's SPA, or nothing at all on the
+    # first one.
+    description: Branch whose latest successful frontend build to fetch.
     required: false
-    default: develop
+    default: main
 
 runs:
   using: composite
