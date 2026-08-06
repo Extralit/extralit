@@ -4138,11 +4138,11 @@
 <h2 id="the-extralit-repository">The Extralit repository<a class="headerlink" href="#the-extralit-repository" title="Permanent link">&para;</a></h2>
 <p>The Extralit repository has a monorepo structure, which means that all the components are located in the same repository: <a href="https://github.com/extralit/extralit"><code>extralit/extralit</code></a>. This repo is divided into the following folders:</p>
 <ul>
-<li><a href="https://github.com/extralit/extralit/tree/develop/extralit"><code>extralit/src/extralit/</code></a>: The Extralit <abbr title="Software Development Kit.">SDK</abbr></li>
-<li><a href="https://github.com/extralit/extralit/tree/develop/extralit/docs"><code>extralit/docs/</code></a>: The documentation project</li>
-<li><a href="https://github.com/extralit/extralit/tree/develop/extralit-server"><code>extralit-server/src/extralit_server/</code></a>: The FastAPI server project for annotation</li>
-<li><a href="https://github.com/extralit/extralit/tree/develop/extralit-frontend"><code>extralit-frontend/</code></a>: The Vue.js annotation UI project</li>
-<li><a href="https://github.com/extralit/extralit/tree/develop/examples"><code>examples</code></a>: Example resources for deployments, scripts and notebooks</li>
+<li><a href="https://github.com/extralit/extralit/tree/main/extralit"><code>extralit/src/extralit/</code></a>: The Extralit <abbr title="Software Development Kit.">SDK</abbr></li>
+<li><a href="https://github.com/extralit/extralit/tree/main/extralit/docs"><code>extralit/docs/</code></a>: The documentation project</li>
+<li><a href="https://github.com/extralit/extralit/tree/main/extralit-server"><code>extralit-server/src/extralit_server/</code></a>: The FastAPI server project for annotation</li>
+<li><a href="https://github.com/extralit/extralit/tree/main/extralit-frontend"><code>extralit-frontend/</code></a>: The Vue.js annotation UI project</li>
+<li><a href="https://github.com/extralit/extralit/tree/main/examples"><code>examples</code></a>: Example resources for deployments, scripts and notebooks</li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">How to contribute?</p>
@@ -4214,8 +4214,8 @@ considered.
 <h2 id="set-up-the-documentation">Set up the documentation<a class="headerlink" href="#set-up-the-documentation" title="Permanent link">&para;</a></h2>
 <p>Documentation is essential to provide users with a comprehensive guide about Extralit.</p>
 <div class="admonition note">
-<p class="admonition-title">From <code>main</code> or <code>develop</code>?</p>
-<p>If you are updating, improving, or fixing the current documentation without a code change, work on the <code>main</code> branch. For new features or bug fixes that require documentation, use the <code>develop</code> branch.</p>
+<p class="admonition-title">Which branch?</p>
+<p><code>main</code> — always. Extralit is trunk-based, so documentation-only changes and code changes both branch from <code>main</code> and merge back into it. Docs published from <code>main</code> appear at <code>docs.extralit.ai/latest</code>; a <code>docs/**</code> branch additionally gets its own hidden preview build.</p>
 </div>
 <p>To contribute to the documentation and generate it locally, ensure you installed the development dependencies as shown in the <a href="#set-up-the-python-environment">"Set up the Python environment"</a> section, and run the following command to create the development server with <code>mkdocs</code>:</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>mkdocs<span class="w"> </span>serve
@@ -4328,7 +4328,7 @@ considered.
 <ul>
 <li>Create commands that fit into existing workflows</li>
 <li>Follow consistent naming and structure patterns</li>
-<li>Provide clear help text for all commands and options, e.g. use the <a href="https://github.com/extralit/extralit/blob/develop/extralit/src/extralit/cli/rich.py#L115"><code>print_rich_table</code></a> function to print tables in a rich format</li>
+<li>Provide clear help text for all commands and options, e.g. use the <a href="https://github.com/extralit/extralit/blob/main/extralit/src/extralit/cli/rich.py#L115"><code>print_rich_table</code></a> function to print tables in a rich format</li>
 <li>Use sensible defaults to minimize required input</li>
 <li>Follow the Unix philosophy: commands should do one thing well</li>
 </ul>

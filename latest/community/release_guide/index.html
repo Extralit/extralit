@@ -3426,10 +3426,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-prepare-the-release-branch" class="md-nav__link">
+  <a href="#cut-a-release" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Prepare the Release Branch
+        Cut a release
       
     </span>
   </a>
@@ -3437,10 +3437,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-open-pull-requests" class="md-nav__link">
+  <a href="#what-happens-automatically" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Open Pull Requests
+        What happens automatically
       
     </span>
   </a>
@@ -3448,10 +3448,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-merge-and-tag-the-release" class="md-nav__link">
+  <a href="#verify" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Merge and Tag the Release
+        Verify
       
     </span>
   </a>
@@ -3459,10 +3459,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-create-the-github-release" class="md-nav__link">
+  <a href="#if-something-goes-wrong" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Create the GitHub Release
+        If something goes wrong
       
     </span>
   </a>
@@ -3470,10 +3470,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-verify-the-release" class="md-nav__link">
+  <a href="#roll-back" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Verify the Release
+        Roll back
       
     </span>
   </a>
@@ -3481,10 +3481,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-announce-the-release" class="md-nav__link">
+  <a href="#announce" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Announce the Release
+        Announce
       
     </span>
   </a>
@@ -3529,59 +3529,70 @@
 
 
 <h1 id="extralit-release-guide">Extralit Release Guide<a class="headerlink" href="#extralit-release-guide" title="Permanent link">&para;</a></h1>
-<p>This guide provides a simplified, step-by-step process for creating a new release of Extralit. Follow these steps to ensure a smooth and consistent release process.</p>
-<p><strong>Tips:</strong>
-- Always update the version in <code>src/extralit/_version.py</code> before tagging.
-- Use clear, descriptive release notes.
-- Coordinate with other maintainers if needed.</p>
-<h2 id="1-prepare-the-release-branch">1. Prepare the Release Branch<a class="headerlink" href="#1-prepare-the-release-branch" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Ensure all features and fixes for the release are merged into <code>develop</code>.</li>
-<li>Create a release branch from <code>develop</code>:
-  <div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>develop
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>develop
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>releases/vX.Y.Z
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>releases/vX.Y.Z
-</span></code></pre></div></li>
-</ul>
-<h2 id="2-open-pull-requests">2. Open Pull Requests<a class="headerlink" href="#2-open-pull-requests" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Open a PR from <code>releases/vX.Y.Z</code> into <code>develop</code> (if any last-minute fixes are needed), merge it.</li>
-<li>Open a PR from <code>develop</code> into <code>main</code>.</li>
-<li>Use "Squash and merge" for a clean history if desired.</li>
-</ul>
-<h2 id="3-merge-and-tag-the-release">3. Merge and Tag the Release<a class="headerlink" href="#3-merge-and-tag-the-release" title="Permanent link">&para;</a></h2>
-<ul>
-<li>After merging into <code>main</code>, checkout <code>main</code> locally and pull the latest changes:
-  <div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>main
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>main
-</span></code></pre></div></li>
-<li>Tag the release:
-  <div class="language-sh highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>tag<span class="w"> </span>vX.Y.Z
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>vX.Y.Z
-</span></code></pre></div></li>
-</ul>
-<h2 id="4-create-the-github-release">4. Create the GitHub Release<a class="headerlink" href="#4-create-the-github-release" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Go to the <a href="https://github.com/extralit/extralit/releases">GitHub Releases page</a>.</li>
-<li>Click "Draft a new release".</li>
-<li>Set the tag to <code>vX.Y.Z</code>.</li>
-<li>Add release notes (see previous releases for examples).</li>
-<li>Publish the release.</li>
-</ul>
-<h2 id="5-verify-the-release">5. Verify the Release<a class="headerlink" href="#5-verify-the-release" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Monitor GitHub Actions to ensure the release workflow completes successfully.</li>
-<li>Check <a href="https://pypi.org/project/extralit/">PyPI</a> to confirm the new version is published.</li>
-<li>Test the <abbr title="Command Line Interface.">CLI</abbr>:
-  <div class="language-sh highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>extralit
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>extralit<span class="w"> </span>--help
-</span></code></pre></div></li>
-</ul>
-<h2 id="6-announce-the-release">6. Announce the Release<a class="headerlink" href="#6-announce-the-release" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Share the release notes with the community (Slack, GitHub Discussions, etc.).</li>
-</ul>
+<p>Releasing Extralit is one workflow dispatch. You do not create branches, edit version files, push tags, or draft release notes by hand — <code>release.yml</code> does all of it, and refuses to run if the state isn't right.</p>
+<h2 id="cut-a-release">Cut a release<a class="headerlink" href="#cut-a-release" title="Permanent link">&para;</a></h2>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 1. Rehearse. Validates everything and prints a plan, but pushes nothing.</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>gh<span class="w"> </span>workflow<span class="w"> </span>run<span class="w"> </span>release.yml<span class="w"> </span>-f<span class="w"> </span><span class="nv">version</span><span class="o">=</span><span class="m">0</span>.7.0
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># 2. Read the plan in the run summary, then cut it for real.</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>gh<span class="w"> </span>workflow<span class="w"> </span>run<span class="w"> </span>release.yml<span class="w"> </span>-f<span class="w"> </span><span class="nv">version</span><span class="o">=</span><span class="m">0</span>.7.0<span class="w"> </span>-f<span class="w"> </span><span class="nv">dry_run</span><span class="o">=</span><span class="nb">false</span>
+</span></code></pre></div>
+<p><code>dry_run</code> defaults to <strong>true</strong>, so the first command is the safe default and a bare <code>gh workflow run release.yml -f version=…</code> can never publish anything. Watch either run with <code>gh run watch</code>.</p>
+<p>The plan table in the run summary tells you the version, the tag, the exact commit on <code>main</code> being released, whether the release is already converged, and whether the run is in <code>DRY RUN</code> or <code>EXECUTE</code> mode. Read it before step 2.</p>
+<p>You can also run both from the <strong>Actions → Release</strong> page if you prefer the UI.</p>
+<h2 id="what-happens-automatically">What happens automatically<a class="headerlink" href="#what-happens-automatically" title="Permanent link">&para;</a></h2>
+<p>Once <code>dry_run=false</code> succeeds, one commit stamping the version lands on <code>main</code>, <code>release</code>, and the tag <code>v0.7.0</code> — all three at the same SHA, pushed atomically. That single push then drives everything else in parallel:</p>
+<table>
+<thead>
+<tr>
+<th>Trigger</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>push to <code>release</code></td>
+<td>multi-arch <code>extralit/extralit-server:v0.7.0</code> + <code>:latest</code>, then the <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Space rebuild that restarts <strong><code>extralit/public-demo</code></strong></td>
+</tr>
+<tr>
+<td>push to tag <code>v0.7.0</code></td>
+<td><code>extralit</code> and <code>extralit-server</code> published to PyPI</td>
+</tr>
+<tr>
+<td>push to tag <code>v0.7.0</code></td>
+<td>versioned docs at <code>docs.extralit.ai/v0.7/</code>, with <code>stable</code> re-pointed at it</td>
+</tr>
+<tr>
+<td>push to tag <code>v0.7.0</code></td>
+<td>a GitHub Release with notes generated from merged PR titles</td>
+</tr>
+</tbody>
+</table>
+<p>The GitHub Release step waits until PyPI actually serves both packages before publishing, so a release is never announced before it's installable.</p>
+<h2 id="verify">Verify<a class="headerlink" href="#verify" title="Permanent link">&para;</a></h2>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>ls-remote<span class="w"> </span>origin<span class="w"> </span>refs/heads/main<span class="w"> </span>refs/heads/release<span class="w"> </span>refs/tags/v0.7.0<span class="w">   </span><span class="c1"># all three at one SHA</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pip<span class="w"> </span>index<span class="w"> </span>versions<span class="w"> </span>extralit
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>curl<span class="w"> </span>-s<span class="w"> </span>https://extralit-public-demo.hf.space/api/v1/status<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>.version<span class="w">  </span><span class="c1"># 0.7.0</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>gh<span class="w"> </span>release<span class="w"> </span>view<span class="w"> </span>v0.7.0
+</span></code></pre></div>
+<p>Docs land at <a href="https://docs.extralit.ai/v0.7/">docs.extralit.ai/v0.7/</a>, and <code>stable</code> should redirect there.</p>
+<h2 id="if-something-goes-wrong">If something goes wrong<a class="headerlink" href="#if-something-goes-wrong" title="Permanent link">&para;</a></h2>
+<p>The workflow reports exactly which precondition failed.</p>
+<p><strong>"Tag v0.7.0 already exists at a different commit."</strong> A previous attempt got partway. If that tag is genuinely wrong, delete it and re-run:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>:refs/tags/v0.7.0<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>git<span class="w"> </span>tag<span class="w"> </span>-d<span class="w"> </span>v0.7.0
+</span></code></pre></div>
+<p>If the tag is correct and already points at a commit stamped <code>0.7.0</code>, the workflow instead reports <strong><code>Converged already: true</code></strong> and does nothing. Re-running a completed release is always safe — that's the property that makes recovery possible.</p>
+<p><strong>"CI is not green on <code>main</code>."</strong> The workflow refuses to release an untested commit and tells you whether checks are failing, still running, or absent entirely. Wait for them, or override deliberately:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>gh<span class="w"> </span>workflow<span class="w"> </span>run<span class="w"> </span>release.yml<span class="w"> </span>-f<span class="w"> </span><span class="nv">version</span><span class="o">=</span><span class="m">0</span>.7.0<span class="w"> </span>-f<span class="w"> </span><span class="nv">dry_run</span><span class="o">=</span><span class="nb">false</span><span class="w"> </span>-f<span class="w"> </span><span class="nv">skip_ci_check</span><span class="o">=</span><span class="nb">true</span>
+</span></code></pre></div>
+<p><strong>"Not authorized."</strong> Cutting a release requires <code>admin</code> or <code>maintain</code> on the repository.</p>
+<h2 id="roll-back">Roll back<a class="headerlink" href="#roll-back" title="Permanent link">&para;</a></h2>
+<p>Production follows the <code>release</code> branch, so rolling back means moving it and restarting the Space — no revert commit, no new version:</p>
+<div class="language-sh highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>git<span class="w"> </span>push<span class="w"> </span>--force-with-lease<span class="w"> </span>origin<span class="w"> </span>v0.6.1^<span class="o">{</span>commit<span class="o">}</span>:refs/heads/release
+</span></code></pre></div>
+<p>That rebuilds and redeploys <code>extralit/public-demo</code> from the previous release. PyPI releases cannot be un-published — if a bad version reached PyPI, yank it there and cut a fixed patch release instead.</p>
+<h2 id="announce">Announce<a class="headerlink" href="#announce" title="Permanent link">&para;</a></h2>
+<p>Share the generated release notes with the community (Slack, GitHub Discussions).</p>
 <!-- General -->
 <!-- Extralit specific -->
 

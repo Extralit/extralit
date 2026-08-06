@@ -3904,7 +3904,7 @@
 <h3 id="work-with-a-fork">Work with a fork<a class="headerlink" href="#work-with-a-fork" title="Permanent link">&para;</a></h3>
 <h4 id="fork-the-extralit-repository">Fork the Extralit repository<a class="headerlink" href="#fork-the-extralit-repository" title="Permanent link">&para;</a></h4>
 <p>After having reported the issue, you can start working on it. For that, you will need to create a fork of the project. To do that, click on the <code>Fork</code> button.</p>
-<p>Now, fill in the information. Remember to uncheck the <code>Copy develop branch only</code> if you are going to work in or from another branch (for instance, to fix documentation the <code>main</code> branch is used). Then, click on <code>Create fork</code>.</p>
+<p>Now, fill in the information. Leave <code>Copy the main branch only</code> checked — <code>main</code> is the only branch you need, whatever kind of change you're making. Then, click on <code>Create fork</code>.</p>
 <p>Now, you will be redirected to your fork. You can see that you are in your fork because the name of the repository will be your <code>username/extralit</code>, and it will indicate <code>forked from extralit/extralit</code>.</p>
 <h4 id="clone-your-forked-repository">Clone your forked repository<a class="headerlink" href="#clone-your-forked-repository" title="Permanent link">&para;</a></h4>
 <p>In order to make the required adjustments, clone the forked repository to your local machine. Choose the destination folder and run the following command:</p>
@@ -3914,12 +3914,12 @@
 <h3 id="create-a-new-branch">Create a new branch<a class="headerlink" href="#create-a-new-branch" title="Permanent link">&para;</a></h3>
 <p>For each issue you're addressing, it's advisable to create a new branch. GitHub offers a straightforward method to streamline this process.</p>
 <blockquote>
-<p>⚠️ Never work directly on the <code>main</code> or <code>develop</code> branch. Always create a new branch for your changes.</p>
+<p>⚠️ Never work directly on the <code>main</code> branch. Always create a new branch for your changes.</p>
 </blockquote>
 <p>Navigate to your issue and on the right column, select <code>Create a branch</code>.</p>
-<p>After the new window pops up, the branch will be named after the issue, include a prefix such as feature/, bug/, or docs/ to facilitate quick recognition of the issue type. In the <code>Repository destination</code>, pick your fork ( [your-github-username]/extralit), and then select <code>Change branch source</code> to specify the source branch for creating the new one. Complete the process by clicking <code>Create branch</code>.</p>
+<p>After the new window pops up, the branch will be named after the issue, include a prefix such as <code>feat/</code>, <code>fix/</code>, or <code>docs/</code> to facilitate quick recognition of the issue type. In the <code>Repository destination</code>, pick your fork ( [your-github-username]/extralit), and then select <code>Change branch source</code> to specify the source branch for creating the new one. Complete the process by clicking <code>Create branch</code>.</p>
 <blockquote>
-<p>🤔 Remember that the <code>main</code> branch is only used to work with the documentation. For any other changes, use the <code>develop</code> branch.</p>
+<p>🤔 Extralit is trunk-based: <code>main</code> is the single source branch for everything — features, fixes, and documentation alike. Always set the branch source to <code>main</code>.</p>
 </blockquote>
 <p>Now, locally change to the new branch you just created.</p>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>fetch<span class="w"> </span>origin
@@ -3967,7 +3967,7 @@
 <p>Come back to GitHub, navigate to the original repository where you created your fork, and click on <code>Compare &amp; pull request</code>.</p>
 <p>First, click on <code>compare across forks</code> and select the right repositories and branches.</p>
 <blockquote>
-<p>In the base repository, keep in mind to select either <code>main</code> or <code>develop</code> based on the modifications made. In the head repository, indicate your forked repository and the branch corresponding to the issue.</p>
+<p>In the base repository, select <code>main</code> — it is the base for every kind of change. In the head repository, indicate your forked repository and the branch corresponding to the issue.</p>
 </blockquote>
 <p>Then, fill in the pull request template. You should add a prefix to the PR name as we did with the branch above. If you are working on a new feature, you can name your PR as <code>feat: TITLE</code>. If your PR consists of a solution for a bug, you can name your PR as <code>bug: TITLE</code> And, if your work is for improving the documentation, you can name your PR as <code>docs: TITLE</code>.</p>
 <p>In addition, on the right side, you can select a reviewer (for instance, if you discussed the issue with a member of the Extralit team) and assign the pull request to yourself. It is highly advisable to add labels to PR as well. You can do this again by the labels section right to the screen. For instance, if you are addressing a bug, add the <code>bug</code> label or if the PR is related to the documentation, add the <code>documentation</code> label. This way, PRs can be easily filtered.</p>
@@ -3981,7 +3981,7 @@
 <h3 id="your-pr-is-merged">Your PR is merged!<a class="headerlink" href="#your-pr-is-merged" title="Permanent link">&para;</a></h3>
 <p>Congratulations 🎉🎊 We thank you 🤩</p>
 <p>Once your PR is merged, your contributions will be publicly visible on the <a href="https://github.com/extralit/extralit#contributors">Extralit GitHub</a>.</p>
-<p>Additionally, we will include your changes in the next release based on our <a href="https://github.com/extralit/extralit/tree/develop">development branch</a>.</p>
+<p>Additionally, your changes ship in the next release cut from our <a href="https://github.com/extralit/extralit/tree/main">trunk</a>.</p>
 <h2 id="additional-resources">Additional resources<a class="headerlink" href="#additional-resources" title="Permanent link">&para;</a></h2>
 <p>Here are some helpful resources for your reference.</p>
 <ul>

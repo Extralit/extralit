@@ -2,278 +2,278 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://docs.extralit.ai/latest/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/faq/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/glossary/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/custom_fields/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/docker_deployment/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/k8s_deployment/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/migrate_from_legacy_datasets/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/pdf_preprocessing_config/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/upgrading/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/use_markdown_to_format_rich_content/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/webhooks/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/admin_guide/webhooks_internals/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/adding_language/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/changelog/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/contributor/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/developer/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/community/release_guide/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/development_setup/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/faq/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/how-to-deploy-argilla-with-docker/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/installation/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/getting_started/quickstart/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/SUMMARY/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/client/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/markdown/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/search/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/users/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/webhooks/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/workspaces/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/datasets/dataset_records/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/datasets/datasets/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/records/metadata/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/records/records/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/records/responses/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/records/suggestions/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/records/vectors/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/settings/fields/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/settings/metadata_property/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/settings/questions/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/settings/settings/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/settings/task_distribution/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit/settings/vectors/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit-server/configuration/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit-server/oauth2_configuration/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit-server/sso_keycloak/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/reference/extralit-server/telemetry/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/image_classification/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/image_preference/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/text_classification/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/tutorials/token_classification/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/annotate/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/command_line_interface/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/core_concepts/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/dataset/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/distribution/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/documents_import/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/import_export/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/multi_schemas/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/overview/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/query/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/record/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/schema_definition/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/user/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
     <url>
          <loc>https://docs.extralit.ai/latest/user_guide/workspace/</loc>
-         <lastmod>2026-07-26</lastmod>
+         <lastmod>2026-08-06</lastmod>
     </url>
 </urlset>
