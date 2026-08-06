@@ -128,10 +128,22 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           push: true
 
+      # Cross-repo, so the token must be scoped past this repository explicitly: GITHUB_TOKEN
+      # can only ever reach the repo it was issued for. `repositories` narrows the installation
+      # token to just the dispatch target rather than everything the App can see.
+      - name: Mint an app token for the HF-Space dispatch
+        id: dispatch-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.EXTRALIT_OPS_CLIENT_ID }}
+          private-key: ${{ secrets.EXTRALIT_OPS_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: extralit-hf-space
+
       - name: Trigger HF-Space build
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
+          token: ${{ steps.dispatch-token.outputs.token }}
           repository: extralit/extralit-hf-space
           event-type: build-hf-space
           # DISPATCH_BRANCH is <n>/merge for manual PR previews (so resolve-env routes to

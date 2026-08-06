@@ -42,11 +42,21 @@ jobs:
     if: github.repository == 'Extralit/extralit'
     runs-on: ubuntu-latest
     steps:
+      # Short-lived (1h, auto-revoked at job end) and scoped to this repo, in place of a
+      # long-lived PAT. The App's own permissions are the ceiling, so this token cannot be
+      # repurposed the way a user PAT with blanket `repo` scope can.
+      - name: Mint an app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.EXTRALIT_OPS_CLIENT_ID }}
+          private-key: ${{ secrets.EXTRALIT_OPS_PRIVATE_KEY }}
+
       - name: Require admin or maintain
         env:
-          # The PAT can always read collaborator permissions; GITHUB_TOKEN may not, depending on
+          # The App token reads collaborator permissions; GITHUB_TOKEN may not, depending on
           # repo settings. Falls back so a fresh checkout of this repo still works.
-          GH_TOKEN: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH || github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || github.token }}
           REPO: ${{ github.repository }}
           ACTOR: ${{ github.actor }}
         run: |
@@ -235,13 +245,22 @@ jobs:
     if: ${{ !inputs.dry_run && needs.plan.outputs.already_done != 'true' }}
     runs-on: ubuntu-latest
     steps:
+      # Minted again here: tokens don't cross job boundaries, and this one expires in an hour
+      # rather than sitting in org settings until someone notices it stopped working.
+      - name: Mint an app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.EXTRALIT_OPS_CLIENT_ID }}
+          private-key: ${{ secrets.EXTRALIT_OPS_PRIVATE_KEY }}
+
       - name: Checkout the base commit
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.plan.outputs.base_sha }}
-          # A PAT (or App token), NOT GITHUB_TOKEN: pushes made with GITHUB_TOKEN emit no
+          # An App token, NOT GITHUB_TOKEN: pushes made with GITHUB_TOKEN emit no
           # downstream `push` events, so the tag would never trigger PyPI, docs, or the Release.
-          token: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
+          token: ${{ steps.app-token.outputs.token }}
           # The next step runs repository code (bump_version.py). This token pushes straight to
           # `main`/`release`/tags past branch protection, so don't leave it in .git/config while
           # that happens — the push step below supplies it explicitly, and only to itself.
@@ -263,7 +282,7 @@ jobs:
           # What `plan` saw at refs/heads/release; empty if the branch doesn't exist yet.
           RELEASE_SHA: ${{ needs.plan.outputs.release_sha }}
           # Scoped to this step alone — see persist-credentials above. Actions masks it in logs.
-          TOKEN: ${{ secrets.GH_ACTIONS_REPOSITORY_DISPATCH }}
+          TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
           git config user.name  "github-actions[bot]"
