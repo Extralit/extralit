@@ -173,8 +173,13 @@ jobs:
             exit 1
           fi
 
+      # Skipped once the release has converged: `cut` is already a no-op, so `base_sha` is a
+      # commit this run will never use. Asserting on it turns the idempotent re-run — the
+      # property that makes recovery safe — into a red run whenever trunk has moved on to
+      # commits no paths-filtered workflow matches. That is not hypothetical: re-running
+      # v0.7.0 right after the cut failed here, on the release fix commit itself.
       - name: Assert CI is green on the base commit
-        if: ${{ !inputs.skip_ci_check }}
+        if: ${{ !inputs.skip_ci_check && steps.converged.outputs.already_done != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
