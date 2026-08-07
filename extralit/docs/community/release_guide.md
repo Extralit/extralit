@@ -30,12 +30,14 @@ Once `dry_run=false` succeeds, one commit stamping the version lands on `main`, 
 
 | Trigger | Result |
 | --- | --- |
-| push to `release` | multi-arch `extralit/extralit-server:v0.7.0` + `:latest`, then the HF Space rebuild that restarts **`extralit/public-demo`** |
+| `release` build (dispatched by `release.yml`, not by the push — see below) | multi-arch `extralit/extralit-server:v0.7.0` + `:latest`, then the HF Space rebuild that restarts **`extralit/public-demo`** |
 | push to tag `v0.7.0` | `extralit` and `extralit-server` published to PyPI |
 | push to tag `v0.7.0` | versioned docs at `docs.extralit.ai/v0.7/`, with `stable` re-pointed at it |
 | push to tag `v0.7.0` | a GitHub Release with notes generated from merged PR titles |
 
 The GitHub Release step waits until PyPI actually serves both packages before publishing, so a release is never announced before it's installable.
+
+The production build is the one row above that is *not* driven by the atomic push. `release.yml` dispatches it explicitly, because GitHub matches a workflow's `paths:` filter against the diff a push carries — and when `release` is created at a commit that already exists on `main`, that push carries no changed files and starts nothing. Cutting `v0.7.0` hit exactly that: `main` and the tag both built, `release` built nothing, and the production image had to be triggered by hand.
 
 ## Verify
 

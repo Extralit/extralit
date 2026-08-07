@@ -252,6 +252,10 @@ jobs:
     needs: [authorize, plan]
     if: ${{ !inputs.dry_run && needs.plan.outputs.already_done != 'true' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # For the `gh workflow run` below. The push itself uses the App token, not this one.
+      actions: write
     steps:
       # Minted again here: tokens don't cross job boundaries, and this one expires in an hour
       # rather than sitting in org settings until someone notices it stopped working.
@@ -320,6 +324,29 @@ jobs:
             "HEAD:refs/heads/main" \
             "HEAD:refs/heads/release" \
             "refs/tags/$TAG"
+
+      # Do not rely on the `release` push event to start the production build. GitHub evaluates
+      # a workflow's `paths:` filter against the diff a push carries, and on the *first* release
+      # `refs/heads/release` is created at a commit that already exists on `main` — so that push
+      # carries no changed files, matches no path filter, and silently starts nothing. That is
+      # exactly what happened cutting v0.7.0: main and the tag both built, `release` built nothing.
+      #
+      # Dispatching is unconditional rather than first-release-only. Later releases do push the
+      # stamp commit (which touches all three subtrees) and would trigger on their own, but that
+      # is an accident of what bump_version.py edits, not a guarantee — a release whose diff
+      # missed `extralit-server/**` would ship no production image. The duplicate collapses on
+      # its own: both runs share the `${{ github.workflow }}-${{ github.ref }}` concurrency group
+      # with cancel-in-progress, so the push-triggered run is cancelled seconds in and exactly
+      # one build survives.
+      #
+      # GITHUB_TOKEN is enough here — workflow_dispatch and repository_dispatch are the two
+      # documented exceptions to the rule that GITHUB_TOKEN-triggered events start no new run.
+      - name: Build the production images from `release`
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh workflow run extralit-server.yml --ref release
 
       - name: What happens next
         env:

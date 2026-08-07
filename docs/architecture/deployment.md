@@ -171,9 +171,18 @@ Runs on branch pushes (`main` / `release`) and `workflow_dispatch` only —
 `github.ref_type == 'branch' && github.event_name != 'pull_request'`. **PRs run
 tests and nothing else here;** their preview images come from
 `extralit-frontend.build-push-dev.yml` (§3a), which is the only caller that
-passes `pr_number`. Tag pushes are excluded too: the image was already built from
-the `release` push at the same SHA, and a tag-triggered build would dispatch
+passes `pr_number`. Tag pushes are excluded too: the image is already built from
+`release` at the same SHA, and a tag-triggered build would dispatch
 `branch=vX.Y.Z`, which `resolve-env` would turn into a junk preview Space.
+
+The `release` build is started by an explicit `workflow_dispatch` from
+`release.yml`, **not** by the `release` push event. GitHub matches a workflow's
+`paths:` filter against the diff a push carries, and on the first release
+`refs/heads/release` is created at a commit that already exists on `main` — that
+push carries no changed files, so every paths-filtered workflow silently skips
+it. Dispatching removes the dependency on push semantics entirely; if the push
+event does also fire, the shared `${{ github.workflow }}-${{ github.ref }}`
+concurrency group cancels the duplicate.
 
 | Input                  | `is_release` (`release` branch) | dev (`main` / PR)               |
 | ---------------------- | ------------------------------- | ------------------------------- |
