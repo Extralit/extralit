@@ -289,8 +289,13 @@ Remove it once the trunk flip has been verified.
 
 `env_name` selects the GitHub **Environment** (`production` vs `staging`), which
 is how per-environment secrets/vars are scoped: `DOCKER_REPO`,
-`EXTRALIT_SERVER_IMAGE`, `HF_SPACE_ID`, `HF_TOKEN`,
-`DOCKER_USERNAME`/`DOCKER_PASSWORD`.
+`EXTRALIT_SERVER_IMAGE`, `HF_SPACE_ID`,
+`DOCKER_USERNAME`/`DOCKER_PASSWORD` (plus `HF_TOKEN` on `staging`, which only
+`deploy-pr-space` still uses — see §4).
+
+Note the environments carry **no protection rules and no branch policy**, so
+`environment:` here is a scoping mechanism, not an approval gate. What actually
+confines production access is the per-job `permissions:` block (§3).
 
 ### Job `build`
 Builds the self-contained Space image **on top of the server image**:
@@ -309,12 +314,37 @@ multi-process runtime (elastic + redis + RQ workers + FastAPI). Pushed to
 (staging), tagging `:latest` when `tag_latest=true`.
 
 ### Job `deploy-space` — *non-PR builds only* (`pr_space_slug == ''`)
-Restarts the live Space so it pulls the freshly pushed image:
+**Factory-reboots** the live Space so it re-pulls the freshly pushed image:
 
-```bash
-curl -X POST "https://huggingface.co/api/spaces/${HF_SPACE_ID}/restart" \
-     -H "Authorization: Bearer $HF_TOKEN"
+```yaml
+permissions:
+  contents: read
+  id-token: write          # mint the OIDC token; see below
+env:
+  HF_OIDC_RESOURCE: spaces/${{ vars.HF_SPACE_ID }}
 ```
+```python
+HfApi().restart_space(space, factory_reboot=True)
+```
+
+`factory_reboot=True` is load-bearing. The Space is a thin `FROM <pushed image>`
+Dockerfile, and a *plain* restart reuses the image HF already built without
+re-pulling that base — the job goes green while the Space serves the old build.
+That is the v0.7.0 failure: the Space cycled `RUNNING_APP_STARTING → RUNNING` and
+still reported 0.6.1.
+
+**This job holds no HF credential.** It authenticates with
+[Trusted Publishers](https://huggingface.co/docs/hub/en/trusted-publishers):
+GitHub Actions mints a short-lived OIDC id token, and HF exchanges it (RFC 8693)
+for a token scoped to that one Space for ~1h. `huggingface_hub` does the whole
+dance inside `get_token()` when `HF_OIDC_RESOURCE` is set, and raises `OIDCError`
+rather than falling back to an ambient credential.
+
+Each Space registers a publisher pinned to repo `Extralit/extralit-hf-space`,
+branch `main`, workflow `build-hf-space.yml`. Those claims are satisfied by
+*every* job in this file, so the `id-token: write` grant is deliberately scoped to
+this job alone — `build` and `deploy-pr-space` inherit only the workflow-level
+`contents: read` and therefore cannot mint a token to exchange at all.
 
 `HF_SPACE_ID` is the environment-scoped Space (see §5): the **`production`**
 environment points at `extralit/public-demo` — the live public demo served at
@@ -382,9 +412,19 @@ resolve **per environment**.
 
 | Secret            | Repo-level | `production` env | `staging` env |
 | ----------------- | :--------: | :--------------: | :-----------: |
-| `HF_TOKEN`        | ✅ (default) | ✅ (override)   | ✅ (override) |
+| `HF_TOKEN`        |     —      |        —         |      ✅       |
 | `DOCKER_USERNAME` |     —      |        ✅        |      ✅       |
 | `DOCKER_PASSWORD` |     —      |        ✅        |      ✅       |
+
+`HF_TOKEN` survives **only** on `staging`, and only for `deploy-pr-space`.
+Trusted Publishers scope a token to an *existing* repo, so they cannot cover
+`duplicate_space()`, which creates `extralit-dev/pr-N` on demand. That leaves the
+remaining token's write access confined to the `extralit-dev` org — nothing can
+reach `extralit/public-demo` with a stored credential.
+
+> Deleting the repo-level `HF_TOKEN` is part of this, not an afterthought:
+> `secrets.HF_TOKEN` silently falls back to it, so leaving it in place would make
+> removing the `production` override purely cosmetic.
 
 ### `extralit/extralit` (monorepo)
 
