@@ -5,7 +5,7 @@
 - **extralit-frontend/**: Vue 3 / Nuxt 4 (Vite); Pinia state management
 - **extralit/**: Python SDK client
 - **extralit-hf-space/**: Self-contained HF Spaces deployment bundle (Docker; bundles Elasticsearch + Redis + OCR) — git submodule
-- **Vector DB**: Elasticsearch/OpenSearch (separate service)
+- **Vector DB**: Elasticsearch/OpenSearch (migrating to Lancedb)
 
 ### Key Patterns
 - Backend: SQLAlchemy ORM, Alembic migrations, async pytest
@@ -41,44 +41,7 @@ cd extralit-server && uv run alembic -c src/extralit_server/alembic.ini upgrade 
 docker-compose up -d
 ```
 
-## Development Workflow
-
-# Python Package Management with uv
-Use uv exclusively for Python package management in this project.
-
-## Package Management Commands
-- All Python dependencies **must be installed, synchronized, and locked** using uv
-- Never use pip, pip-tools, poetry, or conda directly for dependency management
-
-Use these commands:
-- Install dependencies: `uv add <package>`, avoid adding to pyproject.toml directly
-- Remove dependencies: `uv remove <package>`
-- Sync environment: `uv sync`
-- Lock dependencies: `uv lock`
-
-## Running Python Code
-- Run a Python script with `uv run <script-name>.py`
-- Run Python tools with `uv run <tool>` (e.g. `uv run pytest`, `uv run ruff check`, `uv run ruff format`, `uv run ty check`, `uv run pre-commit`, `npm run lint`, `npm run format`)
-- Launch a Python REPL with `uv run python`
-
-### Running Services
-```bash
-cd extralit-server && uv run python -m extralit_server server-dev  # Server + worker
-cd extralit-frontend && npm run dev        # Frontend
-```
-
-### Testing
-```bash
-cd extralit-server && uv run pytest tests  # Server tests
-cd extralit && uv run pytest tests         # SDK tests
-cd extralit-frontend && npm run test       # Frontend tests
-```
-
-## Branching
-
-Trunk-based. **`main` is the trunk and the default branch** — every change, code or docs,
-branches from `main` and squash-merges back via PR. There is no `develop` branch and no
-`releases/**` branches.
+## Deployment and Branching
 
 | Ref | Role | Deploys to |
 |---|---|---|
@@ -86,11 +49,6 @@ branches from `main` and squash-merges back via PR. There is no `develop` branch
 | `release` | long-lived production pointer, moved only by `release.yml` | `extralit/public-demo` |
 | `vX.Y.Z` tag | the release itself | PyPI, versioned docs, GitHub Release |
 | PR (non-fork) | preview | ephemeral `extralit-dev/pr-N` |
-
-Branch names: `feat/*`, `fix/*`, `docs/*`, short-lived. PR titles use the matching
-`feat:` / `fix:` / `docs:` / `chore:` prefix. Note the generated release notes group PRs by
-**label**, not by title prefix (see `.github/release.yml`) — label a PR to place it under a
-heading; the title convention is for humans.
 
 **Never push to `release` or create tags by hand.** Releases are one dispatch:
 
@@ -103,10 +61,4 @@ That stamps the version via `scripts/bump_version.py` and pushes `main`, `releas
 tag atomically. The version lives in three files — always change it with
 `python scripts/bump_version.py set --version X.Y.Z`, never by hand.
 
-See `docs/architecture/deployment.md` for the full pipeline and
-`extralit/docs/community/release_guide.md` for the release runbook.
-
-## Git Workgrees
-When creating a git workgree, place it at `.worktree/<branch-name>` relative to the repo root, normalizing `/` to `-` in the branch-name.
-
-Example: branch `feature/add-new-feature` should be placed at `.worktree/feature-add-new-feature`.
+See `docs/architecture/deployment.md` for the full pipeline
