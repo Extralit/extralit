@@ -18,6 +18,13 @@ These are the section headers that we use:
 ### Added
 
 - Refactor document analysis and preprocessing job to support asynchronous s3 IO operations and large file processing.
+- Added text chunking pipeline using chonkie `RecursiveChunker` with a new RQ job (`process_text_extraction_result_job`) that extracts text from OCR JSON results, chunks it, and persists chunks to `documents.metadata_` in the database.
+- Added `ChunkMetadata` schema and `chunks` field to `TextExtractionMetadata` for storing text chunks alongside extracted text.
+- Added `chonkie>=1.0.2` as a dependency.
+
+### Removed
+
+- Removed `InMemoryChunkStore` (`chunk_store.py`) — chunks are now persisted to the database instead of a process-local dict.
 
 ### Fixed
 

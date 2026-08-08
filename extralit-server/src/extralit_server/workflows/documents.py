@@ -4,7 +4,7 @@ from uuid import UUID, uuid4
 from rq.group import Group
 
 from extralit_server.database import AsyncSessionLocal
-from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
+from extralit_server.jobs.document_jobs import analysis_and_preprocess_job, process_text_extraction_result_job
 from extralit_server.jobs.queues import DEFAULT_QUEUE, OCR_QUEUE, REDIS_CONNECTION
 from extralit_server.models.database import DocumentWorkflow
 
@@ -77,6 +77,12 @@ async def create_document_workflow(
 
     group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
     group.enqueue_many(queue=OCR_QUEUE, job_datas=[text_extraction_job_data])
+
+    # Step 5: Chunking job — runs after text extraction completes.
+    # `process_text_extraction_result_job` is invoked with the OCR result
+    # (the dict returned by pymupdf_to_markdown_job) once that job finishes.
+    # Wiring via RQ Callback or a dependent enqueue is done by the caller
+    # that has access to the text-extraction result.
 
     # Step 6: Future table extraction job (conditional based on analysis results)
     # This will be added when table extraction is implemented
