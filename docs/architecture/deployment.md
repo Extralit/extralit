@@ -314,7 +314,9 @@ multi-process runtime (elastic + redis + RQ workers + FastAPI). Pushed to
 (staging), tagging `:latest` when `tag_latest=true`.
 
 ### Job `deploy-space` — *non-PR builds only* (`pr_space_slug == ''`)
-**Factory-reboots** the live Space so it re-pulls the freshly pushed image:
+Deploys by **committing to the Space repo**, not by restarting it. The Space is a
+thin `FROM <pushed image>` Dockerfile; the job rewrites that `FROM` line to the
+**digest** `build` just pushed and commits it, and HF rebuilds on the new commit.
 
 ```yaml
 permissions:
@@ -322,16 +324,32 @@ permissions:
   id-token: write          # mint the OIDC token; see below
 env:
   HF_OIDC_RESOURCE: spaces/${{ vars.HF_SPACE_ID }}
+  IMAGE_DIGEST: ${{ needs.build.outputs.image_digest }}
 ```
 ```python
-HfApi().restart_space(space, factory_reboot=True)
+after = re.sub(r"^FROM\s+\S+", f"FROM {repo}@{digest}", before, count=1, flags=re.M)
+api.upload_file(path_or_fileobj=after.encode(), path_in_repo="Dockerfile",
+                repo_id=space, repo_type="space", commit_message=f"Deploy {pin}")
 ```
 
-`factory_reboot=True` is load-bearing. The Space is a thin `FROM <pushed image>`
-Dockerfile, and a *plain* restart reuses the image HF already built without
-re-pulling that base — the job goes green while the Space serves the old build.
-That is the v0.7.0 failure: the Space cycled `RUNNING_APP_STARTING → RUNNING` and
-still reported 0.6.1.
+**Why a commit and not `restart_space()`.** The restart API answers **401** to an
+OIDC token: a repo publisher grants *write access to that repo*, and restarting is
+a runtime operation rather than a repo write. Committing is what the credential is
+for, and is HF's own
+[documented GitHub Actions pattern](https://huggingface.co/docs/hub/en/spaces-github-actions).
+A 401 here is specifically the restart endpoint — a misconfigured publisher fails
+earlier and differently, as `OIDCError`/`invalid_grant` from the exchange.
+
+**Why a digest and not a tag.** When the `FROM` line was `:latest`, HF reused the
+base image it had already built and never re-pulled — the job went green while the
+Space served the old build. That is the v0.7.0 failure: it cycled
+`RUNNING_APP_STARTING → RUNNING` and still reported 0.6.1. A digest cannot resolve
+to a previously-built image, which retires the `factory_reboot=True` workaround
+that used to paper over this.
+
+Re-deploying an unchanged digest is a no-op commit and so triggers no rebuild; that
+path skips the wait and asserts the Space's *current* stage is `RUNNING`, so an
+earlier failed build is never reported as a green redeploy.
 
 **This job holds no HF credential.** It authenticates with
 [Trusted Publishers](https://huggingface.co/docs/hub/en/trusted-publishers):
