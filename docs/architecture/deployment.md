@@ -81,8 +81,8 @@ flowchart TD
     srvbuild -->|build & push| srvimg
     srvbuild -->|repository_dispatch: build-hf-space| bhs
     bhs -->|FROM server image + ES/Redis/OCR| spaceimg
-    bhs -->|"restart (is_release=true)"| demo
-    bhs -->|"restart (branch=main)"| dev
+    bhs -->|"commit digest pin (is_release=true)"| demo
+    bhs -->|"commit digest pin (branch=main)"| dev
     bhs -->|duplicate + retarget| prspace
 ```
 
@@ -112,7 +112,7 @@ on **`pull_request`**.
 | `extralit/docs/`    | `extralit.docs.yml`               | `extralit/docs/**`, `mkdocs.yml`              | Versioned docs via `mike` → `gh-pages`              | No                |
 | *(whole repo)*      | `release.yml`                     | manual dispatch only                          | version stamp on `main` + `release` + `vX.Y.Z` tag  | **Yes** (indirectly) |
 | *(none)*            | `github-release.yml`              | `vX.Y.Z` tag                                  | GitHub Release, once PyPI serves both packages      | No³ |
-| `extralit-hf-space/`| `build-hf-space.yml` *(other repo)* | repository_dispatch / manual                | `extralit-hf-space` Docker image + Space restart/deploy | **Yes** (terminal) |
+| `extralit-hf-space/`| `build-hf-space.yml` *(other repo)* | repository_dispatch / manual                | `extralit-hf-space` Docker image + Space deploy | **Yes** (terminal) |
 
 ¹ The frontend's own workflow tests, lints, and uploads a prerendered SPA
 artifact; the **live** UI is deployed separately by Vercel's native Git
@@ -443,6 +443,12 @@ reach `extralit/public-demo` with a stored credential.
 > Deleting the repo-level `HF_TOKEN` is part of this, not an afterthought:
 > `secrets.HF_TOKEN` silently falls back to it, so leaving it in place would make
 > removing the `production` override purely cosmetic.
+>
+> **Order matters.** This table is the state *after* a production release has
+> deployed keyless end-to-end. Until then both overrides stay, so reverting
+> `deploy-space` to a stored token remains a one-commit rollback — deleting them
+> early costs nothing on the deploy path (nothing reads `secrets.HF_TOKEN` there
+> anymore) but throws away that escape hatch.
 
 ### `extralit/extralit` (monorepo)
 
@@ -500,7 +506,7 @@ The cross-repo `client-payload` carries the handoff state:
 | `image_tag` *(output)*      | payload tag, or `latest` (manual)         | Docker tag built & deployed                      |
 | `tag_latest` *(output)*     | `true` on release/trunk                   | also tag/push `:latest`                          |
 | `platforms` *(output)*      | `amd64` (staging) / `amd64,arm64` (release) | buildx target platforms                        |
-| `pr_space_slug` *(output)*  | `pr-N` / slug for preview refs            | empty → restart live Space; set → PR preview     |
+| `pr_space_slug` *(output)*  | `pr-N` / slug for preview refs            | empty → deploy live Space; set → PR preview     |
 | `DOCKER_TAGS`               | `${DOCKER_REPO}:${IMAGE_TAG}[,:latest]`   | tags pushed by build job                          |
 | `EXTRALIT_SERVER_IMAGE` *(build-arg)* | `vars.EXTRALIT_SERVER_IMAGE`    | base image the Space is built `FROM`             |
 | `EXTRALIT_VERSION` *(build-arg)*      | `image_tag`                     | base image tag (→ Dockerfile `ARG`)              |
@@ -566,7 +572,7 @@ The cross-repo `client-payload` carries the handoff state:
 4. `repository_dispatch(build-hf-space, {tag: main, is_release: false, branch: main})`.
 5. `build-hf-space.yml` → `resolve-env` (env=`staging`) → builds
    `extralitdev/extralit-hf-space:main` `FROM` the server image.
-6. `deploy-space` → `POST /spaces/extralit-dev/develop/restart`.
+6. `deploy-space` → commits the digest pin to `extralit-dev/develop`, which rebuilds.
 7. Live at **<https://extralit-dev-develop.hf.space>**. **Production untouched.**
 
 ### Release → public demo (`release` + tag)
@@ -579,8 +585,8 @@ The cross-repo `client-payload` carries the handoff state:
    (`is_release=true`) → `extralit/extralit-server:vX.Y.Z` (+`:latest`), amd64+arm64.
 4. `repository_dispatch(build-hf-space, {tag: vX.Y.Z, is_release: true})`.
 5. `build-hf-space.yml` → `resolve-env` (env=`production`) → builds
-   `extralit/extralit-hf-space:vX.Y.Z` → `deploy-space` restarts
-   `extralit/public-demo`.
+   `extralit/extralit-hf-space:vX.Y.Z` → `deploy-space` commits that image's
+   digest to `extralit/public-demo`, which rebuilds.
 6. In parallel, the **tag** push drives PyPI (`extralit`, `extralit-server`),
    versioned docs (`mike deploy X.Y` + `stable`), and the GitHub Release.
 7. Public demo live at **<https://extralit-public-demo.hf.space>**.
