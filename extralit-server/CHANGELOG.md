@@ -18,6 +18,20 @@ These are the section headers that we use:
 ### Added
 
 - Refactor document analysis and preprocessing job to support asynchronous s3 IO operations and large file processing.
+- Adopted `DoclingDocument` as the canonical internal layout model, so every extracted item carries a `page_no` + `bbox` + `charspan` provenance triple that an extraction record can cite.
+- Added swappable layout parsers behind `contexts/ocr/parsers`: `pdf_inspector` (MIT, required, the default) and `pymupdf` (AGPL, optional `pymupdf` extra, the only one yielding per-cell table geometry).
+- Added `async_document_layout_job` on the OCR queue, persisting layout as canonical JSON plus a columnar Parquet projection in object storage.
+- Added `GET /documents/{document_id}/layout`, with `pages` and `labels` filters, plus the matching frontend `DocumentLayout` entities and `DocumentRepository.getDocumentLayout`.
+- Added `layout_parser` to `POST /workflows/start` to trigger layout extraction as part of the document workflow.
+
+### Changed
+
+- Rewrote `contexts/ocr/{text,tables,figures}` as single-item appenders driven by one ordered pass, fixing text inside tables and figures being emitted twice and restoring geometric reading order.
+
+### Removed
+
+- Removed the `marker` extra (`marker-pdf`, `torch`, `torchvision`, `transformers`) and the unused `async_marker_layout_job`.
+- Removed the deprecated Unstructured-shaped `document/chunks.py` schemas (`Segments`, `TextSegment`, `TableSegment`, `FigureSegment`, `Coordinates`) and the unreferenced `GPU_QUEUE`.
 
 ### Fixed
 
