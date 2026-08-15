@@ -105,6 +105,13 @@ jobs:
           name: extralit-server
           path: extralit-server/docker/server/dist
 
+      # Only `labels` is consumed downstream; tags come from IMAGE_TAG, not from this step.
+      - name: Extract OCI image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.SERVER_DOCKER_IMAGE }}
+
       - name: Build and push `extralit-server` image
         uses: docker/build-push-action@v5
         with:
