@@ -51,6 +51,25 @@ class TextExtractionMetadata(BaseModel):
     extraction_method: str = Field(..., description="Method used for extraction")
 
 
+class LayoutMetadata(BaseModel):
+    """Layout extraction job results.
+
+    Only pointers and counts — the layout itself lives in object storage, because
+    `documents.metadata_` is returned in full by every `GET /documents` listing.
+    """
+
+    layout_url: str = Field(..., description="S3 object path of the canonical DoclingDocument JSON")
+    items_parquet_url: Optional[str] = Field(None, description="S3 object path of the per-item Parquet sidecar")
+    pages_parquet_url: Optional[str] = Field(None, description="S3 object path of the per-page Parquet sidecar")
+    parser: str = Field(..., description="Name of the layout parser that produced the document")
+    docling_version: str = Field(..., description="docling-core schema version the JSON was written with")
+    num_items: int = Field(default=0, description="Number of layout items extracted")
+    num_pages: int = Field(default=0, description="Number of pages with registered geometry")
+    pages_needing_ocr: list[int] = Field(
+        default_factory=list, description="1-indexed pages with no reliable text layer"
+    )
+
+
 class DocumentProcessingMetadata(BaseModel):
     """Complete document processing metadata stored in documents.metadata_."""
 
@@ -58,6 +77,7 @@ class DocumentProcessingMetadata(BaseModel):
     analysis_metadata: Optional[AnalysisMetadata] = Field(None, description="Analysis results")
     preprocessing_metadata: Optional[PreprocessingMetadata] = Field(None, description="Preprocessing results")
     text_extraction_metadata: Optional[TextExtractionMetadata] = Field(None, description="Text extraction results")
+    layout_metadata: Optional[LayoutMetadata] = Field(None, description="Layout extraction results")
     workflow_status: str = Field(default="running", description="Overall workflow status")
 
     def update_analysis_results(self, analysis_result: dict) -> None:

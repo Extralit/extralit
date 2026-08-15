@@ -3,14 +3,19 @@ import logging
 from typing import TYPE_CHECKING, Annotated
 from uuid import UUID, uuid4
 
+from docling_core.types.doc.document import CURRENT_VERSION
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Path, Query, Security, UploadFile, status
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.policies.v1 import DocumentPolicy, authorize
+from extralit_server.api.schemas.v1.document.layout import DocumentLayoutOut
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem, DocumentUpdate
 from extralit_server.api.schemas.v1.imports import DocumentsBulkCreate, DocumentsBulkResponse
 from extralit_server.contexts import files, imports
+from extralit_server.contexts.ocr import storage
+from extralit_server.contexts.ocr.projection import project_layout
 from extralit_server.database import get_async_db
 from extralit_server.models import User, Workspace
 from extralit_server.models.database import Document
@@ -244,6 +249,66 @@ async def list_documents(
     documents = await imports.list_documents(db, workspace_id)
 
     return documents
+
+
+@router.get(
+    "/documents/{document_id}/layout",
+    status_code=status.HTTP_200_OK,
+    description="Get the extracted layout of a document, with per-item page regions.",
+)
+async def get_document_layout(
+    *,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    document_id: Annotated[UUID, Path(title="The UUID of the document whose layout will be retrieved")],
+    pages: Annotated[list[int] | None, Query(description="1-indexed pages to include")] = None,
+    labels: Annotated[list[str] | None, Query(description="DocItemLabels to include, e.g. `table`")] = None,
+    s3_client=Depends(files.get_s3_client),
+    current_user: User = Security(auth.get_current_user),
+) -> DocumentLayoutOut:
+    await authorize(current_user, DocumentPolicy.get())
+
+    document = await db.get(Document, document_id)
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document with id `{document_id}` not found",
+        )
+
+    workspace = await Workspace.get(db, document.workspace_id)
+    if workspace is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Workspace with id `{document.workspace_id}` not found",
+        )
+
+    layout_metadata = (document.metadata_ or {}).get("layout_metadata")
+    if not layout_metadata:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No layout has been extracted for document `{document_id}`",
+        )
+
+    try:
+        doc = await storage.load_layout(
+            s3_client,
+            workspace.name,
+            document_id,
+            object_path=layout_metadata.get("layout_url"),
+        )
+    except ValidationError as e:
+        # A layout written by a newer docling-core cannot be read back by this server.
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Stored layout is not readable by docling-core {CURRENT_VERSION}: {e}",
+        ) from e
+    except Exception as e:
+        _LOGGER.error(f"Error loading layout for document {document_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Layout for document `{document_id}` could not be loaded",
+        ) from e
+
+    return project_layout(doc, document_id, pages=pages, labels=labels)
 
 
 @router.post("/documents/bulk", status_code=status.HTTP_201_CREATED)

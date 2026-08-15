@@ -5,6 +5,7 @@ from rq.group import Group
 
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
+from extralit_server.jobs.ocr_jobs import async_document_layout_job
 from extralit_server.jobs.queues import DEFAULT_QUEUE, OCR_QUEUE, REDIS_CONNECTION
 from extralit_server.models.database import DocumentWorkflow
 
@@ -12,7 +13,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def create_document_workflow(
-    document_id: UUID, s3_url: str, reference: str, workspace_name: str, workspace_id: UUID
+    document_id: UUID,
+    s3_url: str,
+    reference: str,
+    workspace_name: str,
+    workspace_id: UUID,
+    layout_parser: str | None = None,
 ) -> Group:
     """
     Start PDF processing workflow using RQ Groups for job tracking.
@@ -26,6 +32,7 @@ async def create_document_workflow(
         reference: Reference key for tracking
         workspace_name: Workspace name for job context
         workspace_id: UUID of the workspace
+        layout_parser: Name of a layout parser to run; None skips layout extraction
 
     Returns:
         Dictionary containing workflow_id and group_id for tracking
@@ -75,8 +82,26 @@ async def create_document_workflow(
         },
     )
 
+    ocr_job_datas = [text_extraction_job_data]
+
+    if layout_parser:
+        ocr_job_datas.append(
+            OCR_QUEUE.prepare_data(
+                async_document_layout_job,
+                (document_id, s3_url, workspace_name, layout_parser),
+                timeout=1800,
+                job_id=f"document_layout_{document_id}",
+                meta={
+                    "document_id": str(document_id),
+                    "reference": reference,
+                    "workflow_step": "document_layout",
+                    "workflow_id": str(workflow.id),
+                },
+            )
+        )
+
     group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
-    group.enqueue_many(queue=OCR_QUEUE, job_datas=[text_extraction_job_data])
+    group.enqueue_many(queue=OCR_QUEUE, job_datas=ocr_job_datas)
 
     # Step 6: Future table extraction job (conditional based on analysis results)
     # This will be added when table extraction is implemented

@@ -76,6 +76,7 @@ async def start_workflow(
             reference=document.reference,
             workspace_name=request.workspace_name,
             workspace_id=workspace.id,
+            layout_parser=request.layout_parser,
         )
 
         # Get the created workflow

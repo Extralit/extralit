@@ -17,7 +17,7 @@ from extralit_server.jobs import (  # noqa: F401
     document_jobs,
     hub_jobs,
     import_jobs,
-    # ocr_jobs,
+    ocr_jobs,
     webhook_jobs,
 )
 from extralit_server.models.database import Dataset, Document, Record, User, Workspace  # noqa: F401

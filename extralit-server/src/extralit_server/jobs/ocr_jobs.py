@@ -1,269 +1,127 @@
-"""OCR-related job functions for document processing."""
+"""Document layout extraction jobs."""
 
 import logging
-from pathlib import Path
-from pprint import pprint
-from typing import TYPE_CHECKING, Any, Optional, Union
+from collections.abc import Sequence
+from typing import Any, Optional
 from uuid import UUID
 
 from rq import Retry, get_current_job
 from rq.decorators import job
 
-from extralit_server.contexts.ocr.figures import extract_figure_bboxes
-from extralit_server.contexts.ocr.tables import extract_table_bboxes
-from extralit_server.contexts.ocr.text import extract_text_bboxes
-from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
-
-if TYPE_CHECKING:
-    from marker.renderers.json import JSONOutput
+from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingMetadata, LayoutMetadata
+from extralit_server.contexts import files
+from extralit_server.contexts.ocr import storage
+from extralit_server.contexts.ocr.parsers import default_parser_name, get_parser
+from extralit_server.contexts.ocr.parsers.pdf_inspector import classify
+from extralit_server.database import AsyncSessionLocal
+from extralit_server.jobs.queues import OCR_QUEUE, REDIS_CONNECTION
+from extralit_server.models.database import Document
 
 _LOGGER = logging.getLogger(__name__)
 
-_MARKER_AVAILABLE = False
-try:
-    from marker.config.parser import ConfigParser
-    from marker.converters.pdf import PdfConverter
-    from marker.models import create_model_dict
 
-    _MARKER_AVAILABLE = True
-except ImportError as e:
-    _LOGGER.warning(f"Marker dependencies not available: {e}. OCR layout jobs will be disabled.")
-    ConfigParser = None  # type: ignore[assignment,misc]
-    PdfConverter = None  # type: ignore[assignment,misc]
-    create_model_dict = None  # type: ignore[assignment]
+def route_parser(pdf_bytes: bytes) -> tuple[str, dict[str, Any]]:
+    """Pick a parser and record what classification saw.
 
-
-@job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=1800, retry=Retry(max=2, interval=[30, 60]))
-async def async_marker_layout_job(
-    pdf_path: Union[str, Path],
-    pages: Optional[str] = None,
-    extract_text: bool = False,
-    document_id: Optional[UUID] = None,
-) -> dict[str, Any]:
+    `pages_needing_ocr` is surfaced rather than acted on, so scanned pages show up as an
+    explicit gap instead of silently producing an empty layout.
     """
-    Use Marker to extract layout (tables, figures, text blocks) without running OCR.
+    try:
+        classification = classify(pdf_bytes)
+    except Exception as e:
+        _LOGGER.warning(f"PDF classification failed, falling back to the default parser: {e}")
+        classification = {"pages_needing_ocr": [], "page_count": 0, "pdf_type": "unknown"}
+    return default_parser_name(), classification
 
-    This job uses Marker's layout detection capabilities to identify and extract
-    bounding boxes for different document elements without performing OCR.
+
+@job(
+    queue=OCR_QUEUE,
+    connection=REDIS_CONNECTION,
+    timeout=1800,
+    result_ttl=3600,
+    retry=Retry(max=2, interval=[30, 60]),
+)
+async def async_document_layout_job(
+    document_id: UUID,
+    s3_url: str,
+    workspace_name: str,
+    parser: Optional[str] = None,
+    pages: Optional[Sequence[int]] = None,
+) -> dict[str, Any]:
+    """Extract document layout into a `DoclingDocument` and persist it.
 
     Args:
-        pdf_path: Path to the PDF file to process
-        pages: Optional comma-separated page numbers to process (0-indexed). If None, processes all pages
-        extract_text: Whether to extract text blocks in addition to tables/figures
-        document_id: Optional document ID for job tracking
+        document_id: UUID of the document to process
+        s3_url: proxy URL of the PDF, as stored on the document
+        workspace_name: workspace bucket the artifacts are written to
+        parser: layout parser name; None routes automatically
+        pages: 1-indexed page allowlist; None processes every page
 
     Returns:
-        Dictionary containing structured layout information:
-        - tables: List of table bounding boxes
-        - figures: List of figure bounding boxes
-        - text_blocks: List of text block bounding boxes (if extract_text=True)
-        - metadata: Job execution metadata
+        Object paths and counts. Never the document itself — it does not belong in a job result.
     """
-    if not _MARKER_AVAILABLE:
-        raise ImportError("Marker not installed. Install with: pip install marker-pdf")
-
     current_job = get_current_job()
     if current_job is not None:
         current_job.meta.update(
             {
-                "pdf_path": str(pdf_path),
-                "document_id": str(document_id) if document_id else None,
-                "pages": pages,
-                "extract_text": extract_text,
-                "workflow_step": "marker_layout_extraction",
+                "document_id": str(document_id),
+                "workspace_name": workspace_name,
+                "workflow_step": "document_layout",
             }
         )
         current_job.save_meta()
 
     try:
-        pdf_path = Path(pdf_path)
-        if not pdf_path.exists():
-            raise FileNotFoundError(f"PDF file not found: {pdf_path}")
+        # Shared client — do not enter it as a context manager, that would close it for everyone.
+        s3_client = await files.get_s3_client()
+        pdf_bytes = await files.download_file_content(s3_client, s3_url)
 
-        _LOGGER.info(f"Starting Marker layout extraction for: {pdf_path}")
+        routed, classification = route_parser(pdf_bytes)
+        parser_name = parser or routed
+        _LOGGER.info(f"Extracting layout for document {document_id} with parser {parser_name}")
 
-        if pdf_path.suffix.lower() != ".pdf":
-            raise ValueError(f"File is not a PDF: {pdf_path}")
+        doc = get_parser(parser_name)(
+            pdf_bytes,
+            name=str(document_id),
+            pages=pages,
+            filename=s3_url.split("/")[-1],
+        )
 
-        try:
-            # Step 1: Create configuration
-            config_dict, model_dict = create_marker_config(pages)
+        paths = await storage.store_layout(s3_client, workspace_name, document_id, doc)
 
-            # Step 2: Run Marker
-            result = run_marker(str(pdf_path), config_dict, model_dict)
+        layout = LayoutMetadata(
+            **paths,
+            parser=parser_name,
+            docling_version=doc.version,
+            num_items=sum(1 for _ in doc.iterate_items(with_groups=False)),
+            num_pages=len(doc.pages),
+            pages_needing_ocr=classification.get("pages_needing_ocr", []),
+        )
 
-            # Step 3: Parse output
-            layout_result = parse_marker_output(result)
+        async with AsyncSessionLocal() as db:
+            document = await db.get(Document, document_id)
+            if document is not None:
+                metadata = DocumentProcessingMetadata(**(document.metadata_ or {}))
+                metadata.layout_metadata = layout
+                document.metadata_ = metadata.model_dump()
+                await db.commit()
 
-        except Exception as e:
-            _LOGGER.error(f"Error calling Marker API: {e}", exc_info=True)
-            raise e
-
-        # Extract bounding boxes using our utility functions
-        tables = extract_table_bboxes(layout_result)
-        figures = extract_figure_bboxes(layout_result)
-        text_blocks = extract_text_bboxes(layout_result)
-
-        print(f"Extracted {len(tables)} tables, {len(figures)} figures, {len(text_blocks)} text blocks")
-        output = {
-            "tables": tables,
-            "figures": figures,
-            "text_blocks": text_blocks,
-            "metadata": {
-                "source": "marker",
-                "pdf_path": str(pdf_path),
-                "pages_processed": pages or "all",
-                "total_elements": len(tables) + len(figures) + len(text_blocks),
-                "processing_time": None,
-            },
+        result = {
+            "document_id": str(document_id),
+            "parser": parser_name,
+            **layout.model_dump(),
         }
 
-        pprint(output)
+        if current_job is not None:
+            current_job.meta["layout_complete"] = True
+            current_job.save_meta()
 
-        # Update job metadata with outputs
-        # current_job.meta.update(
-        #     {
-        #         "layout_extraction_complete": True,
-        #         "tables_found": len(tables),
-        #         "figures_found": len(figures),
-        #         "text_blocks_found": len(text_blocks),
-        #     }
-        # )
-        # current_job.save_meta()
-
-        _LOGGER.info(f"Marker layout extraction completed. Found {len(tables)} tables, {len(figures)} figures")
-        return output
+        _LOGGER.info(f"Layout extraction complete for {document_id}: {layout.num_items} items")
+        return result
 
     except Exception as e:
-        _LOGGER.error(f"Error in marker layout extraction job: {e}", exc_info=True)
-        # current_job.meta["error"] = str(e)
-        # current_job.save_meta()
+        _LOGGER.error(f"Error in layout extraction for document {document_id}: {e}", exc_info=True)
+        if current_job is not None:
+            current_job.meta["error"] = str(e)
+            current_job.save_meta()
         raise
-
-
-def create_marker_config(pages: Optional[str] = None) -> tuple[dict[str, Any], dict[str, Any]]:
-    """
-    Create optimized Marker configuration for layout detection only (no OCR).
-
-    Args:
-        pages: Optional comma-separated page numbers to process
-
-    Returns:
-        Tuple of (config_dict, model_dict) for Marker
-    """
-    # Configure for JSON output and layout detection only
-    config_dict = {
-        "output_format": "json",
-        "force_ocr": False,
-        "paginate_output": False,
-        "extract_images": False,  # Skip image extraction for speed
-    }
-
-    if pages is not None:
-        config_dict["page_range"] = pages
-
-    # Create model dict - keep all models to avoid dependency resolution issues
-    # Models will be loaded but won't be used for actual OCR due to configuration
-    model_dict = create_model_dict()
-
-    return config_dict, model_dict
-
-
-def run_marker(pdf_path: str, config_dict: dict[str, Any], model_dict: dict[str, Any]) -> "JSONOutput":
-    """
-    Run Marker layout detection on a PDF.
-
-    Args:
-        pdf_path: Path to the PDF file
-        config_dict: Marker configuration dictionary
-        model_dict: Marker model dictionary
-
-    Returns:
-        JSONOutput object containing layout detection results
-    """
-    # Use ConfigParser to properly set up the renderer
-    config_parser = ConfigParser(config_dict)
-    final_config = config_parser.generate_config_dict()
-
-    converter = PdfConverter(
-        config=final_config,
-        artifact_dict=model_dict,
-        processor_list=config_parser.get_processors(),
-        renderer=config_parser.get_renderer(),
-    )
-
-    # This should return JSONOutput because of our config
-    result = converter(pdf_path)
-
-    # Verify we got JSONOutput as expected
-    if not hasattr(result, "model_dump"):
-        raise ValueError(f"Expected a Pydantic model with model_dump (like JSONOutput), but got {type(result)}")
-
-    return result
-
-
-def parse_marker_output(result: "JSONOutput") -> dict[str, Any]:
-    """
-    Parse Marker JSONOutput into our application's expected layout format.
-
-    Args:
-        result: JSONOutput object from Marker
-
-    Returns:
-        A dictionary with a structured list of pages and their blocks.
-    """
-    layout_data = {"pages": []}
-
-    if result.children:
-        for page_idx, page in enumerate(result.children):
-            page_data = {"page": page_idx, "blocks": []}
-
-            if page.children:
-                for block in page.children:
-                    block_data = {
-                        "type": block.block_type or "unknown",
-                        "bbox": block.bbox or [],
-                        "content": (block.html or "").strip(),
-                        "id": block.id or "",
-                        "score": None,  # Marker doesn't provide confidence scores
-                    }
-                    page_data["blocks"].append(block_data)
-
-            layout_data["pages"].append(page_data)
-
-    return layout_data
-
-
-if __name__ == "__main__":
-    import argparse
-    import asyncio
-    import json
-    from uuid import UUID
-
-    parser = argparse.ArgumentParser(description="Test async_marker_layout_job from CLI.")
-    parser.add_argument("pdf_path", type=str, help="Path to the PDF file to process.")
-    parser.add_argument(
-        "--pages",
-        type=str,
-        default=None,
-        help="Comma-separated list of page numbers to process (0-indexed). If omitted, all pages are processed.",
-    )
-    parser.add_argument(
-        "--extract-text", action="store_true", help="Extract text blocks in addition to tables/figures."
-    )
-    args = parser.parse_args()
-
-    pdf_path: str = args.pdf_path
-    pages: str = args.pages
-    extract_text: bool = args.extract_text
-
-    async def _main():
-        # Call the underlying logic directly, not as an RQ job
-        result = await async_marker_layout_job(
-            pdf_path=pdf_path,
-            pages=pages,
-            extract_text=extract_text,
-        )
-        print(json.dumps(result, indent=2, ensure_ascii=False))
-
-    asyncio.run(_main())
