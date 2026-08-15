@@ -9,6 +9,7 @@ from docling_core.types.doc.document import CURRENT_VERSION
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.contexts.ocr.docling_builder import (
     LayoutBlock,
     PageContext,
@@ -16,7 +17,13 @@ from extralit_server.contexts.ocr.docling_builder import (
     new_document,
 )
 from extralit_server.models.database import Document
-from tests.factories import DocumentFactory, WorkspaceFactory
+from tests.factories import (
+    AdminFactory,
+    AnnotatorFactory,
+    DocumentFactory,
+    WorkspaceFactory,
+    WorkspaceUserFactory,
+)
 
 PAGE_WIDTH, PAGE_HEIGHT = 612.0, 792.0
 
@@ -47,7 +54,7 @@ def build_layout():
 async def make_document(db: AsyncSession, layout_metadata: dict | None) -> Document:
     workspace = await WorkspaceFactory.create(name=f"ws-{uuid4().hex[:8]}")
     metadata = {"layout_metadata": layout_metadata} if layout_metadata else {}
-    return await DocumentFactory.create(workspace_id=workspace.id, metadata_=metadata)
+    return await DocumentFactory.create(workspace=workspace, metadata_=metadata)
 
 
 LAYOUT_METADATA = {
@@ -198,3 +205,52 @@ class TestGetDocumentLayout:
         response = await async_client.get(f"/api/v1/documents/{document.id}/layout")
 
         assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+class TestDocumentLayoutAuthorization:
+    """This route returns document contents, so a role check alone is not enough."""
+
+    async def test_annotator_outside_the_workspace_is_denied(self, async_client: AsyncClient, db, load_layout):
+        document = await make_document(db, LAYOUT_METADATA)
+        outsider = await AnnotatorFactory.create()
+
+        response = await async_client.get(
+            f"/api/v1/documents/{document.id}/layout",
+            headers={API_KEY_HEADER_NAME: outsider.api_key},
+        )
+
+        assert response.status_code == 403
+
+    async def test_admin_outside_the_workspace_is_denied(self, async_client: AsyncClient, db, load_layout):
+        document = await make_document(db, LAYOUT_METADATA)
+        outsider = await AdminFactory.create()
+
+        response = await async_client.get(
+            f"/api/v1/documents/{document.id}/layout",
+            headers={API_KEY_HEADER_NAME: outsider.api_key},
+        )
+
+        assert response.status_code == 403
+
+    async def test_annotator_inside_the_workspace_is_allowed(self, async_client: AsyncClient, db, load_layout):
+        workspace = await WorkspaceFactory.create(name=f"ws-{uuid4().hex[:8]}")
+        document = await DocumentFactory.create(workspace=workspace, metadata_={"layout_metadata": LAYOUT_METADATA})
+        member = await AnnotatorFactory.create()
+        await WorkspaceUserFactory.create(workspace_id=workspace.id, user_id=member.id)
+
+        response = await async_client.get(
+            f"/api/v1/documents/{document.id}/layout",
+            headers={API_KEY_HEADER_NAME: member.api_key},
+        )
+
+        assert response.status_code == 200
+
+    async def test_owner_is_allowed_across_workspaces(
+        self, async_client: AsyncClient, db, owner_auth_header, load_layout
+    ):
+        document = await make_document(db, LAYOUT_METADATA)
+
+        response = await async_client.get(f"/api/v1/documents/{document.id}/layout", headers=owner_auth_header)
+
+        assert response.status_code == 200

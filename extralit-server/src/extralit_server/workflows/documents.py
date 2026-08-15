@@ -82,26 +82,26 @@ async def create_document_workflow(
         },
     )
 
-    ocr_job_datas = [text_extraction_job_data]
+    analysis_jobs = group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
+    group.enqueue_many(queue=OCR_QUEUE, job_datas=[text_extraction_job_data])
 
     if layout_parser:
-        ocr_job_datas.append(
-            OCR_QUEUE.prepare_data(
-                async_document_layout_job,
-                (document_id, s3_url, workspace_name, layout_parser),
-                timeout=1800,
-                job_id=f"document_layout_{document_id}",
-                meta={
-                    "document_id": str(document_id),
-                    "reference": reference,
-                    "workflow_step": "document_layout",
-                    "workflow_id": str(workflow.id),
-                },
-            )
+        # Preprocessing rotates pages and overwrites the PDF at the same S3 path, so layout must
+        # run after it — otherwise the persisted bboxes describe a PDF nobody will render.
+        layout_job_data = OCR_QUEUE.prepare_data(
+            async_document_layout_job,
+            (document_id, s3_url, workspace_name, layout_parser),
+            timeout=1800,
+            job_id=f"document_layout_{document_id}",
+            depends_on=analysis_jobs[0] if analysis_jobs else None,
+            meta={
+                "document_id": str(document_id),
+                "reference": reference,
+                "workflow_step": "document_layout",
+                "workflow_id": str(workflow.id),
+            },
         )
-
-    group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
-    group.enqueue_many(queue=OCR_QUEUE, job_datas=ocr_job_datas)
+        group.enqueue_many(queue=OCR_QUEUE, job_datas=[layout_job_data])
 
     # Step 6: Future table extraction job (conditional based on analysis results)
     # This will be added when table extraction is implemented

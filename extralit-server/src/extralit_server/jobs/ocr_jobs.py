@@ -7,6 +7,7 @@ from uuid import UUID
 
 from rq import Retry, get_current_job
 from rq.decorators import job
+from sqlalchemy import select
 
 from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingMetadata, LayoutMetadata
 from extralit_server.contexts import files
@@ -99,6 +100,9 @@ async def async_document_layout_job(
         )
 
         async with AsyncSessionLocal() as db:
+            # Text extraction writes the same JSON column concurrently; serialize on the row so
+            # this read-modify-write does not clobber whatever it wrote.
+            await db.execute(select(Document.id).where(Document.id == document_id).with_for_update())
             document = await db.get(Document, document_id)
             if document is not None:
                 metadata = DocumentProcessingMetadata(**(document.metadata_ or {}))

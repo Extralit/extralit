@@ -274,6 +274,9 @@ async def get_document_layout(
             detail=f"Document with id `{document_id}` not found",
         )
 
+    # This route returns document *contents*, so membership is checked rather than role alone.
+    await authorize(current_user, DocumentPolicy.get_by_workspace(document.workspace_id))
+
     workspace = await Workspace.get(db, document.workspace_id)
     if workspace is None:
         raise HTTPException(
