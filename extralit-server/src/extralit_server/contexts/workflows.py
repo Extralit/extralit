@@ -4,9 +4,10 @@ import logging
 from typing import Any, Optional
 from uuid import UUID
 
+from rq.command import send_stop_job_command
 from rq.exceptions import NoSuchJobError
 from rq.group import Group
-from rq.job import Job
+from rq.job import Job, JobStatus
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.jobs.queues import REDIS_CONNECTION
@@ -508,6 +509,46 @@ def get_failed_jobs_in_group(group_id: str) -> list[dict[str, Any]]:
     except Exception as e:
         _LOGGER.error(f"Error getting failed jobs for group {group_id}: {e}")
         return []
+
+
+def stop_workflow_jobs(group_id: str) -> list[str]:
+    """
+    Stop running jobs and cancel pending ones for a workflow group.
+
+    Best effort: a job that has already finished, expired or vanished is skipped, and one
+    failure never aborts the sweep. Used before a forced re-run so the previous run cannot
+    keep writing artifacts underneath the new one.
+
+    Args:
+        group_id: RQ group name of the run to stop
+
+    Returns:
+        Ids of the jobs that were stopped or cancelled
+    """
+    try:
+        group = Group.fetch(name=group_id, connection=REDIS_CONNECTION)
+        jobs = group.get_jobs()
+    except Exception as e:
+        _LOGGER.warning(f"Group {group_id} not found or expired, nothing to stop: {e}")
+        return []
+
+    stopped: list[str] = []
+    for job in jobs:
+        try:
+            status = job.get_status(refresh=True)
+            if status == JobStatus.STARTED:
+                send_stop_job_command(connection=REDIS_CONNECTION, job_id=job.id)
+            elif status in (JobStatus.QUEUED, JobStatus.DEFERRED, JobStatus.SCHEDULED):
+                job.cancel()
+            else:
+                continue
+            stopped.append(job.id)
+        except Exception as e:
+            _LOGGER.warning(f"Failed to stop job {job.id} in group {group_id}: {e}")
+
+    if stopped:
+        _LOGGER.info(f"Stopped {len(stopped)} jobs from previous workflow group {group_id}")
+    return stopped
 
 
 async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWorkflow) -> dict[str, Any]:

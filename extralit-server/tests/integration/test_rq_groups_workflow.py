@@ -121,6 +121,10 @@ class TestRQGroupsWorkflowIntegration:
         # Mock RQ Group
         mock_group = MagicMock(spec=Group)
         mock_group.name = f"document_workflow_{test_document.id}_12345678"
+        # Dependents are wired with rq.job.Dependency, which type-checks the enqueued jobs.
+        mock_group.enqueue_many.side_effect = lambda queue=None, job_datas=None: [
+            Job(id=data["job_id"], connection=MagicMock()) for data in (job_datas or [])
+        ]
 
         with patch("extralit_server.workflows.documents.Group", return_value=mock_group):
             group = await create_document_workflow(
