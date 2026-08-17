@@ -365,8 +365,10 @@ async def delete_object(s3_client, bucket: str, object: str, version_id: str | N
 async def delete_document_artifacts(s3_client: "S3Client", workspace_name: str, document_id: UUID | str) -> None:
     """Remove every artifact of a document: PDF, thumbnail, layout JSON and layout rows.
 
-    Best effort — the DB rows are already gone by the time this runs, so a storage hiccup must
-    leave a leaked object rather than a document the caller cannot delete.
+    Best effort — the DB rows are already gone by the time this runs, so a storage hiccup leaves a
+    leaked object rather than a document the caller cannot delete. A leak here is negligible and can
+    be ignored: the objects are unreachable and layout rows only survive until the document is
+    re-parsed or a sweeper runs.
     """
     from extralit_server.contexts.ocr import storage
 

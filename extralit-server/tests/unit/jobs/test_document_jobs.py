@@ -57,6 +57,7 @@ def job_context():
         patch(f"{MODULE}.PDFPreprocessor", return_value=preprocessor),
         patch(f"{MODULE}.triage_pdf", return_value=triage()) as triage_pdf,
         patch(f"{MODULE}.update_processing_metadata", AsyncMock()) as update_metadata,
+        patch(f"{MODULE}.is_current_workflow_run", AsyncMock(return_value=True)) as is_current,
         patch(f"{MODULE}.get_current_job", return_value=current_job),
         patch(f"{MODULE}.AsyncSessionLocal") as session,
     ):
@@ -75,6 +76,7 @@ def job_context():
             "triage_pdf": triage_pdf,
             "update_metadata": update_metadata,
             "written": written,
+            "is_current": is_current,
         }
 
 
@@ -163,3 +165,15 @@ class TestFailures:
             await run_job()
 
         assert job_context["job"].meta["error"] == "s3 down"
+
+
+@pytest.mark.asyncio
+class TestSupersededRuns:
+    async def test_a_superseded_run_rewrites_nothing(self, job_context):
+        job_context["is_current"].return_value = False
+
+        result = await run_job()
+
+        assert result["skipped"] == "workflow superseded"
+        assert job_context["written"] == []
+        assert job_context["update_metadata"].await_count == 0

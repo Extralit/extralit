@@ -13,6 +13,7 @@ from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.metadata import update_processing_metadata
 from extralit_server.contexts.document.preprocessing import PDFPreprocessor
 from extralit_server.contexts.ocr.triage import triage_pdf
+from extralit_server.contexts.workflows import is_current_workflow_run
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
 
@@ -79,6 +80,13 @@ async def analysis_and_preprocess_job(
         processing_response = PDFPreprocessor().preprocess(pdf_data, filename)
         if not processing_response.metadata.rotation_ran:
             _LOGGER.warning(f"Rotation did not run for document {document_id}: {processing_response.metadata.error}")
+
+        # A forced restart may already be running; its rotation and metadata must not lose to this
+        # one's, because stopping a started job is only a request.
+        async with AsyncSessionLocal() as db:
+            if not await is_current_workflow_run(db, document_id, current_job.meta.get("workflow_id")):
+                _LOGGER.info(f"Analysis run for document {document_id} was superseded before it could store")
+                return {"document_id": str(document_id), "skipped": "workflow superseded"}
 
         # The PDF rewrite is the last S3 write of this job — dependents key on it.
         object_path = s3_url.replace(f"/api/v1/file/{workspace_name}/", "")

@@ -74,7 +74,8 @@ async def delete_layout(
     document_id: UUID | str,
     store: Optional[LayoutStore] = None,
 ) -> None:
-    """Drop both artifacts. Orphaned rows would silently skew every workspace aggregate."""
+    """Drop both artifacts. Orphaned rows would skew workspace aggregates, but a failure here is
+    negligible: they are superseded on the next parse of that document."""
     try:
         await files.delete_object(s3_client, workspace_name, layout_object_path(document_id))
     except Exception as error:

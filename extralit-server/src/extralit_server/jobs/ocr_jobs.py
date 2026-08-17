@@ -16,6 +16,7 @@ from extralit_server.contexts.ocr import storage
 from extralit_server.contexts.ocr.layout_store import LayoutStore
 from extralit_server.contexts.ocr.parsers import default_parser_name, get_parser
 from extralit_server.contexts.ocr.parsers.pdf_inspector import classify
+from extralit_server.contexts.workflows import is_current_workflow_run
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import OCR_QUEUE, REDIS_CONNECTION
 from extralit_server.models.database import Document
@@ -92,13 +93,19 @@ async def async_document_layout_job(
 
         # Ordering closes the delete-vs-running-job race: nothing may write rows for a document
         # whose delete already ran, and the workspace lock is held across the check and the write.
+        workflow_id = (current_job.meta or {}).get("workflow_id") if current_job is not None else None
         store = LayoutStore.for_workspace(workspace_name)
         async with store.locked():
             async with AsyncSessionLocal() as db:
                 still_exists = await db.scalar(select(Document.id).where(Document.id == document_id))
+                superseded = not await is_current_workflow_run(db, document_id, workflow_id)
             if still_exists is None:
                 _LOGGER.info(f"Document {document_id} was deleted before its layout was stored")
                 return {"document_id": str(document_id), "parser": parser_name, "skipped": "document deleted"}
+            if superseded:
+                # A forced restart already began; its layout must not lose to this one's.
+                _LOGGER.info(f"Layout run for document {document_id} was superseded before it could store")
+                return {"document_id": str(document_id), "parser": parser_name, "skipped": "workflow superseded"}
 
             paths = await storage.store_layout(s3_client, workspace_name, document_id, doc, store=store)
 

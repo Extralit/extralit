@@ -511,6 +511,22 @@ def get_failed_jobs_in_group(group_id: str) -> list[dict[str, Any]]:
         return []
 
 
+async def is_current_workflow_run(db: AsyncSession, document_id: UUID, workflow_id: Optional[str]) -> bool:
+    """Whether this job still belongs to the document's newest workflow run.
+
+    `send_stop_job_command` only *asks* a worker to stop, so a forced restart can leave the previous
+    run alive long enough to overwrite the new one's PDF, layout or metadata. Every writer checks
+    this generation token before it writes; the workflow row is the token.
+
+    A job with no workflow in its meta (direct call, test, ad-hoc enqueue) is always current.
+    """
+    if not workflow_id:
+        return True
+
+    workflow = await DocumentWorkflow.get_by_document_id(db, document_id)
+    return workflow is None or str(workflow.id) == str(workflow_id)
+
+
 def stop_workflow_jobs(group_id: str) -> list[str]:
     """
     Stop running jobs and cancel pending ones for a workflow group.

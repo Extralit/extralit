@@ -40,11 +40,12 @@ def job_context(tmp_path, monkeypatch):
         patch(f"{MODULE}.storage.store_layout", store_layout),
         patch(f"{MODULE}.update_processing_metadata", update_metadata),
         patch(f"{MODULE}.get_current_job", return_value=None),
+        patch(f"{MODULE}.is_current_workflow_run", AsyncMock(return_value=True)) as is_current,
         patch(f"{MODULE}.AsyncSessionLocal") as session,
     ):
         session.return_value.__aenter__ = AsyncMock(return_value=db)
         session.return_value.__aexit__ = AsyncMock(return_value=False)
-        yield {"calls": calls, "db": db, "store": store}
+        yield {"calls": calls, "db": db, "store": store, "is_current": is_current}
 
 
 async def run_job(document_id=None):
@@ -83,3 +84,14 @@ class TestLayoutJobOrdering:
         result = await run_job()
 
         assert result["pages_needing_ocr"] == [2]
+
+
+class TestSupersededRuns:
+    async def test_a_superseded_run_does_not_write(self, job_context):
+        # Stopping a started job is only a request, so a forced restart can overlap this run.
+        job_context["is_current"].return_value = False
+
+        result = await run_job()
+
+        assert result["skipped"] == "workflow superseded"
+        assert job_context["calls"] == []
