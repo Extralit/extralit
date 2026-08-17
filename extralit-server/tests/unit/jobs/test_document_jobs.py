@@ -1,219 +1,165 @@
+"""Tests for the triage + margins + rotation job."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
 
+from extralit_server.api.schemas.v1.document.metadata import TriageMetadata
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
-from extralit_server.models.database import Document
+
+MODULE = "extralit_server.jobs.document_jobs"
+
+DOCUMENT_ID = uuid4()
+S3_URL = f"/api/v1/file/test-workspace/documents/{DOCUMENT_ID}/test.pdf"
+WORKSPACE = "test-workspace"
+LAYOUT_ANALYSIS = {
+    "pages_sampled": 5,
+    "page_dimensions": {"width": 612, "height": 792},
+    "layout_analysis": {"estimated_margins": {"left_px": 40, "top_px": 60, "right_px": 40, "bottom_px": 60}},
+}
 
 
-class TestDocumentJobs:
-    """Test suite for document job functions."""
+def triage(**overrides) -> TriageMetadata:
+    return TriageMetadata(
+        **{
+            "pdf_type": "text_based",
+            "confidence": 0.9,
+            "page_count": 12,
+            "pages_needing_ocr": [],
+            "pages_with_tables": [3],
+            **overrides,
+        }
+    )
 
-    @patch("extralit_server.jobs.document_jobs.files")
-    @patch("extralit_server.jobs.document_jobs.PDFPreprocessor")
-    @patch("extralit_server.jobs.document_jobs.PDFAnalyzer")
-    @patch("extralit_server.jobs.document_jobs.PDFOCRLayerDetector")
-    @patch("extralit_server.jobs.document_jobs.AsyncSessionLocal")
-    @patch("extralit_server.jobs.document_jobs.get_current_job")
-    async def test_analysis_and_preprocess_job_success(
-        self,
-        mock_get_current_job,
-        mock_session,
-        mock_ocr_detector_class,
-        mock_analyzer_class,
-        mock_preprocessor_class,
-        mock_files,
+
+@pytest.fixture
+def job_context():
+    """Everything the job talks to, with a well-behaved PDF."""
+    current_job = MagicMock(meta={})
+    analyzer = MagicMock()
+    analyzer.analyze_pdf_layout.return_value = (LAYOUT_ANALYSIS, b"thumbnail-bytes")
+    response = MagicMock()
+    response.processed_data = b"%PDF rotated"
+    response.metadata.processing_time = 3.0
+    response.metadata.rotation_ran = True
+    response.metadata.error = None
+    preprocessor = MagicMock()
+    preprocessor.preprocess.return_value = response
+    written: list[dict] = []
+
+    async def put_object(client, workspace, key, data, **kwargs):
+        written.append({"key": key, "data": data})
+
+    with (
+        patch(f"{MODULE}.files") as files,
+        patch(f"{MODULE}.PDFAnalyzer", return_value=analyzer),
+        patch(f"{MODULE}.PDFPreprocessor", return_value=preprocessor),
+        patch(f"{MODULE}.triage_pdf", return_value=triage()) as triage_pdf,
+        patch(f"{MODULE}.update_processing_metadata", AsyncMock()) as update_metadata,
+        patch(f"{MODULE}.get_current_job", return_value=current_job),
+        patch(f"{MODULE}.AsyncSessionLocal") as session,
     ):
-        """Test successful analysis and preprocess job."""
-        # Setup test data
-        document_id = uuid4()
-        s3_url = f"/api/v1/file/test-workspace/documents/{document_id}/test.pdf"
-        reference = "test_ref"
-        workspace_name = "test-workspace"
-
-        # Mock current job
-        mock_job = MagicMock()
-        mock_job.meta = {}
-        mock_get_current_job.return_value = mock_job
-
-        # Mock file operations
-        mock_client = MagicMock()
-        mock_files.get_s3_client = AsyncMock(return_value=mock_client)
-        mock_files.download_file_content = AsyncMock(return_value=b"%PDF-1.5 test pdf content")
-        mock_files.get_thumbnail_s3_object_path.return_value = f"thumbnails/{document_id}"
-        mock_files.put_object = AsyncMock()
-
-        # Mock OCR detector
-        mock_ocr_detector = MagicMock()
-        mock_ocr_detector.has_ocr_text_layer.return_value = True
-        mock_ocr_detector.analyze_character_quality.return_value = {
-            "ocr_quality_score": 0.8,
-            "total_chars": 1000,
-            "ocr_artifacts": 5,
-            "suspicious_patterns": 2,
+        files.get_s3_client = AsyncMock(return_value=MagicMock())
+        files.download_file_content = AsyncMock(return_value=b"%PDF original")
+        files.get_thumbnail_s3_object_path.return_value = f"thumbnails/{DOCUMENT_ID}"
+        files.put_object = AsyncMock(side_effect=put_object)
+        session.return_value.__aenter__ = AsyncMock(return_value=AsyncMock())
+        session.return_value.__aexit__ = AsyncMock(return_value=None)
+        yield {
+            "job": current_job,
+            "files": files,
+            "analyzer": analyzer,
+            "preprocessor": preprocessor,
+            "response": response,
+            "triage_pdf": triage_pdf,
+            "update_metadata": update_metadata,
+            "written": written,
         }
-        mock_ocr_detector_class.return_value = mock_ocr_detector
 
-        # Mock PDF analyzer - now returns tuple (layout_analysis, thumbnail_data)
-        mock_analyzer = MagicMock()
-        layout_analysis = {
-            "page_count": 1,
-            "page_dimensions": {"width": 612, "height": 792},
-            "layout_analysis": {"analysis_method": "single_page_default"},
-        }
-        thumbnail_data = b"mock_thumbnail_data"
-        mock_analyzer.analyze_pdf_layout.return_value = (layout_analysis, thumbnail_data)
-        mock_analyzer_class.return_value = mock_analyzer
 
-        # Mock preprocessor
-        mock_preprocessor = MagicMock()
-        mock_processing_response = MagicMock()
-        mock_processing_response.processed_data = b"%PDF-1.5 processed content"
-        mock_processing_response.metadata.processing_time = 5.0
-        mock_processing_response.metadata.model_dump.return_value = {"processing_time": 5.0}
-        mock_preprocessor.preprocess.return_value = mock_processing_response
-        mock_preprocessor_class.return_value = mock_preprocessor
+async def run_job():
+    return await analysis_and_preprocess_job(DOCUMENT_ID, S3_URL, "test_ref", WORKSPACE)
 
-        # Mock database session
-        mock_db = AsyncMock()
-        mock_document = MagicMock()
-        mock_document.metadata_ = None
-        mock_db.get = AsyncMock(return_value=mock_document)
-        mock_db.commit = AsyncMock()
-        mock_session.return_value.__aenter__ = AsyncMock(return_value=mock_db)
-        mock_session.return_value.__aexit__ = AsyncMock(return_value=None)
 
-        # Execute job
-        result = await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
+@pytest.mark.asyncio
+class TestTriage:
+    async def test_triage_is_persisted_and_returned(self, job_context):
+        result = await run_job()
 
-        # Verify result structure
-        assert "document_id" in result
-        assert "analysis_result" in result
-        assert "preprocessing_result" in result
-        assert result["document_id"] == str(document_id)
+        analysis = result["analysis_result"]
+        assert analysis["triage"]["pdf_type"] == "text_based"
+        assert analysis["triage"]["pages_with_tables"] == [3]
+        assert analysis["page_count"] == 12
 
-        # Verify analysis result
-        analysis_result = result["analysis_result"]
-        assert analysis_result["has_ocr_text_layer"] is True
-        assert analysis_result["ocr_quality_score"] == 0.8
-        assert analysis_result["layout_analysis"] == layout_analysis
-        assert analysis_result["thumbnail_generated"] is True
+    async def test_pages_needing_ocr_reach_the_job_meta(self, job_context):
+        job_context["triage_pdf"].return_value = triage(pdf_type="image_based", pages_needing_ocr=[1, 2])
 
-        # Verify preprocessing result
-        preprocessing_result = result["preprocessing_result"]
-        assert preprocessing_result["processing_time"] == 5.0
+        await run_job()
 
-        # Verify file operations were called
-        mock_files.download_file_content.assert_called_once()
-        mock_files.put_object.assert_called()  # Called for both processed PDF and thumbnail
+        assert job_context["job"].meta["pages_needing_ocr"] == [1, 2]
 
-        # Verify analyzers were called correctly
-        mock_ocr_detector.has_ocr_text_layer.assert_called_once()
-        mock_ocr_detector.analyze_character_quality.assert_called_once()
-        mock_analyzer.analyze_pdf_layout.assert_called_once()
-        mock_preprocessor.preprocess.assert_called_once()
+    async def test_margins_are_estimated_from_the_leading_pages_only(self, job_context):
+        from extralit_server.contexts.document.margin import MARGIN_SAMPLE_PAGES
 
-        # Verify database operations: the metadata write goes through the row lock.
-        mock_db.execute.assert_awaited_once()
-        assert "FOR UPDATE" in str(mock_db.execute.await_args.args[0])
-        mock_db.get.assert_called_once_with(Document, document_id, populate_existing=True)
-        mock_db.commit.assert_called_once()
+        await run_job()
 
-    @patch("extralit_server.jobs.document_jobs.files")
-    @patch("extralit_server.jobs.document_jobs.get_current_job")
-    async def test_analysis_and_preprocess_job_no_client(self, mock_get_current_job, mock_files):
-        """Test analysis and preprocess job when storage client is not available."""
-        # Setup test data
-        document_id = uuid4()
-        s3_url = f"/api/v1/file/test-workspace/documents/{document_id}/test.pdf"
-        reference = "test_ref"
-        workspace_name = "test-workspace"
+        _pdf, filename = job_context["analyzer"].analyze_pdf_layout.call_args.args
+        assert filename == "test.pdf"
+        assert MARGIN_SAMPLE_PAGES == 5
 
-        # Mock current job
-        mock_job = MagicMock()
-        mock_job.meta = {}
-        mock_get_current_job.return_value = mock_job
+    async def test_metadata_is_written_under_the_row_lock(self, job_context):
+        await run_job()
 
-        # Mock file operations - no client available
-        mock_files.get_s3_client = AsyncMock(return_value=None)
+        assert job_context["update_metadata"].await_count == 1
 
-        # Execute job and expect exception
-        with pytest.raises(TypeError, match=r"object.*can't be used in 'await' expression"):
-            await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
-        # Verify job meta was updated with error
-        assert "error" in mock_job.meta
 
-    @patch("extralit_server.jobs.document_jobs.files")
-    @patch("extralit_server.jobs.document_jobs.PDFAnalyzer")
-    @patch("extralit_server.jobs.document_jobs.PDFOCRLayerDetector")
-    @patch("extralit_server.jobs.document_jobs.get_current_job")
-    async def test_analysis_and_preprocess_job_no_thumbnail(
-        self, mock_get_current_job, mock_ocr_detector_class, mock_analyzer_class, mock_files
-    ):
-        """Test analysis and preprocess job when thumbnail generation fails."""
-        # Setup test data
-        document_id = uuid4()
-        s3_url = f"/api/v1/file/test-workspace/documents/{document_id}/test.pdf"
-        reference = "test_ref"
-        workspace_name = "test-workspace"
+@pytest.mark.asyncio
+class TestRotation:
+    async def test_rotation_runs_on_every_pdf(self, job_context):
+        # Not gated on triage: ocrmypdf's OSD is the only thing that can see a sideways page.
+        job_context["triage_pdf"].return_value = triage(pdf_type="text_based", pages_needing_ocr=[])
 
-        # Mock current job
-        mock_job = MagicMock()
-        mock_job.meta = {}
-        mock_get_current_job.return_value = mock_job
+        await run_job()
 
-        # Mock file operations
-        mock_client = MagicMock()
-        mock_files.get_s3_client = AsyncMock(return_value=mock_client)
-        mock_files.download_file_content = AsyncMock(return_value=b"%PDF-1.5 test pdf content")
-        mock_files.put_object = AsyncMock()
+        job_context["preprocessor"].preprocess.assert_called_once()
 
-        # Mock OCR detector
-        mock_ocr_detector = MagicMock()
-        mock_ocr_detector.has_ocr_text_layer.return_value = False
-        mock_ocr_detector.analyze_character_quality.return_value = {
-            "ocr_quality_score": 0.3,
-            "total_chars": 500,
-            "ocr_artifacts": 50,
-            "suspicious_patterns": 20,
-        }
-        mock_ocr_detector_class.return_value = mock_ocr_detector
+    async def test_the_pdf_rewrite_is_the_last_object_written(self, job_context):
+        await run_job()
 
-        # Mock PDF analyzer - returns no thumbnail data
-        mock_analyzer = MagicMock()
-        layout_analysis = {
-            "page_count": 1,
-            "page_dimensions": {"width": 612, "height": 792},
-            "layout_analysis": {"analysis_method": "single_page_default"},
-        }
-        mock_analyzer.analyze_pdf_layout.return_value = (layout_analysis, None)  # No thumbnail
-        mock_analyzer_class.return_value = mock_analyzer
+        keys = [write["key"] for write in job_context["written"]]
+        assert keys[-1] == f"documents/{DOCUMENT_ID}/test.pdf"
+        assert f"thumbnails/{DOCUMENT_ID}" in keys
+        assert job_context["written"][-1]["data"] == b"%PDF rotated"
 
-        # Mock preprocessor to skip it for this test by raising exception early
-        with patch("extralit_server.jobs.document_jobs.PDFPreprocessor") as mock_preprocessor_class:
-            mock_preprocessor = MagicMock()
-            mock_processing_response = MagicMock()
-            mock_processing_response.processed_data = b"%PDF-1.5 processed content"
-            mock_processing_response.metadata.processing_time = 3.0
-            mock_processing_response.metadata.model_dump.return_value = {"processing_time": 3.0}
-            mock_preprocessor.preprocess.return_value = mock_processing_response
-            mock_preprocessor_class.return_value = mock_preprocessor
+    async def test_a_failed_rotation_is_recorded_and_the_job_still_succeeds(self, job_context):
+        job_context["response"].metadata.rotation_ran = False
+        job_context["response"].metadata.error = "ghostscript died"
+        job_context["response"].processed_data = b"%PDF original"
 
-            # Mock database
-            with patch("extralit_server.jobs.document_jobs.AsyncSessionLocal") as mock_session:
-                mock_db = AsyncMock()
-                mock_document = MagicMock()
-                mock_document.metadata_ = None
-                mock_db.get = AsyncMock(return_value=mock_document)
-                mock_db.commit = AsyncMock()
-                mock_session.return_value.__aenter__ = AsyncMock(return_value=mock_db)
-                mock_session.return_value.__aexit__ = AsyncMock(return_value=None)
+        result = await run_job()
 
-                # Execute job
-                result = await analysis_and_preprocess_job(document_id, s3_url, reference, workspace_name)
+        preprocessing = result["preprocessing_result"]
+        assert preprocessing["rotation_ran"] is False
+        assert preprocessing["error"] == "ghostscript died"
+        assert preprocessing["ocr_applied"] is False
+        assert job_context["written"][-1]["data"] == b"%PDF original"
 
-                # Verify that thumbnail was not generated
-                analysis_result = result["analysis_result"]
-                assert analysis_result["thumbnail_generated"] is False
-                assert analysis_result["needs_ocr"] is True  # Low quality score and no OCR layer
+    async def test_a_missing_thumbnail_does_not_fail_the_job(self, job_context):
+        job_context["analyzer"].analyze_pdf_layout.return_value = (LAYOUT_ANALYSIS, None)
+
+        result = await run_job()
+
+        assert result["analysis_result"]["thumbnail_generated"] is False
+        assert [write["key"] for write in job_context["written"]] == [f"documents/{DOCUMENT_ID}/test.pdf"]
+
+
+@pytest.mark.asyncio
+class TestFailures:
+    async def test_a_storage_failure_surfaces_on_the_job(self, job_context):
+        job_context["files"].download_file_content = AsyncMock(side_effect=RuntimeError("s3 down"))
+
+        with pytest.raises(RuntimeError, match="s3 down"):
+            await run_job()
+
+        assert job_context["job"].meta["error"] == "s3 down"

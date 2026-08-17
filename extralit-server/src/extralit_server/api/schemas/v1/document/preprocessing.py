@@ -37,10 +37,10 @@ class PDFMetadata(BaseModel):
 
     filename: str
     processing_time: float
+    rotation_ran: bool = False
+    error: str | None = None
     page_count: int | None = None
-    language_detected: list[str] | None = None
     processing_settings: dict | None = None
-    analysis_results: dict | None = None
 
     def model_dump(self, **kwargs) -> dict[str, Any]:
         """

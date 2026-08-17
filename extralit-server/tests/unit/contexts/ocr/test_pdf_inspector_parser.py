@@ -185,6 +185,8 @@ class TestClassify:
 
         assert result["page_count"] == 1
         # classify_pdf reports 0-indexed pages; we normalize to docling's 1-indexed page_no.
+        # `sample.pdf` is a known false positive: any image-bearing page under ~1400 characters
+        # is flagged, which is why nothing is skipped on the strength of this list.
         assert result["pages_needing_ocr"] == [1]
 
     def test_reports_a_pdf_type(self, untagged_bytes):

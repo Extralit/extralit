@@ -146,9 +146,9 @@ class TestRQGroupsWorkflowIntegration:
             assert workflow.status == "running"
             assert workflow.group_id.startswith(f"document_workflow_{test_document.id}")
 
-            # Verify jobs were prepared and enqueued
+            # Verify jobs were prepared and enqueued: analysis on default, text + layout on ocr.
             mock_default_queue.prepare_data.assert_called_once()
-            mock_ocr_queue.prepare_data.assert_called_once()
+            assert mock_ocr_queue.prepare_data.call_count == 2
             mock_group.enqueue_many.assert_called()
 
             # The workflow must persist from its own session. Without this the test passes
