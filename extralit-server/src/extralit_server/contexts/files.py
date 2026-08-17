@@ -13,10 +13,26 @@ from extralit_server.helpers import shared_resources
 if TYPE_CHECKING:
     from types_aiobotocore_s3.client import S3Client
 
-EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
 CHUNK_LENGTH_MB = 10 * 1024 * 1024
+# Layout datasets rewrite whole files on every commit; keeping their noncurrent versions grows
+# without bound and nothing reads them (the canonical JSON is the history).
+LAYOUT_NONCURRENT_EXPIRATION_DAYS = 1
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def workspace_root(workspace_name: str) -> tuple[str, str]:
+    """Resolve where a workspace's artifacts live, as `(bucket, key prefix)`.
+
+    The single place that knows how a workspace maps onto storage: PDFs, thumbnails, layout JSON
+    and the Lance datasets all address through it, so moving to one bucket with `{org}/{workspace}/`
+    prefixes is a change here rather than at every call site. Today it is bucket-per-workspace,
+    which is why the prefix is empty and `files` can still pass `Bucket=workspace_name` directly.
+    """
+    if not workspace_name:
+        raise ValueError("workspace_name cannot be empty")
+
+    return workspace_name, ""
 
 
 async def get_s3_client() -> "S3Client":
@@ -346,6 +362,26 @@ async def delete_object(s3_client, bucket: str, object: str, version_id: str | N
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
+async def delete_document_artifacts(s3_client: "S3Client", workspace_name: str, document_id: UUID | str) -> None:
+    """Remove every artifact of a document: PDF, thumbnail, layout JSON and layout rows.
+
+    Best effort — the DB rows are already gone by the time this runs, so a storage hiccup must
+    leave a leaked object rather than a document the caller cannot delete.
+    """
+    from extralit_server.contexts.ocr import storage
+
+    for object_path in (get_pdf_s3_object_path(document_id), get_thumbnail_s3_object_path(document_id)):
+        try:
+            await delete_object(s3_client, workspace_name, object_path)
+        except Exception as e:
+            _LOGGER.warning(f"Could not delete {object_path} for document {document_id}: {e}")
+
+    try:
+        await storage.delete_layout(s3_client, workspace_name, document_id)
+    except Exception as e:
+        _LOGGER.warning(f"Could not delete layout artifacts for document {document_id}: {e}")
+
+
 async def bucket_exists(s3_client: "S3Client", bucket_name: str) -> bool:
     """Check if S3 bucket exists."""
     try:
@@ -378,28 +414,43 @@ async def get_bucket_versioning(s3_client: "S3Client", bucket_name: str) -> dict
         return None
 
 
-async def create_bucket(
-    s3_client: "S3Client",
-    workspace_name: str,
-    excluded_prefixes: list[str] = EXCLUDED_VERSIONING_PREFIXES,
-):
-    """Create S3 bucket."""
+async def create_bucket(s3_client: "S3Client", workspace_name: str):
+    """Create the workspace's bucket, versioned, with layout noncurrent versions expiring."""
+    bucket, prefix = workspace_root(workspace_name)
     try:
-        await s3_client.create_bucket(Bucket=workspace_name)
+        await s3_client.create_bucket(Bucket=bucket)
 
         await s3_client.put_bucket_versioning(
-            Bucket=workspace_name,
+            Bucket=bucket,
             VersioningConfiguration={
                 "Status": "Enabled",
                 "MFADelete": "Disabled",
             },
         )
 
+        try:
+            await s3_client.put_bucket_lifecycle_configuration(
+                Bucket=bucket,
+                LifecycleConfiguration={
+                    "Rules": [
+                        {
+                            "ID": "expire-noncurrent-layout-versions",
+                            "Status": "Enabled",
+                            "Filter": {"Prefix": f"{prefix}layout/"},
+                            "NoncurrentVersionExpiration": {"NoncurrentDays": LAYOUT_NONCURRENT_EXPIRATION_DAYS},
+                        }
+                    ]
+                },
+            )
+        except Exception as e:
+            # A backend without lifecycle support costs storage, never correctness.
+            _LOGGER.warning(f"Could not set the layout lifecycle rule on bucket {bucket}: {e}")
+
     except ClientError as e:
         if e.response["Error"]["Code"] in ["BucketAlreadyOwnedByYou", "BucketAlreadyExists"]:
             pass  # Bucket already exists, that's fine
         else:
-            _LOGGER.error(f"Error creating bucket {workspace_name}: {e}")
+            _LOGGER.error(f"Error creating bucket {bucket}: {e}")
             raise HTTPException(status_code=500, detail=f"Error creating bucket: {e!s}")
     except Exception as e:
         _LOGGER.error(f"Error creating bucket {workspace_name}: {e}")

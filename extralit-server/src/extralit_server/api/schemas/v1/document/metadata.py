@@ -59,8 +59,10 @@ class LayoutMetadata(BaseModel):
     """
 
     layout_url: str = Field(..., description="S3 object path of the canonical DoclingDocument JSON")
-    items_parquet_url: Optional[str] = Field(None, description="S3 object path of the per-item Parquet sidecar")
-    pages_parquet_url: Optional[str] = Field(None, description="S3 object path of the per-page Parquet sidecar")
+    items_uri: Optional[str] = Field(None, description="Lance dataset holding this workspace's layout items")
+    pages_uri: Optional[str] = Field(None, description="Lance dataset holding this workspace's page geometry")
+    items_version: Optional[int] = Field(None, description="Items dataset version after this document was written")
+    pages_version: Optional[int] = Field(None, description="Pages dataset version after this document was written")
     parser: str = Field(..., description="Name of the layout parser that produced the document")
     docling_version: str = Field(..., description="docling-core schema version the JSON was written with")
     num_items: int = Field(default=0, description="Number of layout items extracted")

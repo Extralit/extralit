@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 
@@ -13,10 +12,10 @@ from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingM
 from extralit_server.contexts import files
 from extralit_server.contexts.document.analysis import PDFOCRLayerDetector
 from extralit_server.contexts.document.margin import PDFAnalyzer
+from extralit_server.contexts.document.metadata import update_processing_metadata
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
-from extralit_server.models.database import Document
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -146,21 +145,13 @@ async def analysis_and_preprocess_job(
             },
         }
 
-        # Store combined results in document.metadata_ using async database operations
-        async with AsyncSessionLocal() as db:
-            document = await db.get(Document, document_id)
-            if document:
-                # Initialize or update document metadata
-                if document.metadata_ is None:
-                    document.metadata_ = DocumentProcessingMetadata(
-                        workflow_started_at=datetime.now(timezone.utc)
-                    ).model_dump()
+        # The layout job writes the same JSON column concurrently; both go through the row lock.
+        def apply(metadata: DocumentProcessingMetadata) -> None:
+            metadata.update_analysis_results(analysis_result)
+            metadata.update_preprocessing_results(combined_result["preprocessing_result"])
 
-                metadata = DocumentProcessingMetadata(**document.metadata_)
-                metadata.update_analysis_results(analysis_result)
-                metadata.update_preprocessing_results(combined_result["preprocessing_result"])
-                document.metadata_ = metadata.model_dump()
-                await db.commit()
+        async with AsyncSessionLocal() as db:
+            await update_processing_metadata(db, document_id, apply)
 
         # Store results for dependent jobs
         current_job.meta["needs_ocr"] = analysis_result["needs_ocr"]

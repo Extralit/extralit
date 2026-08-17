@@ -231,8 +231,7 @@ async def delete_documents_by_workspace_id(
 
     _LOGGER.info(f"Deleting {len(documents)} documents")
     for document in documents:
-        object_path = files.get_pdf_s3_object_path(document.id)
-        await files.delete_object(s3_client, workspace.name, object_path)
+        await files.delete_document_artifacts(s3_client, workspace.name, document.id)
 
     return len(documents)
 

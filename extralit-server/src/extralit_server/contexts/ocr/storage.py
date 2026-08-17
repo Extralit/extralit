@@ -1,46 +1,32 @@
 """Object-storage layout for extracted document layout.
 
-Canonical JSON is the source of truth; the Parquet sidecars are a columnar projection for
-analytics and cross-document provenance search. Both live in S3 rather than `documents.metadata_`,
-which is returned in full by every document listing.
+Canonical JSON is the source of truth; the columnar rows live in the workspace's Lance datasets
+(see `layout_store`) so a corpus-wide question is one scan. Both live in S3 rather than
+`documents.metadata_`, which is returned in full by every document listing.
 """
 
 from __future__ import annotations
 
-import io
 import json
-from typing import TYPE_CHECKING, Optional
+import logging
+from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
-import pyarrow as pa
-import pyarrow.parquet as pq
+from anyio import to_thread
 from docling_core.types.doc import DoclingDocument
 
 from extralit_server.contexts import files
 from extralit_server.contexts.ocr.arrow import items_table, pages_table
+from extralit_server.contexts.ocr.layout_store import LAYOUT_PREFIX, LayoutStore
 
 if TYPE_CHECKING:
     from types_aiobotocore_s3 import S3Client
 
-LAYOUT_PREFIX = "layout"
+_LOGGER = logging.getLogger("extralit_server.contexts.ocr.storage")
 
 
 def layout_object_path(document_id: UUID | str) -> str:
     return f"{LAYOUT_PREFIX}/{document_id}.docling.json"
-
-
-def items_object_path(document_id: UUID | str) -> str:
-    return f"{LAYOUT_PREFIX}/{document_id}.items.parquet"
-
-
-def pages_object_path(document_id: UUID | str) -> str:
-    return f"{LAYOUT_PREFIX}/{document_id}.pages.parquet"
-
-
-def _to_parquet(table: pa.Table) -> bytes:
-    buffer = io.BytesIO()
-    pq.write_table(table, buffer, compression="zstd")
-    return buffer.getvalue()
 
 
 async def store_layout(
@@ -48,41 +34,58 @@ async def store_layout(
     workspace_name: str,
     document_id: UUID | str,
     doc: DoclingDocument,
-) -> dict[str, str]:
-    """Write the canonical JSON and both Parquet sidecars. Returns their object paths."""
+    store: Optional[LayoutStore] = None,
+) -> dict[str, Any]:
+    """Write the canonical JSON, then replace this document's rows in the workspace datasets.
+
+    `store` lets a caller that already holds the workspace lock pass its own handle through; the
+    lock is reentrant per store instance, so the replace still runs serialized either way.
+    """
     document_id = str(document_id)
-    paths = {
-        "layout_url": layout_object_path(document_id),
-        "items_parquet_url": items_object_path(document_id),
-        "pages_parquet_url": pages_object_path(document_id),
-    }
+    layout_url = layout_object_path(document_id)
+    store = store or LayoutStore.for_workspace(workspace_name)
 
     await files.put_object(
         s3_client,
         workspace_name,
-        paths["layout_url"],
+        layout_url,
         json.dumps(doc.export_to_dict(), ensure_ascii=False),
         content_type="application/json",
         metadata={"docling_version": doc.version, "document_id": document_id},
     )
-    await files.put_object(
-        s3_client,
-        workspace_name,
-        paths["items_parquet_url"],
-        _to_parquet(items_table(doc, document_id)),
-        content_type="application/vnd.apache.parquet",
-        metadata={"document_id": document_id},
-    )
-    await files.put_object(
-        s3_client,
-        workspace_name,
-        paths["pages_parquet_url"],
-        _to_parquet(pages_table(doc, document_id)),
-        content_type="application/vnd.apache.parquet",
-        metadata={"document_id": document_id},
-    )
 
-    return paths
+    items = items_table(doc, document_id)
+    pages = pages_table(doc, document_id)
+    async with store.locked():
+        versions = await to_thread.run_sync(store.replace_document, document_id, items, pages)
+        await to_thread.run_sync(store.maybe_compact)
+
+    return {
+        "layout_url": layout_url,
+        "items_uri": store.items_uri(),
+        "pages_uri": store.pages_uri(),
+        **versions,
+    }
+
+
+async def delete_layout(
+    s3_client: S3Client,
+    workspace_name: str,
+    document_id: UUID | str,
+    store: Optional[LayoutStore] = None,
+) -> None:
+    """Drop both artifacts. Orphaned rows would silently skew every workspace aggregate."""
+    try:
+        await files.delete_object(s3_client, workspace_name, layout_object_path(document_id))
+    except Exception as error:
+        _LOGGER.warning(f"Could not delete layout JSON for document {document_id}: {error}")
+
+    try:
+        store = store or LayoutStore.for_workspace(workspace_name)
+        async with store.locked():
+            await to_thread.run_sync(store.delete_document, document_id)
+    except Exception as error:
+        _LOGGER.warning(f"Could not delete layout rows for document {document_id}: {error}")
 
 
 async def load_layout(

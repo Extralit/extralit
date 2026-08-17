@@ -9,9 +9,11 @@ from rq import Retry, get_current_job
 from rq.decorators import job
 from sqlalchemy import select
 
-from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingMetadata, LayoutMetadata
+from extralit_server.api.schemas.v1.document.metadata import LayoutMetadata
 from extralit_server.contexts import files
+from extralit_server.contexts.document.metadata import update_processing_metadata
 from extralit_server.contexts.ocr import storage
+from extralit_server.contexts.ocr.layout_store import LayoutStore
 from extralit_server.contexts.ocr.parsers import default_parser_name, get_parser
 from extralit_server.contexts.ocr.parsers.pdf_inspector import classify
 from extralit_server.database import AsyncSessionLocal
@@ -88,7 +90,17 @@ async def async_document_layout_job(
             filename=s3_url.split("/")[-1],
         )
 
-        paths = await storage.store_layout(s3_client, workspace_name, document_id, doc)
+        # Ordering closes the delete-vs-running-job race: nothing may write rows for a document
+        # whose delete already ran, and the workspace lock is held across the check and the write.
+        store = LayoutStore.for_workspace(workspace_name)
+        async with store.locked():
+            async with AsyncSessionLocal() as db:
+                still_exists = await db.scalar(select(Document.id).where(Document.id == document_id))
+            if still_exists is None:
+                _LOGGER.info(f"Document {document_id} was deleted before its layout was stored")
+                return {"document_id": str(document_id), "parser": parser_name, "skipped": "document deleted"}
+
+            paths = await storage.store_layout(s3_client, workspace_name, document_id, doc, store=store)
 
         layout = LayoutMetadata(
             **paths,
@@ -99,16 +111,9 @@ async def async_document_layout_job(
             pages_needing_ocr=classification.get("pages_needing_ocr", []),
         )
 
+        # Outside the workspace lock: the row lock only serializes writers of this JSON column.
         async with AsyncSessionLocal() as db:
-            # Text extraction writes the same JSON column concurrently; serialize on the row so
-            # this read-modify-write does not clobber whatever it wrote.
-            await db.execute(select(Document.id).where(Document.id == document_id).with_for_update())
-            document = await db.get(Document, document_id)
-            if document is not None:
-                metadata = DocumentProcessingMetadata(**(document.metadata_ or {}))
-                metadata.layout_metadata = layout
-                document.metadata_ = metadata.model_dump()
-                await db.commit()
+            await update_processing_metadata(db, document_id, lambda m: setattr(m, "layout_metadata", layout))
 
         result = {
             "document_id": str(document_id),

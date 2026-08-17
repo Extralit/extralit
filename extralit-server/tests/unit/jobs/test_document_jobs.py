@@ -114,8 +114,10 @@ class TestDocumentJobs:
         mock_analyzer.analyze_pdf_layout.assert_called_once()
         mock_preprocessor.preprocess.assert_called_once()
 
-        # Verify database operations
-        mock_db.get.assert_called_once_with(Document, document_id)
+        # Verify database operations: the metadata write goes through the row lock.
+        mock_db.execute.assert_awaited_once()
+        assert "FOR UPDATE" in str(mock_db.execute.await_args.args[0])
+        mock_db.get.assert_called_once_with(Document, document_id, populate_existing=True)
         mock_db.commit.assert_called_once()
 
     @patch("extralit_server.jobs.document_jobs.files")
