@@ -147,7 +147,11 @@ export class DocumentRepository {
       if (filters?.pages?.length) params.pages = filters.pages;
       if (filters?.labels?.length) params.labels = filters.labels;
 
-      const { data } = await this.axios.get<BackendDocumentLayout>(`/v1/documents/${documentId}/layout`, { params });
+      // FastAPI binds repeated bare keys; axios' default `pages[]=` bracket form is silently dropped.
+      const { data } = await this.axios.get<BackendDocumentLayout>(`/v1/documents/${documentId}/layout`, {
+        params,
+        paramsSerializer: { indexes: null },
+      });
 
       return toDocumentLayout(data);
     } catch (error) {

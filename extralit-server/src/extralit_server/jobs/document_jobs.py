@@ -6,6 +6,7 @@ from uuid import UUID
 
 from rq import Retry, get_current_job
 from rq.decorators import job
+from sqlalchemy import select
 
 from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingMetadata
 from extralit_server.contexts import files
@@ -16,6 +17,7 @@ from extralit_server.contexts.ocr.triage import triage_pdf
 from extralit_server.contexts.workflows import is_current_workflow_run
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
+from extralit_server.models.database import Document
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -84,6 +86,9 @@ async def analysis_and_preprocess_job(
         # A forced restart may already be running; its rotation and metadata must not lose to this
         # one's, because stopping a started job is only a request.
         async with AsyncSessionLocal() as db:
+            if await db.scalar(select(Document.id).where(Document.id == document_id)) is None:
+                _LOGGER.info(f"Document {document_id} was deleted before its analysis could store")
+                return {"document_id": str(document_id), "skipped": "document deleted"}
             if not await is_current_workflow_run(db, document_id, current_job.meta.get("workflow_id")):
                 _LOGGER.info(f"Analysis run for document {document_id} was superseded before it could store")
                 return {"document_id": str(document_id), "skipped": "workflow superseded"}
@@ -133,7 +138,9 @@ async def analysis_and_preprocess_job(
             metadata.update_preprocessing_results(combined_result["preprocessing_result"])
 
         async with AsyncSessionLocal() as db:
-            await update_processing_metadata(db, document_id, apply)
+            if await update_processing_metadata(db, document_id, apply) is None:
+                _LOGGER.info(f"Document {document_id} was deleted before its analysis could store")
+                return {"document_id": str(document_id), "skipped": "document deleted"}
 
         # Read by the scheduler branch that will enqueue an OCR job once an engine exists.
         current_job.meta["pages_needing_ocr"] = triage.pages_needing_ocr

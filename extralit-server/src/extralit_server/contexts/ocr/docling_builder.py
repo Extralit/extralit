@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
+import xxhash
 from docling_core.types.doc import (
     BoundingBox,
     CoordOrigin,
@@ -60,6 +61,11 @@ class PageContext:
     @property
     def width(self) -> float:
         return self.size.width
+
+
+def content_hash(pdf_bytes: bytes) -> int:
+    """Fill `DocumentOrigin.binary_hash`. `hash()` is salted per process, so it cannot be used."""
+    return xxhash.xxh3_64_intdigest(pdf_bytes)
 
 
 def new_document(

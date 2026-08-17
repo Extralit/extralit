@@ -72,7 +72,10 @@ describe("DocumentRepository", () => {
 
       const layout = await repository.getDocumentLayout("d-1");
 
-      expect(axios.get).toHaveBeenCalledWith("/v1/documents/d-1/layout", { params: {} });
+      expect(axios.get).toHaveBeenCalledWith("/v1/documents/d-1/layout", {
+        params: {},
+        paramsSerializer: { indexes: null },
+      });
       expect(layout.documentId).toBe("d-1");
       expect(layout.doclingVersion).toBe("1.10.0");
       expect(layout.numPages).toBe(2);
@@ -102,6 +105,7 @@ describe("DocumentRepository", () => {
 
       expect(axios.get).toHaveBeenCalledWith("/v1/documents/d-1/layout", {
         params: { pages: [2], labels: ["table"] },
+        paramsSerializer: { indexes: null },
       });
     });
 
@@ -111,7 +115,10 @@ describe("DocumentRepository", () => {
 
       await repository.getDocumentLayout("d-1", { pages: [], labels: [] });
 
-      expect(axios.get).toHaveBeenCalledWith("/v1/documents/d-1/layout", { params: {} });
+      expect(axios.get).toHaveBeenCalledWith("/v1/documents/d-1/layout", {
+        params: {},
+        paramsSerializer: { indexes: null },
+      });
     });
 
     it("throws a typed error when the request fails", async () => {

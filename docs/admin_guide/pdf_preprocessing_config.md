@@ -24,31 +24,31 @@ explicit gap until an OCR job exists.
 
 ## Configuration Reference
 
-#### `PREPROCESSING_ENABLED`
+### `PREPROCESSING_ENABLED`
 - **Type**: `bool` — **Default**: `true`
 - Master switch. When `false`, the PDF is passed through byte-identical; triage, margins and the
   thumbnail still run (they are the analysis job's own work, not the preprocessor's).
 
-#### `PREPROCESSING_ROTATE_PAGES`
+### `PREPROCESSING_ROTATE_PAGES`
 - **Type**: `bool` — **Default**: `true`
 - Auto-rotate pages whose text is not upright.
 
-#### `PREPROCESSING_ROTATE_PAGES_THRESHOLD`
+### `PREPROCESSING_ROTATE_PAGES_THRESHOLD`
 - **Type**: `float` — **Default**: `2.0`
 - Confidence OSD must reach before a page is rotated. Lower (1.0–1.5) rotates more eagerly;
   higher (3.0+) avoids false rotations.
 
-#### `PREPROCESSING_TESSERACT_NON_OCR_TIMEOUT`
+### `PREPROCESSING_TESSERACT_NON_OCR_TIMEOUT`
 - **Type**: `float` (seconds per page) — **Default**: `30.0`
 - Budget for OSD, the only tesseract call made here. OCRmyPDF's own default is 180 s per page,
   which dominates the runtime on image-heavy PDFs.
 
-#### `PREPROCESSING_JOBS`
+### `PREPROCESSING_JOBS`
 - **Type**: `int` — **Default**: `1`
 - Worker processes for ocrmypdf. Keep at `1` in containers with limited CPU to avoid
   oversubscription; `2–4` on a multi-core host.
 
-#### `PREPROCESSING_PROGRESS_BAR`
+### `PREPROCESSING_PROGRESS_BAR`
 - **Type**: `bool` — **Default**: `false`
 - Useful interactively, noise in background jobs.
 

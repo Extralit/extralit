@@ -1,6 +1,7 @@
 """Tests for the columnar projection of a `DoclingDocument`."""
 
 import pyarrow as pa
+import pyarrow.compute as pc
 import pyarrow.parquet as pq
 import pytest
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, ProvenanceItem, Size
@@ -72,7 +73,7 @@ class TestItemsTable:
         )
 
         table = items_table(doc, DOCUMENT_ID)
-        rows = table.filter(pa.compute.equal(table["self_ref"], "#/tables/0")).to_pylist()
+        rows = table.filter(pc.equal(table["self_ref"], "#/tables/0")).to_pylist()
 
         assert [r["prov_index"] for r in rows] == [0, 1]
         assert [r["page_no"] for r in rows] == [1, 2]

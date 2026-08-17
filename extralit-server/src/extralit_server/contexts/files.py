@@ -420,7 +420,12 @@ async def create_bucket(s3_client: "S3Client", workspace_name: str):
     """Create the workspace's bucket, versioned, with layout noncurrent versions expiring."""
     bucket, prefix = workspace_root(workspace_name)
     try:
-        await s3_client.create_bucket(Bucket=bucket)
+        try:
+            await s3_client.create_bucket(Bucket=bucket)
+        except ClientError as e:
+            # An existing bucket must still pick up versioning and the lifecycle rule.
+            if e.response["Error"]["Code"] not in ["BucketAlreadyOwnedByYou", "BucketAlreadyExists"]:
+                raise
 
         await s3_client.put_bucket_versioning(
             Bucket=bucket,
@@ -449,11 +454,8 @@ async def create_bucket(s3_client: "S3Client", workspace_name: str):
             _LOGGER.warning(f"Could not set the layout lifecycle rule on bucket {bucket}: {e}")
 
     except ClientError as e:
-        if e.response["Error"]["Code"] in ["BucketAlreadyOwnedByYou", "BucketAlreadyExists"]:
-            pass  # Bucket already exists, that's fine
-        else:
-            _LOGGER.error(f"Error creating bucket {bucket}: {e}")
-            raise HTTPException(status_code=500, detail=f"Error creating bucket: {e!s}")
+        _LOGGER.error(f"Error creating bucket {bucket}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error creating bucket: {e!s}")
     except Exception as e:
         _LOGGER.error(f"Error creating bucket {workspace_name}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")

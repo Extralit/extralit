@@ -63,6 +63,8 @@ class PreprocessingMetadata(BaseModel):
     processing_time: float = Field(..., description="Processing time in seconds")
     ocr_applied: bool = Field(..., description="Whether OCR was applied during preprocessing")
     processed_s3_url: Optional[str] = Field(None, description="S3 URL of processed PDF")
+    rotation_ran: Optional[bool] = Field(None, description="Whether page rotation completed")
+    error: Optional[str] = Field(None, description="Why preprocessing fell back to the original PDF")
 
 
 class TextExtractionMetadata(BaseModel):
@@ -138,6 +140,8 @@ class DocumentProcessingMetadata(BaseModel):
             processing_time=preprocess_result["processing_time"],
             ocr_applied=preprocess_result.get("ocr_applied", False),
             processed_s3_url=preprocess_result.get("processed_s3_url"),
+            rotation_ran=preprocess_result.get("rotation_ran"),
+            error=preprocess_result.get("error"),
         )
 
     def is_workflow_complete(self) -> bool:

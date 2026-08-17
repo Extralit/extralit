@@ -19,7 +19,13 @@ import pdf_inspector
 import pikepdf
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, DoclingDocument, Size, TableCell
 
-from extralit_server.contexts.ocr.docling_builder import LayoutBlock, PageContext, append_blocks, new_document
+from extralit_server.contexts.ocr.docling_builder import (
+    LayoutBlock,
+    PageContext,
+    append_blocks,
+    content_hash,
+    new_document,
+)
 from extralit_server.contexts.ocr.tables import make_cell
 
 _LOGGER = logging.getLogger(__name__)
@@ -202,8 +208,13 @@ def _blocks_for_page(
     images = [i for i in items if i.item_type != "text"]
     text_items = [i for i in items if i.item_type == "text"]
 
-    tagged = [i for i in text_items if i.mcid is not None and (page_no, i.mcid) in roles]
-    untagged = [i for i in text_items if i not in tagged]
+    tagged: list[Any] = []
+    untagged: list[Any] = []
+    for item in text_items:
+        if item.mcid is not None and (page_no, item.mcid) in roles:
+            tagged.append(item)
+        else:
+            untagged.append(item)
 
     for image in images:
         role = roles.get((page_no, image.mcid)) if image.mcid is not None else None
@@ -251,7 +262,7 @@ def parse(
     filename: Optional[str] = None,
 ) -> DoclingDocument:
     """Parse PDF bytes into a `DoclingDocument`. `pages` is a 1-indexed allowlist."""
-    doc = new_document(name, filename=filename, binary_hash=hash(pdf_bytes) & 0xFFFFFFFF)
+    doc = new_document(name, filename=filename, binary_hash=content_hash(pdf_bytes))
 
     sizes = page_sizes(pdf_bytes)
     roles = _structure_roles(pdf_bytes)

@@ -83,6 +83,8 @@ dependencies = [
     "docling-core>=2.91.0,<3.0.0",
     "pyarrow>=23.0.1",
     "pdf-inspector>=1.14.2",
+    "xxhash>=3.6.0",
+    "obstore>=0.11.0",
 ]
 
 [project.optional-dependencies]

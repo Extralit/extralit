@@ -14,7 +14,13 @@ import pymupdf
 import pymupdf4llm
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, DoclingDocument, Size, TableCell
 
-from extralit_server.contexts.ocr.docling_builder import LayoutBlock, PageContext, append_blocks, new_document
+from extralit_server.contexts.ocr.docling_builder import (
+    LayoutBlock,
+    PageContext,
+    append_blocks,
+    content_hash,
+    new_document,
+)
 from extralit_server.contexts.ocr.tables import make_cell
 
 _LOGGER = logging.getLogger(__name__)
@@ -154,7 +160,7 @@ def parse(
     filename: Optional[str] = None,
 ) -> DoclingDocument:
     """Parse PDF bytes into a `DoclingDocument`. `pages` is a 1-indexed allowlist."""
-    doc = new_document(name, filename=filename, binary_hash=hash(pdf_bytes) & 0xFFFFFFFF)
+    doc = new_document(name, filename=filename, binary_hash=content_hash(pdf_bytes))
     wanted = set(pages) if pages else None
 
     with pymupdf.open(stream=pdf_bytes, filetype="pdf") as pdf:

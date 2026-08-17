@@ -24,6 +24,7 @@ class LayoutParser(Protocol):
         *,
         name: str,
         pages: Optional[Sequence[int]] = None,
+        filename: Optional[str] = None,
     ) -> DoclingDocument: ...
 
 

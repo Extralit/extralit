@@ -2,7 +2,9 @@ from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from extralit_server.contexts.ocr.parsers import list_parsers
 
 
 class StartWorkflowRequest(BaseModel):
@@ -17,6 +19,13 @@ class StartWorkflowRequest(BaseModel):
     layout_parser: Optional[str] = Field(
         None, description="Layout parser to run (e.g. `pdf_inspector`, `pymupdf`); omit to skip layout extraction"
     )
+
+    @field_validator("layout_parser")
+    @classmethod
+    def _known_parser(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and value not in list_parsers():
+            raise ValueError(f"unknown layout parser {value!r}; available: {list_parsers()}")
+        return value
 
 
 class StartWorkflowResponse(BaseModel):
