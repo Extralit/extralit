@@ -1,165 +1,62 @@
-"""Table detection and bounding box utilities for OCR processing."""
+"""Appends a single table `LayoutBlock` to a `DoclingDocument`."""
 
-from typing import Any
+from __future__ import annotations
 
+from typing import Optional
 
-def extract_table_bboxes(marker_layout: dict[str, Any]) -> list[dict[str, Any]]:
-    """
-    Extract table bounding boxes from Marker layout detection results.
+from docling_core.types.doc import DoclingDocument, TableCell, TableData
+from docling_core.types.doc.document import NodeItem, TableItem
 
-    Args:
-        marker_layout: Dictionary containing Marker's layout detection results
-
-    Returns:
-        List of dictionaries containing table bounding box information:
-        - page: Page number (0-indexed)
-        - bbox: Bounding box coordinates [x0, y0, x1, y1]
-        - score: Confidence score (if available)
-        - type: Element type ('table')
-    """
-    tables = []
-
-    # Input validation
-    if not marker_layout or not isinstance(marker_layout, dict):
-        return tables
-
-    # Handle different possible Marker output formats
-    pages_data = marker_layout.get("pages", [])
-    if not pages_data and "blocks" in marker_layout:
-        # Single page format
-        pages_data = [marker_layout]
-
-    # Validate pages data
-    if not isinstance(pages_data, list):
-        return tables
-
-    for page_idx, page_data in enumerate(pages_data):
-        # Validate page data structure
-        if not isinstance(page_data, dict):
-            continue
-
-        page_number = page_data.get("page", page_idx)
-        blocks = page_data.get("blocks", [])
-
-        # Validate blocks structure
-        if not isinstance(blocks, list):
-            continue
-
-        for block in blocks:
-            # Validate block structure
-            if not isinstance(block, dict):
-                continue
-
-            # Try different naming conventions for block type
-            block_type = (
-                block.get("type") or block.get("block_type") or block.get("category") or block.get("label") or ""
-            ).lower()
-
-            # Multiple patterns for table detection (including Marker-specific types)
-            if any(
-                keyword in block_type
-                for keyword in [
-                    "table",
-                    "grid",
-                    "matrix",
-                    "tableblock",
-                    "table_block",
-                ]
-            ):
-                # Try different naming conventions for bounding box
-                bbox = (
-                    block.get("bbox")
-                    or block.get("coordinates")
-                    or block.get("bounding_box")
-                    or block.get("rect")
-                    or block.get("box")
-                )
-
-                # Additional fallback: try nested structure
-                if not bbox and "geometry" in block:
-                    bbox = block["geometry"].get("bbox") or block["geometry"].get("coordinates")
-
-                # Validate bbox format with multiple possible formats
-                valid_bbox = None
-                if bbox:
-                    if isinstance(bbox, list) and len(bbox) == 4:
-                        # Standard [x1, y1, x2, y2] format
-                        try:
-                            valid_bbox = [float(x) for x in bbox]
-                        except (ValueError, TypeError):
-                            pass
-                    elif isinstance(bbox, dict):
-                        # Object format like {x1, y1, x2, y2} or {left, top, right, bottom}
-                        try:
-                            if all(k in bbox for k in ["x1", "y1", "x2", "y2"]):
-                                valid_bbox = [
-                                    float(bbox["x1"]),
-                                    float(bbox["y1"]),
-                                    float(bbox["x2"]),
-                                    float(bbox["y2"]),
-                                ]
-                            elif all(k in bbox for k in ["left", "top", "right", "bottom"]):
-                                valid_bbox = [
-                                    float(bbox["left"]),
-                                    float(bbox["top"]),
-                                    float(bbox["right"]),
-                                    float(bbox["bottom"]),
-                                ]
-                        except (ValueError, TypeError, KeyError):
-                            pass
-
-                if valid_bbox:
-                    # Try different naming conventions for text content
-                    content = (
-                        block.get("text") or block.get("content") or block.get("html") or block.get("markdown") or ""
-                    )
-
-                    # Try different naming conventions for confidence score
-                    score = (
-                        block.get("score")
-                        or block.get("confidence")
-                        or block.get("probability")
-                        or block.get("certainty")
-                    )
-
-                    tables.append(
-                        {
-                            "page": page_number,
-                            "bbox": valid_bbox,
-                            "score": score,
-                            "type": "table",
-                            "content": content,
-                            "metadata": {
-                                "source": "marker",
-                                "block_id": block.get("id") or block.get("block_id"),
-                                "polygon": block.get("polygon") or block.get("shape"),
-                                "original_type": block.get("type") or block.get("block_type"),
-                            },
-                        }
-                    )
-
-    return tables
+from extralit_server.contexts.ocr.docling_builder import LayoutBlock, PageContext, make_prov
 
 
-def normalize_table_bbox(bbox: list[float], page_width: float, page_height: float) -> list[float]:
-    """
-    Normalize bounding box coordinates to relative values (0-1 range).
+def build_table_data(cells: Optional[list[TableCell]]) -> TableData:
+    """Size a `TableData` from its cells. `grid` is a computed field and must never be set."""
+    if not cells:
+        return TableData(num_rows=0, num_cols=0, table_cells=[])
 
-    Args:
-        bbox: Bounding box coordinates [x0, y0, x1, y1]
-        page_width: Page width in points
-        page_height: Page height in points
+    num_rows = max(cell.end_row_offset_idx for cell in cells)
+    num_cols = max(cell.end_col_offset_idx for cell in cells)
+    return TableData(num_rows=num_rows, num_cols=num_cols, table_cells=list(cells))
 
-    Returns:
-        Normalized bounding box coordinates [x0, y0, x1, y1]
-    """
-    if not bbox or len(bbox) != 4:
-        return [0.0, 0.0, 0.0, 0.0]
 
-    x0, y0, x1, y1 = bbox
-    return [
-        max(0.0, min(1.0, x0 / page_width)),
-        max(0.0, min(1.0, y0 / page_height)),
-        max(0.0, min(1.0, x1 / page_width)),
-        max(0.0, min(1.0, y1 / page_height)),
-    ]
+def make_cell(
+    text: str,
+    row: int,
+    col: int,
+    *,
+    row_span: int = 1,
+    col_span: int = 1,
+    column_header: bool = False,
+    row_header: bool = False,
+    bbox=None,
+) -> TableCell:
+    """Build a cell with docling's exclusive end offsets (`end = start + span`)."""
+    return TableCell(
+        text=text,
+        start_row_offset_idx=row,
+        end_row_offset_idx=row + row_span,
+        start_col_offset_idx=col,
+        end_col_offset_idx=col + col_span,
+        row_span=row_span,
+        col_span=col_span,
+        column_header=column_header,
+        row_header=row_header,
+        bbox=bbox,
+    )
+
+
+def add_table_block(
+    doc: DoclingDocument,
+    block: LayoutBlock,
+    ctx: PageContext,
+    parent: Optional[NodeItem] = None,
+) -> TableItem:
+    """Add one table, anchored by its page bbox."""
+    prov = make_prov(ctx, block.bbox, text=None)
+    return doc.add_table(
+        data=build_table_data(block.cells),
+        prov=prov,
+        parent=parent,
+        label=block.label,
+    )

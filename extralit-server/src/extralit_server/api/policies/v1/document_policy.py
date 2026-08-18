@@ -21,6 +21,15 @@ class DocumentPolicy:
         return is_allowed
 
     @classmethod
+    def get_by_workspace(cls, workspace_id: UUID) -> PolicyAction:
+        """Read a document's contents. Unlike `get`, this verifies workspace membership."""
+
+        async def is_allowed(actor: User) -> bool:
+            return actor.is_owner or await actor.is_member(workspace_id)
+
+        return is_allowed
+
+    @classmethod
     def bulk_create(cls, workspace_id: UUID) -> PolicyAction:
         async def is_allowed(actor: User) -> bool:
             return actor.is_owner or (actor.is_admin and await actor.is_member(workspace_id))

@@ -7,9 +7,9 @@ dependencies are loaded in the parent process before forking worker processes.
 
 from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingMetadata  # noqa: F401
 from extralit_server.contexts import files, imports, search  # noqa: F401
-from extralit_server.contexts.document.analysis import PDFOCRLayerDetector  # noqa: F401
 from extralit_server.contexts.document.margin import PDFAnalyzer  # noqa: F401
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor  # noqa: F401
+from extralit_server.contexts.ocr.triage import triage_pdf  # noqa: F401
 from extralit_server.database import AsyncSessionLocal, async_engine  # noqa: F401
 from extralit_server.helpers import create_s3_client  # noqa: F401
 from extralit_server.jobs import (  # noqa: F401
@@ -17,7 +17,7 @@ from extralit_server.jobs import (  # noqa: F401
     document_jobs,
     hub_jobs,
     import_jobs,
-    # ocr_jobs,
+    ocr_jobs,
     webhook_jobs,
 )
 from extralit_server.models.database import Dataset, Document, Record, User, Workspace  # noqa: F401

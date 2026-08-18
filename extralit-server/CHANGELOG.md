@@ -18,6 +18,26 @@ These are the section headers that we use:
 ### Added
 
 - Refactor document analysis and preprocessing job to support asynchronous s3 IO operations and large file processing.
+- Adopted `DoclingDocument` as the canonical internal layout model, so every extracted item carries a `page_no` + `bbox` + `charspan` provenance triple that an extraction record can cite.
+- Added swappable layout parsers behind `contexts/ocr/parsers`: `pdf_inspector` (MIT, required, the default) and `pymupdf` (AGPL, optional `pymupdf` extra, the only one yielding per-cell table geometry).
+- Added `async_document_layout_job` on the OCR queue, persisting layout as canonical JSON plus a columnar projection in the workspace's `layout/items.lance` and `layout/pages.lance` datasets, queryable through `LayoutStore` and its DuckDB views as soon as the job commits.
+- Added `GET /documents/{document_id}/layout`, with `pages` and `labels` filters, plus the matching frontend `DocumentLayout` entities and `DocumentRepository.getDocumentLayout`.
+- Added `layout_parser` to `POST /workflows/start` to trigger layout extraction as part of the document workflow.
+
+### Changed
+
+- The analysis job now triages PDFs with pdf-inspector (`pdf_type`, `pages_needing_ocr`, tables, columns) instead of the pdfminer OCR-layer detector, estimates margins over the leading five pages instead of rendering every page, and runs ocrmypdf for page rotation only, with tesseract OCR disabled and a bounded OSD budget. A failed rotation is recorded and the job still succeeds.
+- Layout extraction is enqueued on upload by default; `layout_parser` remains an override.
+- Document workflow dependents (text extraction, layout) now wait on the analysis/preprocessing job with `allow_failure`, and carry their retry policy and a 24 h result TTL through `Queue.prepare_data()` — the `@job` decorator values never applied on that path.
+- `POST /workflows/start?force=true` stops the previous run's jobs before enqueueing new ones, whose ids now carry the run suffix.
+- Deleting a document removes its PDF, thumbnail, layout JSON and layout rows together, through `files.delete_document_artifacts`.
+- Rewrote `contexts/ocr/{text,tables,figures}` as single-item appenders driven by one ordered pass, fixing text inside tables and figures being emitted twice and restoring geometric reading order.
+
+### Removed
+
+- Removed `contexts/document/analysis.py` (`PDFOCRLayerDetector`) and the OCR-only preprocessing knobs (`language`, `force_ocr`, `redo_ocr`, `skip_big`, `pdf_renderer`, `output_type`, `fast_web_view`, `deskew`, `enable_analysis`); `has_ocr_text_layer`, `needs_ocr` and `ocr_quality` are no longer written.
+- Removed the `marker` extra (`marker-pdf`, `torch`, `torchvision`, `transformers`) and the unused `async_marker_layout_job`.
+- Removed the deprecated Unstructured-shaped `document/chunks.py` schemas (`Segments`, `TextSegment`, `TableSegment`, `FigureSegment`, `Coordinates`) and the unreferenced `GPU_QUEUE`.
 
 ### Fixed
 

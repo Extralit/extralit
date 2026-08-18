@@ -35,6 +35,11 @@ def _sql_type_for(dtype: str) -> str:
     return _SQL_TYPE_BY_ARROW.get(arrow_type_for(dtype), "string")
 
 
+# Lance file format 2.2 for tables created from here on; the async API exposes no per-table
+# knob, and existing 2.0/2.1 tables keep their own version and stay readable.
+_STORAGE_OPTIONS = {"new_table_data_storage_version": "2.2"}
+
+
 # Exact FTS totals are computed by materializing the match set; beyond this many matches
 # the reported total saturates at the ceiling (extraction tables are far smaller today).
 _FTS_TOTAL_CEILING = 10_000
@@ -96,7 +101,7 @@ class LanceIndexEngine(IndexEngine):
 
     async def _conn(self) -> Any:
         if self._db is None:
-            self._db = await lancedb.connect_async(self._uri)
+            self._db = await lancedb.connect_async(self._uri, storage_options=_STORAGE_OPTIONS)
         return self._db
 
     async def close(self) -> None:

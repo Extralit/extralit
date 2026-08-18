@@ -121,6 +121,10 @@ class TestRQGroupsWorkflowIntegration:
         # Mock RQ Group
         mock_group = MagicMock(spec=Group)
         mock_group.name = f"document_workflow_{test_document.id}_12345678"
+        # Dependents are wired with rq.job.Dependency, which type-checks the enqueued jobs.
+        mock_group.enqueue_many.side_effect = lambda queue=None, job_datas=None: [
+            Job(id=data["job_id"], connection=MagicMock()) for data in (job_datas or [])
+        ]
 
         with patch("extralit_server.workflows.documents.Group", return_value=mock_group):
             group = await create_document_workflow(
@@ -142,9 +146,9 @@ class TestRQGroupsWorkflowIntegration:
             assert workflow.status == "running"
             assert workflow.group_id.startswith(f"document_workflow_{test_document.id}")
 
-            # Verify jobs were prepared and enqueued
+            # Verify jobs were prepared and enqueued: analysis on default, text + layout on ocr.
             mock_default_queue.prepare_data.assert_called_once()
-            mock_ocr_queue.prepare_data.assert_called_once()
+            assert mock_ocr_queue.prepare_data.call_count == 2
             mock_group.enqueue_many.assert_called()
 
             # The workflow must persist from its own session. Without this the test passes

@@ -21,6 +21,7 @@ from extralit_server.contexts.workflows import (
     get_workflow_status,
     get_workflow_statuses_by_reference,
     restart_failed_jobs_in_workflow,
+    stop_workflow_jobs,
 )
 from extralit_server.database import get_async_db
 from extralit_server.jobs.queues import REDIS_CONNECTION
@@ -70,12 +71,17 @@ async def start_workflow(
                 detail=f"Workflow already exists for document {request.document_id}. Use force=true to restart.",
             )
 
+        if existing_workflow:
+            # The previous run writes to the same S3 keys and Lance rows as the new one.
+            stop_workflow_jobs(existing_workflow.group_id)
+
         await create_document_workflow(
             document_id=request.document_id,
             s3_url=document.url,
             reference=document.reference,
             workspace_name=request.workspace_name,
             workspace_id=workspace.id,
+            layout_parser=request.layout_parser,
         )
 
         # Get the created workflow

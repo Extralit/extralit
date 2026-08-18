@@ -1,4 +1,9 @@
-"""Document preprocessing utilities."""
+"""Rotation-only ocrmypdf pass.
+
+No OCR is produced here: `tesseract_timeout=0` kills the tesseract spawn, and `skip_text` leaves
+text pages untouched. OSD (page orientation) is the one thing tesseract is still asked for, which
+is why its budget is bounded. Margins and the thumbnail belong to the analysis job.
+"""
 
 import logging
 import os
@@ -13,7 +18,6 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 
 from extralit_server.api.schemas.v1.document.preprocessing import PDFMetadata
-from extralit_server.contexts.document.margin import PDFAnalyzer
 
 ocrmypdf = lazy.load("ocrmypdf")
 
@@ -32,96 +36,47 @@ class PDFProcessingResponse:
 
 class PDFPreprocessingSettings(BaseSettings):
     """
-    PDF preprocessing settings that can be configured via environment variables.
-
-    All settings have the PREPROCESSING_ prefix.
+    PDF preprocessing settings, configurable via `PREPROCESSING_`-prefixed environment variables.
     """
 
     class Config:
         env_prefix = "PREPROCESSING_"
 
-    enabled: bool = Field(
-        default=True, description="Enable PDF preprocessing with OCRmyPDF. Set to False to disable all processing."
-    )
+    enabled: bool = Field(default=True, description="Run ocrmypdf at all. False leaves the PDF byte-identical.")
 
-    enable_analysis: bool = Field(default=True, description="Enable PDF layout analysis and margin detection")
-
-    language: list[str] = Field(
-        default=["eng"], description="List of languages for OCR processing (e.g., ['eng', 'spa', 'fra'])"
-    )
-
-    rotate_pages: bool = Field(default=True, description="Auto-rotate pages with horizontal text")
+    rotate_pages: bool = Field(default=True, description="Auto-rotate pages whose text is not upright")
 
     rotate_pages_threshold: float = Field(
-        default=2.0,
-        description="Threshold for auto-rotation",
+        default=2.0, description="Confidence tesseract's OSD must reach before a page is rotated"
     )
 
-    deskew: bool = Field(default=False, description="Fix skewed text")
-
-    clean: bool = Field(default=True, description="Use `unpaper` to clean up artifacts")
-
-    optimize: int = Field(
-        default=1, description="Optimize output file size (0=none, 1=lossless, 2=lossy, 3=aggressive)"
-    )
-
-    pdf_renderer: str = Field(default="hocr", description="PDF renderer: 'auto', 'hocr', 'sandwich'")
-
-    force_ocr: bool = Field(default=False, description="Force OCR on all pages, even if they already have text")
-
-    skip_text: bool = Field(default=True, description="Skip text-based operations (OCR only for images)")
-
-    redo_ocr: bool = Field(default=False, description="Redo OCR on pages that already have OCR")
-
-    tesseract_timeout: int = Field(
-        default=0, description="Timeout for Tesseract OCR processing in seconds (0 to skip Tesseract OCR)"
+    tesseract_non_ocr_timeout: float = Field(
+        default=30.0,
+        description="Per-page budget for OSD, the only tesseract call made here (ocrmypdf's own default is 180s)",
     )
 
     progress_bar: bool = Field(default=False, description="Show progress bar during processing")
 
-    output_type: str = Field(
-        default="pdf",
-        description="Output type for OCRmyPDF. Set to 'pdf' to skip PDF/A conversion.",
-    )
-
-    fast_web_view: int = Field(
-        default=999999,
-        description="Fast web view optimization. Set to 999999 to disable fast web view optimization.",
-    )
-
-    skip_big: float = Field(
-        default=100.0,
-        description="Image size threshold in MB to skip OCR processing.",
-    )
-
     jobs: int = Field(
         default=1,
-        description="Number of worker processes to use for OCR. Set to 1 for Docker containers with limited CPU to avoid oversubscription.",
+        description="Worker processes for ocrmypdf. 1 in containers with limited CPU, to avoid oversubscription.",
     )
 
     def get_ocrmypdf_args(self) -> dict:
-        """
-        Get OCRmyPDF arguments as a dictionary for use with **kwargs.
+        """Arguments for `ocrmypdf.ocr`, with everything OCR-shaped nailed shut.
 
-        Returns:
-            Dictionary of OCRmyPDF arguments excluding input/output parameters.
+        `clean` (unpaper) and `optimize` only pay off alongside OCR output, and rasterizing
+        alternatives (`force_ocr`, `redo_ocr`) would destroy the text layer this pipeline relies on.
         """
         return {
-            "language": self.language,
             "rotate_pages": self.rotate_pages,
             "rotate_pages_threshold": self.rotate_pages_threshold,
-            "deskew": self.deskew,
-            "clean": self.clean,
-            "optimize": self.optimize,
-            "pdf_renderer": self.pdf_renderer,
-            "force_ocr": self.force_ocr,
-            "skip_text": self.skip_text,
-            "tesseract_timeout": self.tesseract_timeout,
-            "redo_ocr": self.redo_ocr,
+            "skip_text": True,
+            "tesseract_timeout": 0,
+            "tesseract_non_ocr_timeout": self.tesseract_non_ocr_timeout,
+            "clean": False,
+            "optimize": 0,
             "progress_bar": self.progress_bar,
-            "output_type": self.output_type,
-            "fast_web_view": self.fast_web_view,
-            "skip_big": self.skip_big,
             "jobs": self.jobs,
         }
 
@@ -130,86 +85,49 @@ settings = PDFPreprocessingSettings()
 
 
 class PDFPreprocessor:
-    """
-    PDF preprocessor that uses OCRmyPDF for rotation, OCR, and optimization.
-    Also performs layout analysis to extract margin and structure information.
-
-    Can be configured with environment variables using the PDFPreprocessingSettings.
-    """
+    """Runs ocrmypdf over a PDF for page rotation only."""
 
     def __init__(self, settings: PDFPreprocessingSettings = settings):
-        """
-        Initialize the PDF preprocessor.
-
-        Args:
-            settings: Optional PDFPreprocessingSettings instance. If None, loads from environment.
-        """
         self.settings = settings
 
-        if self.settings.enable_analysis:
-            self.analyzer = PDFAnalyzer()
-        else:
-            self.analyzer = None
-
     def preprocess(self, file_data: bytes, filename: str) -> PDFProcessingResponse:
+        """Rotate pages, best effort.
+
+        Returns the original bytes with `rotation_ran=False` and the reason in `error` when
+        ocrmypdf fails — a failed rotation must not cost the caller its document.
         """
-        Preprocess PDF with OCRmyPDF and analyze layout structure.
+        if not filename.lower().endswith(".pdf") or not self.settings.enabled:
+            return PDFProcessingResponse(
+                processed_data=file_data,
+                metadata=PDFMetadata(filename=filename, processing_time=0.0),
+            )
 
-        Args:
-            file_data: PDF file data as bytes
-            filename: Original filename for logging purposes
+        start_time = time.time()
+        processed_data, rotation_ran, error = file_data, False, None
 
-        Returns:
-            PDFProcessingResult containing processed data and layout analysis metadata
-        """
-        # Initialize metadata variables
-        analysis_results = None
-        processing_time = 0.0
-        processed_data = file_data
-
-        # Handle non-PDF files
-        if not filename.lower().endswith(".pdf"):
-            pass  # Use default values
-
-        # Handle disabled preprocessing
-        elif not self.settings.enabled:
-            if self.analyzer:
-                analysis_results = self.analyzer.analyze_pdf_layout(file_data, filename)
-
-        # Handle PDF processing
-        else:
+        try:
             try:
-                start_time = time.time()
+                input_buffer = BytesIO(file_data)
+                output_buffer = BytesIO()
+                ocrmypdf.ocr(input_buffer, output_buffer, **self.settings.get_ocrmypdf_args())  # type: ignore
+                processed_data = output_buffer.getvalue()
+                output_buffer.close()
+                input_buffer.close()
+            except TypeError as buffer_error:
+                # Some ocrmypdf paths insist on real files; a genuine failure re-raises below.
+                _LOGGER.debug(f"BytesIO approach failed for {filename}, falling back to temp files: {buffer_error}")
+                processed_data = self._preprocess_with_temp_files(file_data, filename)
+            rotation_ran = True
+        except Exception as e:
+            _LOGGER.warning(f"Rotation failed for {filename}, keeping the original: {e}")
+            processed_data, error = file_data, str(e)
 
-                # Step 1: Analyze original PDF layout (if enabled)
-                if self.analyzer:
-                    analysis_results = self.analyzer.analyze_pdf_layout(file_data, filename)
-
-                # Step 2: OCR preprocessing
-                try:
-                    input_buffer = BytesIO(file_data)
-                    output_buffer = BytesIO()
-
-                    ocrmypdf.ocr(input_buffer, output_buffer, **self.settings.get_ocrmypdf_args())  # type: ignore
-
-                    processed_data = output_buffer.getvalue()
-                    output_buffer.close()
-                    input_buffer.close()
-
-                except Exception as buffer_error:
-                    _LOGGER.debug(f"BytesIO approach failed for {filename}, falling back to temp files: {buffer_error}")
-                    processed_data = self._preprocess_with_temp_files(file_data, filename)
-
-                processing_time = time.time() - start_time
-                print(filename, analysis_results)
-
-            except Exception:
-                # Use default values on error
-                pass
-
-        # Single PDFMetadata initialization for all code paths
-        metadata = PDFMetadata(filename=filename, processing_time=processing_time, analysis_results=analysis_results)
-
+        metadata = PDFMetadata(
+            filename=filename,
+            processing_time=time.time() - start_time,
+            rotation_ran=rotation_ran,
+            error=error,
+        )
         return PDFProcessingResponse(processed_data=processed_data, metadata=metadata)
 
     def _preprocess_with_temp_files(self, file_data: bytes, filename: str) -> bytes:

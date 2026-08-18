@@ -165,6 +165,8 @@ extralit/site
 # Development files
 **/*.db
 **/*.pdf
+# Layout parser test fixtures are committed; regenerate with extralit-server/tests/fixtures/pdf/generate.py
+!extralit-server/tests/fixtures/pdf/*.pdf
 output/
 .output/
 .nuxtrc

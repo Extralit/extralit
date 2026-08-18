@@ -1,5 +1,5 @@
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
@@ -251,3 +251,49 @@ async def test_list_documents(async_client: "AsyncClient", db: "AsyncSession", o
     assert response.status_code == 200
     assert len(response.json()) == 2
     assert response.json()[0]["id"] == str(doc_id)
+
+
+@pytest.mark.asyncio
+async def test_delete_documents_removes_every_artifact(
+    async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict
+):
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(workspace=workspace)
+
+    with patch("extralit_server.contexts.files.delete_document_artifacts", new_callable=AsyncMock) as fan_out:
+        response = await async_client.request(
+            "DELETE",
+            f"/api/v1/documents/workspace/{workspace.id}",
+            json={"id": str(document.id)},
+            headers=owner_auth_header,
+        )
+
+    assert response.status_code == 200, response.json()
+    assert fan_out.await_args.args[1:] == (workspace.name, document.id)
+
+
+@pytest.mark.asyncio
+async def test_delete_documents_succeeds_when_layout_cleanup_fails(
+    async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict
+):
+    # The rows are already gone; a stuck Lance dataset must not make the document undeletable.
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(workspace=workspace)
+
+    with (
+        patch("extralit_server.contexts.files.delete_object", new_callable=AsyncMock),
+        patch(
+            "extralit_server.contexts.ocr.storage.delete_layout",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("lance down"),
+        ),
+    ):
+        response = await async_client.request(
+            "DELETE",
+            f"/api/v1/documents/workspace/{workspace.id}",
+            json={"id": str(document.id)},
+            headers=owner_auth_header,
+        )
+
+    assert response.status_code == 200, response.json()
+    assert response.json() == 1

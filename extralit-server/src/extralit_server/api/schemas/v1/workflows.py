@@ -2,7 +2,9 @@ from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from extralit_server.contexts.ocr.parsers import list_parsers
 
 
 class StartWorkflowRequest(BaseModel):
@@ -14,6 +16,16 @@ class StartWorkflowRequest(BaseModel):
     force: bool = Field(False, description="Force restart if workflow already exists")
     wait: bool = Field(True, description="Wait for job to finish before returning")
     timeout: Optional[int] = Field(60, description="Max seconds to wait if wait=True")
+    layout_parser: Optional[str] = Field(
+        None, description="Layout parser to run (e.g. `pdf_inspector`, `pymupdf`); omit to skip layout extraction"
+    )
+
+    @field_validator("layout_parser")
+    @classmethod
+    def _known_parser(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and value not in list_parsers():
+            raise ValueError(f"unknown layout parser {value!r}; available: {list_parsers()}")
+        return value
 
 
 class StartWorkflowResponse(BaseModel):
