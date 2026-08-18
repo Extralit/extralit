@@ -117,21 +117,22 @@ async def analysis_and_preprocess_job(
             metadata={"processing_applied": "ocrmypdf_rotation", "original_filename": filename},
         )
 
+        preprocessing_result = {
+            "processing_time": processing_response.metadata.processing_time,
+            "ocr_applied": False,
+            "rotation_ran": processing_response.metadata.rotation_ran,
+            "error": processing_response.metadata.error,
+        }
         combined_result = {
             "document_id": str(document_id),
             "analysis_result": analysis_result,
-            "preprocessing_result": {
-                "processing_time": processing_response.metadata.processing_time,
-                "ocr_applied": False,
-                "rotation_ran": processing_response.metadata.rotation_ran,
-                "error": processing_response.metadata.error,
-            },
+            "preprocessing_result": preprocessing_result,
         }
 
         # The layout job writes the same JSON column concurrently; both go through the row lock.
         def apply(metadata: DocumentProcessingMetadata) -> None:
             metadata.update_analysis_results(analysis_result)
-            metadata.update_preprocessing_results(combined_result["preprocessing_result"])
+            metadata.update_preprocessing_results(preprocessing_result)
 
         async with AsyncSessionLocal() as db:
             if await update_processing_metadata(db, document_id, apply) is None:
