@@ -125,7 +125,7 @@ def main() -> None:
     )
     timed("query: one document (lance)", lambda: store.load_items(one).num_rows)
 
-    print(f"\nfragments {store.fragment_count(ITEMS_DATASET)}")
+    print(f"\nfragments {len(store.open(ITEMS_DATASET).get_fragments())}")
     print(f"bytes: parquet {du(parquet_dir):,} over {len(list(parquet_dir.iterdir())):,} objects")
     if not args.workspace:
         lance_dir = root / "lance"
