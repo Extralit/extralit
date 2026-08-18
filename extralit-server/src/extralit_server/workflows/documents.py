@@ -5,7 +5,7 @@ from rq import Retry
 from rq.group import Group
 from rq.job import Dependency
 
-from extralit_server.contexts.ocr.parsers import default_parser_name
+from extralit_server.contexts.ocr.parsers.registry import default_parser_name
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
 from extralit_server.jobs.ocr_jobs import async_document_layout_job

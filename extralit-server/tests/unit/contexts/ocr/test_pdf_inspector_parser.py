@@ -5,13 +5,13 @@ from pathlib import Path
 import pytest
 from docling_core.types.doc import CoordOrigin, DocItemLabel
 
-from extralit_server.contexts.ocr.parsers import get_parser, list_parsers
 from extralit_server.contexts.ocr.parsers.pdf_inspector import (
     classify,
     page_sizes,
     parse,
     role_to_label,
 )
+from extralit_server.contexts.ocr.parsers.registry import get_parser, list_parsers
 
 FIXTURES = Path(__file__).parents[3] / "fixtures" / "pdf"
 PAGE_WIDTH, PAGE_HEIGHT = 612.0, 792.0

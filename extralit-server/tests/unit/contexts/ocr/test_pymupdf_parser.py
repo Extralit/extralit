@@ -7,8 +7,8 @@ from docling_core.types.doc import CoordOrigin, DocItemLabel
 
 pytest.importorskip("pymupdf4llm")
 
-from extralit_server.contexts.ocr.parsers import get_parser, list_parsers
 from extralit_server.contexts.ocr.parsers.pymupdf import parse
+from extralit_server.contexts.ocr.parsers.registry import get_parser, list_parsers
 
 FIXTURES = Path(__file__).parents[3] / "fixtures" / "pdf"
 PAGE_WIDTH, PAGE_HEIGHT = 612.0, 792.0

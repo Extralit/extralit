@@ -13,8 +13,8 @@ from extralit_server.contexts import files
 from extralit_server.contexts.document.metadata import update_processing_metadata
 from extralit_server.contexts.ocr import storage
 from extralit_server.contexts.ocr.layout_store import LayoutStore
-from extralit_server.contexts.ocr.parsers import default_parser_name, get_parser
 from extralit_server.contexts.ocr.parsers.pdf_inspector import classify
+from extralit_server.contexts.ocr.parsers.registry import default_parser_name, get_parser
 from extralit_server.contexts.workflows import writer_skip_reason
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import OCR_QUEUE, REDIS_CONNECTION
