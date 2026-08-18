@@ -29,7 +29,6 @@ def job_context(tmp_path, monkeypatch):
         return None
 
     db = MagicMock()
-    db.scalar = AsyncMock(return_value=uuid4())
 
     with (
         patch(f"{MODULE}.files.get_s3_client", AsyncMock(return_value=AsyncMock())),
@@ -40,12 +39,12 @@ def job_context(tmp_path, monkeypatch):
         patch(f"{MODULE}.storage.store_layout", store_layout),
         patch(f"{MODULE}.update_processing_metadata", update_metadata),
         patch(f"{MODULE}.get_current_job", return_value=MagicMock(meta={"workflow_id": "wf-1"})),
-        patch(f"{MODULE}.is_current_workflow_run", AsyncMock(return_value=True)) as is_current,
+        patch(f"{MODULE}.writer_skip_reason", AsyncMock(return_value=None)) as skip,
         patch(f"{MODULE}.AsyncSessionLocal") as session,
     ):
         session.return_value.__aenter__ = AsyncMock(return_value=db)
         session.return_value.__aexit__ = AsyncMock(return_value=False)
-        yield {"calls": calls, "db": db, "store": store, "is_current": is_current}
+        yield {"calls": calls, "store": store, "skip": skip}
 
 
 async def run_job(document_id=None):
@@ -73,7 +72,7 @@ class TestLayoutJobOrdering:
         assert ("update_metadata", 0) in job_context["calls"]
 
     async def test_a_document_deleted_mid_parse_is_not_resurrected(self, job_context):
-        job_context["db"].scalar = AsyncMock(return_value=None)
+        job_context["skip"].return_value = "document deleted"
 
         result = await run_job()
 
@@ -89,10 +88,10 @@ class TestLayoutJobOrdering:
 class TestSupersededRuns:
     async def test_a_superseded_run_does_not_write(self, job_context):
         # Stopping a started job is only a request, so a forced restart can overlap this run.
-        job_context["is_current"].return_value = False
+        job_context["skip"].return_value = "workflow superseded"
 
         result = await run_job()
 
-        assert job_context["is_current"].await_args.args[2] == "wf-1"
+        assert job_context["skip"].await_args.args[2] == "wf-1"
         assert result["skipped"] == "workflow superseded"
         assert job_context["calls"] == []

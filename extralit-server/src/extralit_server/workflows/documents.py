@@ -62,6 +62,14 @@ async def create_document_workflow(
         await db.commit()
         await db.refresh(workflow)
 
+    def meta(step: str) -> dict[str, str]:
+        return {
+            "document_id": str(document_id),
+            "reference": reference,
+            "workflow_step": step,
+            "workflow_id": str(workflow.id),
+        }
+
     # Step 4: Prepare jobs using Queue.prepare_data(); the @job decorator kwargs are inert here.
     analysis_job_data = DEFAULT_QUEUE.prepare_data(
         analysis_and_preprocess_job,
@@ -70,12 +78,7 @@ async def create_document_workflow(
         job_id=f"analysis_preprocess_{document_id}_{run_suffix}",
         retry=Retry(max=3, interval=[10, 30, 60]),
         result_ttl=JOB_RESULT_TTL,
-        meta={
-            "document_id": str(document_id),
-            "reference": reference,
-            "workflow_step": "analysis_and_preprocess",
-            "workflow_id": str(workflow.id),
-        },
+        meta=meta("analysis_and_preprocess"),
     )
 
     analysis_jobs = group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
@@ -93,12 +96,7 @@ async def create_document_workflow(
         depends_on=on_analysis,
         retry=Retry(max=2, interval=[30, 60]),
         result_ttl=JOB_RESULT_TTL,
-        meta={
-            "document_id": str(document_id),
-            "reference": reference,
-            "workflow_step": "text_extraction",
-            "workflow_id": str(workflow.id),
-        },
+        meta=meta("text_extraction"),
     )
 
     group.enqueue_many(queue=OCR_QUEUE, job_datas=[text_extraction_job_data])
@@ -114,12 +112,7 @@ async def create_document_workflow(
         depends_on=on_analysis,
         retry=Retry(max=2, interval=[30, 60]),
         result_ttl=JOB_RESULT_TTL,
-        meta={
-            "document_id": str(document_id),
-            "reference": reference,
-            "workflow_step": "document_layout",
-            "workflow_id": str(workflow.id),
-        },
+        meta=meta("document_layout"),
     )
     group.enqueue_many(queue=OCR_QUEUE, job_datas=[layout_job_data])
 

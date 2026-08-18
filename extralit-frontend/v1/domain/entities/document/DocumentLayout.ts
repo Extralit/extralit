@@ -44,12 +44,7 @@ export class BoundingBox {
 
   /** Fractions of the page, for overlays that position with percentages. */
   toRelativeRect(pageWidth: number, pageHeight: number): Rect {
-    return {
-      left: this.l / pageWidth,
-      top: this.t / pageHeight,
-      width: this.width / pageWidth,
-      height: this.height / pageHeight,
-    };
+    return this.toRect(pageWidth, pageHeight, 1, 1);
   }
 }
 

@@ -57,7 +57,7 @@ def job_context():
         patch(f"{MODULE}.PDFPreprocessor", return_value=preprocessor),
         patch(f"{MODULE}.triage_pdf", return_value=triage()) as triage_pdf,
         patch(f"{MODULE}.update_processing_metadata", AsyncMock()) as update_metadata,
-        patch(f"{MODULE}.is_current_workflow_run", AsyncMock(return_value=True)) as is_current,
+        patch(f"{MODULE}.writer_skip_reason", AsyncMock(return_value=None)) as skip,
         patch(f"{MODULE}.get_current_job", return_value=current_job),
         patch(f"{MODULE}.AsyncSessionLocal") as session,
     ):
@@ -76,7 +76,7 @@ def job_context():
             "triage_pdf": triage_pdf,
             "update_metadata": update_metadata,
             "written": written,
-            "is_current": is_current,
+            "skip": skip,
         }
 
 
@@ -170,7 +170,7 @@ class TestFailures:
 @pytest.mark.asyncio
 class TestSupersededRuns:
     async def test_a_superseded_run_rewrites_nothing(self, job_context):
-        job_context["is_current"].return_value = False
+        job_context["skip"].return_value = "workflow superseded"
 
         result = await run_job()
 
