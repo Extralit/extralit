@@ -39,7 +39,7 @@ def job_context(tmp_path, monkeypatch):
         patch(f"{MODULE}.LayoutStore.for_workspace", return_value=store),
         patch(f"{MODULE}.storage.store_layout", store_layout),
         patch(f"{MODULE}.update_processing_metadata", update_metadata),
-        patch(f"{MODULE}.get_current_job", return_value=None),
+        patch(f"{MODULE}.get_current_job", return_value=MagicMock(meta={"workflow_id": "wf-1"})),
         patch(f"{MODULE}.is_current_workflow_run", AsyncMock(return_value=True)) as is_current,
         patch(f"{MODULE}.AsyncSessionLocal") as session,
     ):
@@ -93,5 +93,6 @@ class TestSupersededRuns:
 
         result = await run_job()
 
+        assert job_context["is_current"].await_args.args[2] == "wf-1"
         assert result["skipped"] == "workflow superseded"
         assert job_context["calls"] == []
