@@ -22,6 +22,11 @@ from extralit_server.settings import settings
 WORKSPACE = "ws-layout"
 
 
+def fragment_count(store: LayoutStore, name: str) -> int:
+    dataset = store.open(name)
+    return 0 if dataset is None else len(dataset.get_fragments())
+
+
 def items(document_id: str, count: int = 3, label: str = "text") -> pa.Table:
     return pa.Table.from_pylist(
         [
@@ -242,19 +247,17 @@ class TestCompaction:
         for document_id in document_ids:
             local_store.replace_document(document_id, items(document_id, 2), pages(document_id))
 
-        before = local_store.fragment_count(ITEMS_DATASET)
+        before = fragment_count(local_store, ITEMS_DATASET)
         local_store.maybe_compact()
 
         assert before > 3
-        assert local_store.fragment_count(ITEMS_DATASET) < before
+        assert fragment_count(local_store, ITEMS_DATASET) < before
         for document_id in document_ids:
             assert local_store.load_items(document_id).num_rows == 2
 
     def test_a_broken_compaction_never_reaches_the_caller(self, local_store, monkeypatch):
         document_id = str(uuid4())
         local_store.replace_document(document_id, items(document_id), pages(document_id))
-        monkeypatch.setattr(
-            LayoutStore, "fragment_count", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("boom"))
-        )
+        monkeypatch.setattr(LayoutStore, "open", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("boom")))
 
         local_store.maybe_compact()
