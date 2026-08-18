@@ -57,19 +57,41 @@ export class Provenance {
   ) {}
 }
 
+export interface LayoutItemFields {
+  /** Citation anchor, e.g. `#/texts/12`. Stable for the lifetime of the stored layout. */
+  selfRef: string;
+  label: string;
+  readingOrder: number;
+  prov?: Provenance[];
+  parentRef?: string | null;
+  contentLayer?: string | null;
+  level?: number | null;
+  text?: string | null;
+  html?: string | null;
+}
+
 export class LayoutItem {
-  constructor(
-    /** Citation anchor, e.g. `#/texts/12`. Stable for the lifetime of the stored layout. */
-    public readonly selfRef: string,
-    public readonly label: string,
-    public readonly readingOrder: number,
-    public readonly prov: Provenance[] = [],
-    public readonly parentRef: string | null = null,
-    public readonly contentLayer: string | null = null,
-    public readonly level: number | null = null,
-    public readonly text: string | null = null,
-    public readonly html: string | null = null
-  ) {}
+  readonly selfRef: string;
+  readonly label: string;
+  readonly readingOrder: number;
+  readonly prov: Provenance[];
+  readonly parentRef: string | null;
+  readonly contentLayer: string | null;
+  readonly level: number | null;
+  readonly text: string | null;
+  readonly html: string | null;
+
+  constructor(fields: LayoutItemFields) {
+    this.selfRef = fields.selfRef;
+    this.label = fields.label;
+    this.readingOrder = fields.readingOrder;
+    this.prov = fields.prov ?? [];
+    this.parentRef = fields.parentRef ?? null;
+    this.contentLayer = fields.contentLayer ?? null;
+    this.level = fields.level ?? null;
+    this.text = fields.text ?? null;
+    this.html = fields.html ?? null;
+  }
 
   /** Every page this item touches; more than one when it spans a page break. */
   get pageNumbers(): number[] {
