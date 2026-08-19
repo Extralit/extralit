@@ -17,10 +17,12 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
     paths:
       - "extralit-server/**"
+      - "openapi/v1.json"
 
   pull_request:
     paths:
       - "extralit-server/**"
+      - "openapi/v1.json"
 
 permissions:
   id-token: write

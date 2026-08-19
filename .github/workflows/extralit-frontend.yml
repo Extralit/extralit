@@ -13,11 +13,13 @@ on:
       - release
     paths:
       - "extralit-frontend/**"
+      - "openapi/v1.json"
       - ".github/workflows/extralit-frontend.yml"
 
   pull_request:
     paths:
       - "extralit-frontend/**"
+      - "openapi/v1.json"
       - ".github/workflows/extralit-frontend.yml"
 
 permissions:
@@ -43,6 +45,11 @@ jobs:
       - name: Install dependencies 📦
         run: |
           npm install
+
+      - name: Check generated API types are current 🔗
+        run: |
+          npm run api:types
+          git diff --exit-code -- types/generated/api.d.ts
 
       - name: Run lint 🧹
         continue-on-error: true

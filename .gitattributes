@@ -2,3 +2,7 @@
 
 # Use bd merge for beads JSONL files
 .beads/issues.jsonl merge=beads
+
+# Machine-generated API contract artifacts (see ENG-40)
+openapi/v1.json linguist-generated
+extralit-frontend/types/generated/** linguist-generated

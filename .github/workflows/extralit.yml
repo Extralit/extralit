@@ -19,12 +19,14 @@ on:
       - "extralit/**"
       - "!extralit/docs/**"
       - "!extralit/mkdocs.yml"
+      - "openapi/v1.json"
 
   pull_request:
     paths:
       - "extralit/**"
       - "!extralit/docs/**"
       - "!extralit/mkdocs.yml"
+      - "openapi/v1.json"
 
 permissions:
   id-token: write

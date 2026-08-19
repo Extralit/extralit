@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "nuxi dev",
         "postinstall": "nuxi prepare",
+        "api:types": "openapi-typescript ../openapi/v1.json -o types/generated/api.d.ts",
         "build": "nuxi build",
         "start": "nuxi preview",
         "generate": "nuxi generate",

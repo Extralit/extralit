@@ -19,6 +19,17 @@ def test_openapi_dump_writes_v1_schema(tmp_path):
     assert "/me/datasets" in schema["paths"]
 
 
+def test_openapi_dump_pins_the_contract_version(tmp_path, monkeypatch):
+    monkeypatch.setattr("extralit_server.api.routes.api_v1.version", "9.9.9")
+    # openapi() memoises into openapi_schema, so the cache must be dropped for the bump to apply.
+    monkeypatch.setattr("extralit_server.api.routes.api_v1.openapi_schema", None)
+    output = tmp_path / "openapi.json"
+
+    assert runner.invoke(app, ["openapi-dump", "--output", str(output)]).exit_code == 0
+
+    assert json.loads(output.read_text())["info"]["version"] == "v1"
+
+
 def test_openapi_dump_is_deterministic(tmp_path):
     first = tmp_path / "a.json"
     second = tmp_path / "b.json"

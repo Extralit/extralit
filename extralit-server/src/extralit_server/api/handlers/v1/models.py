@@ -18,8 +18,46 @@ router = APIRouter(tags=["models"])
 client = httpx.AsyncClient(timeout=10.0)
 
 
+PROXY_PATH = "/models/{rest_of_path:path}"
+
+# The proxied body belongs to an external service, so it is declared as an opaque SSE stream.
+PROXY_RESPONSES = {
+    200: {
+        "description": "Opaque `text/event-stream` relayed verbatim from the upstream model service.",
+        "content": {"text/event-stream": {"schema": {"type": "string"}}},
+    }
+}
+
+
+# One route per method: `methods=[...]` on a single api_route makes FastAPI emit four
+# operations sharing one operationId, which breaks typed-client generation.
 @router.api_route(
-    "/models/{rest_of_path:path}", methods=["GET", "POST", "PUT", "DELETE"], response_class=StreamingResponse
+    PROXY_PATH,
+    methods=["DELETE"],
+    operation_id="proxy_models_delete",
+    response_class=StreamingResponse,
+    responses=PROXY_RESPONSES,
+)
+@router.api_route(
+    PROXY_PATH,
+    methods=["PUT"],
+    operation_id="proxy_models_put",
+    response_class=StreamingResponse,
+    responses=PROXY_RESPONSES,
+)
+@router.api_route(
+    PROXY_PATH,
+    methods=["POST"],
+    operation_id="proxy_models_post",
+    response_class=StreamingResponse,
+    responses=PROXY_RESPONSES,
+)
+@router.api_route(
+    PROXY_PATH,
+    methods=["GET"],
+    operation_id="proxy_models_get",
+    response_class=StreamingResponse,
+    responses=PROXY_RESPONSES,
 )
 async def proxy(request: Request, rest_of_path: str, current_user: User = Depends(auth.get_current_user)):
     url = urljoin(settings.extralit_url, rest_of_path)
