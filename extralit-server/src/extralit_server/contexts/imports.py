@@ -23,7 +23,6 @@ from extralit_server.api.schemas.v1.imports import (
 )
 from extralit_server.contexts import files as file_context
 from extralit_server.database import AsyncSessionLocal
-from extralit_server.helpers import shared_resources
 from extralit_server.models.database import Document, ImportHistory, Workspace
 from extralit_server.workflows.documents import create_document_workflow
 
@@ -374,9 +373,9 @@ async def process_bulk_upload(
             )
         reference_to_doc[doc.reference] = doc
 
-    storage = shared_resources.get("storage")
-    if storage is None:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="S3 client not available")
+    # Not `shared_resources["storage"]`: nothing populates it eagerly, and an RQ worker never
+    # runs the app lifespan at all, so the cache is empty until some other caller fills it.
+    storage = await file_context.get_storage()
 
     # Process each reference: upload files to S3, create documents, start workflows
     job_ids: dict[str, str] = {}

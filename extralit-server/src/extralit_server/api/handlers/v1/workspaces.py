@@ -183,6 +183,7 @@ async def workspace_doctor(
 
     Checks:
     - S3 bucket exists (can auto-fix)
+    - Bucket is not object-versioned (can auto-fix)
     - RQ worker pool connectivity (informational)
     """
     await authorize(current_user, WorkspacePolicy.get(workspace_id))
@@ -232,7 +233,42 @@ async def workspace_doctor(
                 )
             )
 
-    # Check 2: RQ worker pool connectivity
+    # Check 2: legacy object versioning. Buckets created before versioning was removed still
+    # mint a new version on every write, and the lifecycle rule that expired them is gone.
+    if bucket_exists:
+        if autofix:
+            try:
+                suspended = await buckets.normalize_versioning(storage, workspace.name)
+                checks.append(
+                    WorkspaceDoctorCheckResult(
+                        check_name="bucket_versioning",
+                        status="ok",
+                        message=f"Object versioning on '{workspace.name}' has been suspended"
+                        if suspended
+                        else f"Object versioning is not enabled on '{workspace.name}'",
+                        fixed=suspended,
+                    )
+                )
+            except Exception as e:
+                checks.append(
+                    WorkspaceDoctorCheckResult(
+                        check_name="bucket_versioning",
+                        status="warning",
+                        message=f"Could not check object versioning on '{workspace.name}': {e!s}",
+                        fixed=False,
+                    )
+                )
+        else:
+            checks.append(
+                WorkspaceDoctorCheckResult(
+                    check_name="bucket_versioning",
+                    status="ok",
+                    message="Object versioning not checked (autofix disabled)",
+                    fixed=False,
+                )
+            )
+
+    # Check 3: RQ worker pool connectivity
     try:
         from extralit_server.jobs.queues import DEFAULT_QUEUE
 
@@ -258,7 +294,7 @@ async def workspace_doctor(
             )
         )
 
-    # Check 3: Elasticsearch indexes for datasets (informational only)
+    # Check 4: Elasticsearch indexes for datasets (informational only)
     try:
         # Get datasets for this workspace
         from sqlalchemy import select
@@ -312,7 +348,7 @@ async def workspace_doctor(
             )
         )
 
-    # Check 4: Database connections health with autofix
+    # Check 5: Database connections health with autofix
     try:
         import asyncio
 
