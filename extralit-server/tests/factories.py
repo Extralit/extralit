@@ -612,10 +612,7 @@ class MinioFileFactory(factory.Factory):
     etag = None
     size = 0
     content_type = "application/octet-stream"
-    version_id = None
-    is_latest = True
     metadata = None
-    version_tag = factory.LazyAttribute(lambda o: f"v{factory.Faker('pyint', min_value=1, max_value=5).generate()}")
 
     @classmethod
     def attributes(cls, **kwargs):
@@ -626,10 +623,7 @@ class MinioFileFactory(factory.Factory):
             "etag": kwargs.get("etag", None),
             "size": kwargs.get("size", 0),
             "content_type": kwargs.get("content_type", "application/octet-stream"),
-            "version_id": kwargs.get("version_id", None),
-            "is_latest": kwargs.get("is_latest", True),
             "metadata": kwargs.get("metadata", None),
-            "version_tag": kwargs.get("version_tag", "v1"),
         }
 
     @classmethod
@@ -655,7 +649,7 @@ class MinioFileFactory(factory.Factory):
             return file
 
         # Mock get_object to return file data
-        def mock_get_object(bucket_name, object_name, version_id=None):
+        def mock_get_object(bucket_name, object_name):
             response = MagicMock()
             response.data = b"test data"
             return response

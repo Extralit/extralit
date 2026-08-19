@@ -183,7 +183,6 @@ async def workspace_doctor(
 
     Checks:
     - S3 bucket exists (can auto-fix)
-    - Bucket has proper versioning policy (informational)
     - RQ worker pool connectivity (informational)
     """
     await authorize(current_user, WorkspacePolicy.get(workspace_id))
@@ -233,39 +232,7 @@ async def workspace_doctor(
                 )
             )
 
-    # Check 2: Bucket versioning policy
-    if bucket_exists or any(check.check_name == "s3_bucket" and check.fixed for check in checks):
-        versioning = await files.get_bucket_versioning(s3_client, workspace.name)
-        if versioning:
-            if versioning["status"] == "Enabled":
-                checks.append(
-                    WorkspaceDoctorCheckResult(
-                        check_name="bucket_versioning",
-                        status="ok",
-                        message=f"Bucket versioning is enabled (Status: {versioning['status']})",
-                        fixed=False,
-                    )
-                )
-            else:
-                checks.append(
-                    WorkspaceDoctorCheckResult(
-                        check_name="bucket_versioning",
-                        status="warning",
-                        message=f"Bucket versioning is not enabled (Status: {versioning['status']})",
-                        fixed=False,
-                    )
-                )
-        else:
-            checks.append(
-                WorkspaceDoctorCheckResult(
-                    check_name="bucket_versioning",
-                    status="warning",
-                    message="Could not retrieve bucket versioning configuration",
-                    fixed=False,
-                )
-            )
-
-    # Check 3: RQ worker pool connectivity
+    # Check 2: RQ worker pool connectivity
     try:
         from extralit_server.jobs.queues import DEFAULT_QUEUE
 
@@ -291,7 +258,7 @@ async def workspace_doctor(
             )
         )
 
-    # Check 4: Elasticsearch indexes for datasets (informational only)
+    # Check 3: Elasticsearch indexes for datasets (informational only)
     try:
         # Get datasets for this workspace
         from sqlalchemy import select
@@ -345,7 +312,7 @@ async def workspace_doctor(
             )
         )
 
-    # Check 5: Database connections health with autofix
+    # Check 4: Database connections health with autofix
     try:
         import asyncio
 

@@ -21,7 +21,6 @@ async def get_file(
     *,
     bucket: str,
     object: str,
-    version_id: str | None = None,
     range_header: str | None = Header(None, alias="range"),
     if_none_match: str | None = Header(None, alias="if-none-match"),
     s3_client=Depends(files.get_s3_client),
@@ -158,8 +157,7 @@ async def list_objects_endpoint(
     *,
     bucket: str,
     prefix: str,
-    include_version=True,
-    recursive=True,
+    recursive: bool = True,
     start_after: str | None = None,
     s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_optional_current_user),
@@ -171,7 +169,6 @@ async def list_objects_endpoint(
             s3_client,
             bucket,
             prefix=prefix,
-            include_version=include_version,
             recursive=recursive,
             start_after=start_after,
         )
@@ -188,14 +185,13 @@ async def delete_files(
     *,
     bucket: str,
     object: str,
-    version_id: str | None = None,
     s3_client=Depends(files.get_s3_client),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, FilePolicy.delete(bucket))
 
     try:
-        await files.delete_object(s3_client, bucket, object, version_id=version_id)
+        await files.delete_object(s3_client, bucket, object)
         return {"message": "File deleted"}
     except HTTPException:
         raise

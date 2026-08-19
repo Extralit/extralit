@@ -65,19 +65,13 @@
                 visibleCheckdropdown = !visibleCheckdropdown;
               "
             >
-              Check data <i v-if="tableJSON?.schema?.is_latest === false">!</i>
+              Check data
             </BaseButton>
           </span></template
         >
         <template #dropdown-content
           ><span>
             <BaseButton @click.prevent="$emit('updateValidValues', true)"> Ignore errors </BaseButton>
-            <BaseButton
-              v-if="tableJSON?.schema?.is_latest === false"
-              @click.prevent="fetchValidation({ latest: true })"
-            >
-              Fetch latest schema
-            </BaseButton>
           </span></template
         >
       </BaseDropdown>
@@ -175,7 +169,7 @@ export default {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
           if (this.editable)
-            console.warn("Changes validation", this.tableJSON.schema.schemaName, this.tableJSON.schema.version_tag);
+            console.warn("Changes validation", this.tableJSON.schema.schemaName);
           this.tabulator?.setColumns(this.columnsConfig);
           this.validateTable();
         }

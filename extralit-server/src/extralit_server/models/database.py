@@ -542,8 +542,10 @@ class SchemaVersion(DatabaseModel):
     """An immutable, object-store-backed Pandera schema body for a dataset.
 
     The body itself lives in the workspace bucket at `object_key`; this row is the
-    pointer plus integrity metadata. The column manifest derived from the body is
-    materialized as `Field` rows on the dataset, so there is no cached copy here.
+    pointer plus integrity metadata. Immutability comes from `version` (allocated under
+    a row lock, so each version gets its own key) plus `checksum` -- not from object-store
+    versioning. The column manifest derived from the body is materialized as `Field` rows
+    on the dataset, so there is no cached copy here.
     """
 
     __tablename__ = "schema_versions"
@@ -551,7 +553,6 @@ class SchemaVersion(DatabaseModel):
     dataset_id: Mapped[UUID] = mapped_column(ForeignKey("datasets.id", ondelete="CASCADE"), index=True)
     version: Mapped[int] = mapped_column(index=True)
     object_key: Mapped[str] = mapped_column(Text)
-    object_version_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     etag: Mapped[str] = mapped_column(String)
     checksum: Mapped[str] = mapped_column(String)
     parent_version_id: Mapped[UUID | None] = mapped_column(

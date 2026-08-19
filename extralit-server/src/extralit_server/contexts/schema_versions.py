@@ -165,7 +165,6 @@ async def publish_version(
         dataset_id=dataset.id,
         version=next_version,
         object_key=key,
-        object_version_id=getattr(metadata, "version_id", None),
         etag=metadata.etag,
         checksum=files_ctx.compute_hash(body.encode("utf-8")),
         parent_version_id=parent_id,

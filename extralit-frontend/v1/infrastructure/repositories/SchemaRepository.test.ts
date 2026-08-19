@@ -58,7 +58,6 @@ describe("SchemaRepository", () => {
         dataset_id: "s-1",
         version: 1,
         object_key: "k",
-        object_version_id: null,
         etag: "e",
         checksum: "c",
         parent_version_id: null,

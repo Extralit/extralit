@@ -14,9 +14,6 @@ if TYPE_CHECKING:
     from types_aiobotocore_s3.client import S3Client
 
 CHUNK_LENGTH_MB = 10 * 1024 * 1024
-# Layout datasets rewrite whole files on every commit; keeping their noncurrent versions grows
-# without bound and nothing reads them (the canonical JSON is the history).
-LAYOUT_NONCURRENT_EXPIRATION_DAYS = 1
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -169,7 +166,6 @@ async def list_objects(
     s3_client: "S3Client",
     bucket: str,
     prefix: str | None = None,
-    include_version=True,
     recursive=True,
     start_after: str | None = None,
 ) -> ListObjectsResponse:
@@ -180,72 +176,23 @@ async def list_objects(
             kwargs["Prefix"] = prefix
         if not recursive:
             kwargs["Delimiter"] = "/"
+        if start_after:
+            kwargs["StartAfter"] = start_after
 
-        objects = []
+        response = await s3_client.list_objects_v2(**kwargs)
 
-        if include_version:
-            # Use list_object_versions to get all versions of objects
-            version_kwargs = {"Bucket": bucket}
-            if prefix:
-                version_kwargs["Prefix"] = prefix
-            if start_after:
-                version_kwargs["KeyMarker"] = start_after
-            if not recursive:
-                version_kwargs["Delimiter"] = "/"
-
-            response = await s3_client.list_object_versions(**version_kwargs)
-
-            # Process versions
-            for version in response.get("Versions", []):
-                objects.append(
-                    ObjectMetadata(
-                        bucket_name=bucket,
-                        object_name=version.get("Key") or "",
-                        etag=version.get("ETag", "").strip('"'),
-                        size=version.get("Size"),
-                        last_modified=version.get("LastModified"),
-                        content_type="application/octet-stream",  # Default, would need head_object for actual
-                        version_id=version.get("VersionId"),
-                        is_latest=version.get("IsLatest", False),
-                        metadata={},
-                    )
-                )
-
-            # Process delete markers if needed
-            for delete_marker in response.get("DeleteMarkers", []):
-                objects.append(
-                    ObjectMetadata(
-                        bucket_name=bucket,
-                        object_name=delete_marker.get("Key") or "",
-                        etag="",  # Delete markers don't have ETags
-                        size=0,
-                        last_modified=delete_marker.get("LastModified"),
-                        content_type="application/octet-stream",
-                        version_id=delete_marker.get("VersionId"),
-                        is_latest=delete_marker.get("IsLatest", False),
-                        metadata={},
-                    )
-                )
-        else:
-            # Use list_objects_v2 for current versions only
-            if start_after:
-                kwargs["StartAfter"] = start_after
-
-            response = await s3_client.list_objects_v2(**kwargs)
-
-            for obj in response.get("Contents", []):
-                objects.append(
-                    ObjectMetadata(
-                        bucket_name=bucket,
-                        object_name=obj.get("Key") or "",
-                        etag=obj.get("ETag", "").strip('"'),
-                        size=obj.get("Size"),
-                        last_modified=obj.get("LastModified"),
-                        content_type="application/octet-stream",  # Default, would need head_object for actual
-                        is_latest=True,  # All objects from list_objects_v2 are latest versions
-                        metadata={},
-                    )
-                )
+        objects = [
+            ObjectMetadata(
+                bucket_name=bucket,
+                object_name=obj.get("Key") or "",
+                etag=obj.get("ETag", "").strip('"'),
+                size=obj.get("Size"),
+                last_modified=obj.get("LastModified"),
+                content_type="application/octet-stream",  # Default, would need head_object for actual
+                metadata={},
+            )
+            for obj in response.get("Contents", [])
+        ]
 
         return ListObjectsResponse(objects=objects)
     except ClientError as e:
@@ -257,22 +204,11 @@ async def get_object(
     s3_client: "S3Client",
     bucket: str,
     object: str,
-    version_id: str | None = None,
-    include_versions=False,
 ) -> FileObjectResponse:
     """Get object from S3 and return as FileObjectResponse."""
     try:
-        # Get object metadata first
-        head_kwargs = {"Bucket": bucket, "Key": object}
-        if version_id:
-            head_kwargs["VersionId"] = version_id
-        head_response = await s3_client.head_object(**head_kwargs)
-
-        # Get the actual object
-        get_kwargs = {"Bucket": bucket, "Key": object}
-        if version_id:
-            get_kwargs["VersionId"] = version_id
-        get_response = await s3_client.get_object(**get_kwargs)
+        head_response = await s3_client.head_object(Bucket=bucket, Key=object)
+        get_response = await s3_client.get_object(Bucket=bucket, Key=object)
 
         metadata = ObjectMetadata(
             bucket_name=bucket,
@@ -281,19 +217,10 @@ async def get_object(
             size=head_response["ContentLength"],
             last_modified=head_response["LastModified"],
             content_type=head_response.get("ContentType", "application/octet-stream"),
-            version_id=head_response.get("VersionId") or version_id,
             metadata=head_response.get("Metadata", {}),
         )
 
-        versions = None
-        if include_versions:
-            versions = await list_objects(s3_client, bucket, prefix=object, include_version=include_versions)
-
-        return FileObjectResponse(
-            response=get_response["Body"],
-            metadata=metadata,
-            versions=versions,
-        )
+        return FileObjectResponse(response=get_response["Body"], metadata=metadata)
 
     except ClientError as e:
         if e.response["Error"]["Code"] == "NoSuchKey":
@@ -333,9 +260,6 @@ async def put_object(
             size=head_response["ContentLength"],
             last_modified=head_response["LastModified"],
             content_type=head_response.get("ContentType", content_type),
-            # Propagate the S3 object version (mirrors get_object) so callers can pin the
-            # immutable version; otherwise schema_versions.object_version_id is always NULL.
-            version_id=head_response.get("VersionId"),
             metadata=head_response.get("Metadata", {}),
         )
 
@@ -347,13 +271,10 @@ async def put_object(
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
-async def delete_object(s3_client, bucket: str, object: str, version_id: str | None = None):
+async def delete_object(s3_client, bucket: str, object: str):
     """Delete object from S3."""
     try:
-        kwargs = {"Bucket": bucket, "Key": object}
-        if version_id:
-            kwargs["VersionId"] = version_id
-        await s3_client.delete_object(**kwargs)
+        await s3_client.delete_object(Bucket=bucket, Key=object)
     except ClientError as e:
         _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
         raise HTTPException(status_code=500, detail=f"Error deleting file: {e!s}")
@@ -400,58 +321,15 @@ async def bucket_exists(s3_client: "S3Client", bucket_name: str) -> bool:
         return False
 
 
-async def get_bucket_versioning(s3_client: "S3Client", bucket_name: str) -> dict[str, str] | None:
-    """Get bucket versioning configuration."""
-    try:
-        response = await s3_client.get_bucket_versioning(Bucket=bucket_name)
-        return {
-            "status": response.get("Status", "Disabled"),
-            "mfa_delete": response.get("MFADelete", "Disabled"),
-        }
-    except ClientError as e:
-        _LOGGER.error(f"Error getting bucket versioning for {bucket_name}: {e}")
-        return None
-    except Exception as e:
-        _LOGGER.error(f"Unexpected error getting bucket versioning for {bucket_name}: {e}")
-        return None
-
-
 async def create_bucket(s3_client: "S3Client", workspace_name: str):
-    """Create the workspace's bucket, versioned, with layout noncurrent versions expiring."""
-    bucket, prefix = workspace_root(workspace_name)
+    """Create the workspace's bucket if it does not already exist."""
+    bucket, _prefix = workspace_root(workspace_name)
     try:
         try:
             await s3_client.create_bucket(Bucket=bucket)
         except ClientError as e:
-            # An existing bucket must still pick up versioning and the lifecycle rule.
             if e.response["Error"]["Code"] not in ["BucketAlreadyOwnedByYou", "BucketAlreadyExists"]:
                 raise
-
-        await s3_client.put_bucket_versioning(
-            Bucket=bucket,
-            VersioningConfiguration={
-                "Status": "Enabled",
-                "MFADelete": "Disabled",
-            },
-        )
-
-        try:
-            await s3_client.put_bucket_lifecycle_configuration(
-                Bucket=bucket,
-                LifecycleConfiguration={
-                    "Rules": [
-                        {
-                            "ID": "expire-noncurrent-layout-versions",
-                            "Status": "Enabled",
-                            "Filter": {"Prefix": f"{prefix}layout/"},
-                            "NoncurrentVersionExpiration": {"NoncurrentDays": LAYOUT_NONCURRENT_EXPIRATION_DAYS},
-                        }
-                    ]
-                },
-            )
-        except Exception as e:
-            # A backend without lifecycle support costs storage, never correctness.
-            _LOGGER.warning(f"Could not set the layout lifecycle rule on bucket {bucket}: {e}")
 
     except ClientError as e:
         _LOGGER.error(f"Error creating bucket {bucket}: {e}")
@@ -488,9 +366,7 @@ async def put_document_file(
 
     # Check if file already exists with same hash
     try:
-        existing_files = await list_objects(
-            s3_client, workspace_name, prefix=object_path, include_version=False, recursive=False
-        )
+        existing_files = await list_objects(s3_client, workspace_name, prefix=object_path, recursive=False)
 
         should_upload = True
         if existing_files.objects:

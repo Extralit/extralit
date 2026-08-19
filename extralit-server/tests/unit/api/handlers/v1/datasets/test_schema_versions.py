@@ -80,7 +80,6 @@ def _mock_put_object():
             bucket_name="workspace",
             object_name="schemas/dataset/v1.json",
             etag="etag",
-            version_id="v1",
         )
         yield mock_put_object
 

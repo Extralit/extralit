@@ -9,34 +9,16 @@ const FILES_API_ERRORS = {
 export class GetExtractionSchemaUseCase {
   constructor(private readonly axios: AxiosInstance) {}
 
-  async fetch(
-    workspaceName: string,
-    schemaName: string,
-    versionId?: string
-  ): Promise<[ValidationSchema, FileMetadata]> {
+  async fetch(workspaceName: string, schemaName: string): Promise<[ValidationSchema, FileMetadata]> {
     try {
       const url = `/v1/file/${workspaceName}/schemas/${schemaName}`;
-      const response = await this.axios.get<ValidationSchema>(url, {
-        params: {
-          version_id: versionId,
-        },
-      });
+      const response = await this.axios.get<ValidationSchema>(url);
       const headers = response.headers as AxiosHeaders;
       const schema = response.data;
-      let isLatest = null;
-      const headerValue = headers.get("is-latest");
-      if (headerValue === "true") {
-        isLatest = true;
-      } else if (headerValue === "false") {
-        isLatest = false;
-      }
 
       const SchemaMetadata: FileMetadata = {
         schemaName,
         etag: headers.get("etag") as string,
-        version_id: headers.get("version-id") as string,
-        version_tag: headers.get("version-tag") as string,
-        is_latest: isLatest,
         last_modified: new Date((headers.get("last-modified") as string) || ""),
       };
 

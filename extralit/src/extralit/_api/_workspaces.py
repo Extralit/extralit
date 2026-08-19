@@ -132,16 +132,13 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
     ####################
 
     @api_error_handler
-    def list_files(
-        self, workspace_name: str, path: str, recursive: bool = True, include_version: bool = True
-    ) -> "ListObjectsResponse":
+    def list_files(self, workspace_name: str, path: str, recursive: bool = True) -> "ListObjectsResponse":
         """List files in a workspace.
 
         Args:
             workspace_name: The name of the workspace.
             path: The path to list files from.
             recursive: Whether to list files recursively.
-            include_version: Whether to include version information.
 
         Returns:
             A list of files.
@@ -156,10 +153,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
         logger.info(f"Listing files in workspace '{workspace_name}' with path '{path}'")
         url = f"/api/v1/files/{workspace_name}/{path}"
-        params = {
-            "recursive": recursive,
-            "include_version": include_version,
-        }
+        params = {"recursive": recursive}
 
         try:
             response = self.http_client.get(url=url, params=params)
@@ -172,17 +166,6 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             response.raise_for_status()
 
             result = ListObjectsResponse(**response.json())
-
-            # Filter out files that have deletion markers
-            # First, find all files that have deletion markers (etag="" and size=0)
-            deleted_files = {obj.object_name for obj in result.objects if obj.etag == "" and obj.size == 0}
-
-            # Then filter out ALL entries for those files (both original and deletion marker)
-            valid_objects = [obj for obj in result.objects if obj.object_name not in deleted_files]
-
-            if len(valid_objects) < len(result.objects):
-                logger.info(f"Filtered out {len(result.objects) - len(valid_objects)} deleted files")
-                result.objects = valid_objects
 
             logger.info(f"Found {len(result.objects)} files in workspace '{workspace_name}'")
             return result
@@ -197,13 +180,12 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             raise
 
     @api_error_handler
-    def get_file(self, workspace_name: str, path: str, version_id: Optional[str] = None) -> "FileObjectResponse":
+    def get_file(self, workspace_name: str, path: str) -> "FileObjectResponse":
         """Get a file from a workspace.
 
         Args:
             workspace_name: The name of the workspace.
             path: The path of the file.
-            version_id: The version ID of the file.
 
         Returns:
             The file content and metadata.
@@ -223,10 +205,9 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
         logger.info(f"Getting file '{path}' from workspace '{workspace_name}'")
         url = f"/api/v1/file/{workspace_name}/{path}"
-        params = {"version_id": version_id} if version_id else {}
 
         try:
-            response = self.http_client.get(url=url, params=params)
+            response = self.http_client.get(url=url)
 
             # Handle 404 directly
             if response.status_code == 404:
@@ -235,25 +216,15 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
             response.raise_for_status()
 
-            # Create a FileObjectResponse with the content
-            file_response = FileObjectResponse(content=response.content)
-
-            # Check if the file is a deleted file (empty content with headers)
-            if len(response.content) == 0 and "X-Amz-Meta-Version-Tag" in response.headers:
-                logger.warning(f"File '{path}' exists but has empty content (likely deleted)")
-                raise FileNotFoundError(f"File '{path}' exists but has empty content (likely deleted)")
-
-            # Get metadata if available
-            if "X-Amz-Meta-Version-Tag" in response.headers:
-                metadata = ObjectMetadata(
+            file_response = FileObjectResponse(
+                content=response.content,
+                metadata=ObjectMetadata(
                     bucket_name=workspace_name,
                     object_name=path,
                     content_type=response.headers.get("Content-Type"),
                     etag=response.headers.get("ETag"),
-                    version_id=version_id or response.headers.get("X-Amz-Version-Id"),
-                    version_tag=response.headers.get("X-Amz-Meta-Version-Tag"),
-                )
-                file_response.metadata = metadata
+                ),
+            )
 
             logger.info(f"Successfully retrieved file '{path}' from workspace '{workspace_name}'")
             return file_response
@@ -328,13 +299,12 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             raise
 
     @api_error_handler
-    def delete_file(self, workspace_name: str, path: str, version_id: Optional[str] = None) -> None:
+    def delete_file(self, workspace_name: str, path: str) -> None:
         """Delete a file from a workspace.
 
         Args:
             workspace_name: The name of the workspace.
             path: The path of the file to delete.
-            version_id: The version ID of the file.
 
         Raises:
             ExtralitAPIError: If the API request fails.
@@ -351,10 +321,9 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
 
         logger.info(f"Deleting file '{path}' from workspace '{workspace_name}'")
         url = f"/api/v1/file/{workspace_name}/{path}"
-        params = {"version_id": version_id} if version_id else {}
 
         try:
-            response = self.http_client.delete(url=url, params=params)
+            response = self.http_client.delete(url=url)
             response.raise_for_status()
             logger.info(f"Successfully deleted file '{path}' from workspace '{workspace_name}'")
         except httpx.HTTPStatusError as e:
@@ -426,12 +395,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             )
 
         try:
-            schema_files = self.list_files(workspace_name, path=prefix, recursive=True, include_version=True)
-
-            # Filter out deleted schema versions (those with etag=None and size=None)
-            schema_files.objects = [
-                obj for obj in schema_files.objects if obj.etag is not None and obj.size is not None
-            ]
+            schema_files = self.list_files(workspace_name, path=prefix, recursive=True)
 
             logger.info(f"Found {len(schema_files.objects)} valid schema files in workspace '{workspace_name}'")
 

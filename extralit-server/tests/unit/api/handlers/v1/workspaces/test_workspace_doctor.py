@@ -18,11 +18,9 @@ class TestWorkspaceDoctor:
         # Mock S3 client and Redis connection
         with (
             patch("extralit_server.contexts.files.bucket_exists") as mock_bucket_exists,
-            patch("extralit_server.contexts.files.get_bucket_versioning") as mock_get_versioning,
             patch("extralit_server.jobs.queues.DEFAULT_QUEUE") as mock_queue,
         ):
             mock_bucket_exists.return_value = True
-            mock_get_versioning.return_value = {"status": "Enabled", "mfa_delete": "Disabled"}
             mock_queue.connection.ping.return_value = True
 
             response = await async_client.post(
@@ -37,7 +35,7 @@ class TestWorkspaceDoctor:
             assert data["workspace_id"] == str(workspace.id)
             assert data["workspace_name"] == workspace.name
             assert data["overall_status"] == "healthy"
-            assert len(data["checks"]) >= 3  # At least bucket, versioning, and RQ checks
+            assert len(data["checks"]) >= 2  # At least the bucket and RQ checks
 
             # Check that bucket check passed
             bucket_check = next((c for c in data["checks"] if c["check_name"] == "s3_bucket"), None)
@@ -53,12 +51,10 @@ class TestWorkspaceDoctor:
         with (
             patch("extralit_server.contexts.files.bucket_exists") as mock_bucket_exists,
             patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket,
-            patch("extralit_server.contexts.files.get_bucket_versioning") as mock_get_versioning,
             patch("extralit_server.jobs.queues.DEFAULT_QUEUE") as mock_queue,
         ):
             mock_bucket_exists.return_value = False
             mock_create_bucket.return_value = None
-            mock_get_versioning.return_value = {"status": "Enabled", "mfa_delete": "Disabled"}
             mock_queue.connection.ping.return_value = True
 
             response = await async_client.post(
@@ -90,11 +86,9 @@ class TestWorkspaceDoctor:
         with (
             patch("extralit_server.contexts.files.bucket_exists") as mock_bucket_exists,
             patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket,
-            patch("extralit_server.contexts.files.get_bucket_versioning") as mock_get_versioning,
             patch("extralit_server.jobs.queues.DEFAULT_QUEUE") as mock_queue,
         ):
             mock_bucket_exists.return_value = False
-            mock_get_versioning.return_value = None
             mock_queue.connection.ping.return_value = True
 
             response = await async_client.post(

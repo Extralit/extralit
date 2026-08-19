@@ -45,7 +45,6 @@ def _s3_client() -> AsyncMock:
         "ContentLength": 0,
         "LastModified": None,
         "ContentType": "application/json",
-        "VersionId": "v1",
         "Metadata": {},
     }
     return client

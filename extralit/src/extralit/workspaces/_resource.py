@@ -101,30 +101,28 @@ class Workspace(Resource):
     # File methods #
     ####################
 
-    def list_files(self, path: str, recursive: bool = True, include_version: bool = True) -> "ListObjectsResponse":
+    def list_files(self, path: str, recursive: bool = True) -> "ListObjectsResponse":
         """List files in the workspace.
 
         Args:
             path: The path to list files from.
             recursive: Whether to list files recursively.
-            include_version: Whether to include version information.
 
         Returns:
             A list of files.
         """
-        return self._api.list_files(self.name, path, recursive, include_version)
+        return self._api.list_files(self.name, path, recursive)
 
-    def get_file(self, path: str, version_id: Optional[str] = None) -> "FileObjectResponse":
+    def get_file(self, path: str) -> "FileObjectResponse":
         """Get a file from the workspace.
 
         Args:
             path: The path of the file.
-            version_id: The version ID of the file.
 
         Returns:
             The file content and metadata.
         """
-        return self._api.get_file(self.name, path, version_id)
+        return self._api.get_file(self.name, path)
 
     def put_file(self, path: str, file_path: Union[str, Path]) -> "ObjectMetadata":
         """Upload a file to the workspace.
@@ -140,14 +138,13 @@ class Workspace(Resource):
             file_path = Path(file_path)
         return self._api.put_file(self.name, path, file_path)
 
-    def delete_file(self, path: str, version_id: Optional[str] = None) -> None:
+    def delete_file(self, path: str) -> None:
         """Delete a file from the workspace.
 
         Args:
             path: The path of the file to delete.
-            version_id: The version ID of the file.
         """
-        self._api.delete_file(self.name, path, version_id)
+        self._api.delete_file(self.name, path)
 
     ####################
     # Document methods #

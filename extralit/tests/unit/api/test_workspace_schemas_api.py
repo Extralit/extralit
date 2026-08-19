@@ -61,8 +61,6 @@ def test_get_schemas(workspace_api):
                 object_name="schemas/test_schema",
                 content_type="application/json",
                 etag="test-etag",
-                version_id="test-version-id",
-                version_tag="test-version-tag",
             )
         ]
     )
@@ -108,8 +106,6 @@ def test_update_schemas(workspace_api, mock_schema_structure):
                 object_name="schemas/test_schema",
                 content_type="application/json",
                 etag="test-etag",
-                version_id="test-version-id",
-                version_tag="test-version-tag",
             )
         ]
     )

@@ -1,7 +1,6 @@
 import io
-import os
 from typing import TYPE_CHECKING
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -26,7 +25,7 @@ async def test_put_file(async_client: "AsyncClient", owner_auth_header: dict):
 
     # Mock the Minio client and the response
     with patch("extralit_server.contexts.files.put_object") as mock_put_object:
-        mock_response = ObjectMetadata(bucket_name=bucket_name, object_name=object_name, is_latest=True)
+        mock_response = ObjectMetadata(bucket_name=bucket_name, object_name=object_name)
         mock_put_object.return_value = mock_response
 
         response = await async_client.post(
@@ -37,7 +36,6 @@ async def test_put_file(async_client: "AsyncClient", owner_auth_header: dict):
 
         assert response.status_code == 200
         assert response.json()["object_name"] == mock_response.object_name
-        assert response.json()["is_latest"] == mock_response.is_latest
 
         # Verify put_object was called correctly
         mock_put_object.assert_called_once()
@@ -78,66 +76,6 @@ async def test_list_objects(async_client: "AsyncClient", owner_auth_header: dict
 
         assert response.status_code == 200
         assert response.json() == mock_response.dict()
-
-
-@pytest.mark.asyncio
-async def test_list_objects_with_versions(async_client: "AsyncClient", owner_auth_header: dict):
-    bucket_name = "workspace-files"
-    prefix = "schemas"
-    object_name = os.path.join(prefix, "test")
-
-    # Mock get_s3_client and bucket_exists
-    with (
-        patch("extralit_server.contexts.files.get_s3_client") as mock_get_s3_client,
-        patch("extralit_server.contexts.files.delete_bucket"),
-        patch("extralit_server.contexts.files.list_objects") as mock_list_objects,
-    ):
-        # Setup mocks
-        mock_client = MagicMock()
-        mock_client.bucket_exists.return_value = True
-        mock_get_s3_client.return_value = mock_client
-
-        # Create workspace and user
-        workspace_a = await WorkspaceFactory.create(name=bucket_name)
-        user_a = await UserFactory.create(username="username-a")
-        await WorkspaceUserFactory.create(workspace_id=workspace_a.id, user_id=user_a.id)
-
-        # Create mock objects for response
-        file1 = MinioFileFactory.build(
-            bucket_name=bucket_name, object_name=object_name, version_tag="v1", is_latest=False
-        )
-        file2 = MinioFileFactory.build(
-            bucket_name=bucket_name, object_name=object_name, version_tag="v2", is_latest=True
-        )
-
-        # Set up list_objects mock
-        mock_list_objects.return_value = ListObjectsResponse(
-            objects=[
-                ObjectMetadata(**file1.dict()),
-                ObjectMetadata(**file2.dict()),
-            ]
-        )
-
-        response = await async_client.get(
-            f"/api/v1/files/{bucket_name}/{prefix}", headers={API_KEY_HEADER_NAME: user_a.api_key}
-        )
-
-        assert response.status_code == 200
-
-        # Check versions
-        response_objects = response.json()["objects"]
-        assert len(response_objects) == 2
-
-        # Check version tags
-        response_version_tags = {item["version_tag"] for item in response_objects}
-        assert response_version_tags == {"v1", "v2"}
-
-        # Check latest flag
-        for item in response_objects:
-            if item["version_tag"] == "v2":
-                assert item["is_latest"] is True
-            else:
-                assert item["is_latest"] is False
 
 
 @pytest.mark.asyncio

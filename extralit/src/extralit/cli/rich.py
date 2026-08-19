@@ -135,9 +135,9 @@ def print_rich_table(
                 "Name": lambda r: r.name,
                 "Workspace": lambda r: r.workspace.name,
                 "Creation Date": lambda r: r.inserted_at.isoformat(sep=" ") if r.inserted_at else "",
-                "Last Activity Date": lambda r: r._model.last_activity_at.isoformat(sep=" ")
-                if r._model.last_activity_at
-                else "",
+                "Last Activity Date": lambda r: (
+                    r._model.last_activity_at.isoformat(sep=" ") if r._model.last_activity_at else ""
+                ),
             },
             "styles": {
                 "ID": "cyan",
@@ -182,19 +182,17 @@ def print_rich_table(
             },
         },
         "ObjectMetadata": {
-            "columns": ["Object Name", "Size", "Last Modified", "Version ID", "Content Type"],
+            "columns": ["Object Name", "Size", "Last Modified", "Content Type"],
             "getters": {
                 "Object Name": lambda r: r.object_name,
                 "Size": lambda r: r.size,
                 "Last Modified": lambda r: r.last_modified.isoformat() if r.last_modified else "",
-                "Version ID": lambda r: r.version_id,
                 "Content Type": lambda r: r.content_type,
             },
             "styles": {
                 "Object Name": "cyan",
                 "Size": "green",
                 "Last Modified": "yellow",
-                "Version ID": "magenta",
                 "Content Type": "blue",
             },
         },
