@@ -221,19 +221,16 @@ class LayoutStore:
 
     # --- maintenance ---------------------------------------------------------------------------
 
-    def fragment_count(self, name: str) -> int:
-        dataset = self.open(name)
-        return 0 if dataset is None else len(dataset.get_fragments())
-
     def maybe_compact(self) -> None:
         """Best effort: a failed compaction must never fail the extraction that triggered it."""
         for name in (ITEMS_DATASET, PAGES_DATASET):
             try:
-                if self.fragment_count(name) <= COMPACT_FRAGMENT_THRESHOLD:
-                    continue
                 dataset = self.open(name)
+                if dataset is None or len(dataset.get_fragments()) <= COMPACT_FRAGMENT_THRESHOLD:
+                    continue
+                # `compact_files` advances the handle in place, so cleanup sees the new version.
                 dataset.optimize.compact_files(target_rows_per_fragment=TARGET_ROWS_PER_FRAGMENT)
-                self.open(name).cleanup_old_versions(older_than=CLEANUP_OLDER_THAN)
+                dataset.cleanup_old_versions(older_than=CLEANUP_OLDER_THAN)
             except Exception as error:
                 _LOGGER.warning(f"Layout compaction of {name} at {self.root_uri} failed: {error}")
 

@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
-from extralit_server.contexts.ocr.parsers import list_parsers
+from extralit_server.contexts.ocr.parsers.registry import list_parsers
 
 
 class StartWorkflowRequest(BaseModel):

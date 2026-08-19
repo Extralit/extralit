@@ -63,17 +63,17 @@ const toProvenance = (prov: BackendProvenance): Provenance =>
   new Provenance(prov.page_no, toBoundingBox(prov.bbox), prov.charspan);
 
 const toLayoutItem = (item: BackendLayoutItem): LayoutItem =>
-  new LayoutItem(
-    item.self_ref,
-    item.label,
-    item.reading_order,
-    (item.prov ?? []).map(toProvenance),
-    item.parent_ref ?? null,
-    item.content_layer ?? null,
-    item.level ?? null,
-    item.text ?? null,
-    item.html ?? null
-  );
+  new LayoutItem({
+    selfRef: item.self_ref,
+    label: item.label,
+    readingOrder: item.reading_order,
+    prov: (item.prov ?? []).map(toProvenance),
+    parentRef: item.parent_ref,
+    contentLayer: item.content_layer,
+    level: item.level,
+    text: item.text,
+    html: item.html,
+  });
 
 const toLayoutPage = (page: BackendLayoutPage): LayoutPage => new LayoutPage(page.page_no, page.width, page.height);
 

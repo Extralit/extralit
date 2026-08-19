@@ -4,7 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from extralit_server.api.schemas.v1.workflows import StartWorkflowRequest
-from extralit_server.contexts.ocr.parsers import list_parsers
+from extralit_server.contexts.ocr.parsers.registry import list_parsers
 
 
 def _request(**overrides) -> StartWorkflowRequest:

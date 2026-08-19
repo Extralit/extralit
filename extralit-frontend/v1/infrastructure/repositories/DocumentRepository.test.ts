@@ -93,8 +93,18 @@ describe("DocumentRepository", () => {
       expect(heading.readingOrder).toBe(0);
       expect(heading.contentLayer).toBe("body");
       expect(heading.level).toBe(2);
+      expect(heading.text).toBe("Methods");
+      expect(heading.html).toBeNull();
       expect(heading.prov[0].pageNo).toBe(1);
       expect(heading.prov[0].charspan).toEqual([0, 7]);
+    });
+
+    it("keeps text and html on the field each belongs to", async () => {
+      const layout = await new DocumentRepository(axiosMock(() => BACKEND_LAYOUT)).getDocumentLayout("d-1");
+      const table = layout.itemByRef("#/tables/0");
+
+      expect(table.text).toBeNull();
+      expect(table.html).toBe("<table><tbody><tr><td>a</td></tr></tbody></table>");
     });
 
     it("passes page and label filters as query params", async () => {

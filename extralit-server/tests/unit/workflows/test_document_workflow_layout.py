@@ -63,7 +63,7 @@ def prepared_for(calls, step):
 @pytest.mark.asyncio
 class TestLayoutJobSequencing:
     async def test_layout_runs_by_default_with_the_default_parser(self, enqueued):
-        from extralit_server.contexts.ocr.parsers import default_parser_name
+        from extralit_server.contexts.ocr.parsers.registry import default_parser_name
 
         await run_workflow(layout_parser=None)
 

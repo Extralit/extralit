@@ -7,19 +7,17 @@ from uuid import UUID
 
 from rq import Retry, get_current_job
 from rq.decorators import job
-from sqlalchemy import select
 
 from extralit_server.api.schemas.v1.document.metadata import LayoutMetadata
 from extralit_server.contexts import files
 from extralit_server.contexts.document.metadata import update_processing_metadata
 from extralit_server.contexts.ocr import storage
 from extralit_server.contexts.ocr.layout_store import LayoutStore
-from extralit_server.contexts.ocr.parsers import default_parser_name, get_parser
 from extralit_server.contexts.ocr.parsers.pdf_inspector import classify
-from extralit_server.contexts.workflows import is_current_workflow_run
+from extralit_server.contexts.ocr.parsers.registry import default_parser_name, get_parser
+from extralit_server.contexts.workflows import writer_skip_reason
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import OCR_QUEUE, REDIS_CONNECTION
-from extralit_server.models.database import Document
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -97,15 +95,10 @@ async def async_document_layout_job(
         store = LayoutStore.for_workspace(workspace_name)
         async with store.locked():
             async with AsyncSessionLocal() as db:
-                still_exists = await db.scalar(select(Document.id).where(Document.id == document_id))
-                superseded = not await is_current_workflow_run(db, document_id, workflow_id)
-            if still_exists is None:
-                _LOGGER.info(f"Document {document_id} was deleted before its layout was stored")
-                return {"document_id": str(document_id), "parser": parser_name, "skipped": "document deleted"}
-            if superseded:
-                # A forced restart already began; its layout must not lose to this one's.
-                _LOGGER.info(f"Layout run for document {document_id} was superseded before it could store")
-                return {"document_id": str(document_id), "parser": parser_name, "skipped": "workflow superseded"}
+                skip = await writer_skip_reason(db, document_id, workflow_id)
+            if skip is not None:
+                _LOGGER.info(f"Layout for document {document_id} was not stored: {skip}")
+                return {"document_id": str(document_id), "parser": parser_name, "skipped": skip}
 
             paths = await storage.store_layout(s3_client, workspace_name, document_id, doc, store=store)
 

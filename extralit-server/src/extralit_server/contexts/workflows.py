@@ -8,10 +8,11 @@ from rq.command import send_stop_job_command
 from rq.exceptions import NoSuchJobError
 from rq.group import Group
 from rq.job import Job, JobStatus
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.jobs.queues import REDIS_CONNECTION
-from extralit_server.models.database import DocumentWorkflow
+from extralit_server.models.database import Document, DocumentWorkflow
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -511,20 +512,26 @@ def get_failed_jobs_in_group(group_id: str) -> list[dict[str, Any]]:
         return []
 
 
-async def is_current_workflow_run(db: AsyncSession, document_id: UUID, workflow_id: Optional[str]) -> bool:
-    """Whether this job still belongs to the document's newest workflow run.
+async def writer_skip_reason(db: AsyncSession, document_id: UUID, workflow_id: Optional[str]) -> Optional[str]:
+    """Why this job must not write its artifacts, or None when it may. Checked before every commit.
 
-    `send_stop_job_command` only *asks* a worker to stop, so a forced restart can leave the previous
-    run alive long enough to overwrite the new one's PDF, layout or metadata. Every writer checks
-    this generation token before it writes; the workflow row is the token.
-
-    A job with no workflow in its meta (direct call, test, ad-hoc enqueue) is always current.
+    Two ways a job outlives what it was started for. The document can be deleted mid-run, and
+    writing then resurrects artifacts for a row that no longer exists. Or a forced restart can
+    supersede it — `send_stop_job_command` only *asks* a worker to stop, so the previous run can
+    stay alive long enough to overwrite the new one's PDF, layout or metadata. The workflow row is
+    the generation token; a job with no workflow in its meta (direct call, test, ad-hoc enqueue)
+    is always current.
     """
+    if await db.scalar(select(Document.id).where(Document.id == document_id)) is None:
+        return "document deleted"
+
     if not workflow_id:
-        return True
+        return None
 
     workflow = await DocumentWorkflow.get_by_document_id(db, document_id)
-    return workflow is None or str(workflow.id) == str(workflow_id)
+    if workflow is not None and str(workflow.id) != str(workflow_id):
+        return "workflow superseded"
+    return None
 
 
 def stop_workflow_jobs(group_id: str) -> list[str]:
