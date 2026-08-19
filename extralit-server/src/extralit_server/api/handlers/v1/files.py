@@ -1,7 +1,6 @@
 import logging
 from typing import Annotated
 
-from botocore.exceptions import ClientError
 from fastapi import APIRouter, Depends, File, Header, HTTPException, Security, UploadFile
 from fastapi.responses import Response, StreamingResponse
 
@@ -23,18 +22,19 @@ async def get_file(
     object: str,
     range_header: str | None = Header(None, alias="range"),
     if_none_match: str | None = Header(None, alias="if-none-match"),
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User | None = Security(auth.get_optional_current_user),
 ):
     if current_user is not None:
         await authorize(current_user, FilePolicy.get(bucket))
 
+    store = storage.store_for(bucket)
+
     try:
-        # Get object metadata first
-        head_response = await s3_client.head_object(Bucket=bucket, Key=object)
-        content_length = head_response["ContentLength"]
-        etag = head_response["ETag"].strip('"')
-        content_type = head_response.get("ContentType", "application/octet-stream")
+        head = await store.get_async(object, options={"head": True})
+        content_length = head.meta["size"]
+        etag = (head.meta["e_tag"] or "").strip('"')
+        content_type = files.content_type_of(object, head.attributes)
 
         # Handle ETag for caching
         if if_none_match and etag and if_none_match.strip('"') == etag:
@@ -73,15 +73,15 @@ async def get_file(
                     headers["Content-Range"] = f"bytes */{content_length}"
                     return Response(status_code=416, headers=headers)
 
-                # Get object with range
-                response = await s3_client.get_object(Bucket=bucket, Key=object, Range=f"bytes={start}-{end}")
+                # An HTTP range is inclusive of `end`; obstore's is exclusive.
+                result = await store.get_async(object, options={"range": (start, end + 1)})
 
                 # Update headers for partial content
                 headers["Content-Range"] = f"bytes {start}-{end}/{content_length}"
                 headers["Content-Length"] = str(end - start + 1)
 
                 return StreamingResponse(
-                    response["Body"],
+                    result.stream(),
                     status_code=206,
                     media_type=content_type,
                     headers=headers,
@@ -90,23 +90,12 @@ async def get_file(
                 # Invalid range header, serve full content
                 pass
 
-        # Get full object
-        response = await s3_client.get_object(Bucket=bucket, Key=object)
+        result = await store.get_async(object)
+        return StreamingResponse(result.stream(), media_type=content_type, headers=headers)
 
-        # Use chunked streaming for large files
-        if content_length > files.CHUNK_LENGTH_MB:
-            file_chunks = files.get_file_chunk(s3_client, bucket, object, files.CHUNK_LENGTH_MB)
-            return StreamingResponse(file_chunks, media_type=content_type, headers=headers)
-
-        return StreamingResponse(response["Body"], media_type=content_type, headers=headers)
-
-    except ClientError as e:
-        if e.response["Error"]["Code"] in {"NoSuchKey", "404"}:
-            _LOGGER.error(f"Object '{bucket}/{object}' not found")
-            raise HTTPException(status_code=404, detail=f"No object at path '{object}' was found")
-        else:
-            _LOGGER.error(f"Error getting object '{bucket}/{object}': {e.response['Error']}", exc_info=True)
-            raise HTTPException(status_code=500, detail=str(e))
+    except FileNotFoundError:
+        _LOGGER.error(f"Object '{bucket}/{object}' not found")
+        raise HTTPException(status_code=404, detail=f"No object at path '{object}' was found")
     except Exception as e:
         _LOGGER.error(f"Error getting object '{bucket}/{object}': {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -132,7 +121,7 @@ async def put_file(
     bucket: str,
     object: str,
     file: Annotated[UploadFile, File()],
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, FilePolicy.put_object(bucket))
@@ -140,7 +129,7 @@ async def put_file(
     try:
         file_data = await file.read()
         response = await files.put_object(
-            s3_client,
+            storage,
             bucket,
             object,
             data=file_data,
@@ -159,14 +148,14 @@ async def list_objects_endpoint(
     prefix: str,
     recursive: bool = True,
     start_after: str | None = None,
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_optional_current_user),
 ):
     await authorize(current_user, FilePolicy.list(bucket))
 
     try:
         objects = await files.list_objects(
-            s3_client,
+            storage,
             bucket,
             prefix=prefix,
             recursive=recursive,
@@ -185,13 +174,13 @@ async def delete_files(
     *,
     bucket: str,
     object: str,
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, FilePolicy.delete(bucket))
 
     try:
-        await files.delete_object(s3_client, bucket, object)
+        await files.delete_object(storage, bucket, object)
         return {"message": "File deleted"}
     except HTTPException:
         raise

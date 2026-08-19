@@ -70,7 +70,7 @@ LAYOUT_METADATA = {
 @pytest.fixture
 def load_layout():
     with patch(
-        "extralit_server.api.handlers.v1.documents.storage.load_layout",
+        "extralit_server.api.handlers.v1.documents.layout_storage.load_layout",
         new=AsyncMock(return_value=build_layout()),
     ) as mock:
         yield mock
@@ -178,7 +178,7 @@ class TestGetDocumentLayout:
         document = await make_document(db, LAYOUT_METADATA)
 
         with patch(
-            "extralit_server.api.handlers.v1.documents.storage.load_layout",
+            "extralit_server.api.handlers.v1.documents.layout_storage.load_layout",
             new=AsyncMock(side_effect=RuntimeError("object missing")),
         ):
             response = await async_client.get(f"/api/v1/documents/{document.id}/layout", headers=owner_auth_header)
@@ -192,7 +192,7 @@ class TestGetDocumentLayout:
         error = ValidationError.from_exception_data("DoclingDocument", [])
 
         with patch(
-            "extralit_server.api.handlers.v1.documents.storage.load_layout",
+            "extralit_server.api.handlers.v1.documents.layout_storage.load_layout",
             new=AsyncMock(side_effect=error),
         ):
             response = await async_client.get(f"/api/v1/documents/{document.id}/layout", headers=owner_auth_header)

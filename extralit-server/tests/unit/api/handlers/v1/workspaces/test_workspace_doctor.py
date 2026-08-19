@@ -17,7 +17,7 @@ class TestWorkspaceDoctor:
 
         # Mock S3 client and Redis connection
         with (
-            patch("extralit_server.contexts.files.bucket_exists") as mock_bucket_exists,
+            patch("extralit_server.contexts.buckets.exists") as mock_bucket_exists,
             patch("extralit_server.jobs.queues.DEFAULT_QUEUE") as mock_queue,
         ):
             mock_bucket_exists.return_value = True
@@ -49,8 +49,8 @@ class TestWorkspaceDoctor:
         workspace = await WorkspaceFactory.create()
 
         with (
-            patch("extralit_server.contexts.files.bucket_exists") as mock_bucket_exists,
-            patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket,
+            patch("extralit_server.contexts.buckets.exists") as mock_bucket_exists,
+            patch("extralit_server.contexts.buckets.create") as mock_create_bucket,
             patch("extralit_server.jobs.queues.DEFAULT_QUEUE") as mock_queue,
         ):
             mock_bucket_exists.return_value = False
@@ -84,8 +84,8 @@ class TestWorkspaceDoctor:
         workspace = await WorkspaceFactory.create()
 
         with (
-            patch("extralit_server.contexts.files.bucket_exists") as mock_bucket_exists,
-            patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket,
+            patch("extralit_server.contexts.buckets.exists") as mock_bucket_exists,
+            patch("extralit_server.contexts.buckets.create") as mock_create_bucket,
             patch("extralit_server.jobs.queues.DEFAULT_QUEUE") as mock_queue,
         ):
             mock_bucket_exists.return_value = False

@@ -8,7 +8,7 @@ from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUS
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
-from extralit_server.contexts.files import ObjectMetadata, get_s3_client
+from extralit_server.contexts.files import ObjectMetadata, get_storage
 from extralit_server.enums import (
     DatasetDistributionStrategy,
     FieldType,
@@ -161,11 +161,10 @@ class WorkspaceSyncFactory(BaseSyncFactory):
     @classmethod
     async def create_with_s3(cls, **kwargs):
         workspace = await cls.create(**kwargs)
-        s3_client = await get_s3_client()
-        try:
-            await s3_client.make_bucket(workspace.name)
-        except Exception as e:
-            print(f"Error creating bucket for workspace {workspace.name}: {e!s}")
+        from extralit_server.contexts import buckets
+
+        storage = await get_storage()
+        await buckets.create(storage, workspace.name)
         return workspace
 
 
@@ -634,11 +633,11 @@ class MinioFileFactory(factory.Factory):
     @classmethod
     def create(cls, **kwargs):
         """Create a MinioFile and mock the put_object and get_object methods to return it."""
-        from extralit_server.contexts.files import get_s3_client
+        from extralit_server.contexts.files import get_storage
 
         file = cls.build(**kwargs)
 
-        client = get_s3_client()
+        client = get_storage()
 
         # Store original methods
         getattr(client, "put_object", None)

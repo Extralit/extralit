@@ -17,7 +17,7 @@ from extralit_server.api.schemas.v1.workspaces import (
     Workspaces,
     WorkspaceUserCreate,
 )
-from extralit_server.contexts import accounts, files
+from extralit_server.contexts import accounts, buckets, files
 from extralit_server.database import get_async_db
 from extralit_server.errors import GenericServerError
 from extralit_server.errors.future import NotFoundError, NotUniqueError, UnprocessableEntityError
@@ -46,12 +46,12 @@ async def create_workspace(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_create: WorkspaceCreate,
     current_user: Annotated[User, Security(auth.get_current_user)],
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
 ):
     await authorize(current_user, WorkspacePolicy.create)
 
     try:
-        await files.create_bucket(s3_client, workspace_create.name)
+        await buckets.create(storage, workspace_create.name)
     except Exception as e:
         raise GenericServerError(e)
 
@@ -69,7 +69,7 @@ async def delete_workspace(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_id: UUID,
     current_user: Annotated[User, Security(auth.get_current_user)],
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
 ):
     await authorize(current_user, WorkspacePolicy.delete)
 
@@ -79,7 +79,7 @@ async def delete_workspace(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     try:
-        await files.delete_bucket(s3_client, workspace.name)
+        await buckets.delete(storage, workspace.name)
     except Exception as e:
         # Log the error but continue with workspace deletion
         print(f"Error deleting bucket for workspace {workspace.name}: {e!s}")
@@ -175,7 +175,7 @@ async def workspace_doctor(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_id: UUID,
     current_user: Annotated[User, Security(auth.get_current_user)],
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     autofix: bool = True,
 ):
     """
@@ -191,7 +191,7 @@ async def workspace_doctor(
     checks = []
 
     # Check 1: S3 bucket exists
-    bucket_exists = await files.bucket_exists(s3_client, workspace.name)
+    bucket_exists = await buckets.exists(storage, workspace.name)
     if bucket_exists:
         checks.append(
             WorkspaceDoctorCheckResult(
@@ -204,7 +204,7 @@ async def workspace_doctor(
     else:
         if autofix:
             try:
-                await files.create_bucket(s3_client, workspace.name)
+                await buckets.create(storage, workspace.name)
                 checks.append(
                     WorkspaceDoctorCheckResult(
                         check_name="s3_bucket",

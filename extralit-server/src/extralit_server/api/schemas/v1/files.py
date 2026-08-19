@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
-from urllib3._collections import HTTPHeaderDict
 
 
 class ObjectMetadata(BaseModel):
@@ -12,15 +11,9 @@ class ObjectMetadata(BaseModel):
     etag: str | None = None
     size: int | None = None
     content_type: str | None = None
+    # obstore returns user attributes under their own keys; the botocore-era `x-amz-meta-`
+    # prefix stripping this used to do would now discard every one of them.
     metadata: dict[str, Any] | None = None
-
-    @field_validator("metadata", mode="before")
-    def parse_metadata(cls, v):
-        if v and isinstance(v, HTTPHeaderDict | dict):
-            v = {key[11:]: value for key, value in v.items() if key.lower().startswith("x-amz-meta-")}
-        else:
-            v = None
-        return v
 
 
 class ListObjectsResponse(BaseModel):

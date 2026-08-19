@@ -14,7 +14,7 @@ from extralit_server.api.schemas.v1.document.layout import DocumentLayoutOut
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem, DocumentUpdate
 from extralit_server.api.schemas.v1.imports import DocumentsBulkCreate, DocumentsBulkResponse
 from extralit_server.contexts import files, imports
-from extralit_server.contexts.ocr import storage
+from extralit_server.contexts.ocr import storage as layout_storage
 from extralit_server.contexts.ocr.projection import project_layout
 from extralit_server.database import get_async_db
 from extralit_server.models import User, Workspace
@@ -36,7 +36,7 @@ async def add_document(
     document_create: Annotated[str, Form()],
     file_data: Annotated[UploadFile | None, File()] = None,
     db: AsyncSession = Depends(get_async_db),
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.create())
@@ -80,7 +80,7 @@ async def add_document(
             document_new.file_name = file_data.filename
 
         file_url = await files.put_document_file(
-            s3_client=s3_client,
+            storage=storage,
             workspace_name=workspace.name,
             document_id=document_new.id,  # type: ignore[arg-type]
             file_data=await file_data.read(),
@@ -129,7 +129,7 @@ async def get_document(
     doi: Annotated[str | None, Query(description="DOI")] = None,
     limit: Annotated[int | None, Query(description="Maximum number of documents to return")] = None,
     db: AsyncSession = Depends(get_async_db),
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_current_user),
 ) -> list[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.get())
@@ -208,7 +208,7 @@ async def delete_documents_by_workspace_id(
     workspace_id: UUID,
     document_delete: Annotated[DocumentDelete | None, Body()] = None,
     db: AsyncSession = Depends(get_async_db),
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.delete(workspace_id))
@@ -231,7 +231,7 @@ async def delete_documents_by_workspace_id(
 
     _LOGGER.info(f"Deleting {len(documents)} documents")
     for document in documents:
-        await files.delete_document_artifacts(s3_client, workspace.name, document.id)
+        await files.delete_document_artifacts(storage, workspace.name, document.id)
 
     return len(documents)
 
@@ -261,7 +261,7 @@ async def get_document_layout(
     document_id: Annotated[UUID, Path(title="The UUID of the document whose layout will be retrieved")],
     pages: Annotated[list[int] | None, Query(description="1-indexed pages to include")] = None,
     labels: Annotated[list[str] | None, Query(description="DocItemLabels to include, e.g. `table`")] = None,
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_current_user),
 ) -> DocumentLayoutOut:
     await authorize(current_user, DocumentPolicy.get())
@@ -291,8 +291,8 @@ async def get_document_layout(
         )
 
     try:
-        doc = await storage.load_layout(
-            s3_client,
+        doc = await layout_storage.load_layout(
+            storage,
             workspace.name,
             document_id,
             object_path=layout_metadata.get("layout_url"),

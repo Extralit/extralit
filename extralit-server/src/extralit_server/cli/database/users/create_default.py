@@ -3,7 +3,7 @@ import asyncio
 import typer
 
 from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
-from extralit_server.contexts import accounts, files
+from extralit_server.contexts import accounts, buckets, files
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models import User, UserRole
 
@@ -32,11 +32,11 @@ async def _create_default(api_key: str, password: str, quiet: bool):
         )
 
         if workspaces:
-            s3_client = await files.get_s3_client()
-            if s3_client is not None:
+            storage = await files.get_storage()
+            if storage is not None:
                 for workspace in workspaces:
                     try:
-                        await files.create_bucket(s3_client, workspace.name)
+                        await buckets.create(storage, workspace.name)
                         typer.echo(f"✓ Created/verified bucket for workspace: {workspace.name}") if not quiet else None
                     except Exception as e:
                         typer.echo(

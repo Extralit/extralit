@@ -27,7 +27,7 @@ async def publish_schema_version(
     dataset_id: UUID,
     version_create: SchemaVersionCreate,
     db: Annotated[AsyncSession, Depends(get_async_db)],
-    s3_client=Depends(files_ctx.get_s3_client),
+    storage=Depends(files_ctx.get_storage),
     current_user: Annotated[User, Security(auth.get_current_user)],
 ):
     dataset = await Dataset.get_or_raise(db, dataset_id, options=[selectinload(Dataset.workspace)])
@@ -35,7 +35,7 @@ async def publish_schema_version(
 
     return await schema_versions.publish_version(
         db,
-        s3_client,
+        storage,
         dataset,
         body=version_create.body,
         # One bucket per workspace, named exactly Workspace.name — contexts/files.py:381.

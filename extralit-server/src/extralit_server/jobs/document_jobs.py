@@ -59,8 +59,8 @@ async def analysis_and_preprocess_job(
     current_job.save_meta()
 
     try:
-        s3_client = await files.get_s3_client()
-        pdf_data = await files.download_file_content(s3_client, s3_url)
+        storage = await files.get_storage()
+        pdf_data = await files.download_file_content(storage, s3_url)
         filename = s3_url.split("/")[-1]
 
         triage = triage_pdf(pdf_data)
@@ -95,7 +95,7 @@ async def analysis_and_preprocess_job(
         if thumbnail_data is not None:
             try:
                 await files.put_object(
-                    s3_client,
+                    storage,
                     workspace_name,
                     files.get_thumbnail_s3_object_path(document_id),
                     thumbnail_data,
@@ -109,7 +109,7 @@ async def analysis_and_preprocess_job(
             _LOGGER.warning(f"No thumbnail data available for document {document_id}")
 
         await files.put_object(
-            s3_client,
+            storage,
             workspace_name,
             object_path,
             processing_response.processed_data,

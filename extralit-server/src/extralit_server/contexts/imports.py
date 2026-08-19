@@ -374,8 +374,8 @@ async def process_bulk_upload(
             )
         reference_to_doc[doc.reference] = doc
 
-    s3_client = shared_resources.get("s3_client")
-    if s3_client is None:
+    storage = shared_resources.get("storage")
+    if storage is None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="S3 client not available")
 
     # Process each reference: upload files to S3, create documents, start workflows
@@ -432,7 +432,7 @@ async def process_bulk_upload(
 
                         # Upload file to S3
                         file_url = await file_context.put_document_file(
-                            s3_client=s3_client,
+                            storage=storage,
                             workspace_name=workspace.name,
                             document_id=document_new.id,  # type: ignore[arg-type]
                             file_data=await file.read(),
