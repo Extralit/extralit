@@ -7,10 +7,14 @@ from starlette import status
 
 class ServerError(Exception):
     HTTP_STATUS: int = status.HTTP_500_INTERNAL_SERVER_ERROR
+    # Pinned, not derived from http.HTTPStatus: CPython renamed 422's phrase in 3.13, which
+    # made the generated OpenAPI document differ by interpreter version.
+    HTTP_DESCRIPTION: str = "Internal Server Error"
 
     @classmethod
     def api_documentation(cls):
         return {
+            "description": cls.HTTP_DESCRIPTION,
             "content": {
                 "application/json": {
                     "example": {
@@ -45,6 +49,7 @@ class ValidationError(ServerError):
     """Generic data validation error out of request"""
 
     HTTP_STATUS = status.HTTP_422_UNPROCESSABLE_ENTITY
+    HTTP_DESCRIPTION = "Unprocessable Content"
 
     def __init__(self, error: pydantic.ValidationError | RequestValidationError):
         # Removing ctx and input from errors since they are new values.
@@ -71,6 +76,7 @@ class GenericServerError(ServerError):
     @classmethod
     def api_documentation(cls):
         return {
+            "description": cls.HTTP_DESCRIPTION,
             "content": {"application/json": {"example": {"detail": {"code": "builtins.TypeError"}}}},
         }
 
@@ -79,6 +85,7 @@ class ForbiddenOperationError(ServerError):
     """Forbidden operation"""
 
     HTTP_STATUS = status.HTTP_403_FORBIDDEN
+    HTTP_DESCRIPTION = "Forbidden"
 
     def __init__(self, message: str | None = None):
         self.detail = message or "Operation not allowed"
@@ -88,6 +95,7 @@ class UnauthorizedError(ServerError):
     """Unauthorized operation"""
 
     HTTP_STATUS = status.HTTP_401_UNAUTHORIZED
+    HTTP_DESCRIPTION = "Unauthorized"
 
     def __init__(self, message: str | None = None):
         self.detail = message or "Could not validate credentials"
@@ -97,6 +105,7 @@ class BadRequestError(ServerError):
     """Generic bad request error"""
 
     HTTP_STATUS = status.HTTP_400_BAD_REQUEST
+    HTTP_DESCRIPTION = "Bad Request"
 
     def __init__(self, detail: str):
         self.message = detail
@@ -114,6 +123,7 @@ class InactiveUserError(ServerError):
     """Inactive user error"""
 
     HTTP_STATUS = status.HTTP_400_BAD_REQUEST
+    HTTP_DESCRIPTION = "Bad Request"
 
     def __init__(self):
         self.detail = "Inactive user"
@@ -139,6 +149,7 @@ class EntityAlreadyExistsError(ServerError):
     """Error raised when entity was created"""
 
     HTTP_STATUS = status.HTTP_409_CONFLICT
+    HTTP_DESCRIPTION = "Conflict"
 
     def __init__(self, name: str, type: type, workspace: str | None = None):
         self.name = name
@@ -150,6 +161,7 @@ class EntityNotFoundError(ServerError):
     """Error raised when entity not found"""
 
     HTTP_STATUS = status.HTTP_404_NOT_FOUND
+    HTTP_DESCRIPTION = "Not Found"
 
     def __init__(self, name: str, type: type | str):
         self.name = name  # TODO: rename to id
