@@ -96,13 +96,6 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
                 return workspace
 
     @api_error_handler
-    def add_user(self, workspace_id: "UUID", user_id: "UUID") -> None:
-        # TODO: This method is already defined in UsersAPI and should be removed from here
-        response = self.http_client.post(f"{self.url_stub}/{workspace_id}/users/{user_id}")
-        response.raise_for_status()
-        self._log_message(message=f"Added user {user_id} to workspace {workspace_id}")
-
-    @api_error_handler
     def doctor(self, workspace_id: "UUID", autofix: bool = True) -> "WorkspaceDoctorResponse":
         """
         Run diagnostics on a workspace and optionally auto-fix issues.

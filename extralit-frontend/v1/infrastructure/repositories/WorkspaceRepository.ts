@@ -1,11 +1,10 @@
 import type { AxiosInstance } from "axios";
 import { type Response } from "../types";
+import type { components } from "~/types/generated/api";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 
-interface BackendWorkspace {
-  id: string;
-  name: string;
-}
+// Sourced from openapi/v1.json; regenerate with `npm run api:types`.
+type BackendWorkspace = components["schemas"]["Workspace"];
 
 const enum WORKSPACES_API_ERRORS {
   GET_WORKSPACES = "GET_WORKSPACES",

@@ -9,3 +9,4 @@ dist
 
 # Lockfiles and generated data
 package-lock.json
+types/generated
