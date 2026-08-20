@@ -42,6 +42,30 @@ class ChatRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=20, description="Number of documents to retrieve for RAG")
 
 
+# Server-sent events carry raw text, not JSON, so the payload is described by example frames.
+CHAT_STREAM_RESPONSES = {
+    200: {
+        "description": (
+            "A `text/event-stream` of `data:` frames. Each frame carries either a content token, "
+            "the literal `[DONE]` terminator, or a JSON object with an `error` key."
+        ),
+        "content": {
+            "text/event-stream": {
+                "schema": {"type": "string"},
+                "examples": {
+                    "token": {"summary": "Content token", "value": "data: Hello\n\n"},
+                    "done": {"summary": "Stream terminator", "value": "data: [DONE]\n\n"},
+                    "error": {
+                        "summary": "Failure mid-stream",
+                        "value": 'data: {"error": "Chat completion failed. Please try again."}\n\n',
+                    },
+                },
+            }
+        },
+    }
+}
+
+
 def resolve_model_string(model: str) -> str:
     """Resolve user-friendly model names to LiteLLM ``github_copilot/`` model strings."""
     model_mapping = {
@@ -153,7 +177,7 @@ async def retrieve_context(
         return None
 
 
-@router.post("/chat")
+@router.post("/chat", response_class=StreamingResponse, responses=CHAT_STREAM_RESPONSES)
 async def chat(
     request: ChatRequest,
     db: Annotated[AsyncSession, Depends(get_async_db)],
