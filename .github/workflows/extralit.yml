@@ -52,7 +52,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        # Lowest supported version (requires-python >=3.9.2); also what publish_release uses.
+        python-version: ["3.9"]
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
