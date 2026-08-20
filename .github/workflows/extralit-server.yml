@@ -18,11 +18,13 @@ on:
     paths:
       - "extralit-server/**"
       - "openapi/v1.json"
+      - ".github/workflows/extralit-server.yml"
 
   pull_request:
     paths:
       - "extralit-server/**"
       - "openapi/v1.json"
+      - ".github/workflows/extralit-server.yml"
 
 permissions:
   id-token: write

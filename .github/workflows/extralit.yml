@@ -20,6 +20,7 @@ on:
       - "!extralit/docs/**"
       - "!extralit/mkdocs.yml"
       - "openapi/v1.json"
+      - ".github/workflows/extralit.yml"
 
   pull_request:
     paths:
@@ -27,6 +28,7 @@ on:
       - "!extralit/docs/**"
       - "!extralit/mkdocs.yml"
       - "openapi/v1.json"
+      - ".github/workflows/extralit.yml"
 
 permissions:
   id-token: write
