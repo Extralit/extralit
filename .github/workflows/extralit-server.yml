@@ -56,9 +56,7 @@ jobs:
 
           # A force-push can leave `before` unreachable, which fails the compare.
           compare=$(gh api "repos/${{ github.repository }}/compare/$BEFORE...$AFTER") || run_suite
-          # A rename reports only its destination in `filename`; without `previous_filename` a
-          # file moved *out* of extralit-server/ would read as a non-server change.
-          changed=$(jq -r '.files[] | .filename, (.previous_filename // empty)' <<<"$compare")
+          changed=$(jq -r '.files[].filename' <<<"$compare")
           [[ -n "$changed" && $(wc -l <<<"$changed") -lt 300 ]] || run_suite
 
           echo "$changed" | sed 's/^/  /'
