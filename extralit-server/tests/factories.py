@@ -1,7 +1,6 @@
 import inspect
 import random
 import uuid
-from unittest.mock import MagicMock
 
 import factory
 from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUSH
@@ -629,32 +628,3 @@ class MinioFileFactory(factory.Factory):
     def build(cls, **kwargs):
         attributes = cls.attributes(**kwargs)
         return cls._meta.model(**attributes)
-
-    @classmethod
-    def create(cls, **kwargs):
-        """Create a MinioFile and mock the put_object and get_object methods to return it."""
-        from extralit_server.contexts.files import get_storage
-
-        file = cls.build(**kwargs)
-
-        client = get_storage()
-
-        # Store original methods
-        getattr(client, "put_object", None)
-        getattr(client, "get_object", None)
-
-        # Mock put_object to return our file
-        def mock_put_object(bucket_name, object_name, data, content_type=None, metadata=None):
-            return file
-
-        # Mock get_object to return file data
-        def mock_get_object(bucket_name, object_name):
-            response = MagicMock()
-            response.data = b"test data"
-            return response
-
-        # Apply mocks
-        client.put_object = mock_put_object
-        client.get_object = mock_get_object
-
-        return file

@@ -42,6 +42,20 @@ async def test_put_file(async_client: "AsyncClient", owner_auth_header: dict):
 
 
 @pytest.mark.asyncio
+async def test_get_file_without_auth(async_client: "AsyncClient"):
+    response = await async_client.get("/api/v1/file/workspace/test_object")
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_list_objects_without_auth(async_client: "AsyncClient"):
+    response = await async_client.get("/api/v1/files/workspace/test_prefix")
+
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
 async def test_list_objects_non_workspace_user(async_client: "AsyncClient", annotator_auth_header: dict):
     bucket_name = "workspace"
     prefix = "test_prefix"

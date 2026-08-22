@@ -1,4 +1,3 @@
-import tempfile
 from unittest.mock import patch
 
 import pandas as pd
@@ -35,14 +34,19 @@ async def _fields_for(db, dataset_id) -> list[Field]:
     return list((await db.execute(stmt)).scalars().all())
 
 
+@pytest.fixture(autouse=True)
+def _local_storage_root(monkeypatch, tmp_path):
+    """Point storage at a per-test temp dir; monkeypatch restores the shared settings."""
+    monkeypatch.setattr(settings, "s3_endpoint", None)
+    monkeypatch.setattr(settings, "home_path", str(tmp_path))
+
+
 def _storage() -> ObjectStorage:
     """A real `LocalStore`-backed storage rooted in a temp dir.
 
     `publish_version` writes the body through `files_ctx.put_object`, and the assertions here
     are about what lands in Postgres, not about mocking the write away.
     """
-    settings.s3_endpoint = None
-    settings.home_path = tempfile.mkdtemp()
     return ObjectStorage()
 
 

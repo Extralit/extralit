@@ -23,10 +23,9 @@ async def get_file(
     range_header: str | None = Header(None, alias="range"),
     if_none_match: str | None = Header(None, alias="if-none-match"),
     storage=Depends(files.get_storage),
-    current_user: User | None = Security(auth.get_optional_current_user),
+    current_user: User = Security(auth.get_current_user),
 ):
-    if current_user is not None:
-        await authorize(current_user, FilePolicy.get(bucket))
+    await authorize(current_user, FilePolicy.get(bucket))
 
     store = storage.store_for(bucket)
 
@@ -149,7 +148,7 @@ async def list_objects_endpoint(
     recursive: bool = True,
     start_after: str | None = None,
     storage=Depends(files.get_storage),
-    current_user: User = Security(auth.get_optional_current_user),
+    current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, FilePolicy.list(bucket))
 
