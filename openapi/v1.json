@@ -3250,17 +3250,6 @@
             ],
             "title": "Etag"
           },
-          "is_latest": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Latest"
-          },
           "last_modified": {
             "anyOf": [
               {
@@ -3298,28 +3287,6 @@
               }
             ],
             "title": "Size"
-          },
-          "version_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Version Id"
-          },
-          "version_tag": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Version Tag"
           }
         },
         "required": [
@@ -5192,17 +5159,6 @@
             "title": "Object Key",
             "type": "string"
           },
-          "object_version_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Object Version Id"
-          },
           "parent_version_id": {
             "anyOf": [
               {
@@ -5230,7 +5186,6 @@
           "dataset_id",
           "version",
           "object_key",
-          "object_version_id",
           "etag",
           "checksum",
           "parent_version_id",
@@ -13821,22 +13776,6 @@
               "title": "Object",
               "type": "string"
             }
-          },
-          {
-            "in": "query",
-            "name": "version_id",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Version Id"
-            }
           }
         ],
         "responses": {
@@ -13968,22 +13907,6 @@
             "schema": {
               "title": "Object",
               "type": "string"
-            }
-          },
-          {
-            "in": "query",
-            "name": "version_id",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Version Id"
             }
           },
           {
@@ -14423,20 +14346,12 @@
           },
           {
             "in": "query",
-            "name": "include_version",
-            "required": false,
-            "schema": {
-              "default": true,
-              "title": "Include Version"
-            }
-          },
-          {
-            "in": "query",
             "name": "recursive",
             "required": false,
             "schema": {
               "default": true,
-              "title": "Recursive"
+              "title": "Recursive",
+              "type": "boolean"
             }
           },
           {
@@ -22584,7 +22499,7 @@
     },
     "/workspaces/{workspace_id}/doctor": {
       "post": {
-        "description": "Run diagnostics on a workspace and optionally auto-fix issues.\n\nChecks:\n- S3 bucket exists (can auto-fix)\n- Bucket has proper versioning policy (informational)\n- RQ worker pool connectivity (informational)",
+        "description": "Run diagnostics on a workspace and optionally auto-fix issues.\n\nChecks:\n- S3 bucket exists (can auto-fix)\n- Bucket is not object-versioned (can auto-fix)\n- RQ worker pool connectivity (informational)",
         "operationId": "workspace_doctor_workspaces__workspace_id__doctor_post",
         "parameters": [
           {
