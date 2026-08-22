@@ -31,12 +31,12 @@ def job_context(tmp_path, monkeypatch):
     db = MagicMock()
 
     with (
-        patch(f"{MODULE}.files.get_s3_client", AsyncMock(return_value=AsyncMock())),
+        patch(f"{MODULE}.files.get_storage", AsyncMock(return_value=AsyncMock())),
         patch(f"{MODULE}.files.download_file_content", AsyncMock(return_value=b"%PDF-1.4")),
         patch(f"{MODULE}.route_parser", return_value=("pdf_inspector", {"pages_needing_ocr": [2]})),
         patch(f"{MODULE}.get_parser", return_value=lambda *args, **kwargs: doc),
         patch(f"{MODULE}.LayoutStore.for_workspace", return_value=store),
-        patch(f"{MODULE}.storage.store_layout", store_layout),
+        patch(f"{MODULE}.layout_storage.store_layout", store_layout),
         patch(f"{MODULE}.update_processing_metadata", update_metadata),
         patch(f"{MODULE}.get_current_job", return_value=MagicMock(meta={"workflow_id": "wf-1"})),
         patch(f"{MODULE}.writer_skip_reason", AsyncMock(return_value=None)) as skip,

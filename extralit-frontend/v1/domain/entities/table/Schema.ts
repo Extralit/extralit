@@ -7,10 +7,7 @@ export interface DataFrameField {
 export interface FileMetadata {
   schemaName?: string;
   etag?: string;
-  version_id?: string;
   last_modified?: Date;
-  version_tag?: string;
-  is_latest?: boolean;
 }
 
 export class DataFrameSchema {
@@ -18,24 +15,12 @@ export class DataFrameSchema {
   fields: DataFrameField[];
   metadata?: FileMetadata;
   schemaName?: string;
-  version_id?: string;
-  version_tag?: string;
-  is_latest?: boolean;
 
-  constructor(
-    fields: DataFrameField[] = [],
-    primaryKey: string[] = [],
-    metadata?: FileMetadata,
-    schemaName?: string,
-    version_id?: string,
-    is_latest?: boolean
-  ) {
+  constructor(fields: DataFrameField[] = [], primaryKey: string[] = [], metadata?: FileMetadata, schemaName?: string) {
     this.fields = fields;
     this.primaryKey = primaryKey;
     this.metadata = metadata;
     this.schemaName = schemaName;
-    this.version_id = version_id;
-    this.is_latest = is_latest;
   }
 
   get fieldNames(): string[] {

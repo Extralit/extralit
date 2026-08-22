@@ -1,5 +1,3 @@
-from typing import Optional
-
 import typer
 from rich.console import Console
 
@@ -10,7 +8,6 @@ from extralit.client import Extralit
 def delete_file(
     remote_path: str = typer.Argument(..., help="Remote path of the file to delete"),
     workspace: str = typer.Option(..., "--workspace", "-w", help="Workspace name"),
-    version_id: Optional[str] = typer.Option(None, "--version-id", "-v", help="Version ID of the file to delete"),
     force: bool = typer.Option(False, "--force", "-f", help="Force deletion without confirmation"),
 ) -> None:
     """Delete a file from a workspace."""
@@ -48,7 +45,7 @@ def delete_file(
                 return
 
         # Delete the file
-        workspace_obj.delete_file(remote_path, version_id=version_id)
+        workspace_obj.delete_file(remote_path)
 
         # Print a success message
         panel = get_themed_panel(

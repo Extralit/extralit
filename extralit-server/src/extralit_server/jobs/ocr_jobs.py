@@ -11,7 +11,7 @@ from rq.decorators import job
 from extralit_server.api.schemas.v1.document.metadata import LayoutMetadata
 from extralit_server.contexts import files
 from extralit_server.contexts.document.metadata import update_processing_metadata
-from extralit_server.contexts.ocr import storage
+from extralit_server.contexts.ocr import storage as layout_storage
 from extralit_server.contexts.ocr.layout_store import LayoutStore
 from extralit_server.contexts.ocr.parsers.pdf_inspector import classify
 from extralit_server.contexts.ocr.parsers.registry import default_parser_name, get_parser
@@ -75,8 +75,8 @@ async def async_document_layout_job(
 
     try:
         # Shared client — do not enter it as a context manager, that would close it for everyone.
-        s3_client = await files.get_s3_client()
-        pdf_bytes = await files.download_file_content(s3_client, s3_url)
+        storage = await files.get_storage()
+        pdf_bytes = await files.download_file_content(storage, s3_url)
 
         routed, classification = route_parser(pdf_bytes)
         parser_name = parser or routed
@@ -100,7 +100,7 @@ async def async_document_layout_job(
                 _LOGGER.info(f"Layout for document {document_id} was not stored: {skip}")
                 return {"document_id": str(document_id), "parser": parser_name, "skipped": skip}
 
-            paths = await storage.store_layout(s3_client, workspace_name, document_id, doc, store=store)
+            paths = await layout_storage.store_layout(storage, workspace_name, document_id, doc, store=store)
 
         layout = LayoutMetadata(
             **paths,

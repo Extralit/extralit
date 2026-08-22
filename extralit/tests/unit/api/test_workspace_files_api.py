@@ -21,12 +21,9 @@ def test_list_files(workspace_api: WorkspacesAPI):
                 "bucket_name": "test-workspace",
                 "object_name": "test-file.txt",
                 "last_modified": "2023-01-01T00:00:00Z",
-                "is_latest": True,
                 "etag": "test-etag",
                 "size": 100,
                 "content_type": "text/plain",
-                "version_id": "test-version-id",
-                "version_tag": "test-version-tag",
                 "metadata": {},
             }
         ]
@@ -41,7 +38,7 @@ def test_list_files(workspace_api: WorkspacesAPI):
     assert result.objects[0].object_name == "test-file.txt"
 
     workspace_api.http_client.get.assert_called_once_with(  # type: ignore
-        url="/api/v1/files/test-workspace/test-path", params={"recursive": True, "include_version": True}
+        url="/api/v1/files/test-workspace/test-path", params={"recursive": True}
     )
 
 
@@ -53,7 +50,6 @@ def test_get_file(workspace_api: WorkspacesAPI):
     mock_response.headers = {
         "Content-Type": "text/plain",
         "ETag": "test-etag",
-        "X-Amz-Meta-Version-Tag": "test-version-tag",
     }
     workspace_api.http_client.get.return_value = mock_response
 
@@ -65,10 +61,9 @@ def test_get_file(workspace_api: WorkspacesAPI):
     assert result.metadata.object_name == "test-file.txt"
     assert result.metadata.content_type == "text/plain"
     assert result.metadata.etag == "test-etag"
-    assert result.metadata.version_tag == "test-version-tag"
 
     # Verify the API call
-    workspace_api.http_client.get.assert_called_once_with(url="/api/v1/file/test-workspace/test-file.txt", params={})
+    workspace_api.http_client.get.assert_called_once_with(url="/api/v1/file/test-workspace/test-file.txt")
 
 
 def test_put_file(workspace_api, tmp_path):
@@ -82,12 +77,9 @@ def test_put_file(workspace_api, tmp_path):
         "bucket_name": "test-workspace",
         "object_name": "test-file.txt",
         "last_modified": "2023-01-01T00:00:00Z",
-        "is_latest": True,
         "etag": "test-etag",
         "size": 100,
         "content_type": "text/plain",
-        "version_id": "test-version-id",
-        "version_tag": "test-version-tag",
         "metadata": {},
     }
     workspace_api.http_client.post.return_value = mock_response  # type: ignore
@@ -98,7 +90,6 @@ def test_put_file(workspace_api, tmp_path):
     assert result.bucket_name == "test-workspace"
     assert result.object_name == "test-file.txt"
     assert result.etag == "test-etag"
-    assert result.version_id == "test-version-id"
 
     workspace_api.http_client.post.assert_called_once()
     assert workspace_api.http_client.post.call_args.kwargs["url"] == "/api/v1/file/test-workspace/test-file.txt"
@@ -114,4 +105,4 @@ def test_delete_file(workspace_api: WorkspacesAPI):
     workspace_api.delete_file("test-workspace", "test-file.txt")
 
     # Verify the API call
-    workspace_api.http_client.delete.assert_called_once_with(url="/api/v1/file/test-workspace/test-file.txt", params={})  # type: ignore
+    workspace_api.http_client.delete.assert_called_once_with(url="/api/v1/file/test-workspace/test-file.txt")  # type: ignore

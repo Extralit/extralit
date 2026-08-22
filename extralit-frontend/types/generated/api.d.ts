@@ -1510,7 +1510,7 @@ export interface paths {
          *
          *     Checks:
          *     - S3 bucket exists (can auto-fix)
-         *     - Bucket has proper versioning policy (informational)
+         *     - Bucket is not object-versioned (can auto-fix)
          *     - RQ worker pool connectivity (informational)
          */
         post: operations["workspace_doctor_workspaces__workspace_id__doctor_post"];
@@ -2973,8 +2973,6 @@ export interface components {
             content_type?: string | null;
             /** Etag */
             etag?: string | null;
-            /** Is Latest */
-            is_latest?: boolean | null;
             /** Last Modified */
             last_modified?: string | null;
             /** Metadata */
@@ -2983,10 +2981,6 @@ export interface components {
             object_name: string;
             /** Size */
             size?: number | null;
-            /** Version Id */
-            version_id?: string | null;
-            /** Version Tag */
-            version_tag?: string | null;
         };
         /** OptionSettings */
         OptionSettings: {
@@ -3542,8 +3536,6 @@ export interface components {
             inserted_at: string;
             /** Object Key */
             object_key: string;
-            /** Object Version Id */
-            object_version_id: string | null;
             /** Parent Version Id */
             parent_version_id: string | null;
             /**
@@ -10386,9 +10378,7 @@ export interface operations {
     };
     get_file_file__bucket___object__get: {
         parameters: {
-            query?: {
-                version_id?: string | null;
-            };
+            query?: never;
             header?: {
                 range?: string | null;
                 "if-none-match"?: string | null;
@@ -10663,9 +10653,7 @@ export interface operations {
     };
     delete_files_file__bucket___object__delete: {
         parameters: {
-            query?: {
-                version_id?: string | null;
-            };
+            query?: never;
             header?: never;
             path: {
                 bucket: string;
@@ -10934,8 +10922,7 @@ export interface operations {
     list_objects_endpoint_files__bucket___prefix__get: {
         parameters: {
             query?: {
-                include_version?: unknown;
-                recursive?: unknown;
+                recursive?: boolean;
                 start_after?: string | null;
             };
             header?: never;

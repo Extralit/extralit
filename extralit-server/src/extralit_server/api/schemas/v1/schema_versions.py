@@ -27,7 +27,6 @@ class SchemaVersionRead(BaseModel):
     dataset_id: UUID
     version: int
     object_key: str
-    object_version_id: str | None
     etag: str
     checksum: str
     parent_version_id: UUID | None

@@ -6,7 +6,7 @@ from pydantic import constr
 
 from extralit_server.api.schemas.v1.users import USER_PASSWORD_MIN_LENGTH, UserCreate
 from extralit_server.api.schemas.v1.workspaces import WorkspaceCreate
-from extralit_server.contexts import accounts, files
+from extralit_server.contexts import accounts, buckets, files
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models import User, UserRole
 
@@ -88,11 +88,11 @@ async def _create(
 
         # Create S3 buckets for each workspace if they don't exist
         if workspace:
-            s3_client = await files.get_s3_client()
-            if s3_client is not None:
+            storage = await files.get_storage()
+            if storage is not None:
                 for workspace_name in workspace:
                     try:
-                        await files.create_bucket(s3_client, workspace_name)
+                        await buckets.create(storage, workspace_name)
                         typer.echo(f"✓ Created/verified bucket for workspace: {workspace_name}")
                     except Exception as e:
                         typer.echo(f"⚠ Warning: Failed to create bucket for workspace {workspace_name}: {e}")

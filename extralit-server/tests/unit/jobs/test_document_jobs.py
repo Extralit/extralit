@@ -61,7 +61,7 @@ def job_context():
         patch(f"{MODULE}.get_current_job", return_value=current_job),
         patch(f"{MODULE}.AsyncSessionLocal") as session,
     ):
-        files.get_s3_client = AsyncMock(return_value=MagicMock())
+        files.get_storage = AsyncMock(return_value=MagicMock())
         files.download_file_content = AsyncMock(return_value=b"%PDF original")
         files.get_thumbnail_s3_object_path.return_value = f"thumbnails/{DOCUMENT_ID}"
         files.put_object = AsyncMock(side_effect=put_object)

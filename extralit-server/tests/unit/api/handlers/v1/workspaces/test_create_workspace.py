@@ -41,7 +41,7 @@ class TestCreateWorkspace:
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
         # Mock the create_bucket function directly
-        with patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket:
+        with patch("extralit_server.contexts.buckets.create") as mock_create_bucket:
             # Mock create_bucket as async coroutine
             mock_create_bucket.return_value = None
 
@@ -68,7 +68,7 @@ class TestCreateWorkspace:
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
         # Mock the create_bucket function directly
-        with patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket:
+        with patch("extralit_server.contexts.buckets.create") as mock_create_bucket:
             # Mock create_bucket as async coroutine
             mock_create_bucket.return_value = None
 
@@ -107,7 +107,7 @@ class TestCreateWorkspace:
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
         # Mock the create_bucket function directly
-        with patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket:
+        with patch("extralit_server.contexts.buckets.create") as mock_create_bucket:
             # Mock create_bucket as async coroutine
             mock_create_bucket.return_value = None
 

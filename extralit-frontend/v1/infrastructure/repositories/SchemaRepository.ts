@@ -29,7 +29,6 @@ interface BackendSchemaVersion {
   dataset_id: string;
   version: number;
   object_key: string;
-  object_version_id: string | null;
   etag: string;
   checksum: string;
   parent_version_id: string | null;

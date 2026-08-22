@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pandas as pd
 import pandera.pandas as pa
@@ -7,9 +7,11 @@ from sqlalchemy import select
 from sqlalchemy.dialects import postgresql, sqlite
 
 from extralit_server.contexts import schema_versions
+from extralit_server.contexts.files import ObjectStorage
 from extralit_server.enums import DatasetStatus, FieldType
 from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.models.database import Dataset, Field
+from extralit_server.settings import settings
 from extralit_server.webhooks.v1.enums import DatasetEvent
 from tests.factories import DatasetFactory, TextFieldFactory
 
@@ -32,23 +34,20 @@ async def _fields_for(db, dataset_id) -> list[Field]:
     return list((await db.execute(stmt)).scalars().all())
 
 
-def _s3_client() -> AsyncMock:
-    """A stand-in S3 client good enough for `files_ctx.put_object`'s head_object round-trip.
+@pytest.fixture(autouse=True)
+def _local_storage_root(monkeypatch, tmp_path):
+    """Point storage at a per-test temp dir; monkeypatch restores the shared settings."""
+    monkeypatch.setattr(settings, "s3_endpoint", None)
+    monkeypatch.setattr(settings, "home_path", str(tmp_path))
 
-    A bare `AsyncMock()` doesn't work here: every attribute of an unspecced AsyncMock is
-    itself an AsyncMock, so `head_response.get(...)` inside `put_object` returns an
-    un-awaited coroutine instead of a value. Stub `head_object` to return a plain dict.
+
+def _storage() -> ObjectStorage:
+    """A real `LocalStore`-backed storage rooted in a temp dir.
+
+    `publish_version` writes the body through `files_ctx.put_object`, and the assertions here
+    are about what lands in Postgres, not about mocking the write away.
     """
-    client = AsyncMock()
-    client.head_object.return_value = {
-        "ETag": '"etag"',
-        "ContentLength": 0,
-        "LastModified": None,
-        "ContentType": "application/json",
-        "VersionId": "v1",
-        "Metadata": {},
-    }
-    return client
+    return ObjectStorage()
 
 
 class TestDeriveColumnFields:
@@ -118,7 +117,7 @@ class TestPublishVersion:
         # stays the sole draft -> ready transition, so a schema-backed dataset gets the same
         # DatasetPublishValidator checks as an annotation one and stays configurable until then.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        version = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        version = await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
         assert version.version == 1
         assert version.dataset_id == dataset.id
         assert dataset.current_schema_version_id == version.id
@@ -126,41 +125,41 @@ class TestPublishVersion:
 
     async def test_publish_materializes_column_fields(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
         fields = await _fields_for(db, dataset.id)
         assert {f.name for f in fields} == {"population", "n_arms"}
         assert all(f.settings["type"] == FieldType.column for f in fields)
 
     async def test_republishing_is_idempotent_for_unchanged_columns(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
-        v2 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
+        v2 = await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
         assert v2.version == 2
         fields = await _fields_for(db, dataset.id)
         assert len(fields) == 2  # upserted, not duplicated
 
     async def test_republishing_adds_newly_declared_columns_while_still_a_draft(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
-        await schema_versions.publish_version(db, _s3_client(), dataset, body=_wider_body(), bucket="ws")
+        await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _storage(), dataset, body=_wider_body(), bucket="ws")
         fields = await _fields_for(db, dataset.id)
         assert {f.name for f in fields} == {"population", "n_arms", "outcome"}
 
     async def test_second_version_links_the_first_as_parent(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        v1 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
-        v2 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        v1 = await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
+        v2 = await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
         assert v2.parent_version_id == v1.id
 
     async def test_publish_uploads_the_body_under_a_versioned_key(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        version = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        version = await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
         assert version.object_key == f"schemas/{dataset.id}/v1.json"
 
     async def test_invalid_body_is_rejected_before_anything_is_written(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
         with pytest.raises(UnprocessableEntityError, match="not a valid Pandera DataFrameSchema"):
-            await schema_versions.publish_version(db, _s3_client(), dataset, body="{not pandera}", bucket="ws")
+            await schema_versions.publish_version(db, _storage(), dataset, body="{not pandera}", bucket="ws")
         assert dataset.current_schema_version_id is None
         assert await _fields_for(db, dataset.id) == []
 
@@ -172,13 +171,13 @@ class TestPublishVersion:
         dataset = await DatasetFactory.create(status=DatasetStatus.ready)
 
         with pytest.raises(UnprocessableEntityError, match="cannot be added to a published dataset"):
-            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+            await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
 
         assert dataset.current_schema_version_id is None
 
     async def test_republishing_with_a_changed_column_dtype_is_rejected(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
 
         changed_body = pa.DataFrameSchema(
             {
@@ -188,7 +187,7 @@ class TestPublishVersion:
         ).to_json()
 
         with pytest.raises(UnprocessableEntityError, match="cannot change dtype"):
-            await schema_versions.publish_version(db, _s3_client(), dataset, body=changed_body, bucket="ws")
+            await schema_versions.publish_version(db, _storage(), dataset, body=changed_body, bucket="ws")
 
         # Rejected before any write: no second version, no dtype mutation on the existing field.
         assert [v.version for v in await schema_versions.list_versions(db, dataset)] == [1]
@@ -198,8 +197,8 @@ class TestPublishVersion:
     async def test_republishing_with_an_unchanged_column_dtype_is_allowed(self, db):
         # Unchanged existing columns are always legal. Only a *changed* dtype is rejected.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
-        v2 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
+        v2 = await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
         assert v2.version == 2
 
     async def test_adding_a_column_to_a_published_dataset_is_rejected(self, db):
@@ -208,11 +207,11 @@ class TestPublishVersion:
         # leave the dataset unwritable at `PUT /datasets/{id}/records/bulk`. Reject at publish
         # so the failure stays at the call that caused it.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
         await dataset.update(db, status=DatasetStatus.ready)
 
         with pytest.raises(UnprocessableEntityError, match="cannot be added to a published dataset"):
-            await schema_versions.publish_version(db, _s3_client(), dataset, body=_wider_body(), bucket="ws")
+            await schema_versions.publish_version(db, _storage(), dataset, body=_wider_body(), bucket="ws")
 
         assert [v.version for v in await schema_versions.list_versions(db, dataset)] == [1]
         assert {f.name for f in await _fields_for(db, dataset.id)} == {"population", "n_arms"}
@@ -225,7 +224,7 @@ class TestPublishVersion:
         await TextFieldFactory.create(name="population", dataset=dataset)
 
         with pytest.raises(UnprocessableEntityError, match="collides with an existing text field"):
-            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+            await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
 
         assert await schema_versions.list_versions(db, dataset) == []
         fields_by_name = {f.name: f for f in await _fields_for(db, dataset.id)}
@@ -239,7 +238,7 @@ class TestPublishVersion:
 
         with patch("extralit_server.contexts.schema_versions.notify_dataset_event_v1") as mock_notify:
             mock_notify.return_value = []
-            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+            await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
 
         mock_notify.assert_awaited_once()
         awaited_args = mock_notify.await_args.args
@@ -253,8 +252,8 @@ class TestPublishVersion:
 
         with patch("extralit_server.contexts.schema_versions.notify_dataset_event_v1") as mock_notify:
             mock_notify.return_value = []
-            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
-            v2 = await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+            await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
+            v2 = await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
 
         assert v2.version == 2
         assert [call.args[1] for call in mock_notify.await_args_list] == [
@@ -268,7 +267,7 @@ class TestPublishVersion:
         # `Field.upsert_many` raises on an empty `objects` list, so publish_version must
         # skip the upsert call rather than blow up on a degenerate-but-valid schema.
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        version = await schema_versions.publish_version(db, _s3_client(), dataset, body=_empty_body(), bucket="ws")
+        version = await schema_versions.publish_version(db, _storage(), dataset, body=_empty_body(), bucket="ws")
         assert version.version == 1
         assert await _fields_for(db, dataset.id) == []
 
@@ -306,7 +305,7 @@ class TestVersionAllocationLockingStatement:
             return await original_execute(statement, *args, **kwargs)
 
         with patch.object(db, "execute", _spy):
-            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+            await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
 
         assert any(getattr(statement, "_for_update_arg", None) is not None for statement in executed), (
             "publish_version must take a row lock before allocating a version number"
@@ -318,11 +317,11 @@ class TestReadVersions:
     async def test_list_versions_is_ordered_by_version_number(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
         for _ in range(3):
-            await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+            await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
         assert [v.version for v in await schema_versions.list_versions(db, dataset)] == [1, 2, 3]
 
     async def test_get_version_by_number(self, db):
         dataset = await DatasetFactory.create(status=DatasetStatus.draft)
-        await schema_versions.publish_version(db, _s3_client(), dataset, body=_body(), bucket="ws")
+        await schema_versions.publish_version(db, _storage(), dataset, body=_body(), bucket="ws")
         assert (await schema_versions.get_version_by_number(db, dataset.id, 1)).version == 1
         assert await schema_versions.get_version_by_number(db, dataset.id, 99) is None

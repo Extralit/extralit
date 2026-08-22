@@ -6,7 +6,7 @@ pointer, and projects every declared column into a `Field` row -- so the `fields
 table is the queryable column manifest and there is no cached copy of it.
 """
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from uuid import UUID
 
 import pandera.pandas as pa
@@ -14,14 +14,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.contexts import files as files_ctx
+from extralit_server.contexts.files import ObjectStorage
 from extralit_server.enums import FieldType
 from extralit_server.errors.future import UnprocessableEntityError
 from extralit_server.models.database import Dataset, Field, SchemaVersion
 from extralit_server.webhooks.v1.datasets import notify_dataset_event as notify_dataset_event_v1
 from extralit_server.webhooks.v1.enums import DatasetEvent
-
-if TYPE_CHECKING:
-    from types_aiobotocore_s3.client import S3Client
 
 
 def object_key_for(dataset_id: UUID, version: int) -> str:
@@ -140,7 +138,7 @@ async def _reject_incompatible_columns(
 
 async def publish_version(
     db: AsyncSession,
-    s3_client: "S3Client",
+    storage: ObjectStorage,
     dataset: Dataset,
     *,
     body: str,
@@ -156,7 +154,7 @@ async def publish_version(
 
     next_version = await _next_version_number(db, dataset.id)
     key = object_key_for(dataset.id, next_version)
-    metadata = await files_ctx.put_object(s3_client, bucket, key, body, content_type="application/json")
+    metadata = await files_ctx.put_object(storage, bucket, key, body, content_type="application/json")
 
     parent_id = dataset.current_schema_version_id
 
@@ -165,7 +163,6 @@ async def publish_version(
         dataset_id=dataset.id,
         version=next_version,
         object_key=key,
-        object_version_id=getattr(metadata, "version_id", None),
         etag=metadata.etag,
         checksum=files_ctx.compute_hash(body.encode("utf-8")),
         parent_version_id=parent_id,

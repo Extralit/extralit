@@ -10,12 +10,9 @@ class ObjectMetadata(BaseModel):
     bucket_name: str
     object_name: str
     last_modified: Optional[datetime] = None
-    is_latest: Optional[bool] = None
     etag: Optional[str] = None
     size: Optional[int] = None
     content_type: Optional[str] = None
-    version_id: Optional[str] = None
-    version_tag: Optional[str] = None
     metadata: Optional[dict[str, Any]] = None
 
 
@@ -39,4 +36,3 @@ class FileObjectResponse(BaseModel):
 
     content: bytes
     metadata: Optional[ObjectMetadata] = None
-    versions: Optional[ListObjectsResponse] = None

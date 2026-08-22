@@ -43,15 +43,14 @@ export const useSchemaTableViewModel = (props: {
   );
   const groupbyColumns = ref(refColumns.value || null);
 
-  const fetchValidation = async ({ latest = false }: { latest?: boolean } = {}) => {
+  const fetchValidation = async () => {
     var schemaName: string = props.tableJSON?.schema?.schemaName || props.tableJSON?.validation?.name;
     if (!schemaName) {
       return;
     }
-    var version_id: string = latest ? null : props.tableJSON.schema?.version_id;
     await waitForAsyncValue(() => dataset.workspaceName);
 
-    const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName, version_id);
+    const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName);
 
     // const schemaMetadataUpdate = {
     //   ...props.tableJSON.schema,
@@ -61,8 +60,7 @@ export const useSchemaTableViewModel = (props: {
       props.tableJSON?.schema?.fields || [],
       props.tableJSON?.schema?.primaryKey || [],
       fileMetadata,
-      schemaName,
-      version_id
+      schemaName
     );
 
     if (!isEqual(props.tableJSON?.schema, schemaMetadataUpdate)) {

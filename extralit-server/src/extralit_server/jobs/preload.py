@@ -11,7 +11,6 @@ from extralit_server.contexts.document.margin import PDFAnalyzer  # noqa: F401
 from extralit_server.contexts.document.preprocessing import PDFPreprocessingSettings, PDFPreprocessor  # noqa: F401
 from extralit_server.contexts.ocr.triage import triage_pdf  # noqa: F401
 from extralit_server.database import AsyncSessionLocal, async_engine  # noqa: F401
-from extralit_server.helpers import create_s3_client  # noqa: F401
 from extralit_server.jobs import (  # noqa: F401
     dataset_jobs,
     document_jobs,

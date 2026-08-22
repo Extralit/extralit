@@ -69,8 +69,8 @@ class _RealMappingSearchEngine:
 @pytest.fixture(autouse=True)
 def _mock_put_object():
     # `publish_version` (Task 6) calls the real `files_ctx.put_object`, which would
-    # otherwise hit real object storage (or the LocalFileClient fallback under
-    # ~/.extralit) through the `files_ctx.get_s3_client` dependency. Stub at the
+    # otherwise hit real object storage (or the local object store under
+    # ~/.extralit) through the `files_ctx.get_storage` dependency. Stub at the
     # `put_object` call site rather than the dependency itself, matching the existing
     # convention in tests/unit/api/handlers/v1/test_files.py (`test_put_file` patches
     # `extralit_server.contexts.files.put_object`). This keeps the stub local to this
@@ -80,7 +80,6 @@ def _mock_put_object():
             bucket_name="workspace",
             object_name="schemas/dataset/v1.json",
             etag="etag",
-            version_id="v1",
         )
         yield mock_put_object
 

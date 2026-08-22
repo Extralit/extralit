@@ -16,7 +16,6 @@ def download_file(
     output_path: Optional[Path] = typer.Option(
         None, "--output", "-o", help="Local path to save the file (default: same as remote filename)"
     ),
-    version_id: Optional[str] = typer.Option(None, "--version-id", "-v", help="Version ID of the file to download"),
     overwrite: bool = typer.Option(False, "--overwrite", help="Overwrite existing file"),
 ) -> None:
     """Download a file from a workspace."""
@@ -62,7 +61,7 @@ def download_file(
             task = progress.add_task(f"Downloading {remote_path} from {workspace}...", total=None)
 
             # Download the file
-            file_response = workspace_obj.get_file(remote_path, version_id=version_id)
+            file_response = workspace_obj.get_file(remote_path)
 
             # Save the file
             with open(output_path, "wb") as f:

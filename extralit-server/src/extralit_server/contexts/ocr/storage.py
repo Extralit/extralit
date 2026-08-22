@@ -9,18 +9,16 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, Optional
 from uuid import UUID
 
 from anyio import to_thread
 from docling_core.types.doc import DoclingDocument
 
 from extralit_server.contexts import files
+from extralit_server.contexts.files import ObjectStorage
 from extralit_server.contexts.ocr.arrow import items_table, pages_table
 from extralit_server.contexts.ocr.layout_store import LAYOUT_PREFIX, LayoutStore
-
-if TYPE_CHECKING:
-    from types_aiobotocore_s3 import S3Client
 
 _LOGGER = logging.getLogger("extralit_server.contexts.ocr.storage")
 
@@ -30,7 +28,7 @@ def layout_object_path(document_id: UUID | str) -> str:
 
 
 async def store_layout(
-    s3_client: S3Client,
+    storage: ObjectStorage,
     workspace_name: str,
     document_id: UUID | str,
     doc: DoclingDocument,
@@ -46,7 +44,7 @@ async def store_layout(
     store = store or LayoutStore.for_workspace(workspace_name)
 
     await files.put_object(
-        s3_client,
+        storage,
         workspace_name,
         layout_url,
         json.dumps(doc.export_to_dict(), ensure_ascii=False),
@@ -69,7 +67,7 @@ async def store_layout(
 
 
 async def delete_layout(
-    s3_client: S3Client,
+    storage: ObjectStorage,
     workspace_name: str,
     document_id: UUID | str,
     store: Optional[LayoutStore] = None,
@@ -77,7 +75,7 @@ async def delete_layout(
     """Drop both artifacts. Orphaned rows would skew workspace aggregates, but a failure here is
     negligible: they are superseded on the next parse of that document."""
     try:
-        await files.delete_object(s3_client, workspace_name, layout_object_path(document_id))
+        await files.delete_object(storage, workspace_name, layout_object_path(document_id))
     except Exception as error:
         _LOGGER.warning(f"Could not delete layout JSON for document {document_id}: {error}")
 
@@ -90,7 +88,7 @@ async def delete_layout(
 
 
 async def load_layout(
-    s3_client: S3Client,
+    storage: ObjectStorage,
     workspace_name: str,
     document_id: UUID | str,
     object_path: Optional[str] = None,
@@ -101,6 +99,6 @@ async def load_layout(
     demands an equal major and a minor no higher than the SDK's.
     """
     key = object_path or layout_object_path(document_id)
-    response = await s3_client.get_object(Bucket=workspace_name, Key=key)
-    raw = await response["Body"].read()
+    file = await files.get_object(storage, workspace_name, key)
+    raw = bytes(await file.response.bytes_async())
     return DoclingDocument.model_validate(json.loads(raw))

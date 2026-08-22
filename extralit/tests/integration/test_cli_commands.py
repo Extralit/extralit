@@ -75,7 +75,6 @@ class TestCLICommands:
             except Exception:
                 pass
 
-    @pytest.mark.skip(reason="buckets with versioning enabled still list deleted files, needs further investigation")
     def test_files_upload_download_and_delete_command(self, test_workspace):
         """Test the 'files upload', 'files download', and 'files delete' commands."""
         with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as temp_file:
