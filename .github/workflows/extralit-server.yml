@@ -30,9 +30,46 @@ permissions:
   id-token: write
 
 jobs:
+  # `pull_request` path filters match the PR's cumulative diff, so once a PR touches the server
+  # every later push re-runs the ~6min suite even if it only moved frontend files. Re-filter the
+  # incremental push delta here; anything we can't resolve falls through to running the suite.
+  changes:
+    name: Detect server changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      server: ${{ steps.filter.outputs.server }}
+    steps:
+      - id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.event.after }}
+        run: |
+          set -uo pipefail
+          run_suite() { echo "server=true" >> "$GITHUB_OUTPUT"; exit 0; }
+
+          # Only `synchronize` carries a previous head to diff against; `opened`/`reopened`/
+          # `push`/`workflow_dispatch` always run.
+          [[ "${{ github.event_name }}/${{ github.event.action }}" == "pull_request/synchronize" ]] || run_suite
+
+          # A force-push can leave `before` unreachable, which fails the compare.
+          compare=$(gh api "repos/${{ github.repository }}/compare/$BEFORE...$AFTER") || run_suite
+          changed=$(jq -r '.files[].filename' <<<"$compare")
+          [[ -n "$changed" && $(wc -l <<<"$changed") -lt 300 ]] || run_suite
+
+          echo "$changed" | sed 's/^/  /'
+          if grep -qE '^(extralit-server/|openapi/v1\.json$|\.github/)' <<<"$changed"; then
+            run_suite
+          fi
+          echo "server=false" >> "$GITHUB_OUTPUT"
+
   build:
     name: Build `extralit-server` package
     runs-on: ubuntu-latest
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.server != 'false' }}
 
     defaults:
       run:
