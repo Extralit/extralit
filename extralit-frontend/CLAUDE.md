@@ -74,10 +74,12 @@ to `localhost` plus a throwaway redis on :6379.
 ## Code Quality
 
 ```bash
-npm run lint             # ESLint check (eslint 8 + vue-eslint-parser)
-npm run lint:fix         # Fix ESLint issues
-npm run format           # Format with Prettier
-npm run format:check     # Check formatting
+npm run lint             # oxlint, then eslint 10 (vue-eslint-parser) — both --quiet
+npm run lint:oxc         # oxlint only (the blocking CI gate; ~1s)
+npm run lint:eslint      # eslint only (Vue template + i18n rules; advisory in CI)
+npm run lint:fix         # Autofix both linters
+npm run format           # Format with oxfmt
+npm run format:check     # Check formatting (blocking in CI)
 npm run generate-icons   # Generate icon components from SVG
 
 npx nuxi typecheck       # vue-tsc type check
@@ -114,7 +116,7 @@ npm run build            # Production build (vite/nitro)
 - Pinia (state management; Vuex fully removed)
 - Vitest + @vue/test-utils v2 (unit) + Playwright (e2e)
 - @nuxtjs/i18n v10 (vue-i18n v11), @vueuse/core, mitt
-- ESLint 8 + Prettier
+- oxlint + ESLint 10 (lint), oxfmt (format)
 
 ## Structure
 
