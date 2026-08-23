@@ -3116,6 +3116,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#object-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#redis" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3777,6 +3788,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#object-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object storage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#redis" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4021,6 +4043,27 @@ See https://github.com/opensearch-project/k-NN/issues/1286</p>
 <p><code>EXTRALIT_ES_RECORDS_INDEX_REPLICAS</code>: Default number of elasticsearch/opensearch replicas for each search index. (Default: <code>0</code>).</p>
 </li>
 </ul>
+<h3 id="object-storage">Object storage<a class="headerlink" href="#object-storage" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p><code>EXTRALIT_STORAGE_URL</code>: Root of object storage. Every workspace is a directory under it, holding its <code>pdf/</code>, <code>thumbnails/</code>, <code>layout/</code> and <code>schemas/</code> keys (Default: <code>file://$EXTRALIT_HOME_PATH/storage</code>). Accepted forms:</p>
+<ul>
+<li><code>file:///path/to/dir</code> — local disk.</li>
+<li><code>s3://bucket[/prefix]</code> — AWS S3.</li>
+<li><code>http(s)://host[:port]/bucket[/prefix]</code> — MinIO, Cloudflare R2 (<code>https://&lt;ACCOUNT_ID&gt;.r2.cloudflarestorage.com/bucket</code>) or any S3-compatible endpoint, addressed path-style.</li>
+</ul>
+<p>The bucket must already exist; the server never creates or deletes buckets. Use <code>https</code> in production: plain <code>http</code> sends your objects and their signatures in the clear, and is only appropriate on an isolated development host or a trusted internal network. Credentials belong in <code>EXTRALIT_S3_ACCESS_KEY</code>/<code>_SECRET_KEY</code>, never in the URL — a URL carrying them is rejected at startup.</p>
+</li>
+<li>
+<p><code>EXTRALIT_S3_ACCESS_KEY</code>, <code>EXTRALIT_S3_SECRET_KEY</code>: Static credentials, set together or not at all. When unset, credentials are resolved from the environment the way the AWS SDKs do: <code>AWS_*</code> variables, EC2 instance profile (IMDSv2), ECS task role, or EKS IRSA web identity. That is the recommended setup on AWS; <code>~/.aws/config</code> profiles and <code>credential_process</code> are not read.</p>
+</li>
+<li><code>EXTRALIT_S3_REGION</code>: Region for request signing (Default: <code>us-east-1</code>; use <code>auto</code> for R2).</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Migrating from bucket-per-workspace</p>
+<p>Servers before this setting created one bucket per workspace. Copy each into the new root before switching, e.g. <code>mc mirror minio/&lt;workspace&gt; minio/&lt;bucket&gt;/&lt;prefix&gt;/&lt;workspace&gt;</code>; the object keys are unchanged.</p>
+<p><strong>Local storage moved too.</strong> It used to sit directly under <code>$EXTRALIT_HOME_PATH/&lt;workspace&gt;/</code>, alongside <code>extralit.db</code> and <code>lance/</code>; the default root is now the <code>storage/</code> subdirectory. Move each workspace into it — <code>mkdir -p $EXTRALIT_HOME_PATH/storage &amp;&amp; mv $EXTRALIT_HOME_PATH/&lt;workspace&gt; $EXTRALIT_HOME_PATH/storage/</code> — or keep the old layout by setting <code>EXTRALIT_STORAGE_URL=file://$EXTRALIT_HOME_PATH</code>. Nothing is deleted if you skip this, but the server will not find the existing files.</p>
+</div>
 <h3 id="redis">Redis<a class="headerlink" href="#redis" title="Permanent link">&para;</a></h3>
 <p>Redis is used by Extralit to store information about jobs to be processed on background. The following environment variables are useful to config how Extralit connects to Redis:</p>
 <ul>

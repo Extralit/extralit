@@ -3935,7 +3935,7 @@
 </span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">removed_user</span> <span class="o">=</span> <span class="n">workspace</span><span class="o">.</span><span class="n">remove_user</span><span class="p">(</span><span class="s2">&quot;my_username&quot;</span><span class="p">)</span>
 </span></code></pre></div>
 <h2 id="diagnose-workspace-health">Diagnose workspace health<a class="headerlink" href="#diagnose-workspace-health" title="Permanent link">&para;</a></h2>
-<p>You can run health diagnostics on a workspace to check for common issues like missing S3 buckets, connectivity problems, or configuration issues. The <code>doctor</code> method checks various aspects of the workspace setup and can automatically fix certain issues.</p>
+<p>You can run health diagnostics on a workspace to check for common issues like an unreachable storage root, connectivity problems, or configuration issues. The <code>doctor</code> method checks various aspects of the workspace setup and can automatically fix certain issues.</p>
 <div class="admonition tip">
 <p class="admonition-title"><abbr title="Command Line Interface.">CLI</abbr> Usage</p>
 <p>You can run workspace diagnostics from the command line:
@@ -3943,8 +3943,7 @@
 </span></code></pre></div></p>
 </div>
 <p>The doctor checks:
-- <strong>S3 bucket existence</strong>: Creates the bucket if missing (when autofix=True)
-- <strong>Bucket versioning</strong>: Verifies file versioning policy (informational)
+- <strong>Storage root</strong>: The configured <code>EXTRALIT_STORAGE_URL</code> is reachable with the server's credentials
 - <strong>RQ worker pool</strong>: Tests background job queue connectivity (informational)
 - <strong>Elasticsearch indexes</strong>: Checks dataset index availability (informational)</p>
 <h2 id="delete-a-workspace">Delete a workspace<a class="headerlink" href="#delete-a-workspace" title="Permanent link">&para;</a></h2>

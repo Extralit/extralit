@@ -3551,7 +3551,7 @@
 </thead>
 <tbody>
 <tr>
-<td>push to <code>release</code></td>
+<td><code>release</code> build (dispatched by <code>release.yml</code>, not by the push — see below)</td>
 <td>multi-arch <code>extralit/extralit-server:v0.7.0</code> + <code>:latest</code>, then the <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Space rebuild that restarts <strong><code>extralit/public-demo</code></strong></td>
 </tr>
 <tr>
@@ -3569,6 +3569,7 @@
 </tbody>
 </table>
 <p>The GitHub Release step waits until PyPI actually serves both packages before publishing, so a release is never announced before it's installable.</p>
+<p>The production build is the one row above that is <em>not</em> driven by the atomic push. <code>release.yml</code> dispatches it explicitly, because GitHub matches a workflow's <code>paths:</code> filter against the diff a push carries — and when <code>release</code> is created at a commit that already exists on <code>main</code>, that push carries no changed files and starts nothing. Cutting <code>v0.7.0</code> hit exactly that: <code>main</code> and the tag both built, <code>release</code> built nothing, and the production image had to be triggered by hand.</p>
 <h2 id="verify">Verify<a class="headerlink" href="#verify" title="Permanent link">&para;</a></h2>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>ls-remote<span class="w"> </span>origin<span class="w"> </span>refs/heads/main<span class="w"> </span>refs/heads/release<span class="w"> </span>refs/tags/v0.7.0<span class="w">   </span><span class="c1"># all three at one SHA</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pip<span class="w"> </span>index<span class="w"> </span>versions<span class="w"> </span>extralit
