@@ -1,10 +1,10 @@
 """Compare per-document Parquet sidecars against the workspace Lance datasets.
 
     uv run python scripts/bench_layout_store.py --docs 500 --items 250
-    EXTRALIT_S3_ENDPOINT=http://localhost:9000 uv run python scripts/bench_layout_store.py --workspace bench
+    EXTRALIT_STORAGE_URL=http://localhost:9000/extralit uv run python scripts/bench_layout_store.py --workspace bench
 
 `--workspace` resolves the root through the same resolver production uses, so the S3 run measures
-the real path (MinIO bucket `bench` must exist). Needs Redis for the workspace lock.
+the real path (the bucket in the URL must exist). Needs Redis for the workspace lock.
 """
 
 from __future__ import annotations

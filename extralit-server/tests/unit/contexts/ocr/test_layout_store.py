@@ -62,51 +62,40 @@ def pages(document_id: str, count: int = 1) -> pa.Table:
 
 @pytest.fixture
 def local_store(tmp_path, monkeypatch):
-    monkeypatch.setattr(settings, "home_path", str(tmp_path))
-    monkeypatch.setattr(settings, "s3_endpoint", None)
+    monkeypatch.setattr(settings, "storage_url", tmp_path.as_uri())
     return LayoutStore.for_workspace(WORKSPACE)
 
 
 class TestAddressing:
-    def test_local_root_matches_where_the_local_file_client_puts_objects(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(settings, "home_path", str(tmp_path))
-        monkeypatch.setattr(settings, "s3_endpoint", None)
+    def test_local_root_sits_under_the_workspace_directory(self, tmp_path, monkeypatch):
+        monkeypatch.setattr(settings, "storage_url", tmp_path.as_uri())
 
-        bucket, prefix = files.workspace_root(WORKSPACE)
         store = LayoutStore.for_workspace(WORKSPACE)
 
-        # `{home_path}/{bucket}/{key}` is exactly LocalFileClient's object path.
-        assert store.root_uri == f"{tmp_path}/{bucket}/{prefix}{LAYOUT_PREFIX}"
+        # Same directory `files` writes the workspace's objects to.
+        assert store.root_uri == f"{tmp_path}/{WORKSPACE}/{LAYOUT_PREFIX}"
         assert store.items_uri().endswith(f"{LAYOUT_PREFIX}/{ITEMS_DATASET}.lance")
 
-    def test_s3_root_matches_the_bucket_and_prefix_files_resolve(self, monkeypatch):
-        monkeypatch.setattr(settings, "s3_endpoint", "http://localhost:9000")
+    def test_s3_root_is_the_workspace_prefix_under_the_storage_root(self, monkeypatch):
+        monkeypatch.setattr(settings, "storage_url", "http://localhost:9000/extralit/prod")
         monkeypatch.setattr(settings, "s3_access_key", "minio")
         monkeypatch.setattr(settings, "s3_secret_key", "secret")
 
-        bucket, prefix = files.workspace_root(WORKSPACE)
         store = LayoutStore.for_workspace(WORKSPACE)
 
-        assert store.root_uri == f"s3://{bucket}/{prefix}{LAYOUT_PREFIX}"
+        assert store.root_uri == f"s3://extralit/prod/{WORKSPACE}/{LAYOUT_PREFIX}"
         assert store.storage_options["allow_http"] == "true"
+        assert store.storage_options["aws_endpoint"] == "http://localhost:9000"
 
     def test_pdf_and_thumbnail_keys_share_the_layout_root(self, monkeypatch):
-        # A later single-bucket mode must move every artifact of a workspace together.
-        monkeypatch.setattr(settings, "s3_endpoint", "http://localhost:9000")
-        monkeypatch.setattr(settings, "s3_access_key", "minio")
-        monkeypatch.setattr(settings, "s3_secret_key", "secret")
+        monkeypatch.setattr(settings, "storage_url", "s3://extralit")
         document_id = uuid4()
 
-        bucket, prefix = files.workspace_root(WORKSPACE)
         store = LayoutStore.for_workspace(WORKSPACE)
 
         for key in (files.get_pdf_s3_object_path(document_id), files.get_thumbnail_s3_object_path(document_id)):
-            assert store.root_uri.startswith(f"s3://{bucket}/{prefix}")
+            assert store.root_uri.startswith(f"s3://extralit/{WORKSPACE}/")
             assert not key.startswith("/")
-
-    def test_the_resolver_agrees_with_the_bucket_files_addresses_today(self):
-        # files.py still passes `Bucket=workspace_name`; the resolver must not silently disagree.
-        assert files.workspace_root(WORKSPACE) == (WORKSPACE, "")
 
 
 class TestReplace:

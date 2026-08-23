@@ -7,7 +7,7 @@ from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUS
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
-from extralit_server.contexts.files import ObjectMetadata, get_storage
+from extralit_server.contexts.files import ObjectMetadata
 from extralit_server.enums import (
     DatasetDistributionStrategy,
     FieldType,
@@ -156,15 +156,6 @@ class WorkspaceSyncFactory(BaseSyncFactory):
         model = Workspace
 
     name = factory.Sequence(lambda n: f"workspace-{n}")
-
-    @classmethod
-    async def create_with_s3(cls, **kwargs):
-        workspace = await cls.create(**kwargs)
-        from extralit_server.contexts import buckets
-
-        storage = await get_storage()
-        await buckets.create(storage, workspace.name)
-        return workspace
 
 
 class WorkspaceFactory(BaseFactory):
@@ -604,7 +595,7 @@ class MinioFileFactory(factory.Factory):
     class Meta:
         model = ObjectMetadata
 
-    bucket_name = "test-bucket"
+    workspace = "test-bucket"
     object_name = factory.Sequence(lambda n: f"test-object-{n}")
     last_modified = None
     etag = None
@@ -615,7 +606,7 @@ class MinioFileFactory(factory.Factory):
     @classmethod
     def attributes(cls, **kwargs):
         return {
-            "bucket_name": kwargs.get("bucket_name", cls.bucket_name),
+            "workspace": kwargs.get("workspace", cls.workspace),
             "object_name": kwargs.get("object_name", "test-object-0"),
             "last_modified": kwargs.get("last_modified", None),
             "etag": kwargs.get("etag", None),

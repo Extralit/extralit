@@ -57,7 +57,7 @@ def test_get_schemas(workspace_api):
     workspace_api.list_files.return_value = ListObjectsResponse(
         objects=[
             ObjectMetadata(
-                bucket_name="test-workspace",
+                workspace="test-workspace",
                 object_name="schemas/test_schema",
                 content_type="application/json",
                 etag="test-etag",
@@ -102,7 +102,7 @@ def test_update_schemas(workspace_api, mock_schema_structure):
     workspace_api.update_schemas.return_value = ListObjectsResponse(
         objects=[
             ObjectMetadata(
-                bucket_name="test-workspace",
+                workspace="test-workspace",
                 object_name="schemas/test_schema",
                 content_type="application/json",
                 etag="test-etag",
@@ -116,7 +116,7 @@ def test_update_schemas(workspace_api, mock_schema_structure):
     # Verify the result
     assert isinstance(result, ListObjectsResponse)
     assert len(result.objects) == 1
-    assert result.objects[0].bucket_name == "test-workspace"
+    assert result.objects[0].workspace == "test-workspace"
     assert result.objects[0].object_name == "schemas/test_schema"
 
     # Verify the API call

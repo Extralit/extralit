@@ -66,11 +66,11 @@ async def create_workspace(db: AsyncSession, workspace_attrs: dict) -> Workspace
     )
 
 
-async def delete_workspace(db: AsyncSession, workspace: Workspace):
+async def delete_workspace(db: AsyncSession, workspace: Workspace, autocommit: bool = True):
     if await datasets.list_datasets(db, workspace_id=workspace.id):
         raise NotUniqueError(f"Cannot delete the workspace {workspace.id}. This workspace has some datasets linked")
 
-    return await workspace.delete(db)
+    return await workspace.delete(db, autocommit=autocommit)
 
 
 @db_retry_policy

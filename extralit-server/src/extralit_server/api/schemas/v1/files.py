@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field, field_validator
 
 
 class ObjectMetadata(BaseModel):
-    bucket_name: str
+    workspace: str
     object_name: str
     last_modified: datetime | None = None
     etag: str | None = None

@@ -19,7 +19,7 @@ class _StreamingChecksumBodyLike:
 
 
 def _metadata() -> ObjectMetadata:
-    return ObjectMetadata(bucket_name="b", object_name="o")
+    return ObjectMetadata(workspace="b", object_name="o")
 
 
 def test_accepts_non_urllib3_streaming_body():

@@ -422,7 +422,7 @@ resolve **per environment**.
 > `EXTRALIT_*` **variable** or **secret** added to the `staging` environment is forwarded
 > verbatim onto each `pr-N` Space (§4). Recommended: `EXTRALIT_DATABASE_URL`,
 > `EXTRALIT_S3_ACCESS_KEY`/`SECRET_KEY` and `EXTRALIT_AUTH_SECRET_KEY` as **secrets**;
-> `EXTRALIT_S3_ENDPOINT`/`REGION`/`SECURE`, `EXTRALIT_BASE_URL`, `EXTRALIT_CORS_ORIGINS`
+> `EXTRALIT_STORAGE_URL`, `EXTRALIT_S3_REGION`, `EXTRALIT_BASE_URL`, `EXTRALIT_CORS_ORIGINS`
 > as **variables**. Set with `gh secret set <KEY> --env staging` /
 > `gh variable set <KEY> --env staging --body <val>`.
 

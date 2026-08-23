@@ -100,8 +100,7 @@ extralit workspaces --name my-workspace doctor --no-autofix
 ```
 
 The doctor command checks:
-- **S3 bucket existence**: Automatically creates the bucket if missing (with autofix)
-- **Bucket versioning**: Verifies proper file versioning policy is enabled (informational)
+- **Storage root**: The configured `EXTRALIT_STORAGE_URL` is reachable
 - **RQ worker pool**: Tests connectivity to the background job queue (informational)
 - **Elasticsearch indexes**: Checks if dataset indexes exist (informational)
 

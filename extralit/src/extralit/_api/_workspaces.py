@@ -212,7 +212,7 @@ class WorkspacesAPI(ResourceAPI[WorkspaceModel]):
             file_response = FileObjectResponse(
                 content=response.content,
                 metadata=ObjectMetadata(
-                    bucket_name=workspace_name,
+                    workspace=workspace_name,
                     object_name=path,
                     content_type=response.headers.get("Content-Type"),
                     etag=response.headers.get("ETag"),

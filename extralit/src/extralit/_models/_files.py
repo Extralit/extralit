@@ -1,13 +1,16 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 
 class ObjectMetadata(BaseModel):
     """Metadata for an object in a workspace."""
 
-    bucket_name: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    # `bucket_name` is what servers older than the one-storage-root change send.
+    workspace: str = Field(validation_alias=AliasChoices("workspace", "bucket_name"))
     object_name: str
     last_modified: Optional[datetime] = None
     etag: Optional[str] = None

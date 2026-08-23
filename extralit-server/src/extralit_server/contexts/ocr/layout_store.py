@@ -12,7 +12,6 @@ import logging
 from collections.abc import Iterator, Sequence
 from contextlib import asynccontextmanager, contextmanager
 from datetime import timedelta
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
@@ -21,10 +20,9 @@ import pyarrow as pa
 from anyio import to_thread
 from lance.commit import CommitConflictError
 
-from extralit_server.contexts.files import workspace_root
+from extralit_server.contexts.files import ObjectStorage
 from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA, PAGE_SCHEMA
 from extralit_server.jobs.queues import REDIS_CONNECTION
-from extralit_server.settings import settings
 
 if TYPE_CHECKING:
     import duckdb
@@ -47,24 +45,10 @@ REPLACE_ATTEMPTS = 3
 _SCHEMAS = {ITEMS_DATASET: ITEM_SCHEMA, PAGES_DATASET: PAGE_SCHEMA}
 
 
-def _s3_storage_options() -> dict[str, str]:
-    endpoint = settings.s3_endpoint or ""
-    return {
-        "aws_access_key_id": settings.s3_access_key or "",
-        "aws_secret_access_key": settings.s3_secret_key or "",
-        "aws_endpoint": endpoint,
-        "aws_region": settings.s3_region or "us-east-1",
-        "allow_http": str(endpoint.startswith("http://")).lower(),
-        "aws_virtual_hosted_style_request": "false",
-    }
-
-
 def layout_root(workspace_name: str) -> tuple[str, Optional[dict[str, str]]]:
     """Root of the workspace's datasets, resolved exactly like every other artifact of it."""
-    bucket, prefix = workspace_root(workspace_name)
-    if all([settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key]):
-        return f"s3://{bucket}/{prefix}{LAYOUT_PREFIX}", _s3_storage_options()
-    return str(Path(settings.home_path) / bucket / f"{prefix}{LAYOUT_PREFIX}"), None
+    storage = ObjectStorage()
+    return storage.lance_uri(workspace_name, LAYOUT_PREFIX), storage.lance_storage_options()
 
 
 def _document_filter(document_id: UUID | str) -> str:

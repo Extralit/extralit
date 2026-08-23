@@ -384,7 +384,6 @@ async def process_bulk_upload(
     async with AsyncSessionLocal() as db:
         for reference, doc in reference_to_doc.items():
             try:
-                # Get workspace for bucket name
                 workspace = await Workspace.get(db, doc.document_create.workspace_id)
                 if not workspace:
                     failed_validations.append(f"{reference}: Workspace not found")
@@ -453,10 +452,10 @@ async def process_bulk_upload(
                         _LOGGER.error(error_msg)
 
                         # Provide more specific error information for S3 issues
-                        if "bucket" in str(e).lower() or "storage" in str(e).lower():
+                        if "storage" in str(e).lower():
                             error_msg += " - This may be a storage configuration issue. Please check S3 endpoint and credentials."
                         elif "404" in str(e) or "not found" in str(e).lower():
-                            error_msg += " - The storage bucket or endpoint may not be accessible."
+                            error_msg += " - The storage root may not be accessible."
 
                         failed_validations.append(f"{filename}: {error_msg}")
                         reference_failed = True

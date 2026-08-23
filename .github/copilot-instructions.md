@@ -151,7 +151,7 @@ EXTRALIT_DATABASE_URL=sqlite+aiosqlite:///extralit.db    # Database connection
 EXTRALIT_REDIS_URL=redis://localhost:6379/0             # Redis for background jobs
 EXTRALIT_ELASTICSEARCH=http://localhost:9200            # Search engine endpoint
 EXTRALIT_SEARCH_ENGINE=elasticsearch                    # elasticsearch|opensearch
-EXTRALIT_S3_ENDPOINT=http://localhost:9000              # MinIO/S3 storage
+EXTRALIT_STORAGE_URL=http://localhost:9000/extralit     # MinIO/S3 storage root (unset = ~/.extralit/storage)
 EXTRALIT_CORS_ORIGINS=["*"]                             # CORS configuration
 ```
 
