@@ -70,15 +70,17 @@ describe("ImportAnalysisTable", () => {
         workspace: mockWorkspace,
         loading: false,
       },
-      global: { stubs: {
-        BaseSpinner: true,
-        BaseIcon: true,
-        BaseButton: true,
-        BaseSimpleTable: {
-          template: '<div class="mock-simple-table"></div>',
-          props: ["data", "columns", "options"],
+      global: {
+        stubs: {
+          BaseSpinner: true,
+          BaseIcon: true,
+          BaseButton: true,
+          BaseSimpleTable: {
+            template: '<div class="mock-simple-table"></div>',
+            props: ["data", "columns", "options"],
+          },
         },
-      } },
+      },
     });
   });
 
@@ -171,12 +173,14 @@ describe("ImportAnalysisTable", () => {
           workspace: mockWorkspace,
           loading: true,
         },
-        global: { stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: true,
-          BaseSimpleTable: true,
-        } },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: true,
+            BaseSimpleTable: true,
+          },
+        },
       });
 
       expect(wrapper.find(".loading-state").exists()).toBe(true);
@@ -201,12 +205,14 @@ describe("ImportAnalysisTable", () => {
           workspace: mockWorkspace,
           loading: false,
         },
-        global: { stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: true,
-          BaseSimpleTable: true,
-        } },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: true,
+            BaseSimpleTable: true,
+          },
+        },
       });
 
       expect(wrapper.find(".error-state").exists()).toBe(true);

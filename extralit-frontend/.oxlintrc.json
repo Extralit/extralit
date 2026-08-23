@@ -1,9 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "vue",
-    "unicorn"
-  ],
+  "plugins": ["vue", "unicorn"],
   "categories": {
     "correctness": "off"
   },
@@ -152,20 +149,13 @@
   },
   "overrides": [
     {
-      "files": [
-        "*.yaml",
-        "**/*.yaml",
-        "*.yml",
-        "**/*.yml"
-      ],
+      "files": ["*.yaml", "**/*.yaml", "*.yml", "**/*.yml"],
       "rules": {
         "no-irregular-whitespace": "off"
       }
     },
     {
-      "files": [
-        "**/*.ts"
-      ],
+      "files": ["**/*.ts"],
       "rules": {
         "constructor-super": "off",
         "getter-return": "off",
@@ -223,9 +213,7 @@
         "no-throw-literal": "off",
         "no-new": "off"
       },
-      "plugins": [
-        "typescript"
-      ]
+      "plugins": ["typescript"]
     }
   ]
 }

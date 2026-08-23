@@ -12,6 +12,7 @@ Migrate `extralit-frontend` from Vue 2.7 / Nuxt 2.18 to **Vue 3.5 / Nuxt 4**, re
 load-bearing and stays true after migration (no new SSR surface to reason about).
 
 Validation gates, in order of authority:
+
 1. **Playwright e2e on Chromium** — the functional source of truth. The suite mocks the
    backend (`e2e/common/*-api-mock.ts`), so it runs without a live server. Every page-level
    flow (login, datasets, dataset-settings, annotation-mode, import-config, user-settings)
@@ -24,30 +25,30 @@ no gratuitous refactor beyond what the migration forces.
 
 ## 2. Current-State Facts (measured, not assumed)
 
-| Fact | Value | Implication |
-|---|---|---|
-| `.vue` components | 247 | Bulk of the work is mechanical, not architectural |
-| Files importing `@nuxtjs/composition-api` | 48 | Import-path swap to `vue` / Nuxt composables |
-| State management | Pinia (`@pinia/nuxt` 0.2.1) | Vuex / `@vuex-orm/*` deps are **dead** — delete them |
-| `$store` / `mapActions` / vuex refs | 9 files | Stale leftovers; verify dead, remove |
-| Legacy `slot=` / `slot-scope=` | 35 files | Convert to `v-slot` (Vue 2.6+ supports it) |
-| Template filters (`\| filter`) | **1** site (`DatasetTotal.vue`) | Trivial — one computed/helper call |
-| `Vue.filter` registrations | `format-number.ts` (2 filters) | Convert to importable helpers |
-| `$listeners` usage | 4 files | Fold into `$attrs` (Vue 3 merges them) |
-| `new Vue()` event bus | `base-toast/bus.js` | Replace with `mitt` |
-| `new Vue()` in tooltip directive | `tooltip.directive.ts` | Re-implement with Vue 3 `createApp`/`render` |
-| `::v-deep` / `/deep/` | 0 files | Nothing to do |
-| `functional:` SFCs | 0 files | Nothing to do |
-| HTTP | `@nuxtjs/axios` (`NuxtAxiosInstance`) injected into ~20 repository classes via ts-injecty | Replace with plain axios in a plugin |
-| Auth | `@nuxtjs/auth-next`, **all endpoints disabled** — used only as token store + `loggedIn` flag behind `IAuthService`; OIDC handshake is in extralit-server | Replace with small custom AuthService |
-| Icons | `vue-svgicon` 3.x, `<svgicon>` used in 79 files, generated from `static/icons` | Custom Vue 3 `<svg-icon>` preserving call signature |
-| `v-click-outside` | 18 files, behind custom directive plugin | Swap directive internals → `@vueuse/core onClickOutside` |
-| `vuedraggable` 2.x | 1 file | → `vuedraggable@next` (Vue 3) |
-| `@tiptap/vue-2` | 1 file | → `@tiptap/vue-3` |
-| i18n | `@nuxtjs/i18n` v7 (4 locales, lazy, `no_prefix`) | → v9 (config reshape) |
-| Heavy client libs | `tabulator-tables`, `interactjs` | Guard `window`/`document` access in `onMounted` / client-only |
-| Unit tests | Jest 29 + `@vue/vue2-jest` + `@vue/test-utils` 1.x, 79 specs | → Vitest 4 + `@vue/test-utils` 2 + `@nuxt/test-utils` 4 |
-| e2e | Playwright, backend mocked, 3 browser projects | Keep; **gate on chromium** |
+| Fact                                      | Value                                                                                                                                                    | Implication                                                   |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `.vue` components                         | 247                                                                                                                                                      | Bulk of the work is mechanical, not architectural             |
+| Files importing `@nuxtjs/composition-api` | 48                                                                                                                                                       | Import-path swap to `vue` / Nuxt composables                  |
+| State management                          | Pinia (`@pinia/nuxt` 0.2.1)                                                                                                                              | Vuex / `@vuex-orm/*` deps are **dead** — delete them          |
+| `$store` / `mapActions` / vuex refs       | 9 files                                                                                                                                                  | Stale leftovers; verify dead, remove                          |
+| Legacy `slot=` / `slot-scope=`            | 35 files                                                                                                                                                 | Convert to `v-slot` (Vue 2.6+ supports it)                    |
+| Template filters (`\| filter`)            | **1** site (`DatasetTotal.vue`)                                                                                                                          | Trivial — one computed/helper call                            |
+| `Vue.filter` registrations                | `format-number.ts` (2 filters)                                                                                                                           | Convert to importable helpers                                 |
+| `$listeners` usage                        | 4 files                                                                                                                                                  | Fold into `$attrs` (Vue 3 merges them)                        |
+| `new Vue()` event bus                     | `base-toast/bus.js`                                                                                                                                      | Replace with `mitt`                                           |
+| `new Vue()` in tooltip directive          | `tooltip.directive.ts`                                                                                                                                   | Re-implement with Vue 3 `createApp`/`render`                  |
+| `::v-deep` / `/deep/`                     | 0 files                                                                                                                                                  | Nothing to do                                                 |
+| `functional:` SFCs                        | 0 files                                                                                                                                                  | Nothing to do                                                 |
+| HTTP                                      | `@nuxtjs/axios` (`NuxtAxiosInstance`) injected into ~20 repository classes via ts-injecty                                                                | Replace with plain axios in a plugin                          |
+| Auth                                      | `@nuxtjs/auth-next`, **all endpoints disabled** — used only as token store + `loggedIn` flag behind `IAuthService`; OIDC handshake is in extralit-server | Replace with small custom AuthService                         |
+| Icons                                     | `vue-svgicon` 3.x, `<svgicon>` used in 79 files, generated from `static/icons`                                                                           | Custom Vue 3 `<svg-icon>` preserving call signature           |
+| `v-click-outside`                         | 18 files, behind custom directive plugin                                                                                                                 | Swap directive internals → `@vueuse/core onClickOutside`      |
+| `vuedraggable` 2.x                        | 1 file                                                                                                                                                   | → `vuedraggable@next` (Vue 3)                                 |
+| `@tiptap/vue-2`                           | 1 file                                                                                                                                                   | → `@tiptap/vue-3`                                             |
+| i18n                                      | `@nuxtjs/i18n` v7 (4 locales, lazy, `no_prefix`)                                                                                                         | → v9 (config reshape)                                         |
+| Heavy client libs                         | `tabulator-tables`, `interactjs`                                                                                                                         | Guard `window`/`document` access in `onMounted` / client-only |
+| Unit tests                                | Jest 29 + `@vue/vue2-jest` + `@vue/test-utils` 1.x, 79 specs                                                                                             | → Vitest 4 + `@vue/test-utils` 2 + `@nuxt/test-utils` 4       |
+| e2e                                       | Playwright, backend mocked, 3 browser projects                                                                                                           | Keep; **gate on chromium**                                    |
 
 **Why this codebase is low-risk:** already on Pinia, already SPA-only, already 48 files on
 Composition API, near-zero filters/deep-selectors/functional components. The genuine breaking
@@ -55,16 +56,16 @@ changes total ~45 files, almost all mechanical.
 
 ## 3. Target Versions
 
-| Package | From → To |
-|---|---|
-| `nuxt` | 2.18 → **4.x** (latest stable) |
-| `vue` | 2.7.16 → **3.5.x** |
-| build | webpack → **Vite** (Nuxt 4 default) |
-| `@pinia/nuxt` / `pinia` | 0.2.1 / 2.x → **0.9.x / 2.3.x** |
-| `@nuxtjs/i18n` | 7.x → **9.x** |
-| test | Jest → **Vitest 4** + `@nuxt/test-utils` 4 + `@vue/test-utils` 2 |
-| `@vueuse/core` | (new) → **^11.x** |
-| `mitt` | (new) | event bus |
+| Package                 | From → To                                                        |
+| ----------------------- | ---------------------------------------------------------------- |
+| `nuxt`                  | 2.18 → **4.x** (latest stable)                                   |
+| `vue`                   | 2.7.16 → **3.5.x**                                               |
+| build                   | webpack → **Vite** (Nuxt 4 default)                              |
+| `@pinia/nuxt` / `pinia` | 0.2.1 / 2.x → **0.9.x / 2.3.x**                                  |
+| `@nuxtjs/i18n`          | 7.x → **9.x**                                                    |
+| test                    | Jest → **Vitest 4** + `@nuxt/test-utils` 4 + `@vue/test-utils` 2 |
+| `@vueuse/core`          | (new) → **^11.x**                                                |
+| `mitt`                  | (new)                                                            | event bus |
 
 **Removed entirely:** `@nuxtjs/composition-api`, `@nuxtjs/axios`, `@nuxtjs/auth-next`,
 `@nuxtjs/style-resources`, `nuxt-compress`, `nuxt-highlightjs`, `vue-svgicon`,
@@ -79,6 +80,7 @@ with ts-injecty DI). The migration deliberately keeps that layer's interfaces st
 swaps the **infrastructure adapters** that touch Nuxt/Vue. Three adapter swaps:
 
 ### 4a. HTTP adapter — plain axios in a plugin
+
 - New `plugins/axios.ts` (Nuxt 4 plugin) creates one `axios` instance: `baseURL` `/api`,
   request interceptor adds the bearer token from AuthService, response interceptor ports the
   existing `AxiosErrorHandler` behavior, plus the cache plugin (`AxiosCache` / `axios-cache`).
@@ -89,6 +91,7 @@ swaps the **infrastructure adapters** that touch Nuxt/Vue. Three adapter swaps:
   reimplemented against the plain instance.
 
 ### 4b. Auth adapter — custom AuthService (Pinia-backed)
+
 - New `~100-line` `AuthService implements IAuthService`: `setUserToken(token)`,
   `logout()`, `loggedIn` getter, `redirect()`. Token persisted (cookie via `useCookie`, the
   Nuxt-4 idiomatic store) and surfaced to the axios request interceptor.
@@ -98,12 +101,14 @@ swaps the **infrastructure adapters** that touch Nuxt/Vue. Three adapter swaps:
   they already call the `IAuthService` interface. Federated OIDC stays in extralit-server.
 
 ### 4c. Icon adapter — custom `<svg-icon>`
+
 - A Vue 3 SFC `<svg-icon name="…" />` + a small generation step that turns `static/icons/*.svg`
   into a registry the component renders by `name`. The existing `<svgicon name=… width=… …>`
   call signature is preserved (mechanical tag rename at most) so 79 sites don't get rewritten.
 - The `svg-icon.element.ts` plugin is replaced by global component registration.
 
 ### 4d. Other adapters (small)
+
 - `v-click-outside` directive plugin → internals call `onClickOutside` (`@vueuse/core`); 18
   consumer sites unchanged.
 - `tooltip.directive.ts` (`new Vue`) → Vue 3 `createApp`/`render` mount.
@@ -114,6 +119,7 @@ swaps the **infrastructure adapters** that touch Nuxt/Vue. Three adapter swaps:
 - `nuxt-compress` → Nitro `compressPublicAssets`. `nuxt-highlightjs` → `highlight.js` in a plugin.
 
 ## 5. Config Migration (`nuxt.config.ts`)
+
 - `ssr: false`, `telemetry: false`, `generate.dir` → Nuxt 4 equivalents (`ssr: false` stays;
   static output via `nitro.static` / `nuxi generate`).
 - `buildModules`/`modules` collapse into Nuxt 4 `modules`: `@pinia/nuxt`, `@nuxtjs/i18n`.
@@ -144,6 +150,7 @@ To keep it bisectable despite that, work proceeds in a **fixed dependency order*
 7. **Lint + typecheck clean**, remove compat shims, lock versions.
 
 ## 7. Error Handling & Risk
+
 - **Client-only globals** (`window`/`document` at import time in tabulator/interactjs) are the
   top regression risk in Nuxt 4 even under `ssr:false` (app-shell pass). Mitigation: dynamic
   `import()` in `onMounted`, or `.client.vue` / `<ClientOnly>`.
@@ -154,6 +161,7 @@ To keep it bisectable despite that, work proceeds in a **fixed dependency order*
 - **Rollback**: branch-isolated; `develop` is untouched until merge.
 
 ## 8. Testing Strategy
+
 - **Vitest**: `environment: happy-dom`, `@nuxt/test-utils` for Nuxt auto-imports/`mockNuxtImport`.
   Port specs alongside the components they cover; the 79 specs are the unit regression net.
 - **Playwright (authoritative)**: run `npx playwright test --project=chromium`. Backend is
@@ -163,6 +171,7 @@ To keep it bisectable despite that, work proceeds in a **fixed dependency order*
   via `npm run dev` and `npm run build` succeeds.
 
 ## 9. Open Items to Verify During Implementation
+
 - Confirm `vuex`, `@vuex-orm/*`, `vue-vega`, `nuxt-mq` are truly unreferenced before deleting.
 - Confirm the `.md` frontmatter content's actual consumers (which pages render it) to pick the
   Vite markdown approach.

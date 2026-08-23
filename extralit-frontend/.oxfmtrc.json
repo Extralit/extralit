@@ -15,6 +15,7 @@
     ".vercel",
     "package-lock.json",
     "types/generated",
-    "demo"
+    "demo",
+    "static"
   ]
 }

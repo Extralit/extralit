@@ -34,10 +34,8 @@ $media-expressions: (
   "handheld": "handheld",
   "landscape": "(orientation: landscape)",
   "portrait": "(orientation: portrait)",
-  "retina2x":
-    "(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx)",
-  "retina3x":
-    "(-webkit-min-device-pixel-ratio: 3), (min-resolution: 350dpi), (min-resolution: 3dppx)",
+  "retina2x": "(-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi), (min-resolution: 2dppx)",
+  "retina3x": "(-webkit-min-device-pixel-ratio: 3), (min-resolution: 350dpi), (min-resolution: 3dppx)",
 ) !default;
 
 // Defines a number to be added or subtracted from each unit when declaring breakpoints with exclusive intervals
@@ -325,7 +323,7 @@ $im-no-media-expressions: ("screen", "portrait", "landscape") !default;
   }
   @for $i from 1 through str-length($value) {
     $character: str-slice($value, $i, $i);
-    @if not(index(map-keys($numbers), $character) or $character== ".") {
+    @if not (index(map-keys($numbers), $character) or $character== ".") {
       @return to-length(if($minus, -$result, $result), str-slice($value, $i));
     }
     @if $character== "." {
@@ -405,10 +403,7 @@ $im-no-media-expressions: ("screen", "portrait", "landscape") !default;
   $global-media-expressions: $media-expressions;
   // Update global configuration
   $breakpoints: map-merge($breakpoints, $tweakpoints) !global;
-  $media-expressions: map-merge(
-    $media-expressions,
-    $tweak-media-expressions
-  ) !global;
+  $media-expressions: map-merge($media-expressions, $tweak-media-expressions) !global;
   @content;
   // Restore global configuration
   $breakpoints: $global-breakpoints !global;
@@ -492,10 +487,7 @@ $im-no-media-expressions: ("screen", "portrait", "landscape") !default;
   $global-breakpoints: $breakpoints;
   $global-media-expressions: $media-expressions; // Update global configuration
   $breakpoints: map-merge($breakpoints, $tweakpoints) !global;
-  $media-expressions: map-merge(
-    $media-expressions,
-    $tweak-media-expressions
-  ) !global;
+  $media-expressions: map-merge($media-expressions, $tweak-media-expressions) !global;
   @content; // Restore global configuration
   $breakpoints: $global-breakpoints !global;
   $media-expressions: $global-media-expressions !global;

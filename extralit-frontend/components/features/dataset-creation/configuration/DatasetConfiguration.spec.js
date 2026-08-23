@@ -80,43 +80,45 @@ describe("DatasetConfiguration", () => {
           dataset: mockDataset,
           dataSource: "hub",
         },
-        global: { stubs: {
-          HorizontalResizable: {
-            template: `
+        global: {
+          stubs: {
+            HorizontalResizable: {
+              template: `
               <div class="mock-horizontal-resizable">
                 <div class="up-section"><slot name="up" /></div>
                 <div class="down-section"><slot name="down" /></div>
               </div>
             `,
-            props: ["id", "min-height-percent", "top-percent-height"],
-          },
-          VerticalResizable: {
-            template: `
+              props: ["id", "min-height-percent", "top-percent-height"],
+            },
+            VerticalResizable: {
+              template: `
               <div class="mock-vertical-resizable">
                 <div class="left-section"><slot name="left" /></div>
                 <div class="right-section"><slot name="right" /></div>
               </div>
             `,
-            props: ["id", "left-percent-width"],
+              props: ["id", "left-percent-width"],
+            },
+            Record: {
+              template: '<div class="mock-record">Record Preview</div>',
+              props: ["recordCriteria", "record"],
+            },
+            QuestionsComponent: {
+              template: '<div class="mock-questions">Questions</div>',
+              props: ["visible-shortcuts", "questions"],
+            },
+            DatasetConfigurationForm: {
+              template: '<div class="mock-config-form">Configuration Form</div>',
+              props: ["dataset"],
+            },
+            ImportHistoryDataPreview: {
+              template: '<div class="mock-import-preview">Import Preview</div>',
+              props: ["import-history-details", "loading", "error"],
+            },
+            BaseIcon: true,
           },
-          Record: {
-            template: '<div class="mock-record">Record Preview</div>',
-            props: ["recordCriteria", "record"],
-          },
-          QuestionsComponent: {
-            template: '<div class="mock-questions">Questions</div>',
-            props: ["visible-shortcuts", "questions"],
-          },
-          DatasetConfigurationForm: {
-            template: '<div class="mock-config-form">Configuration Form</div>',
-            props: ["dataset"],
-          },
-          ImportHistoryDataPreview: {
-            template: '<div class="mock-import-preview">Import Preview</div>',
-            props: ["import-history-details", "loading", "error"],
-          },
-          BaseIcon: true,
-        } },
+        },
       });
     });
 
@@ -147,43 +149,45 @@ describe("DatasetConfiguration", () => {
           dataSource: "import",
           importData: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          HorizontalResizable: {
-            template: `
+        global: {
+          stubs: {
+            HorizontalResizable: {
+              template: `
               <div class="mock-horizontal-resizable">
                 <div class="up-section"><slot name="up" /></div>
                 <div class="down-section"><slot name="down" /></div>
               </div>
             `,
-            props: ["id", "min-height-percent", "top-percent-height"],
-          },
-          VerticalResizable: {
-            template: `
+              props: ["id", "min-height-percent", "top-percent-height"],
+            },
+            VerticalResizable: {
+              template: `
               <div class="mock-vertical-resizable">
                 <div class="left-section"><slot name="left" /></div>
                 <div class="right-section"><slot name="right" /></div>
               </div>
             `,
-            props: ["id", "left-percent-width"],
+              props: ["id", "left-percent-width"],
+            },
+            Record: {
+              template: '<div class="mock-record">Record Preview</div>',
+              props: ["recordCriteria", "record"],
+            },
+            QuestionsComponent: {
+              template: '<div class="mock-questions">Questions</div>',
+              props: ["visible-shortcuts", "questions"],
+            },
+            DatasetConfigurationForm: {
+              template: '<div class="mock-config-form">Configuration Form</div>',
+              props: ["dataset"],
+            },
+            ImportHistoryDataPreview: {
+              template: '<div class="mock-import-preview">Import Preview</div>',
+              props: ["import-history-details", "loading", "error"],
+            },
+            BaseIcon: true,
           },
-          Record: {
-            template: '<div class="mock-record">Record Preview</div>',
-            props: ["recordCriteria", "record"],
-          },
-          QuestionsComponent: {
-            template: '<div class="mock-questions">Questions</div>',
-            props: ["visible-shortcuts", "questions"],
-          },
-          DatasetConfigurationForm: {
-            template: '<div class="mock-config-form">Configuration Form</div>',
-            props: ["dataset"],
-          },
-          ImportHistoryDataPreview: {
-            template: '<div class="mock-import-preview">Import Preview</div>',
-            props: ["import-history-details", "loading", "error"],
-          },
-          BaseIcon: true,
-        } },
+        },
       });
     });
 
@@ -225,32 +229,34 @@ describe("DatasetConfiguration", () => {
           dataset: { ...mockDataset, repoId: null },
           dataSource: "hub",
         },
-        global: { stubs: {
-          HorizontalResizable: {
-            template: `
+        global: {
+          stubs: {
+            HorizontalResizable: {
+              template: `
               <div class="mock-horizontal-resizable">
                 <div class="up-section"><slot name="up" /></div>
                 <div class="down-section"><slot name="down" /></div>
               </div>
             `,
-          },
-          VerticalResizable: {
-            template: `
+            },
+            VerticalResizable: {
+              template: `
               <div class="mock-vertical-resizable">
                 <div class="left-section"><slot name="left" /></div>
                 <div class="right-section"><slot name="right" /></div>
               </div>
             `,
+            },
+            Record: true,
+            QuestionsComponent: true,
+            DatasetConfigurationForm: true,
+            ImportHistoryDataPreview: true,
+            BaseIcon: {
+              template: '<div class="mock-icon"></div>',
+              props: ["icon-name"],
+            },
           },
-          Record: true,
-          QuestionsComponent: true,
-          DatasetConfigurationForm: true,
-          ImportHistoryDataPreview: true,
-          BaseIcon: {
-            template: '<div class="mock-icon"></div>',
-            props: ["icon-name"],
-          },
-        } },
+        },
       });
     });
 
@@ -269,29 +275,31 @@ describe("DatasetConfiguration", () => {
           dataset: datasetWithoutQuestions,
           dataSource: "hub",
         },
-        global: { stubs: {
-          HorizontalResizable: {
-            template: `
+        global: {
+          stubs: {
+            HorizontalResizable: {
+              template: `
               <div class="mock-horizontal-resizable">
                 <div class="up-section"><slot name="up" /></div>
                 <div class="down-section"><slot name="down" /></div>
               </div>
             `,
-          },
-          VerticalResizable: {
-            template: `
+            },
+            VerticalResizable: {
+              template: `
               <div class="mock-vertical-resizable">
                 <div class="left-section"><slot name="left" /></div>
                 <div class="right-section"><slot name="right" /></div>
               </div>
             `,
+            },
+            Record: true,
+            QuestionsComponent: true,
+            DatasetConfigurationForm: true,
+            ImportHistoryDataPreview: true,
+            BaseIcon: true,
           },
-          Record: true,
-          QuestionsComponent: true,
-          DatasetConfigurationForm: true,
-          ImportHistoryDataPreview: true,
-          BaseIcon: true,
-        } },
+        },
       });
 
       expect(wrapper.find(".dataset-config__empty-questions").exists()).toBe(true);
@@ -304,32 +312,34 @@ describe("DatasetConfiguration", () => {
           dataset: mockDataset,
           dataSource: "hub",
         },
-        global: { stubs: {
-          HorizontalResizable: {
-            template: `
+        global: {
+          stubs: {
+            HorizontalResizable: {
+              template: `
               <div class="mock-horizontal-resizable">
                 <div class="up-section"><slot name="up" /></div>
                 <div class="down-section"><slot name="down" /></div>
               </div>
             `,
-          },
-          VerticalResizable: {
-            template: `
+            },
+            VerticalResizable: {
+              template: `
               <div class="mock-vertical-resizable">
                 <div class="left-section"><slot name="left" /></div>
                 <div class="right-section"><slot name="right" /></div>
               </div>
             `,
+            },
+            Record: true,
+            QuestionsComponent: {
+              template: '<div class="mock-questions">Questions Component</div>',
+              props: ["visible-shortcuts", "questions"],
+            },
+            DatasetConfigurationForm: true,
+            ImportHistoryDataPreview: true,
+            BaseIcon: true,
           },
-          Record: true,
-          QuestionsComponent: {
-            template: '<div class="mock-questions">Questions Component</div>',
-            props: ["visible-shortcuts", "questions"],
-          },
-          DatasetConfigurationForm: true,
-          ImportHistoryDataPreview: true,
-          BaseIcon: true,
-        } },
+        },
       });
 
       expect(wrapper.find(".mock-questions").exists()).toBe(true);
@@ -345,32 +355,33 @@ describe("DatasetConfiguration", () => {
           dataSource: "import",
           importData: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          HorizontalResizable: {
-            template: `
+        global: {
+          stubs: {
+            HorizontalResizable: {
+              template: `
               <div class="mock-horizontal-resizable">
                 <div class="up-section"><slot name="up" /></div>
                 <div class="down-section"><slot name="down" /></div>
               </div>
             `,
-          },
-          VerticalResizable: {
-            template: `
+            },
+            VerticalResizable: {
+              template: `
               <div class="mock-vertical-resizable">
                 <div class="left-section"><slot name="left" /></div>
                 <div class="right-section"><slot name="right" /></div>
               </div>
             `,
-          },
-          Record: true,
-          QuestionsComponent: true,
-          DatasetConfigurationForm: {
-            template:
-              "<div class=\"mock-config-form\" @change-subset=\"$emit('change-subset', 'test-subset')\">Configuration Form</div>",
-            props: ["dataset"],
-          },
-          ImportHistoryDataPreview: {
-            template: `
+            },
+            Record: true,
+            QuestionsComponent: true,
+            DatasetConfigurationForm: {
+              template:
+                "<div class=\"mock-config-form\" @change-subset=\"$emit('change-subset', 'test-subset')\">Configuration Form</div>",
+              props: ["dataset"],
+            },
+            ImportHistoryDataPreview: {
+              template: `
               <div class="mock-import-preview"
                    @retry="$emit('retry')"
                    @row-selected="$emit('row-selected', { reference: 'paper_001' })"
@@ -378,10 +389,11 @@ describe("DatasetConfiguration", () => {
                 Import Preview
               </div>
             `,
-            props: ["import-history-details", "loading", "error"],
+              props: ["import-history-details", "loading", "error"],
+            },
+            BaseIcon: true,
           },
-          BaseIcon: true,
-        } },
+        },
       });
     });
 
@@ -425,19 +437,21 @@ describe("DatasetConfiguration", () => {
           dataSource: "import",
           importData: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          HorizontalResizable: {
-            template: `<div><slot name="up" /><slot name="down" /></div>`,
+        global: {
+          stubs: {
+            HorizontalResizable: {
+              template: `<div><slot name="up" /><slot name="down" /></div>`,
+            },
+            VerticalResizable: {
+              template: `<div><slot name="left" /><slot name="right" /></div>`,
+            },
+            Record: true,
+            QuestionsComponent: true,
+            DatasetConfigurationForm: true,
+            ImportHistoryDataPreview: true,
+            BaseIcon: true,
           },
-          VerticalResizable: {
-            template: `<div><slot name="left" /><slot name="right" /></div>`,
-          },
-          Record: true,
-          QuestionsComponent: true,
-          DatasetConfigurationForm: true,
-          ImportHistoryDataPreview: true,
-          BaseIcon: true,
-        } },
+        },
       });
     });
 
@@ -499,15 +513,17 @@ describe("DatasetConfiguration", () => {
             dataSource: "import",
             importData: mockImportHistoryDetails,
           },
-          global: { stubs: {
-            HorizontalResizable: { template: `<div><slot name="up" /><slot name="down" /></div>` },
-            VerticalResizable: { template: `<div><slot name="left" /><slot name="right" /></div>` },
-            Record: true,
-            QuestionsComponent: true,
-            DatasetConfigurationForm: true,
-            ImportHistoryDataPreview: true,
-            BaseIcon: true,
-          } },
+          global: {
+            stubs: {
+              HorizontalResizable: { template: `<div><slot name="up" /><slot name="down" /></div>` },
+              VerticalResizable: { template: `<div><slot name="left" /><slot name="right" /></div>` },
+              Record: true,
+              QuestionsComponent: true,
+              DatasetConfigurationForm: true,
+              ImportHistoryDataPreview: true,
+              BaseIcon: true,
+            },
+          },
         });
       }).not.toThrow();
 

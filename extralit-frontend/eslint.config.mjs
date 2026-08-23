@@ -159,7 +159,6 @@ export default [
     },
   },
 
-
   // ── Rules newly promoted to `error` by this toolchain bump (eslint 8->10,
   //    eslint-plugin-vue 8->10) that the previous setup either did not enable or that
   //    eslint-plugin-nuxt's preset disabled. They flag PRE-EXISTING patterns (legacy

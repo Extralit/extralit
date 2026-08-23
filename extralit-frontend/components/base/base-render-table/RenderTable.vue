@@ -168,8 +168,7 @@ export default {
     validation: {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
-          if (this.editable)
-            console.warn("Changes validation", this.tableJSON.schema.schemaName);
+          if (this.editable) console.warn("Changes validation", this.tableJSON.schema.schemaName);
           this.tabulator?.setColumns(this.columnsConfig);
           this.validateTable();
         }
