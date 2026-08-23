@@ -15,7 +15,7 @@ class Workspace(BaseModel):
 
 class WorkspaceCreate(BaseModel):
     id: UUID | None = None
-    name: str = Field(min_length=1)
+    name: str = Field(pattern=r"^[a-z0-9][a-z0-9._-]{0,62}$")
 
 
 class Workspaces(BaseModel):

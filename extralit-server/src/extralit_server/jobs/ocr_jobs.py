@@ -55,7 +55,7 @@ async def async_document_layout_job(
     Args:
         document_id: UUID of the document to process
         s3_url: proxy URL of the PDF, as stored on the document
-        workspace_name: workspace bucket the artifacts are written to
+        workspace_name: workspace the artifacts are written to
         parser: layout parser name; None routes automatically
         pages: 1-indexed page allowlist; None processes every page
 

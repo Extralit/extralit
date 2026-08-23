@@ -1,8 +1,8 @@
 import hashlib
 import logging
 import mimetypes
+import shutil
 from datetime import timedelta
-from pathlib import Path
 from typing import Any, BinaryIO
 from uuid import UUID
 
@@ -28,57 +28,86 @@ _CONTENT_TYPE_BY_PREFIX = {
 _LOGGER = logging.getLogger(__name__)
 
 
-def workspace_root(workspace_name: str) -> tuple[str, str]:
-    """Resolve where a workspace's artifacts live, as `(bucket, key prefix)`.
-
-    The single place that knows how a workspace maps onto storage: PDFs, thumbnails, layout JSON
-    and the Lance datasets all address through it, so moving to one bucket with `{org}/{workspace}/`
-    prefixes is a change here rather than at every call site. Today it is bucket-per-workspace,
-    which is why the prefix is empty and `files` can still pass the workspace name as the bucket.
-    """
-    if not workspace_name:
-        raise ValueError("workspace_name cannot be empty")
-
-    return workspace_name, ""
-
-
 class ObjectStorage:
-    """Resolves a bucket name to an obstore store, caching one store per bucket.
+    """One obstore store per workspace, each scoped to `{root}/{workspace}/`.
 
-    obstore binds a store to a single bucket at construction, so the per-call `bucket` argument
-    every function in this module takes is a lookup here rather than a request parameter.
+    Every caller addresses objects by workspace name and a key under it; this is the only place that
+    knows whether that lands on a bucket prefix or a directory.
     """
 
     def __init__(self) -> None:
+        self.root = settings.storage_root
         self._stores: dict[str, S3Store | LocalStore] = {}
-        self._remote = all([settings.s3_endpoint, settings.s3_access_key, settings.s3_secret_key])
 
     @property
     def signable(self) -> bool:
         """Only S3 can presign; `LocalStore` is not a `SignCapableStore`."""
-        return self._remote
+        return self.root.remote
 
-    def store_for(self, bucket: str) -> S3Store | LocalStore:
-        store = self._stores.get(bucket)
+    def for_workspace(self, workspace: str) -> S3Store | LocalStore:
+        if not workspace:
+            raise ValueError("workspace cannot be empty")
+        store = self._stores.get(workspace)
         if store is None:
-            store = self._build(bucket)
-            self._stores[bucket] = store
+            store = self._build(workspace)
+            self._stores[workspace] = store
         return store
 
-    def _build(self, bucket: str) -> S3Store | LocalStore:
-        if not self._remote:
-            return LocalStore(prefix=Path(settings.home_path) / bucket, mkdir=True)
+    def _prefix(self, workspace: str) -> str:
+        return f"{self.root.prefix}/{workspace}".strip("/")
 
-        endpoint = settings.s3_endpoint or ""
-        return S3Store(
-            bucket,
-            endpoint=endpoint,
-            access_key_id=settings.s3_access_key,
-            secret_access_key=settings.s3_secret_key,
-            region=settings.s3_region or "us-east-1",
-            virtual_hosted_style_request=False,
-            client_options={"allow_http": not endpoint.startswith("https://")},
-        )
+    def _build(self, workspace: str) -> S3Store | LocalStore:
+        if not self.root.remote:
+            return LocalStore(prefix=self.root.local_path / workspace, mkdir=True)
+
+        return S3Store(self.root.bucket, prefix=self._prefix(workspace), **self._s3_config())
+
+    def _s3_config(self) -> dict[str, Any]:
+        # Without keys obstore resolves credentials itself: IMDS, IRSA, ECS, or AWS_* env vars.
+        config: dict[str, Any] = {
+            "region": settings.s3_region or "us-east-1",
+            "virtual_hosted_style_request": False,
+            "client_options": {"allow_http": self.root.scheme == "http"},
+        }
+        if self.root.endpoint:
+            config["endpoint"] = self.root.endpoint
+        if settings.s3_access_key:
+            config["access_key_id"] = settings.s3_access_key
+            config["secret_access_key"] = settings.s3_secret_key
+        return config
+
+    def lance_uri(self, workspace: str, subdir: str) -> str:
+        """Where Lance datasets for a workspace live, addressed exactly like its objects."""
+        if not self.root.remote:
+            return str(self.root.local_path / workspace / subdir)
+        return f"s3://{self.root.bucket}/{self._prefix(workspace)}/{subdir}"
+
+    def lance_storage_options(self) -> dict[str, str] | None:
+        if not self.root.remote:
+            return None
+        options = {
+            "aws_region": settings.s3_region or "us-east-1",
+            "allow_http": str(self.root.scheme == "http").lower(),
+            "aws_virtual_hosted_style_request": "false",
+        }
+        if self.root.endpoint:
+            options["aws_endpoint"] = self.root.endpoint
+        if settings.s3_access_key:
+            options["aws_access_key_id"] = settings.s3_access_key
+            options["aws_secret_access_key"] = settings.s3_secret_key or ""
+        return options
+
+    async def healthy(self) -> bool:
+        """The root is reachable with the configured credentials."""
+        try:
+            if not self.root.remote:
+                return self.root.local_path.is_dir()
+            store = S3Store(self.root.bucket, prefix=self.root.prefix or None, **self._s3_config())
+            await store.list_with_delimiter_async()
+            return True
+        except Exception as e:
+            _LOGGER.warning(f"Storage root {settings.storage_url} is unreachable: {e}")
+            return False
 
     async def aclose(self) -> None:
         self._stores.clear()
@@ -111,10 +140,10 @@ def _user_metadata(attributes: Any = None) -> dict[str, str]:
     return {key: value for key, value in dict(attributes or {}).items() if key != "Content-Type"}
 
 
-def _object_metadata(bucket: str, meta: Any, attributes: Any = None) -> ObjectMetadata:
+def _object_metadata(workspace: str, meta: Any, attributes: Any = None) -> ObjectMetadata:
     key = meta["path"]
     return ObjectMetadata(
-        bucket_name=bucket,
+        workspace=workspace,
         object_name=key,
         etag=(meta["e_tag"] or "").strip('"') or None,
         size=meta["size"],
@@ -161,12 +190,12 @@ def get_thumbnail_s3_object_path(id: UUID | str) -> str:
     return object_path
 
 
-def get_proxy_document_url(bucket_name: str, object_path: str) -> str:
-    return f"/api/v1/file/{bucket_name}/{object_path}"
+def get_proxy_document_url(workspace: str, object_path: str) -> str:
+    return f"/api/v1/file/{workspace}/{object_path}"
 
 
 def split_document_url(document_url: str) -> tuple[str, str]:
-    """Split `/api/v1/file/{bucket}/{object}` back into its bucket and key."""
+    """Split `/api/v1/file/{workspace}/{object}` back into workspace and key."""
     prefix = "/api/v1/file/"
     if not document_url.startswith(prefix):
         raise ValueError(f"Invalid document URL format: {document_url}")
@@ -179,12 +208,12 @@ def split_document_url(document_url: str) -> tuple[str, str]:
 
 
 async def get_presigned_url_from_document_url(storage: ObjectStorage, document_url: str, expires: int = 3600) -> str:
-    """Presign a `/api/v1/file/{bucket}/{object}` URL, valid for `expires` seconds.
+    """Presign a `/api/v1/file/{workspace}/{object}` URL, valid for `expires` seconds.
 
     Local storage cannot sign, so it keeps serving through the proxy route.
     """
     try:
-        bucket, object_path = split_document_url(document_url)
+        workspace, object_path = split_document_url(document_url)
     except ValueError:
         _LOGGER.warning(f"Invalid document URL format: {document_url}")
         return document_url
@@ -193,7 +222,9 @@ async def get_presigned_url_from_document_url(storage: ObjectStorage, document_u
         return document_url
 
     try:
-        return await obstore.sign_async(storage.store_for(bucket), "GET", object_path, timedelta(seconds=expires))
+        return await obstore.sign_async(
+            storage.for_workspace(workspace), "GET", object_path, timedelta(seconds=expires)
+        )
     except Exception as e:
         _LOGGER.error(f"Error generating presigned URL from document URL {document_url}: {e}")
         return document_url
@@ -201,13 +232,13 @@ async def get_presigned_url_from_document_url(storage: ObjectStorage, document_u
 
 async def list_objects(
     storage: ObjectStorage,
-    bucket: str,
+    workspace: str,
     prefix: str | None = None,
     recursive=True,
     start_after: str | None = None,
 ) -> ListObjectsResponse:
-    """List objects in a bucket and return as ListObjectsResponse."""
-    store = storage.store_for(bucket)
+    """List objects in a workspace and return as ListObjectsResponse."""
+    store = storage.for_workspace(workspace)
     try:
         if recursive:
             metas = []
@@ -220,41 +251,41 @@ async def list_objects(
                 metas = [meta for meta in metas if meta["path"] > start_after]
 
         # Attributes are not returned by listing APIs, so the content type is key-derived here.
-        return ListObjectsResponse(objects=[_object_metadata(bucket, meta) for meta in metas])
+        return ListObjectsResponse(objects=[_object_metadata(workspace, meta) for meta in metas])
     except FileNotFoundError:
-        _LOGGER.error(f"Bucket '{bucket}' not found")
-        raise HTTPException(status_code=404, detail=f"Bucket '{bucket}' not found")
+        _LOGGER.error(f"Workspace '{workspace}' not found")
+        raise HTTPException(status_code=404, detail=f"Workspace '{workspace}' not found")
     except ObjectStoreError as e:
-        _LOGGER.error(f"Error listing objects in bucket {bucket}: {e}")
-        raise HTTPException(status_code=404, detail=f"Bucket '{bucket}' not found")
+        _LOGGER.error(f"Error listing objects in workspace {workspace}: {e}")
+        raise HTTPException(status_code=404, detail=f"Workspace '{workspace}' not found")
 
 
-async def get_object(storage: ObjectStorage, bucket: str, object: str) -> FileObjectResponse:
+async def get_object(storage: ObjectStorage, workspace: str, object: str) -> FileObjectResponse:
     """Get an object and return it as a FileObjectResponse whose `response` streams."""
     try:
-        result = await storage.store_for(bucket).get_async(object)
+        result = await storage.for_workspace(workspace).get_async(object)
         return FileObjectResponse(
             response=result,
-            metadata=_object_metadata(bucket, result.meta, result.attributes),
+            metadata=_object_metadata(workspace, result.meta, result.attributes),
         )
     except FileNotFoundError:
-        _LOGGER.error(f"Object {object} not found in bucket {bucket}")
-        raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
+        _LOGGER.error(f"Object {object} not found in workspace {workspace}")
+        raise HTTPException(status_code=404, detail=f"Object {object} not found in workspace {workspace}")
     except ObjectStoreError as e:
-        _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {e}")
+        _LOGGER.error(f"Error getting object {object} from workspace {workspace}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
 async def _put(
     storage: ObjectStorage,
-    bucket: str,
+    workspace: str,
     key: str,
     data: bytes,
     content_type: str,
     metadata: dict[str, Any] | None = None,
 ):
     attributes = {"Content-Type": content_type, **{k: str(v) for k, v in (metadata or {}).items()}}
-    store = storage.store_for(bucket)
+    store = storage.for_workspace(workspace)
     if isinstance(store, LocalStore):
         # LocalStore rejects attributes outright; the content type is recovered from the key.
         return await store.put_async(key, data)
@@ -264,7 +295,7 @@ async def _put(
 
 async def put_object(
     storage: ObjectStorage,
-    bucket: str,
+    workspace: str,
     object: str,
     data: BinaryIO | bytes | str,
     content_type: str = "application/octet-stream",
@@ -277,10 +308,10 @@ async def put_object(
         data = data.read()
 
     try:
-        result = await _put(storage, bucket, object, data, content_type, metadata)
+        result = await _put(storage, workspace, object, data, content_type, metadata)
 
         return ObjectMetadata(
-            bucket_name=bucket,
+            workspace=workspace,
             object_name=object,
             etag=(result["e_tag"] or "").strip('"') or None,
             size=len(data),
@@ -288,28 +319,38 @@ async def put_object(
             metadata=metadata or {},
         )
     except ObjectStoreError as e:
-        _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {e}")
+        _LOGGER.error(f"Error putting object {object} in workspace {workspace}: {e}")
         raise HTTPException(status_code=500, detail=f"Error uploading file: {e!s}")
     except Exception as e:
-        _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {e}")
+        _LOGGER.error(f"Error putting object {object} in workspace {workspace}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
-async def delete_object(storage: ObjectStorage, bucket: str, object: str):
+async def delete_object(storage: ObjectStorage, workspace: str, object: str):
     """Delete an object. Deleting a key that is already gone is not an error."""
     try:
-        await storage.store_for(bucket).delete_async(object)
+        await storage.for_workspace(workspace).delete_async(object)
     except FileNotFoundError:
         pass
     except ObjectStoreError as e:
-        _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
+        _LOGGER.error(f"Error deleting object {object} from workspace {workspace}: {e}")
         raise HTTPException(status_code=500, detail=f"Error deleting file: {e!s}")
     except Exception as e:
-        _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
+        _LOGGER.error(f"Error deleting object {object} from workspace {workspace}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
-async def delete_document_artifacts(storage: ObjectStorage, workspace_name: str, document_id: UUID | str) -> None:
+async def delete_workspace_objects(storage: ObjectStorage, workspace: str) -> None:
+    """Remove everything under the workspace prefix."""
+    store = storage.for_workspace(workspace)
+    async for batch in store.list():
+        await store.delete_async([meta["path"] for meta in batch])
+    if isinstance(store, LocalStore):
+        shutil.rmtree(store.prefix, ignore_errors=True)
+        storage._stores.pop(workspace, None)
+
+
+async def delete_document_artifacts(storage: ObjectStorage, workspace: str, document_id: UUID | str) -> None:
     """Remove every artifact of a document: PDF, thumbnail, layout JSON and layout rows.
 
     Best effort — the DB rows are already gone by the time this runs, so a storage hiccup leaves a
@@ -321,19 +362,19 @@ async def delete_document_artifacts(storage: ObjectStorage, workspace_name: str,
 
     for object_path in (get_pdf_s3_object_path(document_id), get_thumbnail_s3_object_path(document_id)):
         try:
-            await delete_object(storage, workspace_name, object_path)
+            await delete_object(storage, workspace, object_path)
         except Exception as e:
             _LOGGER.warning(f"Could not delete {object_path} for document {document_id}: {e}")
 
     try:
-        await layout_storage.delete_layout(storage, workspace_name, document_id)
+        await layout_storage.delete_layout(storage, workspace, document_id)
     except Exception as e:
         _LOGGER.warning(f"Could not delete layout artifacts for document {document_id}: {e}")
 
 
 async def put_document_file(
     storage: ObjectStorage,
-    workspace_name: str,
+    workspace: str,
     document_id: UUID,
     file_data: bytes,
     filename: str,
@@ -349,7 +390,7 @@ async def put_document_file(
     object_path = get_pdf_s3_object_path(document_id)
 
     try:
-        existing_files = await list_objects(storage, workspace_name, prefix=object_path, recursive=False)
+        existing_files = await list_objects(storage, workspace, prefix=object_path, recursive=False)
 
         should_upload = True
         if existing_files.objects:
@@ -362,9 +403,9 @@ async def put_document_file(
                 should_upload = False
 
         if should_upload:
-            await _put(storage, workspace_name, object_path, file_data, content_type, metadata)
+            await _put(storage, workspace, object_path, file_data, content_type, metadata)
 
-            return get_proxy_document_url(workspace_name, object_path)
+            return get_proxy_document_url(workspace, object_path)
 
         return None
 
@@ -374,11 +415,11 @@ async def put_document_file(
 
 
 async def download_file_content(storage: ObjectStorage, document_url: str) -> bytes:
-    """Download the whole body behind a `/api/v1/file/{bucket}/{object}` URL."""
-    bucket_name, object_path = split_document_url(document_url)
+    """Download the whole body behind a `/api/v1/file/{workspace}/{object}` URL."""
+    workspace, object_path = split_document_url(document_url)
 
     try:
-        result = await storage.store_for(bucket_name).get_async(object_path)
+        result = await storage.for_workspace(workspace).get_async(object_path)
         return bytes(await result.bytes_async())
     except FileNotFoundError:
         _LOGGER.error(f"File not found: {document_url}")

@@ -21,7 +21,7 @@ class DocumentDeleteRequest(BaseModel):
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="LocalFileStorage can't be used in 'await' expression")
 async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
-    workspace = await WorkspaceFactory.create_with_s3(name="test-workspace")
+    workspace = await WorkspaceFactory.create(name="test-workspace")
 
     document_json = {
         "id": str(uuid4()),
@@ -60,7 +60,7 @@ async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owne
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="LocalFileStorage can't be used in 'await' expression")
 async def test_upload_duplicate_document(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
-    workspace = await WorkspaceFactory.create_with_s3(name="test-workspace")
+    workspace = await WorkspaceFactory.create(name="test-workspace")
 
     existing_document = {
         "id": str(uuid4()),

@@ -38,8 +38,7 @@ async def publish_schema_version(
         storage,
         dataset,
         body=version_create.body,
-        # One bucket per workspace, named exactly Workspace.name — contexts/files.py:381.
-        bucket=dataset.workspace.name,
+        workspace=dataset.workspace.name,
         review_widgets=version_create.review_widgets,
         created_by=current_user.id,
     )

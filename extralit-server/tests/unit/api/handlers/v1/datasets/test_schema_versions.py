@@ -77,7 +77,7 @@ def _mock_put_object():
     # test module instead of adding a suite-wide override to tests/unit/conftest.py.
     with patch("extralit_server.contexts.schema_versions.files_ctx.put_object") as mock_put_object:
         mock_put_object.return_value = ObjectMetadata(
-            bucket_name="workspace",
+            workspace="workspace",
             object_name="schemas/dataset/v1.json",
             etag="etag",
         )

@@ -250,7 +250,7 @@ def workspace_doctor(
     ctx: typer.Context,
     autofix: bool = typer.Option(False, "--autofix/--no-autofix", help="Automatically fix issues if possible"),
 ) -> None:
-    """Run diagnostics on a workspace to check S3 bucket, versioning, RQ worker pool, etc."""
+    """Run diagnostics on a workspace: storage root reachability, RQ worker pool, search indexes."""
     workspace = ctx.obj
     console = Console()
 

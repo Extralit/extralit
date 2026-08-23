@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 class ObjectMetadata(BaseModel):
     """Metadata for an object in a workspace."""
 
-    bucket_name: str
+    workspace: str
     object_name: str
     last_modified: Optional[datetime] = None
     etag: Optional[str] = None

@@ -85,7 +85,7 @@
         "title": "Body_create_token_token_post",
         "type": "object"
       },
-      "Body_put_file_file__bucket___object__post": {
+      "Body_put_file_file__workspace___object__post": {
         "properties": {
           "file": {
             "format": "binary",
@@ -96,7 +96,7 @@
         "required": [
           "file"
         ],
-        "title": "Body_put_file_file__bucket___object__post",
+        "title": "Body_put_file_file__workspace___object__post",
         "type": "object"
       },
       "BoundingBoxOut": {
@@ -3224,10 +3224,6 @@
       },
       "ObjectMetadata": {
         "properties": {
-          "bucket_name": {
-            "title": "Bucket Name",
-            "type": "string"
-          },
           "content_type": {
             "anyOf": [
               {
@@ -3287,10 +3283,14 @@
               }
             ],
             "title": "Size"
+          },
+          "workspace": {
+            "title": "Workspace",
+            "type": "string"
           }
         },
         "required": [
-          "bucket_name",
+          "workspace",
           "object_name"
         ],
         "title": "ObjectMetadata",
@@ -7737,7 +7737,7 @@
             "title": "Id"
           },
           "name": {
-            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,62}$",
             "title": "Name",
             "type": "string"
           }
@@ -13755,16 +13755,16 @@
         ]
       }
     },
-    "/file/{bucket}/{object}": {
+    "/file/{workspace}/{object}": {
       "delete": {
-        "operationId": "delete_files_file__bucket___object__delete",
+        "operationId": "delete_files_file__workspace___object__delete",
         "parameters": [
           {
             "in": "path",
-            "name": "bucket",
+            "name": "workspace",
             "required": true,
             "schema": {
-              "title": "Bucket",
+              "title": "Workspace",
               "type": "string"
             }
           },
@@ -13889,14 +13889,14 @@
         ]
       },
       "get": {
-        "operationId": "get_file_file__bucket___object__get",
+        "operationId": "get_file_file__workspace___object__get",
         "parameters": [
           {
             "in": "path",
-            "name": "bucket",
+            "name": "workspace",
             "required": true,
             "schema": {
-              "title": "Bucket",
+              "title": "Workspace",
               "type": "string"
             }
           },
@@ -14054,14 +14054,14 @@
       },
       "options": {
         "description": "Handle CORS preflight requests for file access",
-        "operationId": "options_file_file__bucket___object__options",
+        "operationId": "options_file_file__workspace___object__options",
         "parameters": [
           {
             "in": "path",
-            "name": "bucket",
+            "name": "workspace",
             "required": true,
             "schema": {
-              "title": "Bucket",
+              "title": "Workspace",
               "type": "string"
             }
           },
@@ -14178,14 +14178,14 @@
         ]
       },
       "post": {
-        "operationId": "put_file_file__bucket___object__post",
+        "operationId": "put_file_file__workspace___object__post",
         "parameters": [
           {
             "in": "path",
-            "name": "bucket",
+            "name": "workspace",
             "required": true,
             "schema": {
-              "title": "Bucket",
+              "title": "Workspace",
               "type": "string"
             }
           },
@@ -14203,7 +14203,7 @@
           "content": {
             "multipart/form-data": {
               "schema": {
-                "$ref": "#/components/schemas/Body_put_file_file__bucket___object__post"
+                "$ref": "#/components/schemas/Body_put_file_file__workspace___object__post"
               }
             }
           },
@@ -14322,16 +14322,16 @@
         ]
       }
     },
-    "/files/{bucket}/{prefix}": {
+    "/files/{workspace}/{prefix}": {
       "get": {
-        "operationId": "list_objects_endpoint_files__bucket___prefix__get",
+        "operationId": "list_objects_endpoint_files__workspace___prefix__get",
         "parameters": [
           {
             "in": "path",
-            "name": "bucket",
+            "name": "workspace",
             "required": true,
             "schema": {
-              "title": "Bucket",
+              "title": "Workspace",
               "type": "string"
             }
           },
@@ -22499,7 +22499,7 @@
     },
     "/workspaces/{workspace_id}/doctor": {
       "post": {
-        "description": "Run diagnostics on a workspace and optionally auto-fix issues.\n\nChecks:\n- S3 bucket exists (can auto-fix)\n- Bucket is not object-versioned (can auto-fix)\n- RQ worker pool connectivity (informational)",
+        "description": "Run diagnostics on a workspace and optionally auto-fix issues.\n\nChecks:\n- Storage root is reachable (informational)\n- RQ worker pool connectivity (informational)",
         "operationId": "workspace_doctor_workspaces__workspace_id__doctor_post",
         "parameters": [
           {

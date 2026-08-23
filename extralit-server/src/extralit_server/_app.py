@@ -25,7 +25,7 @@ from extralit_server import helpers
 from extralit_server._version import __version__ as extralit_version
 from extralit_server.api.routes import api_v1
 from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
-from extralit_server.contexts import accounts, buckets, files
+from extralit_server.contexts import accounts
 from extralit_server.database import get_async_db
 from extralit_server.helpers import shared_resources
 from extralit_server.jobs.queues import REDIS_CONNECTION
@@ -301,12 +301,6 @@ async def _create_oauth_allowed_workspaces(db: AsyncSession):
     for allowed_workspace in security_settings.oauth.allowed_workspaces:
         if await Workspace.get_by(db, name=allowed_workspace.name) is None:
             _LOGGER.info(f"Creating workspace with name {allowed_workspace.name!r}")
-            try:
-                storage = await files.get_storage()
-                await buckets.create(storage, allowed_workspace.name)
-            except Exception as e:
-                _LOGGER.error(f"Failed to create bucket for workspace {allowed_workspace.name!r}: {e}")
-
             await accounts.create_workspace(db, {"name": allowed_workspace.name})
 
 

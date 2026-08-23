@@ -619,7 +619,7 @@ export interface paths {
         patch: operations["update_field_fields__field_id__patch"];
         trace?: never;
     };
-    "/file/{bucket}/{object}": {
+    "/file/{workspace}/{object}": {
         parameters: {
             query?: never;
             header?: never;
@@ -627,22 +627,22 @@ export interface paths {
             cookie?: never;
         };
         /** Get File */
-        get: operations["get_file_file__bucket___object__get"];
+        get: operations["get_file_file__workspace___object__get"];
         put?: never;
         /** Put File */
-        post: operations["put_file_file__bucket___object__post"];
+        post: operations["put_file_file__workspace___object__post"];
         /** Delete Files */
-        delete: operations["delete_files_file__bucket___object__delete"];
+        delete: operations["delete_files_file__workspace___object__delete"];
         /**
          * Options File
          * @description Handle CORS preflight requests for file access
          */
-        options: operations["options_file_file__bucket___object__options"];
+        options: operations["options_file_file__workspace___object__options"];
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/files/{bucket}/{prefix}": {
+    "/files/{workspace}/{prefix}": {
         parameters: {
             query?: never;
             header?: never;
@@ -650,7 +650,7 @@ export interface paths {
             cookie?: never;
         };
         /** List Objects Endpoint */
-        get: operations["list_objects_endpoint_files__bucket___prefix__get"];
+        get: operations["list_objects_endpoint_files__workspace___prefix__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1509,8 +1509,7 @@ export interface paths {
          * @description Run diagnostics on a workspace and optionally auto-fix issues.
          *
          *     Checks:
-         *     - S3 bucket exists (can auto-fix)
-         *     - Bucket is not object-versioned (can auto-fix)
+         *     - Storage root is reachable (informational)
          *     - RQ worker pool connectivity (informational)
          */
         post: operations["workspace_doctor_workspaces__workspace_id__doctor_post"];
@@ -1590,8 +1589,8 @@ export interface components {
             /** Username */
             username: string;
         };
-        /** Body_put_file_file__bucket___object__post */
-        Body_put_file_file__bucket___object__post: {
+        /** Body_put_file_file__workspace___object__post */
+        Body_put_file_file__workspace___object__post: {
             /**
              * File
              * Format: binary
@@ -2967,8 +2966,6 @@ export interface components {
         };
         /** ObjectMetadata */
         ObjectMetadata: {
-            /** Bucket Name */
-            bucket_name: string;
             /** Content Type */
             content_type?: string | null;
             /** Etag */
@@ -2981,6 +2978,8 @@ export interface components {
             object_name: string;
             /** Size */
             size?: number | null;
+            /** Workspace */
+            workspace: string;
         };
         /** OptionSettings */
         OptionSettings: {
@@ -10376,7 +10375,7 @@ export interface operations {
             };
         };
     };
-    get_file_file__bucket___object__get: {
+    get_file_file__workspace___object__get: {
         parameters: {
             query?: never;
             header?: {
@@ -10384,7 +10383,7 @@ export interface operations {
                 "if-none-match"?: string | null;
             };
             path: {
-                bucket: string;
+                workspace: string;
                 object: string;
             };
             cookie?: never;
@@ -10513,19 +10512,19 @@ export interface operations {
             };
         };
     };
-    put_file_file__bucket___object__post: {
+    put_file_file__workspace___object__post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                bucket: string;
+                workspace: string;
                 object: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_put_file_file__bucket___object__post"];
+                "multipart/form-data": components["schemas"]["Body_put_file_file__workspace___object__post"];
             };
         };
         responses: {
@@ -10651,12 +10650,12 @@ export interface operations {
             };
         };
     };
-    delete_files_file__bucket___object__delete: {
+    delete_files_file__workspace___object__delete: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                bucket: string;
+                workspace: string;
                 object: string;
             };
             cookie?: never;
@@ -10785,12 +10784,12 @@ export interface operations {
             };
         };
     };
-    options_file_file__bucket___object__options: {
+    options_file_file__workspace___object__options: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                bucket: string;
+                workspace: string;
                 object: string;
             };
             cookie?: never;
@@ -10919,7 +10918,7 @@ export interface operations {
             };
         };
     };
-    list_objects_endpoint_files__bucket___prefix__get: {
+    list_objects_endpoint_files__workspace___prefix__get: {
         parameters: {
             query?: {
                 recursive?: boolean;
@@ -10927,7 +10926,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                bucket: string;
+                workspace: string;
                 prefix: string;
             };
             cookie?: never;

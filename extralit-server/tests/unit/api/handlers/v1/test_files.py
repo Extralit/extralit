@@ -19,17 +19,17 @@ if TYPE_CHECKING:
 
 @pytest.mark.asyncio
 async def test_put_file(async_client: "AsyncClient", owner_auth_header: dict):
-    bucket_name = "workspace"
+    workspace = "workspace"
     object_name = "test_object"
     file_content = b"test file content"
 
     # Mock the Minio client and the response
     with patch("extralit_server.contexts.files.put_object") as mock_put_object:
-        mock_response = ObjectMetadata(bucket_name=bucket_name, object_name=object_name)
+        mock_response = ObjectMetadata(workspace=workspace, object_name=object_name)
         mock_put_object.return_value = mock_response
 
         response = await async_client.post(
-            f"/api/v1/file/{bucket_name}/{object_name}",
+            f"/api/v1/file/{workspace}/{object_name}",
             files={"file": ("test.txt", io.BytesIO(file_content), "application/octet-stream")},
             headers=owner_auth_header,
         )
@@ -57,20 +57,20 @@ async def test_list_objects_without_auth(async_client: "AsyncClient"):
 
 @pytest.mark.asyncio
 async def test_list_objects_non_workspace_user(async_client: "AsyncClient", annotator_auth_header: dict):
-    bucket_name = "workspace"
+    workspace = "workspace"
     prefix = "test_prefix"
 
-    response = await async_client.get(f"/api/v1/files/{bucket_name}/{prefix}", headers=annotator_auth_header)
+    response = await async_client.get(f"/api/v1/files/{workspace}/{prefix}", headers=annotator_auth_header)
 
     assert response.status_code == 403
 
 
 @pytest.mark.asyncio
 async def test_list_objects(async_client: "AsyncClient", owner_auth_header: dict):
-    bucket_name = "workspace"
+    workspace = "workspace"
     prefix = "test_prefix"
 
-    workspace_a = await WorkspaceFactory.create(name=bucket_name)
+    workspace_a = await WorkspaceFactory.create(name=workspace)
     user_a = await UserFactory.create(username="username-a")
     await WorkspaceUserFactory.create(workspace_id=workspace_a.id, user_id=user_a.id)
 
@@ -78,14 +78,14 @@ async def test_list_objects(async_client: "AsyncClient", owner_auth_header: dict
     with patch("extralit_server.contexts.files.list_objects") as mock_list_objects:
         mock_response = ListObjectsResponse(
             objects=[
-                ObjectMetadata(bucket_name=bucket_name, object_name=f"{prefix}/test1"),
-                ObjectMetadata(bucket_name=bucket_name, object_name=f"{prefix}/test2"),
+                ObjectMetadata(workspace=workspace, object_name=f"{prefix}/test1"),
+                ObjectMetadata(workspace=workspace, object_name=f"{prefix}/test2"),
             ]
         )
         mock_list_objects.return_value = mock_response
 
         response = await async_client.get(
-            f"/api/v1/files/{bucket_name}/{prefix}", headers={API_KEY_HEADER_NAME: user_a.api_key}
+            f"/api/v1/files/{workspace}/{prefix}", headers={API_KEY_HEADER_NAME: user_a.api_key}
         )
 
         assert response.status_code == 200
@@ -94,18 +94,18 @@ async def test_list_objects(async_client: "AsyncClient", owner_auth_header: dict
 
 @pytest.mark.asyncio
 async def test_delete_file(async_client: "AsyncClient", owner_auth_header: dict):
-    bucket_name = "workspace"
+    workspace = "workspace"
     object_name = "test_object"
 
     # Create a test file
-    file = MinioFileFactory.build(object_name=object_name, bucket_name=bucket_name)
+    file = MinioFileFactory.build(object_name=object_name, workspace=workspace)
 
     # Mock delete_object function
     with patch("extralit_server.contexts.files.delete_object") as mock_delete:
         mock_delete.return_value = None
 
         response = await async_client.delete(
-            f"/api/v1/file/{file.bucket_name}/{file.object_name}", headers=owner_auth_header
+            f"/api/v1/file/{file.workspace}/{file.object_name}", headers=owner_auth_header
         )
 
         assert response.status_code == 200

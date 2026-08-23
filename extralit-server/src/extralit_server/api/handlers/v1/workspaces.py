@@ -17,13 +17,13 @@ from extralit_server.api.schemas.v1.workspaces import (
     Workspaces,
     WorkspaceUserCreate,
 )
-from extralit_server.contexts import accounts, buckets, files
+from extralit_server.contexts import accounts, files
 from extralit_server.database import get_async_db
-from extralit_server.errors import GenericServerError
 from extralit_server.errors.future import NotFoundError, NotUniqueError, UnprocessableEntityError
 from extralit_server.models import Dataset, User, Workspace, WorkspaceUser
 from extralit_server.search_engine import get_search_engine
 from extralit_server.security import auth
+from extralit_server.settings import settings
 
 router = APIRouter(tags=["workspaces"])
 
@@ -46,14 +46,8 @@ async def create_workspace(
     db: Annotated[AsyncSession, Depends(get_async_db)],
     workspace_create: WorkspaceCreate,
     current_user: Annotated[User, Security(auth.get_current_user)],
-    storage=Depends(files.get_storage),
 ):
     await authorize(current_user, WorkspacePolicy.create)
-
-    try:
-        await buckets.create(storage, workspace_create.name)
-    except Exception as e:
-        raise GenericServerError(e)
 
     try:
         workspace = await accounts.create_workspace(db, workspace_create.model_dump())
@@ -79,10 +73,10 @@ async def delete_workspace(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     try:
-        await buckets.delete(storage, workspace.name)
+        await files.delete_workspace_objects(storage, workspace.name)
     except Exception as e:
         # Log the error but continue with workspace deletion
-        print(f"Error deleting bucket for workspace {workspace.name}: {e!s}")
+        print(f"Error deleting objects for workspace {workspace.name}: {e!s}")
 
     try:
         return await accounts.delete_workspace(db, workspace)
@@ -182,8 +176,7 @@ async def workspace_doctor(
     Run diagnostics on a workspace and optionally auto-fix issues.
 
     Checks:
-    - S3 bucket exists (can auto-fix)
-    - Bucket is not object-versioned (can auto-fix)
+    - Storage root is reachable (informational)
     - RQ worker pool connectivity (informational)
     """
     await authorize(current_user, WorkspacePolicy.get(workspace_id))
@@ -191,84 +184,28 @@ async def workspace_doctor(
     workspace = await Workspace.get_or_raise(db, workspace_id)
     checks = []
 
-    # Check 1: S3 bucket exists
-    bucket_exists = await buckets.exists(storage, workspace.name)
-    if bucket_exists:
+    # Check 1: storage root reachable. A workspace is a prefix under it, so there is nothing
+    # per-workspace to create or fix.
+    if await storage.healthy():
         checks.append(
             WorkspaceDoctorCheckResult(
-                check_name="s3_bucket",
+                check_name="storage",
                 status="ok",
-                message=f"S3 bucket '{workspace.name}' exists",
+                message=f"Storage root '{settings.storage_url}' is reachable",
                 fixed=False,
             )
         )
     else:
-        if autofix:
-            try:
-                await buckets.create(storage, workspace.name)
-                checks.append(
-                    WorkspaceDoctorCheckResult(
-                        check_name="s3_bucket",
-                        status="ok",
-                        message=f"S3 bucket '{workspace.name}' was missing and has been created",
-                        fixed=True,
-                    )
-                )
-            except Exception as e:
-                checks.append(
-                    WorkspaceDoctorCheckResult(
-                        check_name="s3_bucket",
-                        status="error",
-                        message=f"S3 bucket '{workspace.name}' does not exist and failed to create: {e!s}",
-                        fixed=False,
-                    )
-                )
-        else:
-            checks.append(
-                WorkspaceDoctorCheckResult(
-                    check_name="s3_bucket",
-                    status="error",
-                    message=f"S3 bucket '{workspace.name}' does not exist (autofix disabled)",
-                    fixed=False,
-                )
+        checks.append(
+            WorkspaceDoctorCheckResult(
+                check_name="storage",
+                status="error",
+                message=f"Storage root '{settings.storage_url}' is not reachable",
+                fixed=False,
             )
+        )
 
-    # Check 2: legacy object versioning. Buckets created before versioning was removed still
-    # mint a new version on every write, and the lifecycle rule that expired them is gone.
-    if bucket_exists:
-        if autofix:
-            try:
-                suspended = await buckets.normalize_versioning(storage, workspace.name)
-                checks.append(
-                    WorkspaceDoctorCheckResult(
-                        check_name="bucket_versioning",
-                        status="ok",
-                        message=f"Object versioning on '{workspace.name}' has been suspended"
-                        if suspended
-                        else f"Object versioning is not enabled on '{workspace.name}'",
-                        fixed=suspended,
-                    )
-                )
-            except Exception as e:
-                checks.append(
-                    WorkspaceDoctorCheckResult(
-                        check_name="bucket_versioning",
-                        status="warning",
-                        message=f"Could not check object versioning on '{workspace.name}': {e!s}",
-                        fixed=False,
-                    )
-                )
-        else:
-            checks.append(
-                WorkspaceDoctorCheckResult(
-                    check_name="bucket_versioning",
-                    status="ok",
-                    message="Object versioning not checked (autofix disabled)",
-                    fixed=False,
-                )
-            )
-
-    # Check 3: RQ worker pool connectivity
+    # Check 2: RQ worker pool connectivity
     try:
         from extralit_server.jobs.queues import DEFAULT_QUEUE
 
@@ -294,7 +231,7 @@ async def workspace_doctor(
             )
         )
 
-    # Check 4: Elasticsearch indexes for datasets (informational only)
+    # Check 3: Elasticsearch indexes for datasets (informational only)
     try:
         # Get datasets for this workspace
         from sqlalchemy import select

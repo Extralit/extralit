@@ -18,7 +18,7 @@ def test_list_files(workspace_api: WorkspacesAPI):
     mock_response.json.return_value = {
         "objects": [
             {
-                "bucket_name": "test-workspace",
+                "workspace": "test-workspace",
                 "object_name": "test-file.txt",
                 "last_modified": "2023-01-01T00:00:00Z",
                 "etag": "test-etag",
@@ -34,7 +34,7 @@ def test_list_files(workspace_api: WorkspacesAPI):
 
     assert isinstance(result, ListObjectsResponse)
     assert len(result.objects) == 1
-    assert result.objects[0].bucket_name == "test-workspace"
+    assert result.objects[0].workspace == "test-workspace"
     assert result.objects[0].object_name == "test-file.txt"
 
     workspace_api.http_client.get.assert_called_once_with(  # type: ignore
@@ -57,7 +57,7 @@ def test_get_file(workspace_api: WorkspacesAPI):
 
     assert isinstance(result, FileObjectResponse)
     assert result.content == b"test content"
-    assert result.metadata.bucket_name == "test-workspace"
+    assert result.metadata.workspace == "test-workspace"
     assert result.metadata.object_name == "test-file.txt"
     assert result.metadata.content_type == "text/plain"
     assert result.metadata.etag == "test-etag"
@@ -74,7 +74,7 @@ def test_put_file(workspace_api, tmp_path):
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {
-        "bucket_name": "test-workspace",
+        "workspace": "test-workspace",
         "object_name": "test-file.txt",
         "last_modified": "2023-01-01T00:00:00Z",
         "etag": "test-etag",
@@ -87,7 +87,7 @@ def test_put_file(workspace_api, tmp_path):
     result = workspace_api.put_file("test-workspace", "test-file.txt", test_file)
 
     assert isinstance(result, ObjectMetadata)
-    assert result.bucket_name == "test-workspace"
+    assert result.workspace == "test-workspace"
     assert result.object_name == "test-file.txt"
     assert result.etag == "test-etag"
 

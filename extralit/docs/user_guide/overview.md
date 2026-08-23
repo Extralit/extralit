@@ -8,7 +8,7 @@ This guide shows how to create and manage extraction projects in Extralit.
 
 ## Create a New Extraction Project
 
-First create a new extraction project by creating a Workspace. This will also create a new file storage bucket to contain schemas and PDFs. Only users added to the workspace can access the project data files and records.
+First create a new extraction project by creating a Workspace. Its schemas and PDFs live in a directory named after it under the server's storage root. Only users added to the workspace can access the project data files and records.
 
 ```bash
 extralit workspaces create {WORKSPACE_NAME}

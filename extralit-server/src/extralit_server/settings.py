@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import warnings
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
 
@@ -25,6 +26,42 @@ from extralit_server.constants import (
     SEARCH_ENGINE_ELASTICSEARCH,
     SEARCH_ENGINE_OPENSEARCH,
 )
+
+
+@dataclass(frozen=True)
+class StorageRoot:
+    """`settings.storage_url` parsed: where the bucket ends and the key prefix begins."""
+
+    scheme: str
+    endpoint: str | None
+    bucket: str | None
+    prefix: str
+    local_path: Path | None
+
+    @property
+    def remote(self) -> bool:
+        return self.scheme != "file"
+
+
+def parse_storage_url(url: str) -> StorageRoot:
+    parsed = urlparse(url)
+    if parsed.scheme == "file":
+        if parsed.netloc not in ("", "localhost"):
+            raise ValueError(f"file:// storage URL must be an absolute local path: {url}")
+        return StorageRoot("file", None, None, "", Path(parsed.path))
+
+    if parsed.scheme == "s3":
+        bucket, prefix = parsed.netloc, parsed.path.strip("/")
+        endpoint = None
+    elif parsed.scheme in ("http", "https"):
+        bucket, _, prefix = parsed.path.strip("/").partition("/")
+        endpoint = f"{parsed.scheme}://{parsed.netloc}"
+    else:
+        raise ValueError(f"Unsupported storage URL scheme {parsed.scheme!r}: {url}")
+
+    if not bucket:
+        raise ValueError(f"Storage URL needs a bucket segment, e.g. {url.rstrip('/')}/extralit")
+    return StorageRoot(parsed.scheme, endpoint, bucket, prefix, None)
 
 
 class Settings(BaseSettings):
@@ -119,7 +156,13 @@ class Settings(BaseSettings):
         description="Enable compatibility mode for external connection poolers (disables prepared statements)",
     )
 
-    s3_endpoint: str | None = Field(default=None, description="The S3 endpoint for data storage")
+    storage_url: str | None = Field(
+        default=None,
+        validate_default=True,
+        description="Root of object storage; every workspace is a prefix under it. "
+        "`file:///path` (default `{home_path}/storage`), `s3://bucket[/prefix]`, or "
+        "`http(s)://host[:port]/bucket[/prefix]` for MinIO, R2 and other S3-compatible endpoints.",
+    )
     s3_access_key: str | None = Field(default=None, description="The access key for the S3 storage")
     s3_secret_key: str | None = Field(default=None, description="The secret key for the S3 storage")
     s3_region: str | None = Field(default=None, description="The region for the S3 storage")
@@ -210,6 +253,14 @@ class Settings(BaseSettings):
         home_path = info.data.get("home_path") or os.path.join(Path.home(), ".extralit")
         return os.path.join(home_path, "lance")
 
+    @field_validator("storage_url", mode="before")
+    @classmethod
+    def set_storage_url_default(cls, storage_url: str | None, info: ValidationInfo) -> str:
+        if storage_url:
+            return storage_url
+        home_path = info.data.get("home_path") or os.path.join(Path.home(), ".extralit")
+        return Path(home_path, "storage").as_uri()
+
     @field_validator("base_url")
     @classmethod
     def normalize_base_url(cls, base_url: str):
@@ -269,26 +320,16 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     @classmethod
     def validate_s3_config(cls, instance: "Settings") -> "Settings":
-        """Validate that S3 configuration is complete when any S3 setting is provided."""
-        s3_fields = [instance.s3_endpoint, instance.s3_access_key, instance.s3_secret_key]
-
-        # If any S3 field is provided, all required fields must be provided
-        if any(s3_fields):
-            missing_fields = []
-            if not instance.s3_endpoint:
-                missing_fields.append("s3_endpoint")
-            if not instance.s3_access_key:
-                missing_fields.append("s3_access_key")
-            if not instance.s3_secret_key:
-                missing_fields.append("s3_secret_key")
-
-            if missing_fields:
-                raise ValueError(
-                    f"S3 configuration incomplete. Missing required fields: {', '.join(missing_fields)}. "
-                    "When using S3 storage, s3_endpoint, s3_access_key, and s3_secret_key are all required."
-                )
+        """Keys come as a pair or not at all; without them obstore falls back to the AWS credential chain."""
+        if bool(instance.s3_access_key) != bool(instance.s3_secret_key):
+            raise ValueError("s3_access_key and s3_secret_key must be set together")
+        parse_storage_url(instance.storage_url)
 
         return instance
+
+    @property
+    def storage_root(self) -> StorageRoot:
+        return parse_storage_url(self.storage_url)
 
     @property
     def database_engine_args(self) -> dict:

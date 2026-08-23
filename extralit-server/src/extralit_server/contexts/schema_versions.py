@@ -142,7 +142,7 @@ async def publish_version(
     dataset: Dataset,
     *,
     body: str,
-    bucket: str,
+    workspace: str,
     review_widgets: dict[str, dict[str, Any]] | None = None,
     created_by: UUID | None = None,
 ) -> SchemaVersion:
@@ -154,7 +154,7 @@ async def publish_version(
 
     next_version = await _next_version_number(db, dataset.id)
     key = object_key_for(dataset.id, next_version)
-    metadata = await files_ctx.put_object(storage, bucket, key, body, content_type="application/json")
+    metadata = await files_ctx.put_object(storage, workspace, key, body, content_type="application/json")
 
     parent_id = dataset.current_schema_version_id
 
