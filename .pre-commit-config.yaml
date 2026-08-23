@@ -63,7 +63,7 @@ repos:
         # formatting failure here means oxfmt could not parse the file.
         entry: bash -c 'cd extralit-frontend && npx oxfmt --no-error-on-unmatched-pattern "${@#extralit-frontend/}"' --
         language: system
-        files: '^extralit-frontend/.*\.(js|mjs|cjs|ts|tsx|vue|json|jsonc|css|scss|md)$'
+        files: '^extralit-frontend/.*\.(js|mjs|cjs|ts|tsx|vue|json|jsonc|css|scss|md|html)$'
         pass_filenames: true
 
       - id: frontend-lint
