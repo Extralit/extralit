@@ -24,7 +24,6 @@ from extralit_server.errors.future import NotFoundError, NotUniqueError, Unproce
 from extralit_server.models import Dataset, User, Workspace, WorkspaceUser
 from extralit_server.search_engine import get_search_engine
 from extralit_server.security import auth
-from extralit_server.settings import settings
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -196,7 +195,7 @@ async def workspace_doctor(
             WorkspaceDoctorCheckResult(
                 check_name="storage",
                 status="ok",
-                message=f"Storage root '{settings.storage_url}' is reachable",
+                message="Storage is reachable",
                 fixed=False,
             )
         )
@@ -205,7 +204,7 @@ async def workspace_doctor(
             WorkspaceDoctorCheckResult(
                 check_name="storage",
                 status="error",
-                message=f"Storage root '{settings.storage_url}' is not reachable",
+                message="Storage is not reachable. Please check EXTRALIT_STORAGE_URL environment variable.",
                 fixed=False,
             )
         )
