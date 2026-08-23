@@ -383,7 +383,7 @@ async def delete_document_artifacts(storage: ObjectStorage, workspace: str, docu
 
 async def put_document_file(
     storage: ObjectStorage,
-    workspace: str,
+    workspace_name: str,
     document_id: UUID,
     file_data: bytes,
     filename: str,
@@ -399,7 +399,7 @@ async def put_document_file(
     object_path = get_pdf_s3_object_path(document_id)
 
     try:
-        existing_files = await list_objects(storage, workspace, prefix=object_path, recursive=False)
+        existing_files = await list_objects(storage, workspace_name, prefix=object_path, recursive=False)
 
         should_upload = True
         if existing_files.objects:
@@ -412,9 +412,9 @@ async def put_document_file(
                 should_upload = False
 
         if should_upload:
-            await _put(storage, workspace, object_path, file_data, content_type, metadata)
+            await _put(storage, workspace_name, object_path, file_data, content_type, metadata)
 
-            return get_proxy_document_url(workspace, object_path)
+            return get_proxy_document_url(workspace_name, object_path)
 
         return None
 
