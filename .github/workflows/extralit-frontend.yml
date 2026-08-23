@@ -51,10 +51,20 @@ jobs:
           npm run api:types
           git diff --exit-code -- types/generated/api.d.ts
 
-      - name: Run lint 🧹
+      - name: Check formatting 🎨
+        run: |
+          npm run format:check
+
+      - name: Run oxlint 🦀
+        run: |
+          npm run lint:oxc
+
+      # ESLint keeps the Vue template + i18n rules oxlint cannot run yet, and carries
+      # ~1300 pre-existing advisory warnings, so it stays non-gating.
+      - name: Run eslint 🧹
         continue-on-error: true
         run: |
-          npm run lint
+          npm run lint:eslint
 
       - name: Run tests with coverage 🧪
         id: run-tests

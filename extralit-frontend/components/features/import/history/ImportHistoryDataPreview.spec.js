@@ -72,11 +72,13 @@ describe("ImportHistoryDataPreview", () => {
           loading: true,
           importHistoryDetails: null,
         },
-        global: { stubs: {
-          BaseSpinnerComponent: {
-            template: '<div class="mock-spinner">Loading...</div>',
+        global: {
+          stubs: {
+            BaseSpinnerComponent: {
+              template: '<div class="mock-spinner">Loading...</div>',
+            },
           },
-        } },
+        },
       });
 
       expect(wrapper.find(".loading-state").exists()).toBe(true);
@@ -93,16 +95,18 @@ describe("ImportHistoryDataPreview", () => {
           error: "Failed to load import data",
           importHistoryDetails: null,
         },
-        global: { stubs: {
-          BaseIcon: {
-            template: '<div class="mock-icon"></div>',
-            props: ["icon-name"],
+        global: {
+          stubs: {
+            BaseIcon: {
+              template: '<div class="mock-icon"></div>',
+              props: ["icon-name"],
+            },
+            BaseButton: {
+              template: '<button class="mock-button" @click="$emit(\'click\')"><slot /></button>',
+              props: ["variant"],
+            },
           },
-          BaseButton: {
-            template: '<button class="mock-button" @click="$emit(\'click\')"><slot /></button>',
-            props: ["variant"],
-          },
-        } },
+        },
       });
 
       expect(wrapper.find(".error-state").exists()).toBe(true);
@@ -118,14 +122,16 @@ describe("ImportHistoryDataPreview", () => {
           error: "Network error",
           importHistoryDetails: null,
         },
-        global: { stubs: {
-          BaseIcon: true,
-          BaseButton: {
-            template: "<button @click=\"$emit('click')\"><slot /></button>",
-            props: ["variant"],
-            emits: ["click"],
+        global: {
+          stubs: {
+            BaseIcon: true,
+            BaseButton: {
+              template: "<button @click=\"$emit('click')\"><slot /></button>",
+              props: ["variant"],
+              emits: ["click"],
+            },
           },
-        } },
+        },
       });
 
       await wrapper.find("button").trigger("click");
@@ -143,9 +149,11 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: null,
         },
-        global: { stubs: {
-          BaseIcon: true,
-        } },
+        global: {
+          stubs: {
+            BaseIcon: true,
+          },
+        },
       });
 
       expect(wrapper.find(".empty-state").exists()).toBe(true);
@@ -162,12 +170,14 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          BaseSimpleTable: {
-            template: '<div class="mock-table" @row-click="$emit(\'row-click\', $event)"></div>',
-            props: ["data", "columns", "options", "loading"],
+        global: {
+          stubs: {
+            BaseSimpleTable: {
+              template: '<div class="mock-table" @row-click="$emit(\'row-click\', $event)"></div>',
+              props: ["data", "columns", "options", "loading"],
+            },
           },
-        } },
+        },
       });
     });
 
@@ -230,9 +240,11 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          BaseSimpleTable: true,
-        } },
+        global: {
+          stubs: {
+            BaseSimpleTable: true,
+          },
+        },
       });
     });
 
@@ -284,9 +296,11 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          BaseSimpleTable: true,
-        } },
+        global: {
+          stubs: {
+            BaseSimpleTable: true,
+          },
+        },
       });
     });
 
@@ -336,9 +350,11 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          BaseSimpleTable: true,
-        } },
+        global: {
+          stubs: {
+            BaseSimpleTable: true,
+          },
+        },
       });
     });
 
@@ -378,9 +394,11 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          BaseSimpleTable: true,
-        } },
+        global: {
+          stubs: {
+            BaseSimpleTable: true,
+          },
+        },
       });
     });
 
@@ -426,9 +444,11 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          BaseSimpleTable: true,
-        } },
+        global: {
+          stubs: {
+            BaseSimpleTable: true,
+          },
+        },
       });
 
       // Should not throw error and should show fallback text
@@ -445,9 +465,11 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          BaseSimpleTable: true,
-        } },
+        global: {
+          stubs: {
+            BaseSimpleTable: true,
+          },
+        },
       });
 
       expect(wrapper.vm.tableColumns).toEqual([]);
@@ -462,9 +484,11 @@ describe("ImportHistoryDataPreview", () => {
           error: null,
           importHistoryDetails: mockImportHistoryDetails,
         },
-        global: { stubs: {
-          BaseSimpleTable: true,
-        } },
+        global: {
+          stubs: {
+            BaseSimpleTable: true,
+          },
+        },
       });
 
       expect(wrapper.vm.tableData).toEqual([]);

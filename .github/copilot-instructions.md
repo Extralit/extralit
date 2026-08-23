@@ -65,7 +65,7 @@ uv run ruff check        # Run ruff linting
 
 ### Linting Configuration
 - Python: Ruff with shared configuration across packages
-- Frontend: ESLint + Prettier with TypeScript support
+- Frontend: oxlint + ESLint (Vue templates/i18n) for linting, oxfmt for formatting
 - Pre-commit hooks for code formatting and linting
 
 # `extralit-server/` Backend Architecture Overview

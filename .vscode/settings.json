@@ -21,6 +21,10 @@
             "source.organizeImports.ruff": "explicit"
         }
     },
+    "[javascript][typescript][vue][json][jsonc][css][scss][markdown][html]": {
+        "editor.defaultFormatter": "oxc.oxc-vscode",
+        "editor.formatOnSave": true
+    },
     "editor.rulers": [
         120
     ],

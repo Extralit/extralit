@@ -80,9 +80,7 @@ describe("useImportConfigurationViewModel", () => {
     mockImportHistoryDatasetBuilder = {
       build: vi.fn(),
     };
-    const { ImportHistoryDatasetBuilder } = await import(
-      "~/v1/domain/entities/import/ImportHistoryDatasetBuilder"
-    );
+    const { ImportHistoryDatasetBuilder } = await import("~/v1/domain/entities/import/ImportHistoryDatasetBuilder");
     // Regular function (not arrow) so the mock is `new`-able under vitest v4.
     ImportHistoryDatasetBuilder.mockImplementation(function () {
       return mockImportHistoryDatasetBuilder;

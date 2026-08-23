@@ -15,6 +15,7 @@ These are the section headers that we use:
 -->
 
 ## [Extralit] [Unreleased](https://github.com/extralit/extralit/compare/v0.6.1...v0.6.2)
+
 ### Added
 
 - Loading indicator on sign-in form button to provide visual feedback during authentication requests.
@@ -27,17 +28,21 @@ These are the section headers that we use:
   `page-content` but no `page-header`) showed the unfilled slot's placeholder as real page copy.
 
 ## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
+
 ### Added
+
 - Incremental Dataset Import: new `DatasetUpdateDialog` and update workflow in `DatasetConfigurationForm` to update existing datasets with imported data
 
 ### Changed
+
 - Refactored the frontend to use a single fetchDocument method that queries documents by any identifier and workspace, replacing the previous fetchDocumentByID and fetchDocumentByPubmedID methods. The view model and use case now expect and handle the new API response format
- - Renamed `DatasetConfigurationDialog` to `DatasetCreateDialog` and improved TypeScript typings and prop validations across configuration components
- - Improved button area layout, dialog interactions, and hid questions section during update flow to avoid unintended edits
+- Renamed `DatasetConfigurationDialog` to `DatasetCreateDialog` and improved TypeScript typings and prop validations across configuration components
+- Improved button area layout, dialog interactions, and hid questions section during update flow to avoid unintended edits
 
 ## [Extralit] [0.6.0](https://github.com/extralit/extralit/compare/v0.4.1...v0.6.0)
 
 ### Added
+
 - Papers Library Importer: Added full import workflow for bulk document ingestion via BibTeX and PDF upload.
 - Added ImportModal full-page workflow with multi-step navigation for document import.
 - Implemented BibTeX parsing and file-to-reference matching in ImportBibUpload and ImportPdfUpload components.
@@ -48,6 +53,7 @@ These are the section headers that we use:
 - Enhanced workspace selection and integration with import features.
 
 ### Changed
+
 - Renamed `argilla-frontend/` → `extralit-frontend/` (entire frontend directory)
 - Updated route new dataset view from `/{dataset.repoId}` to `/new/hf/{dataset.repoId}` to prevent url conflicts.
 - Improved import modal navigation and state persistence across steps.
@@ -55,11 +61,11 @@ These are the section headers that we use:
 - Enhanced error handling and validation for BibTeX and PDF uploads.
 
 ### Fixed
+
 - Fixed PDF-to-reference matching and error reporting in import workflow.
 - Fixed UI state restoration when navigating between import steps.
 
 ## Changed
-
 
 ## [Argilla] [2.8.0](https://github.com/argilla-io/argilla/compare/v2.7.1...v2.8.0)
 
@@ -104,20 +110,23 @@ These are the section headers that we use:
 ## [Extralit] [0.4.0](https://github.com/extralit/extralit/compare/v0.3.0...v0.4.0)
 
 ### Fixed
+
 - Fixed ES index type for TableField and TableQuestion
 
 ## [Extralit] [0.3.0](https://github.com/extralit/extralit/compare/v0.2.3...v0.3.0)
 
 ### Added
+
 - Added support for `TableField` for table fields.
 - Added `TableQuestion` to support table questions.
 
 ### Fixed
+
 - Fixed use_table setting update in `TextField`
 
 ### Changed
-- Refactored `argilla-frontend/components/base/base-render-table/RenderTable.vue` to add `TableData`, `Validation`, `Extraction` entities.
 
+- Refactored `argilla-frontend/components/base/base-render-table/RenderTable.vue` to add `TableData`, `Validation`, `Extraction` entities.
 
 ## [Argilla] [2.4.1](https://github.com/argilla-io/argilla/compare/v2.4.0...v2.4.1)
 

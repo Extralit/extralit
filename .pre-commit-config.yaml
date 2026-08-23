@@ -57,6 +57,15 @@ repos:
   ##############################################################################
   - repo: local
     hooks:
+      - id: frontend-format
+        name: "Format extralit-frontend files with oxfmt"
+        # Same path-rewriting contract as frontend-lint below. Blocking: unlike lint, a
+        # formatting failure here means oxfmt could not parse the file.
+        entry: bash -c 'cd extralit-frontend && npx oxfmt --no-error-on-unmatched-pattern "${@#extralit-frontend/}"' --
+        language: system
+        files: '^extralit-frontend/.*\.(js|mjs|cjs|ts|tsx|vue|json|jsonc|css|scss|md|html)$'
+        pass_filenames: true
+
       - id: frontend-lint
         name: "Lint and fix extralit-frontend files"
         # pre-commit passes repo-relative paths (extralit-frontend/foo.vue). The trailing
@@ -78,8 +87,6 @@ ci:
   autoupdate_commit_msg: "[pre-commit.ci] pre-commit autoupdate"
   autoupdate_schedule: weekly
   skip:
-    - helmlint # Disabling helmlint on CI by now because helm dependency is not available
-    - frontend-eslint # Requires npm dependencies to be installed in extralit-frontend
-    - frontend-prettier # Requires npm dependencies to be installed in extralit-frontend
+    - frontend-format # Requires npm dependencies to be installed in extralit-frontend
     - frontend-lint # Requires npm dependencies to be installed in extralit-frontend
   submodules: false

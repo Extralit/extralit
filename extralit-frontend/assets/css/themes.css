@@ -59,11 +59,7 @@
   --bg-field: linear-gradient(45deg, var(--bg-opacity-2), var(--bg-opacity-1));
   --border-field: hsl(0, 0%, 94%);
   --bg-bubble: linear-gradient(45deg, var(--bg-opacity-3), var(--bg-opacity-1));
-  --bg-bubble-inverse: linear-gradient(
-    45deg,
-    var(--bg-opacity-1),
-    var(--bg-opacity-3)
-  );
+  --bg-bubble-inverse: linear-gradient(45deg, var(--bg-opacity-1), var(--bg-opacity-3));
   --bg-form: hsl(0, 0%, 100%);
   --bg-form-button-area: hsl(228, 50%, 96%);
   --fg-shortcut-key: hsla(0, 0%, 0%, 0.2);
@@ -71,11 +67,7 @@
   --fg-similarity: hsl(3, 100%, 69%);
   --fg-highlight: hsl(3, 100%, 69%);
   --bg-auth: hsl(18, 57%, 91%);
-  --bg-auth-gradient: linear-gradient(
-    178.31deg,
-    #ffe5d9 1.36%,
-    #ffd1bc 109.14%
-  );
+  --bg-auth-gradient: linear-gradient(178.31deg, #ffe5d9 1.36%, #ffd1bc 109.14%);
   --bg-banner-info: hsl(0, 0%, 90%);
   --bg-banner-warning: hsl(47, 83%, 91%);
   --bg-banner-error: hsl(3, 100%, 92%);
@@ -139,11 +131,7 @@
   --bg-field: linear-gradient(45deg, var(--bg-opacity-4), var(--bg-opacity-2));
   --border-field: hsl(0, 0%, 18%);
   --bg-bubble: linear-gradient(45deg, var(--bg-opacity-4), var(--bg-opacity-2));
-  --bg-field-inverse: linear-gradient(
-    45deg,
-    var(--bg-opacity-2),
-    var(--bg-opacity-4)
-  );
+  --bg-field-inverse: linear-gradient(45deg, var(--bg-opacity-2), var(--bg-opacity-4));
   --bg-form: hsl(216 12% 14%);
   --bg-form-button-area: hsla(228, 40.18%, 59.31%, 0.2);
   --fg-shortcut-key: hsla(0, 0%, 100%, 0.4);
@@ -230,11 +218,7 @@
   --bg-field: linear-gradient(45deg, var(--bg-opacity-2), var(--bg-opacity-1));
   --border-field: hsl(0, 0%, 94%);
   --bg-bubble: linear-gradient(45deg, var(--bg-opacity-3), var(--bg-opacity-1));
-  --bg-bubble-inverse: linear-gradient(
-    45deg,
-    var(--bg-opacity-1),
-    var(--bg-opacity-3)
-  );
+  --bg-bubble-inverse: linear-gradient(45deg, var(--bg-opacity-1), var(--bg-opacity-3));
   --bg-form: hsl(0, 0%, 100%);
   --bg-form-button-area: hsl(228, 50%, 96%);
   --fg-shortcut-key: hsla(0, 0%, 0%, 0.2);
@@ -242,11 +226,7 @@
   --fg-similarity: hsl(3, 100%, 50%);
   --fg-highlight: hsl(3, 100%, 49%);
   --bg-auth: hsl(18, 57%, 91%);
-  --bg-auth-gradient: linear-gradient(
-    178.31deg,
-    #ffe5d9 1.36%,
-    #ffd1bc 109.14%
-  );
+  --bg-auth-gradient: linear-gradient(178.31deg, #ffe5d9 1.36%, #ffd1bc 109.14%);
   --bg-banner-info: hsl(0, 0%, 90%);
   --bg-banner-warning: hsl(47, 83%, 91%);
   --bg-banner-error: hsl(3, 100%, 92%);

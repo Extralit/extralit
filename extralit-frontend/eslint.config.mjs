@@ -1,15 +1,16 @@
 // Flat config (ESLint 10). Replaces the legacy .eslintrc.js + .eslintignore.
 //
 // Posture is preserved verbatim from the old config: eslint-plugin-vue's
-// `flat/recommended` is all-`warn`, formatting (prettier/prettier) is `warn`, and
-// `npm run lint` runs with `--quiet` so only error-level rules gate. The @nuxt/eslint
+// `flat/recommended` is all-`warn` and `npm run lint` runs with `--quiet` so only
+// error-level rules gate. Formatting is oxfmt's job, not a lint rule. The @nuxt/eslint
 // module (project-aware auto-import globals) remains the tracked follow-up; until then
 // the Nuxt 4 auto-imports are hand-declared below, as they were in .eslintrc.js.
 import js from "@eslint/js";
 import globals from "globals";
 import pluginVue from "eslint-plugin-vue";
 import vueI18n from "@intlify/eslint-plugin-vue-i18n";
-import prettierRecommended from "eslint-plugin-prettier/recommended";
+import eslintConfigPrettier from "eslint-config-prettier";
+import oxlintPlugin from "eslint-plugin-oxlint";
 import vueParser from "vue-eslint-parser";
 import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
@@ -158,16 +159,6 @@ export default [
     },
   },
 
-  // Prettier last: turns off formatting-conflicting rules and adds prettier/prettier.
-  // Kept advisory (`warn`) — `npm run format` is the source of truth, and `lint --quiet`
-  // stays focused on correctness.
-  prettierRecommended,
-  {
-    rules: {
-      "prettier/prettier": "warn",
-    },
-  },
-
   // ── Rules newly promoted to `error` by this toolchain bump (eslint 8->10,
   //    eslint-plugin-vue 8->10) that the previous setup either did not enable or that
   //    eslint-plugin-nuxt's preset disabled. They flag PRE-EXISTING patterns (legacy
@@ -200,4 +191,11 @@ export default [
       "vue/no-deprecated-destroyed-lifecycle": "warn",
     },
   },
+
+  // oxlint owns every rule it implements (see .oxlintrc.json); turn those off here so the
+  // same finding is not reported twice by two linters.
+  ...oxlintPlugin.buildFromOxlintConfigFile(".oxlintrc.json"),
+
+  // Formatting-conflicting rules off — oxfmt is the source of truth.
+  eslintConfigPrettier,
 ];
