@@ -178,7 +178,13 @@ class TestPutDocumentFile:
     async def test_the_first_upload_returns_a_proxy_url(self, storage):
         from uuid import uuid4
 
-        url = await files.put_document_file(storage, WORKSPACE, uuid4(), b"%PDF-1.4", "a.pdf")
+        url = await files.put_document_file(
+            storage=storage,
+            workspace_name=WORKSPACE,
+            document_id=uuid4(),
+            file_data=b"%PDF-1.4",
+            filename="a.pdf",
+        )
 
         assert url is not None
         assert url.startswith(f"/api/v1/file/{WORKSPACE}/pdf/")
