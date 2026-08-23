@@ -4456,8 +4456,7 @@
 </span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>extralit<span class="w"> </span>workspaces<span class="w"> </span>--name<span class="w"> </span>my-workspace<span class="w"> </span>doctor<span class="w"> </span>--no-autofix
 </span></code></pre></div>
 <p>The doctor command checks:
-- <strong>S3 bucket existence</strong>: Automatically creates the bucket if missing (with autofix)
-- <strong>Bucket versioning</strong>: Verifies proper file versioning policy is enabled (informational)
+- <strong>Storage root</strong>: The configured <code>EXTRALIT_STORAGE_URL</code> is reachable
 - <strong>RQ worker pool</strong>: Tests connectivity to the background job queue (informational)
 - <strong>Elasticsearch indexes</strong>: Checks if dataset indexes exist (informational)</p>
 <p>Use this command when:

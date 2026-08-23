@@ -3709,7 +3709,7 @@
 <li><code>USERNAME</code> and <code>PASSWORD</code> that you'll sign in with your <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> user with "owner" permissions. Leaving <code>USERNAME</code> blank will use your Hugging Face username.</li>
 <li><code>EXTRALIT_DATABASE_URL</code>: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.</li>
 <li>
-<p><code>EXTRALIT_S3_ENDPOINT</code>, <code>EXTRALIT_S3_ACCESS_KEY</code>, <code>EXTRALIT_S3_SECRET_KEY</code>: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.</p>
+<p><code>EXTRALIT_STORAGE_URL</code>, <code>EXTRALIT_S3_ACCESS_KEY</code>, <code>EXTRALIT_S3_SECRET_KEY</code>: The S3 root (<code>https://&lt;endpoint&gt;/&lt;bucket&gt;[/prefix]</code>) where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.</p>
 </li>
 <li>
 <p>These fields for Hugging Face Single-Sign-on are optional to set up, but</p>
