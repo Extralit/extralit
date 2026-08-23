@@ -74,9 +74,12 @@ async def delete_workspace(
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-    # The row goes first: a delete the DB refuses (linked datasets) must leave the objects intact.
+    # The row goes first, uncommitted: a delete the DB refuses (linked datasets) must leave the
+    # objects intact, and holding the transaction open keeps the name reserved -- a concurrent
+    # create of the same name blocks on the unique index until this commits, so the cleanup below
+    # cannot delete a recreated workspace's objects.
     try:
-        deleted = await accounts.delete_workspace(db, workspace)
+        deleted = await accounts.delete_workspace(db, workspace, autocommit=False)
     except NotUniqueError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except PermissionError as e:
@@ -90,9 +93,13 @@ async def delete_workspace(
     try:
         await files.delete_workspace_objects(storage, deleted.name)
     except Exception as e:
-        # The workspace is already gone; its objects are unreachable, so a leak here is harmless.
-        _LOGGER.warning(f"Error deleting objects for workspace {deleted.name}: {e!s}")
+        await db.rollback()
+        _LOGGER.error(f"Error deleting objects for workspace {deleted.name}: {e!s}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting workspace files: {e!s}"
+        )
 
+    await db.commit()
     return deleted
 
 

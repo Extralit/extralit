@@ -1,3 +1,4 @@
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import pytest
@@ -76,6 +77,28 @@ class TestSuiteWorkspaces:
         response = await async_client.delete(f"/api/v1/workspaces/{workspace.id}", headers=owner_auth_header)
 
         assert response.status_code == 200
+
+    async def test_delete_workspace_is_aborted_when_its_files_cannot_be_deleted(
+        self, async_client: AsyncClient, owner_auth_header: dict
+    ):
+        workspace = await WorkspaceFactory.create(name="workspace_storage_fails")
+
+        with (
+            patch(
+                "extralit_server.contexts.files.delete_workspace_objects",
+                AsyncMock(side_effect=Exception("storage down")),
+            ),
+            patch(
+                "extralit_server.contexts.accounts.delete_workspace",
+                AsyncMock(return_value=workspace),
+            ) as delete_workspace,
+        ):
+            response = await async_client.delete(f"/api/v1/workspaces/{workspace.id}", headers=owner_auth_header)
+
+        assert response.status_code == 500
+        # The row's survival is not observable here: the test session shares one savepoint with
+        # the request, so the handler's rollback also undoes the factory insert.
+        assert delete_workspace.await_args.kwargs["autocommit"] is False
 
     async def test_delete_workspace_with_feedback_datasets(self, async_client: AsyncClient, owner_auth_header: dict):
         workspace = await WorkspaceFactory.create(name="workspace_delete")
