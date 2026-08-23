@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 from uuid import UUID
 
@@ -24,6 +25,8 @@ from extralit_server.models import Dataset, User, Workspace, WorkspaceUser
 from extralit_server.search_engine import get_search_engine
 from extralit_server.security import auth
 from extralit_server.settings import settings
+
+_LOGGER = logging.getLogger(__name__)
 
 router = APIRouter(tags=["workspaces"])
 
@@ -72,24 +75,26 @@ async def delete_workspace(
     except NotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
+    # The row goes first: a delete the DB refuses (linked datasets) must leave the objects intact.
     try:
-        await files.delete_workspace_objects(storage, workspace.name)
-    except Exception as e:
-        # Log the error but continue with workspace deletion
-        print(f"Error deleting objects for workspace {workspace.name}: {e!s}")
-
-    try:
-        return await accounts.delete_workspace(db, workspace)
+        deleted = await accounts.delete_workspace(db, workspace)
     except NotUniqueError as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     except PermissionError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
     except Exception as e:
-        # Handle any other unexpected errors
-        print(f"Error deleting workspace {workspace.id}: {e!s}")
+        _LOGGER.error(f"Error deleting workspace {workspace.id}: {e!s}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error deleting workspace: {e!s}"
         )
+
+    try:
+        await files.delete_workspace_objects(storage, deleted.name)
+    except Exception as e:
+        # The workspace is already gone; its objects are unreachable, so a leak here is harmless.
+        _LOGGER.warning(f"Error deleting objects for workspace {deleted.name}: {e!s}")
+
+    return deleted
 
 
 @router.get("/me/workspaces")

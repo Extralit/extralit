@@ -2,7 +2,7 @@ import asyncio
 from typing import Optional
 
 import typer
-from pydantic import constr
+from pydantic import ValidationError, constr
 
 from extralit_server.api.schemas.v1.users import USER_PASSWORD_MIN_LENGTH, UserCreate
 from extralit_server.api.schemas.v1.workspaces import WorkspaceCreate
@@ -65,15 +65,20 @@ async def _create(
             typer.echo(f"User with api_key {api_key!r} already exists in database. Skipping...")
             return
 
-        user_create = UserCreateForTask(
-            first_name=first_name,
-            last_name=last_name,
-            username=username,
-            role=role,
-            password=password,
-            api_key=api_key,
-            workspaces=[WorkspaceCreate(name=workspace_name) for workspace_name in workspace],
-        )
+        try:
+            user_create = UserCreateForTask(
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                role=role,
+                password=password,
+                api_key=api_key,
+                workspaces=[WorkspaceCreate(name=workspace_name) for workspace_name in workspace],
+            )
+        except ValidationError as e:
+            for error in e.errors():
+                typer.echo(f"• {'.'.join(str(part) for part in error['loc'])}: {error['msg']}")
+            raise typer.Exit(code=1)
 
         user = await User.create(
             session,

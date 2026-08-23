@@ -67,7 +67,6 @@ class TestSuiteWorkspaces:
         assert response.status_code == 404
         assert response.json() == {"detail": f"Workspace with id `{workspace_id}` not found"}
 
-    @pytest.mark.skip(reason="Failing with 500 instead of 200 status code")
     async def test_delete_workspace(self, async_client: AsyncClient, owner_auth_header: dict):
         workspace = await WorkspaceFactory.create(name="workspace_delete")
         other_workspace = await WorkspaceFactory.create()
@@ -78,7 +77,6 @@ class TestSuiteWorkspaces:
 
         assert response.status_code == 200
 
-    @pytest.mark.skip(reason="Failing with 500 instead of 409 status code")
     async def test_delete_workspace_with_feedback_datasets(self, async_client: AsyncClient, owner_auth_header: dict):
         workspace = await WorkspaceFactory.create(name="workspace_delete")
 
@@ -91,7 +89,6 @@ class TestSuiteWorkspaces:
             "detail": f"Cannot delete the workspace {workspace.id}. This workspace has some datasets linked"
         }
 
-    @pytest.mark.skip(reason="Failing with 500 instead of 404 status code")
     async def test_delete_missing_workspace(self, async_client: "AsyncClient", owner_auth_header: dict):
         workspace_id = uuid4()
 

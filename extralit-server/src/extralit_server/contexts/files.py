@@ -45,8 +45,10 @@ class ObjectStorage:
         return self.root.remote
 
     def for_workspace(self, workspace: str) -> S3Store | LocalStore:
-        if not workspace:
-            raise ValueError("workspace cannot be empty")
+        # `LocalStore` happily accepts `..` in a prefix where `S3Store` rejects it, and the
+        # workspace arrives from a URL path segment, so the traversal guard has to be here.
+        if not workspace or workspace in (".", "..") or "/" in workspace or "\\" in workspace:
+            raise ValueError(f"Invalid workspace name: {workspace!r}")
         store = self._stores.get(workspace)
         if store is None:
             store = self._build(workspace)
@@ -101,13 +103,20 @@ class ObjectStorage:
         """The root is reachable with the configured credentials."""
         try:
             if not self.root.remote:
-                return self.root.local_path.is_dir()
+                # A local root is reachable if it can exist; nothing has created it until the
+                # first workspace is written.
+                self.root.local_path.mkdir(parents=True, exist_ok=True)
+                return True
             store = S3Store(self.root.bucket, prefix=self.root.prefix or None, **self._s3_config())
             await store.list_with_delimiter_async()
             return True
         except Exception as e:
             _LOGGER.warning(f"Storage root {settings.storage_url} is unreachable: {e}")
             return False
+
+    def forget(self, workspace: str) -> None:
+        """Drop the cached store, so the next access rebuilds it (and remakes its directory)."""
+        self._stores.pop(workspace, None)
 
     async def aclose(self) -> None:
         self._stores.clear()
@@ -347,7 +356,7 @@ async def delete_workspace_objects(storage: ObjectStorage, workspace: str) -> No
         await store.delete_async([meta["path"] for meta in batch])
     if isinstance(store, LocalStore):
         shutil.rmtree(store.prefix, ignore_errors=True)
-        storage._stores.pop(workspace, None)
+        storage.forget(workspace)
 
 
 async def delete_document_artifacts(storage: ObjectStorage, workspace: str, document_id: UUID | str) -> None:

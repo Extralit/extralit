@@ -9,6 +9,7 @@ import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
+from urllib.request import url2pathname
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_core.core_schema import ValidationInfo
@@ -45,10 +46,17 @@ class StorageRoot:
 
 def parse_storage_url(url: str) -> StorageRoot:
     parsed = urlparse(url)
+    # Never echo the URL once it may carry a secret: this message reaches logs and the doctor.
+    if parsed.username or parsed.password:
+        raise ValueError(
+            "Credentials must not be embedded in the storage URL. "
+            "Use EXTRALIT_S3_ACCESS_KEY and EXTRALIT_S3_SECRET_KEY."
+        )
+
     if parsed.scheme == "file":
         if parsed.netloc not in ("", "localhost"):
             raise ValueError(f"file:// storage URL must be an absolute local path: {url}")
-        return StorageRoot("file", None, None, "", Path(parsed.path))
+        return StorageRoot("file", None, None, "", Path(url2pathname(parsed.path)))
 
     if parsed.scheme == "s3":
         bucket, prefix = parsed.netloc, parsed.path.strip("/")
