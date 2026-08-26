@@ -1,4 +1,4 @@
-FROM python:3.13-slim AS builder
+FROM python:3.12-slim AS builder
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.7.12 /uv /uvx /bin/
@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/home/extralit/.cache/uv \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /packages
 
-FROM python:3.13-slim
+FROM python:3.12-slim
 
 # Environment Variables
 ENV USERNAME=""

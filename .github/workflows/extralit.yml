@@ -54,8 +54,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # Newest supported version (requires-python <3.14).
-        python-version: ["3.13"]
+        python-version: ["3.12"]
     steps:
       - uses: actions/checkout@v4
       - name: Install uv
@@ -136,7 +135,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         # Upload the package to be used in the next jobs only once
-        if: ${{ matrix.python-version == '3.13' }}
+        if: ${{ matrix.python-version == '3.12' }}
         with:
           name: extralit
           path: extralit/dist

@@ -98,6 +98,7 @@ jobs:
         uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit-server/pyproject.toml"
+          python-version: "3.12"
           enable-cache: true
           cache-local-path: ~/.cache/uv
           cache-dependency-glob: "extralit-server/uv.lock"
@@ -213,6 +214,7 @@ jobs:
         uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit-server/pyproject.toml"
+          python-version: "3.12"
 
       - name: Read package info
         run: |
