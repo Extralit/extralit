@@ -125,6 +125,10 @@ jobs:
         run: |
           docker run --rm ${{ env.SERVER_DOCKER_IMAGE }}:${{ env.IMAGE_TAG }} python -m extralit_server start --help
 
+      - name: Check the retrieval payloads are baked into the image
+        run: |
+          docker run --rm ${{ env.SERVER_DOCKER_IMAGE }}:${{ env.IMAGE_TAG }} python smoke_retrieval_deps.py
+
       - name: Push latest `extralit-server` image
         if: ${{ env.PUBLISH_LATEST == 'true' }}
         uses: docker/build-push-action@v5

@@ -39,12 +39,15 @@ RUN mkdir -p "$EXTRALIT_HOME_PATH" && \
     chown extralit:extralit "$EXTRALIT_HOME_PATH" && \
     apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends libpq-dev libgl1 libglib2.0-0 poppler-utils && \
+    apt-get install -y --no-install-recommends libpq-dev libgl1 libglib2.0-0 poppler-utils tesseract-ocr-eng && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 VOLUME $EXTRALIT_HOME_PATH
 
-COPY scripts/start_extralit_server.sh /home/extralit
+# liteparse would otherwise download the language data on the first scanned page it meets.
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+
+COPY scripts/start_extralit_server.sh scripts/smoke_retrieval_deps.py /home/extralit/
 # Destination folder must be the same as the builder one. Otherwise installed script won't work (since the installation fixes the path inside the script)
 COPY --chown=extralit:extralit --from=builder /opt/venv /opt/venv
 
@@ -56,6 +59,10 @@ WORKDIR /home/extralit
 RUN chmod +x start_extralit_server.sh
 
 USER extralit
+
+# Pull the community `lance` extension now: DuckDB resolves it per user home, and a hybrid
+# search must not be the thing that discovers the runtime has no network.
+RUN python -c "import duckdb; duckdb.connect().execute('INSTALL lance')"
 
 # Exposing ports
 EXPOSE 6900
