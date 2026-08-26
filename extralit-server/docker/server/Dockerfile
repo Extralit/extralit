@@ -47,7 +47,7 @@ VOLUME $EXTRALIT_HOME_PATH
 # liteparse would otherwise download the language data on the first scanned page it meets.
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
 
-COPY scripts/start_extralit_server.sh scripts/smoke_retrieval_deps.py /home/extralit/
+COPY scripts/start_extralit_server.sh scripts/smoke_retrieval_deps.py scripts/install_lance_extension.py /home/extralit/
 # Destination folder must be the same as the builder one. Otherwise installed script won't work (since the installation fixes the path inside the script)
 COPY --chown=extralit:extralit --from=builder /opt/venv /opt/venv
 
@@ -60,9 +60,9 @@ RUN chmod +x start_extralit_server.sh
 
 USER extralit
 
-# Pull the community `lance` extension now: DuckDB resolves it per user home, and a hybrid
-# search must not be the thing that discovers the runtime has no network.
-RUN python -c "import duckdb; duckdb.connect().execute('INSTALL lance')"
+# DuckDB resolves extensions per user home, so this runs as `extralit`: a hybrid search must
+# not be the thing that discovers the runtime has no network.
+RUN python install_lance_extension.py
 
 # Exposing ports
 EXPOSE 6900
