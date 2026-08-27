@@ -8,6 +8,7 @@ what lets chunking re-run from the Lance dataset without re-parsing the PDF.
 
 from __future__ import annotations
 
+import html
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Optional
@@ -88,6 +89,25 @@ def _bbox_of(row: Mapping) -> Optional[tuple[float, float, float, float]]:
     return tuple(float(v) for v in bbox) if bbox else None  # ty: ignore[invalid-return-type]
 
 
+def _table_content(markup: str, caption: str) -> str:
+    """Fold a table's caption into its markup, as the `<caption>` element HTML has for it.
+
+    A caption is consumed from the markdown stream by the table that owns it, so if it were not
+    put back here it would be dropped outright — and a table's caption is usually the only prose
+    saying what the table is of.
+    """
+    if not markup:
+        return caption
+    if not caption:
+        return markup
+    escaped = f"<caption>{html.escape(caption, quote=False)}</caption>"
+    opening = markup.find(">")
+    if not markup.startswith("<table") or opening == -1:
+        # Not markup we recognise; keep the caption rather than lose it to a shape assumption.
+        return f"{escaped}{markup}"
+    return f"{markup[: opening + 1]}{escaped}{markup[opening + 1 :]}"
+
+
 def _captionable(rows: Sequence[Mapping], index: int) -> Optional[int]:
     """Index of the figure or table a caption at `index` belongs to.
 
@@ -152,7 +172,7 @@ def elements_from_items(rows: Iterable[Mapping]) -> list[Element]:
             _push_heading(stack, slot, text)
 
         if label in TABLE_LABELS:
-            kind, content = TABLE, (row.get("html") or "")
+            kind, content = TABLE, _table_content(row.get("html") or "", captions.get(index, ""))
         elif label in PICTURE_LABELS:
             kind, content = FIGURE, captions.get(index, "")
         else:

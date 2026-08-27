@@ -101,7 +101,7 @@ class TestCaptions:
 
         assert [(e.type, e.content) for e in elements] == [(FIGURE, "Figure 1. A red square.")]
 
-    def test_a_caption_preceding_its_figure_is_still_absorbed(self):
+    def test_a_caption_preceding_its_table_is_absorbed_and_kept(self):
         rows = [
             row(DocItemLabel.CAPTION, 0, text="Table 1. Counts."),
             row(DocItemLabel.TABLE, 1, html="<table><tbody><tr><td>x</td></tr></tbody></table>"),
@@ -110,6 +110,41 @@ class TestCaptions:
         elements = elements_from_items(rows)
 
         assert [e.type for e in elements] == [TABLE]
+        # Consumed from the markdown stream, so the table has to carry it or it is lost.
+        assert elements[0].content == (
+            "<table><caption>Table 1. Counts.</caption><tbody><tr><td>x</td></tr></tbody></table>"
+        )
+
+    def test_a_table_caption_lands_where_html_allows_a_caption(self):
+        rows = [
+            row(DocItemLabel.TABLE, 0, html="<table><thead><tr><th>N</th></tr></thead></table>"),
+            row(DocItemLabel.CAPTION, 1, text="Table 2. Sizes."),
+        ]
+
+        content = elements_from_items(rows)[0].content
+
+        # <caption> is only valid as the first child of <table>.
+        assert content.startswith("<table><caption>Table 2. Sizes.</caption><thead>")
+
+    def test_a_table_caption_is_escaped(self):
+        rows = [
+            row(DocItemLabel.TABLE, 0, html="<table><tbody><tr><td>x</td></tr></tbody></table>"),
+            row(DocItemLabel.CAPTION, 1, text="Risk & spread <n=42>"),
+        ]
+
+        content = elements_from_items(rows)[0].content
+
+        assert "<caption>Risk &amp; spread &lt;n=42&gt;</caption>" in content
+
+    def test_a_caption_survives_a_table_that_produced_no_markup(self):
+        rows = [
+            row(DocItemLabel.TABLE, 0, html=None),
+            row(DocItemLabel.CAPTION, 1, text="Table 3. Unparsed."),
+        ]
+
+        elements = elements_from_items(rows)
+
+        assert [(e.type, e.content) for e in elements] == [(TABLE, "Table 3. Unparsed.")]
 
     def test_a_caption_on_a_page_with_no_figure_survives_as_prose(self):
         rows = [
