@@ -30,7 +30,9 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# --seed: the HF-Space image derives from this one and installs into this venv with `pip`.
+# --seed, though nothing here needs pip: without it `pip` falls through to the base image's
+# /usr/local/bin/pip, which installs where /opt/venv/bin/python cannot see it. Dropping it saves
+# 5 MB of 1847 and hands any derived image a silent wrong-interpreter install.
 RUN uv venv --seed "$VIRTUAL_ENV"
 
 # The wheel is the only input that differs between two builds of the same tree, so it enters
