@@ -54,14 +54,16 @@ jobs:
           if [[ $IS_RELEASE == true ]]; then
             echo "PLATFORMS=linux/amd64,linux/arm64" >> $GITHUB_ENV
             echo "IMAGE_TAG=v$PACKAGE_VERSION" >> $GITHUB_ENV
-            echo "SERVER_DOCKER_IMAGE=extralit/extralit-server" >> $GITHUB_ENV
+            SERVER_IMAGE=extralit/extralit-server
+            echo "SERVER_DOCKER_IMAGE=$SERVER_IMAGE" >> $GITHUB_ENV
             echo "HF_SPACES_DOCKER_IMAGE=extralit/extralit-hf-space" >> $GITHUB_ENV
             echo "DOCKER_USERNAME=$DOCKER_USERNAME" >> $GITHUB_ENV
             echo "DOCKER_PASSWORD=$DOCKER_PASSWORD" >> $GITHUB_ENV
             echo "PUBLISH_LATEST=$PUBLISH_LATEST" >> $GITHUB_ENV
           else
             echo "PLATFORMS=linux/amd64" >> $GITHUB_ENV
-            echo "SERVER_DOCKER_IMAGE=extralitdev/extralit-server" >> $GITHUB_ENV
+            SERVER_IMAGE=extralitdev/extralit-server
+            echo "SERVER_DOCKER_IMAGE=$SERVER_IMAGE" >> $GITHUB_ENV
             echo "HF_SPACES_DOCKER_IMAGE=extralitdev/extralit-hf-space" >> $GITHUB_ENV
             echo "DOCKER_USERNAME=$DOCKER_USERNAME_DEV" >> $GITHUB_ENV
             echo "DOCKER_PASSWORD=$DOCKER_PASSWORD_DEV" >> $GITHUB_ENV
@@ -73,6 +75,12 @@ jobs:
               echo "IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
               echo "PUBLISH_LATEST=true" >> $GITHUB_ENV
             fi
+          fi
+          # Layer cache. Only the wheel differs between two builds of the same tree; the lance
+          # extension fetch and both apt layers do not. image-manifest is what Docker Hub accepts.
+          echo "CACHE_FROM=type=registry,ref=$SERVER_IMAGE:buildcache" >> $GITHUB_ENV
+          if [[ -z "$PR_NUMBER" ]]; then
+            echo "CACHE_TO=type=registry,ref=$SERVER_IMAGE:buildcache,mode=max,image-manifest=true,oci-mediatypes=true" >> $GITHUB_ENV
           fi
         env:
           IS_RELEASE: ${{ inputs.is_release }}
@@ -119,6 +127,8 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ env.SERVER_DOCKER_IMAGE }}:${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: ${{ env.CACHE_FROM }}
+          cache-to: ${{ env.CACHE_TO }}
           push: true
 
       - name: Test CLI command in docker image
@@ -133,6 +143,7 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ env.SERVER_DOCKER_IMAGE }}:latest
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: ${{ env.CACHE_FROM }}
           push: true
 
       # Cross-repo, so the token must be scoped past this repository explicitly: GITHUB_TOKEN
