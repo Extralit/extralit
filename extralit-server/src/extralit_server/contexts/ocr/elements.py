@@ -5,10 +5,11 @@ the three units a chunker dispatches on — a markdown run, a table, or a figure
 — so `contexts/retrieval` never has to know a docling label. Rows in, rows out: chunking re-runs
 from the Lance dataset without re-parsing the PDF.
 
-The whole projection is one DuckDB statement over the `items` columns. Reading breadcrumbs and
-captions out row by row would mean pulling every document's text into Python to build strings
-that go straight back into Arrow; as SQL it stays columnar, pushes the projection down to Lance,
-and does a whole workspace in the same pass as a single document.
+Rendering is docling's, done once at projection time into the `markdown` column. What this adds
+is the heading breadcrumb, as window functions over the `items` columns: reading it out row by
+row would mean pulling every document's text into Python to build strings that go straight back
+into Arrow; as SQL it stays columnar, pushes the projection down to Lance, and does a whole
+workspace in the same pass as a single document.
 """
 
 from __future__ import annotations
@@ -34,11 +35,8 @@ SKIPPED_LABELS = frozenset({DocItemLabel.PAGE_HEADER, DocItemLabel.PAGE_FOOTER})
 #: Headings open a breadcrumb slot. A title sits above every section header, whatever its level.
 TITLE_SLOT = 0
 
-#: Both the deepest renderable heading and the deepest breadcrumb slot; `######` has no successor.
+#: The deepest breadcrumb slot; anything deeper is nested under the same ancestor anyway.
 MAX_HEADING_LEVEL = 6
-
-#: How far either side of a caption its figure or table may sit, nearest first, before after.
-CAPTION_REACH = (-1, 1, -2, 2)
 
 ELEMENT_SCHEMA = pa.schema(
     [
@@ -69,6 +67,24 @@ _RUNNING = "PARTITION BY document_id ORDER BY ord ROWS BETWEEN UNBOUNDED PRECEDI
 
 _HEADING_LEVEL = f"least(greatest(coalesce(level, 1), 1), {MAX_HEADING_LEVEL})"
 
+_SLICED = "provs >= 2 AND charspan_start IS NOT NULL AND charspan_end IS NOT NULL AND charspan_end > charspan_start"
+
+#: A row's share of its item's text; whole when the item sits on one page.
+_OWN_TEXT = _STRIP.format(
+    f"""CASE
+            WHEN {_SLICED} THEN substr(coalesce(text, ''), charspan_start + 1, charspan_end - charspan_start)
+            ELSE coalesce(text, '')
+        END"""
+)
+
+#: Markdown is rendered per item, so a page-spanning item falls back to its share of the raw text.
+_CONTENT = _STRIP.format(
+    f"""CASE
+            WHEN {_SLICED} AND coalesce(markdown, '') <> '' THEN own_text
+            ELSE coalesce(markdown, text, '')
+        END"""
+)
+
 
 def _breadcrumb_columns() -> str:
     """One text and two positions per slot: a slot is in scope only if nothing has closed it."""
@@ -91,57 +107,12 @@ def _breadcrumb_list() -> str:
     return f"list_filter(list_value({slots}), heading -> heading IS NOT NULL)"
 
 
-def _caption_owner() -> str:
-    """The figure or table a caption binds to: nearest on the same page, looking back first."""
-    branches = []
-    for offset in CAPTION_REACH:
-        window, distance = ("lag" if offset < 0 else "lead"), abs(offset)
-        neighbour = f"{window}({{0}}, {distance}) OVER document"
-        branches.append(
-            f"WHEN {neighbour.format('label')} IN {_labels(TABLE_LABELS | PICTURE_LABELS)}"
-            f" AND {neighbour.format('page_no')} IS NOT DISTINCT FROM page_no"
-            f" THEN {neighbour.format('ord')}"
-        )
-    return (
-        "CASE WHEN label <> 'caption' OR own_text = '' THEN NULL\n            "
-        + "\n            ".join(branches)
-        + "\n        END"
-    )
-
-
-#: A caption is consumed by its owner, so a table that drops it drops the only prose naming it.
-_CAPTION_TAG = (
-    "'<caption>' || replace(replace(replace(caption, '&', '&amp;'), '<', '&lt;'), '>', '&gt;') || '</caption>'"
-)
-
-_TABLE_CONTENT = f"""CASE
-                WHEN coalesce(html, '') = '' THEN coalesce(caption, '')
-                WHEN coalesce(caption, '') = '' THEN html
-                WHEN starts_with(html, '<table') AND position('>' IN html) > 0
-                    THEN substr(html, 1, position('>' IN html)) || {_CAPTION_TAG}
-                         || substr(html, position('>' IN html) + 1)
-                ELSE {_CAPTION_TAG} || html
-            END"""
-
-_CONTENT = f"""CASE
-            WHEN label IN {_labels(TABLE_LABELS)} THEN {_TABLE_CONTENT}
-            WHEN label IN {_labels(PICTURE_LABELS)} THEN coalesce(caption, '')
-            WHEN own_text = '' THEN ''
-            WHEN label = '{DocItemLabel.TITLE.value}' THEN '# ' || own_text
-            WHEN label = '{DocItemLabel.SECTION_HEADER.value}'
-                THEN repeat('#', {_HEADING_LEVEL}) || ' ' || own_text
-            WHEN label = '{DocItemLabel.LIST_ITEM.value}' THEN '- ' || own_text
-            WHEN label = '{DocItemLabel.CODE.value}' THEN '```' || chr(10) || own_text || chr(10) || '```'
-            ELSE own_text
-        END"""
-
-
 def elements_sql(source: str = "items") -> str:
     """The projection, as one statement over anything DuckDB can scan with the `items` columns."""
     return f"""
 WITH ordered AS (
     SELECT
-        document_id, self_ref, level, reading_order, page_no, bbox, html, text,
+        document_id, self_ref, level, reading_order, page_no, bbox, text, markdown,
         charspan_start, charspan_end,
         coalesce(label, '{DocItemLabel.TEXT.value}') AS label,
         row_number() OVER document AS ord,
@@ -150,21 +121,12 @@ WITH ordered AS (
     WINDOW document AS (PARTITION BY document_id ORDER BY reading_order, prov_index)
 ),
 sliced AS (
-    SELECT * EXCLUDE (text, charspan_start, charspan_end, provs),
-        {
-        _STRIP.format(
-            '''CASE
-            WHEN provs >= 2 AND charspan_start IS NOT NULL AND charspan_end IS NOT NULL
-                 AND charspan_end > charspan_start
-            THEN substr(coalesce(text, ''), charspan_start + 1, charspan_end - charspan_start)
-            ELSE coalesce(text, '')
-        END'''
-        )
-    } AS own_text
+    SELECT *, {_OWN_TEXT} AS own_text
     FROM ordered
 ),
 slotted AS (
-    SELECT *,
+    SELECT * EXCLUDE (text, markdown, charspan_start, charspan_end, provs),
+        {_CONTENT} AS content,
         CASE
             WHEN own_text = '' THEN NULL
             WHEN label = '{DocItemLabel.TITLE.value}' THEN {TITLE_SLOT}
@@ -178,43 +140,21 @@ breadcrumbs AS (
         last_value(slot IGNORE NULLS) OVER running AS heading_level
     FROM slotted
     WINDOW running AS ({_RUNNING})
-),
-neighbours AS (
-    SELECT * EXCLUDE (slot),
-        {_breadcrumb_list()} AS headings,
-        {_caption_owner()} AS owner_ord
-    FROM breadcrumbs
-    WINDOW document AS (PARTITION BY document_id ORDER BY ord)
-),
-captions AS (
-    SELECT document_id, owner_ord, string_agg(own_text, ' ' ORDER BY ord) AS caption
-    FROM neighbours
-    WHERE owner_ord IS NOT NULL
-    GROUP BY document_id, owner_ord
-),
-projected AS (
-    SELECT
-        element.document_id,
-        element.ord,
-        CASE
-            WHEN label IN {_labels(TABLE_LABELS)} THEN '{TABLE}'
-            WHEN label IN {_labels(PICTURE_LABELS)} THEN '{FIGURE}'
-            ELSE '{MARKDOWN}'
-        END AS type,
-        {_CONTENT} AS content,
-        element.page_no, element.bbox, element.label, element.level,
-        element.self_ref AS item_ref, element.reading_order,
-        element.headings, element.heading_level
-    FROM neighbours AS element
-    LEFT JOIN captions
-        ON captions.document_id = element.document_id AND captions.owner_ord = element.ord
-    WHERE label NOT IN {_labels(SKIPPED_LABELS)}
-      AND element.owner_ord IS NULL
 )
-SELECT document_id, type, content, page_no, bbox, label, level, item_ref, reading_order,
-       headings, heading_level
-FROM projected
-WHERE content <> ''
+SELECT
+    document_id,
+    CASE
+        WHEN label IN {_labels(TABLE_LABELS)} THEN '{TABLE}'
+        WHEN label IN {_labels(PICTURE_LABELS)} THEN '{FIGURE}'
+        ELSE '{MARKDOWN}'
+    END AS type,
+    content, page_no, bbox, label, level,
+    self_ref AS item_ref, reading_order,
+    {_breadcrumb_list()} AS headings,
+    heading_level
+FROM breadcrumbs
+WHERE label NOT IN {_labels(SKIPPED_LABELS)}
+  AND content <> ''
 ORDER BY document_id, ord
 """
 

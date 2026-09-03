@@ -44,6 +44,18 @@ REPLACE_ATTEMPTS = 3
 
 _SCHEMAS = {ITEMS_DATASET: ITEM_SCHEMA, PAGES_DATASET: PAGE_SCHEMA}
 
+# Lance's SQL type names for `add_columns`; anything else needs a real migration, not a NULL fill.
+_SQL_TYPES = {
+    pa.string(): "string",
+    pa.bool_(): "boolean",
+    pa.int8(): "tinyint",
+    pa.int16(): "smallint",
+    pa.int32(): "int",
+    pa.int64(): "bigint",
+    pa.float32(): "float",
+    pa.float64(): "double",
+}
+
 
 def layout_root(workspace_name: str) -> tuple[str, Optional[dict[str, str]]]:
     """Root of the workspace's datasets, resolved exactly like every other artifact of it."""
@@ -138,6 +150,14 @@ class LayoutStore:
     def _write(self, name: str, data: pa.Table, mode: str) -> int:
         return lance.write_dataset(data, self.uri(name), mode=mode, storage_options=self.storage_options).version
 
+    def _add_missing_columns(self, dataset: lance.LanceDataset, schema: pa.Schema) -> lance.LanceDataset:
+        """Widen a dataset written under an older schema; new columns are NULL for the rows already there."""
+        missing = [field for field in schema if field.name not in dataset.schema.names]
+        if not missing:
+            return dataset
+        dataset.add_columns({field.name: f"CAST(NULL AS {_SQL_TYPES[field.type]})" for field in missing})
+        return lance.dataset(dataset.uri, storage_options=self.storage_options)
+
     def _replace_one(self, name: str, document_id: UUID | str, data: pa.Table) -> int:
         dataset = self.open(name)
         if dataset is None:
@@ -147,6 +167,7 @@ class LayoutStore:
                 # Another worker created it between the open and the write; join it instead.
                 dataset = lance.dataset(self.uri(name), storage_options=self.storage_options)
 
+        dataset = self._add_missing_columns(dataset, data.schema)
         dataset.delete(_document_filter(document_id))
         if data.num_rows == 0:
             return lance.dataset(self.uri(name), storage_options=self.storage_options).version

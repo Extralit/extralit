@@ -145,6 +145,35 @@ class TestItemsTable:
 
         assert rows["#/texts/2"]["html"] is None
 
+    def test_markdown_is_docling_rendering_of_each_item(self, doc):
+        rows = {r["self_ref"]: r for r in items_table(doc, DOCUMENT_ID).to_pylist()}
+
+        assert rows["#/texts/0"]["markdown"] == "# A Paper"
+        assert rows["#/texts/1"]["markdown"] == "### Methods"
+        assert rows["#/texts/2"]["markdown"] == "Body text here."
+        assert rows["#/tables/0"]["markdown"].startswith("| Group")
+        assert rows["#/pictures/0"]["markdown"] == ""
+
+    def test_markdown_keeps_the_characters_a_search_index_needs(self):
+        document = new_document("sample")
+        ctx = PageContext(page_no=1, size=Size(width=612, height=792))
+        append_blocks(
+            document, ctx, [LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=10, b=30), text="p_value < 0.05 & n_obs")]
+        )
+
+        rows = items_table(document, DOCUMENT_ID).to_pylist()
+
+        assert rows[0]["markdown"] == "p_value < 0.05 & n_obs"
+
+    def test_markdown_is_rendered_once_per_item_not_once_per_provenance(self, doc):
+        for item in doc.texts:
+            if item.self_ref == "#/texts/2":
+                item.prov.append(ProvenanceItem(page_no=2, bbox=bbox(t=10, b=30), charspan=(0, 0)))
+
+        rows = [r for r in items_table(doc, DOCUMENT_ID).to_pylist() if r["self_ref"] == "#/texts/2"]
+
+        assert [r["markdown"] for r in rows] == ["Body text here."] * 2
+
     def test_parent_ref_is_recorded(self, doc):
         rows = {r["self_ref"]: r for r in items_table(doc, DOCUMENT_ID).to_pylist()}
 
