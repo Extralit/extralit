@@ -80,6 +80,9 @@ dependencies = [
     "docling-core>=2.91.0,<3.0.0",
     "pyarrow>=23.0.1",
     "pdf-inspector>=1.14.2",
+    # abi3 wheels from 2.14, so the block extractor is not tied to one CPython
+    "liteparse>=2.14.0",
+    "chonkie>=1.7.0",
     "xxhash>=3.6.0",
     "obstore>=0.11.0",
 ]

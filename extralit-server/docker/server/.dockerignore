@@ -1,0 +1,6 @@
+# Allowlist: the context is a wheel and two scripts, and should stay that way however much
+# stray build output lands in this directory.
+*
+!scripts/*.py
+!scripts/*.sh
+!dist/*.whl

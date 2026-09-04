@@ -6,6 +6,7 @@ import threading
 import time
 from uuid import uuid4
 
+import lance
 import pyarrow as pa
 import pytest
 
@@ -45,6 +46,7 @@ def items(document_id: str, count: int = 3, label: str = "text") -> pa.Table:
                 "charspan_start": 0,
                 "charspan_end": 5,
                 "text": f"row {i}",
+                "markdown": f"row {i}",
                 "html": None,
             }
             for i in range(count)
@@ -128,6 +130,17 @@ class TestReplace:
 
         assert local_store.load_items(document_id).num_rows == 0
         assert local_store.load_pages(document_id).num_rows == 0
+
+    def test_a_dataset_written_under_an_older_schema_is_widened_not_rejected(self, local_store):
+        old, new = str(uuid4()), str(uuid4())
+        narrow = items(old, 2).drop_columns(["markdown"])
+        lance.write_dataset(narrow, local_store.items_uri(), mode="create")
+
+        local_store.replace_document(new, items(new, 1), pages(new))
+
+        assert set(local_store.open(ITEMS_DATASET).schema.names) == set(ITEM_SCHEMA.names)
+        assert local_store.load_items(old, columns=["markdown"]).to_pylist() == [{"markdown": None}] * 2
+        assert local_store.load_items(new, columns=["markdown"]).to_pylist() == [{"markdown": "row 0"}]
 
     def test_replace_reports_the_dataset_versions(self, local_store):
         document_id = str(uuid4())

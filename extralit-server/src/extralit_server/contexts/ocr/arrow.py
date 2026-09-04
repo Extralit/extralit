@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any, Optional
 
 import pyarrow as pa
+from docling_core.transforms.serializer.markdown import MarkdownDocSerializer, MarkdownParams
 from docling_core.types.doc import DoclingDocument
 from docling_core.types.doc.document import DocItem, TableItem
 
@@ -29,6 +30,7 @@ ITEM_SCHEMA = pa.schema(
         ("charspan_start", pa.int32()),
         ("charspan_end", pa.int32()),
         ("text", pa.string()),
+        ("markdown", pa.string()),
         ("html", pa.string()),
     ]
 )
@@ -58,9 +60,20 @@ def _table_html(doc: DoclingDocument, item: DocItem) -> Optional[str]:
         return None
 
 
+def _serialize(serializer: MarkdownDocSerializer, item: DocItem) -> Optional[str]:
+    try:
+        return serializer.serialize(item=item).text
+    except Exception:  # NULL, not '': a row the renderer could not handle is not a blank one
+        return None
+
+
 def item_rows(doc: DoclingDocument, document_id: str) -> list[dict[str, Any]]:
     """Flatten every item's provenance into rows matching `ITEM_SCHEMA`."""
     rows: list[dict[str, Any]] = []
+    # Raw characters and no image placeholder: this column feeds a search index, not a reader.
+    markdown = MarkdownDocSerializer(
+        doc=doc, params=MarkdownParams(escape_html=False, escape_underscores=False, image_placeholder="")
+    )
 
     for reading_order, (item, _level) in enumerate(doc.iterate_items(with_groups=False)):
         base = {
@@ -72,6 +85,7 @@ def item_rows(doc: DoclingDocument, document_id: str) -> list[dict[str, Any]]:
             "level": getattr(item, "level", None),
             "reading_order": reading_order,
             "text": getattr(item, "text", None) or None,
+            "markdown": _serialize(markdown, item),
             "html": _table_html(doc, item),
         }
 
