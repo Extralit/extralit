@@ -62,3 +62,6 @@ tag atomically. The version lives in three files — always change it with
 `python scripts/bump_version.py set --version X.Y.Z`, never by hand.
 
 See `docs/architecture/deployment.md` for the full pipeline
+
+## Gotchas & Rules
+- **Check the library before writing a helper.** Before adding any function that renders, serializes, parses or walks a `DoclingDocument`, or splits chunks or fuses scores, check `docling_core.transforms.serializer.*` / `DocItem.export_to_*`, chonkie, and the DuckDB `lance` extension first. Phase 1 of retrieval shipped a `<thead>` serializer, a caption geometry join and a label→markdown CASE that docling already did; all were deleted. Functions with one consumer get inlined.
