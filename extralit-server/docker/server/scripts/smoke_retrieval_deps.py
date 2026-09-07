@@ -46,20 +46,17 @@ def check_tessdata() -> str:
     return f"tessdata at {prefix}"
 
 
-def check_chonkie() -> str:
-    from chonkie import RecursiveChunker, RecursiveRules
+def check_docling_chunker() -> str:
+    from importlib.metadata import version
 
-    chunker = RecursiveChunker(tokenizer="character", chunk_size=64, rules=RecursiveRules())
-    if not chunker("one two three. four five six."):
-        raise RuntimeError("RecursiveChunker returned no chunks")
-    import chonkie
+    from docling_core.transforms.chunker.hybrid_chunker import HybridChunker  # noqa: F401
 
-    return f"chonkie {chonkie.__version__}"
+    return f"docling-core {version('docling-core')}"
 
 
 def main() -> int:
     failures = 0
-    for check in (check_lance_extension, check_liteparse, check_tessdata, check_chonkie):
+    for check in (check_lance_extension, check_liteparse, check_tessdata, check_docling_chunker):
         name = check.__name__.removeprefix("check_")
         try:
             print(f"ok    {name}: {check()}")

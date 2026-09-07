@@ -82,7 +82,13 @@ dependencies = [
     "pdf-inspector>=1.14.2",
     # abi3 wheels from 2.14, so the block extractor is not tied to one CPython
     "liteparse>=2.14.0",
-    "chonkie>=1.7.0",
+    # what docling_core.transforms.chunker imports; the [chunking] extra would add transformers
+    "semchunk>=2.2",
+    "tree-sitter>=0.25,<0.27",
+    "tree-sitter-python",
+    "tree-sitter-c",
+    "tree-sitter-javascript",
+    "tree-sitter-typescript",
     "xxhash>=3.6.0",
     "obstore>=0.11.0",
 ]
