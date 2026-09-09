@@ -77,6 +77,8 @@ dependencies = [
     "lancedb>=0.37.1",
     "pylance>=10.0.0",
     "duckdb>=1.5.4",
+    # ships lance.duckdb_extension in the wheel and pins duckdb to the release it was built for
+    "duckdb-extension-lance>=1.5.5",
     "docling-core>=2.91.0,<3.0.0",
     "pyarrow>=23.0.1",
     "pdf-inspector>=1.14.2",
