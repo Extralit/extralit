@@ -213,6 +213,80 @@ class TestAppendBlocks:
 
         assert [t.text for t in doc.texts] == ["Figure 1."]
 
+    def test_a_caption_is_linked_to_the_figure_it_touches(self, doc, ctx):
+        blocks = [
+            LayoutBlock(label=DocItemLabel.PICTURE, bbox=bbox(t=100, b=300, left=0, right=500)),
+            LayoutBlock(label=DocItemLabel.CAPTION, bbox=bbox(t=310, b=320), text="Figure 1."),
+        ]
+
+        append_blocks(doc, ctx, blocks)
+
+        assert doc.pictures[0].caption_text(doc) == "Figure 1."
+
+    def test_a_caption_above_its_table_binds_to_it(self, doc, ctx):
+        blocks = [
+            LayoutBlock(label=DocItemLabel.CAPTION, bbox=bbox(t=90, b=99), text="Table 1."),
+            LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300)),
+        ]
+
+        append_blocks(doc, ctx, blocks)
+
+        assert doc.tables[0].caption_text(doc) == "Table 1."
+
+    def test_the_nearer_neighbour_wins_when_a_caption_sits_between_two_figures(self, doc, ctx):
+        blocks = [
+            LayoutBlock(label=DocItemLabel.PICTURE, bbox=bbox(t=100, b=200)),
+            LayoutBlock(label=DocItemLabel.CAPTION, bbox=bbox(t=210, b=220), text="Belongs to the first."),
+            LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=230, b=240), text="Prose."),
+            LayoutBlock(label=DocItemLabel.PICTURE, bbox=bbox(t=300, b=400)),
+        ]
+
+        append_blocks(doc, ctx, blocks)
+
+        assert doc.pictures[0].caption_text(doc) == "Belongs to the first."
+        assert doc.pictures[1].captions == []
+
+    def test_a_caption_reaches_past_one_line_of_prose(self, doc, ctx):
+        blocks = [
+            LayoutBlock(label=DocItemLabel.PICTURE, bbox=bbox(t=100, b=200)),
+            LayoutBlock(label=DocItemLabel.FOOTNOTE, bbox=bbox(t=205, b=208), text="a"),
+            LayoutBlock(label=DocItemLabel.CAPTION, bbox=bbox(t=210, b=220), text="Figure 1."),
+        ]
+
+        append_blocks(doc, ctx, blocks)
+
+        assert doc.pictures[0].caption_text(doc) == "Figure 1."
+
+    def test_two_captions_on_one_figure_are_both_linked(self, doc, ctx):
+        blocks = [
+            LayoutBlock(label=DocItemLabel.CAPTION, bbox=bbox(t=90, b=99), text="Figure 1."),
+            LayoutBlock(label=DocItemLabel.PICTURE, bbox=bbox(t=100, b=200)),
+            LayoutBlock(label=DocItemLabel.CAPTION, bbox=bbox(t=210, b=220), text="A red square."),
+        ]
+
+        append_blocks(doc, ctx, blocks)
+
+        assert [ref.resolve(doc).text for ref in doc.pictures[0].captions] == ["Figure 1.", "A red square."]
+
+    def test_a_caption_never_binds_across_a_page(self, doc, ctx):
+        append_blocks(doc, ctx, [LayoutBlock(label=DocItemLabel.PICTURE, bbox=bbox(t=700, b=780))])
+        page_two = PageContext(page_no=2, size=ctx.size)
+
+        append_blocks(doc, page_two, [LayoutBlock(label=DocItemLabel.CAPTION, bbox=bbox(t=10, b=20), text="Orphan.")])
+
+        assert doc.pictures[0].captions == []
+
+    def test_a_second_pass_over_a_page_links_nothing_twice(self, doc, ctx):
+        blocks = [
+            LayoutBlock(label=DocItemLabel.PICTURE, bbox=bbox(t=100, b=200)),
+            LayoutBlock(label=DocItemLabel.CAPTION, bbox=bbox(t=210, b=220), text="Figure 1."),
+        ]
+        append_blocks(doc, ctx, blocks)
+
+        append_blocks(doc, ctx, [LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=400, b=420), text="More.")])
+
+        assert len(doc.pictures[0].captions) == 1
+
     def test_every_item_carries_a_full_provenance_triple(self, doc, ctx):
         blocks = [
             LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=10, b=30), text="hello"),

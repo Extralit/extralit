@@ -1,3 +1,4 @@
+import json
 import math
 import uuid
 from datetime import datetime
@@ -80,6 +81,11 @@ from tests.factories import (
 if TYPE_CHECKING:
     from httpx import AsyncClient
     from sqlalchemy.ext.asyncio import AsyncSession
+
+
+def nan_body(payload: dict, headers: dict) -> dict:
+    """Post a body the JSON spec forbids. `json=` cannot: httpx encodes with allow_nan=False."""
+    return {"content": json.dumps(payload), "headers": {**headers, "Content-Type": "application/json"}}
 
 
 @pytest.mark.asyncio
@@ -1959,7 +1965,7 @@ class TestSuiteDatasets:
         }
 
         response = await async_client.post(
-            f"/api/v1/datasets/{dataset.id}/records/bulk", headers=owner_auth_header, json=records_json
+            f"/api/v1/datasets/{dataset.id}/records/bulk", **nan_body(records_json, owner_auth_header)
         )
 
         assert response.status_code == 422
@@ -3027,23 +3033,25 @@ class TestSuiteDatasets:
 
         response = await async_client.put(
             f"/api/v1/datasets/{dataset.id}/records/bulk",
-            headers=owner_auth_header,
-            json={
-                "items": [
-                    {
-                        "id": str(records[0].id),
-                        "metadata": {"terms": math.nan},
-                    },
-                    {
-                        "id": str(records[1].id),
-                        "metadata": {"float": math.nan},
-                    },
-                    {
-                        "id": str(records[2].id),
-                        "metadata": {"terms": "a"},
-                    },
-                ]
-            },
+            **nan_body(
+                {
+                    "items": [
+                        {
+                            "id": str(records[0].id),
+                            "metadata": {"terms": math.nan},
+                        },
+                        {
+                            "id": str(records[1].id),
+                            "metadata": {"float": math.nan},
+                        },
+                        {
+                            "id": str(records[2].id),
+                            "metadata": {"terms": "a"},
+                        },
+                    ]
+                },
+                owner_auth_header,
+            ),
         )
 
         assert response.status_code == 422

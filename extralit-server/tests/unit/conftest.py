@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from opensearchpy import OpenSearch
 from sqlalchemy.engine.interfaces import IsolationLevel
 
@@ -95,7 +95,7 @@ async def async_client(
         }
     )
 
-    async with AsyncClient(app=app, base_url="http://testserver") as async_client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as async_client:
         yield async_client
 
     # Clear from `api_v1` — that is where the overrides above were registered. Clearing

@@ -20,7 +20,7 @@ from docling_core.types.doc import (
     Size,
     TableCell,
 )
-from docling_core.types.doc.document import DocumentOrigin, NodeItem
+from docling_core.types.doc.document import DocumentOrigin, FloatingItem, NodeItem, PictureItem, TableItem
 
 PDF_MIMETYPE = "application/pdf"
 
@@ -33,6 +33,9 @@ PICTURE_LABELS = frozenset({DocItemLabel.PICTURE, DocItemLabel.CHART})
 
 #: Captions and footnotes legitimately overlap their figure, so containment must not drop them.
 CONTAINMENT_EXEMPT_LABELS = frozenset({DocItemLabel.CAPTION, DocItemLabel.FOOTNOTE})
+
+#: How far either side of a caption its figure or table may sit, nearest first, before after.
+CAPTION_REACH = (-1, 1, -2, 2)
 
 
 @dataclass(frozen=True)
@@ -153,6 +156,29 @@ def sort_body_by_position(doc: DoclingDocument) -> None:
     doc.body.children.sort(key=lambda ref: _sort_key(doc, ref.resolve(doc)))
 
 
+def _page_of(item: NodeItem) -> Optional[int]:
+    provs = getattr(item, "prov", None) or []
+    return provs[0].page_no if provs else None
+
+
+def link_captions(doc: DoclingDocument) -> None:
+    """Attach each unlinked caption to the nearest table or picture on its page, looking back first.
+
+    docling serializes a linked caption inside its owner and nowhere else, so this is what keeps a
+    caption out of the prose stream and inside the table or figure that it names.
+    """
+    body = [ref.resolve(doc) for ref in doc.body.children]
+    linked = {ref.cref for item in body if isinstance(item, FloatingItem) for ref in item.captions}
+    for index, item in enumerate(body):
+        if getattr(item, "label", None) != DocItemLabel.CAPTION or item.self_ref in linked:
+            continue
+        for offset in CAPTION_REACH:
+            owner = body[index + offset] if 0 <= index + offset < len(body) else None
+            if isinstance(owner, (TableItem, PictureItem)) and _page_of(owner) == _page_of(item):
+                owner.captions.append(item.get_ref())
+                break
+
+
 def append_blocks(
     doc: DoclingDocument,
     ctx: PageContext,
@@ -185,4 +211,5 @@ def append_blocks(
             added.append(item)
 
     sort_body_by_position(doc)
+    link_captions(doc)
     return added

@@ -62,3 +62,6 @@ tag atomically. The version lives in three files — always change it with
 `python scripts/bump_version.py set --version X.Y.Z`, never by hand.
 
 See `docs/architecture/deployment.md` for the full pipeline
+
+## Gotchas & Rules
+- **Check the library before writing a helper.** Before adding any function that renders, serializes, parses or walks a `DoclingDocument`, or splits chunks or fuses scores.

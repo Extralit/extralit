@@ -1,23 +1,34 @@
 FROM python:3.12-slim AS builder
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:0.7.12 /uv /uvx /bin/
-# Copying extralit distribution files
-COPY dist/*.whl /packages/
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-ENV MAMBA_ROOT_PREFIX=/opt/venv
-ENV CONDA_PREFIX=/opt/venv
-ENV UV_CACHE_DIR=/home/extralit/.cache/uv
+COPY --from=ghcr.io/astral-sh/uv:0.12.6 /uv /uvx /bin/
 
-RUN --mount=type=cache,target=/home/extralit/.cache/uv \
-    apt-get update && \
+ENV VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    UV_CACHE_DIR=/root/.cache/uv \
+    # Pay for the .pyc files once here instead of on every worker's first import.
+    UV_COMPILE_BYTECODE=1 \
+    # The cache mount is a different filesystem from /opt/venv, so hardlinking cannot work.
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=0
+
+# psycopg2 is built from source. The toolchain stays in this stage — the runtime image copies
+# nothing out of it but the venv, so there is nothing to purge afterwards.
+RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends libc6-dev libpq-dev gcc && \
-    for wheel in /packages/*.whl; do uv pip install "$wheel"[postgresql]; done && \
-    apt-get purge -y --auto-remove libc6-dev libpq-dev gcc && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /packages
+    rm -rf /var/lib/apt/lists/*
+
+# --seed, though nothing here needs pip: without it `pip` falls through to the base image's
+# /usr/local/bin/pip, which installs where /opt/venv/bin/python cannot see it. Dropping it saves
+# 5 MB of 1847 and hands any derived image a silent wrong-interpreter install.
+RUN uv venv --seed "$VIRTUAL_ENV"
+
+# The wheel is the only input that differs between two builds of the same tree, so it enters
+# last — and as a bind mount, which leaves no copy of it behind in the stage.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=dist,target=/packages \
+    for wheel in /packages/*.whl; do uv pip install "$wheel"[postgresql]; done
 
 FROM python:3.12-slim
 
@@ -39,21 +50,25 @@ RUN mkdir -p "$EXTRALIT_HOME_PATH" && \
     chown extralit:extralit "$EXTRALIT_HOME_PATH" && \
     apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends libpq-dev libgl1 libglib2.0-0 poppler-utils && \
+    apt-get install -y --no-install-recommends libpq-dev libgl1 libglib2.0-0 poppler-utils tesseract-ocr-eng && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 VOLUME $EXTRALIT_HOME_PATH
 
-COPY scripts/start_extralit_server.sh /home/extralit
+# liteparse would otherwise download the language data on the first scanned page it meets.
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+RUN test -f "$TESSDATA_PREFIX/eng.traineddata"
+
+# Layers below are ordered by how often they change, because a rebuilt layer rebuilds every layer
+# under it.
+COPY --chmod=0755 scripts/start_extralit_server.sh /home/extralit/
 # Destination folder must be the same as the builder one. Otherwise installed script won't work (since the installation fixes the path inside the script)
 COPY --chown=extralit:extralit --from=builder /opt/venv /opt/venv
 
+ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-ENV MAMBA_ROOT_PREFIX=/opt/venv
-ENV CONDA_PREFIX=/opt/venv
 
 WORKDIR /home/extralit
-RUN chmod +x start_extralit_server.sh
 
 USER extralit
 

@@ -10,7 +10,7 @@ from collections.abc import AsyncGenerator
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.database import get_async_db
@@ -39,7 +39,7 @@ async def async_client() -> AsyncGenerator[AsyncClient, None]:
 
     api_v1.dependency_overrides[get_async_db] = override_get_async_db
 
-    async with AsyncClient(app=app, base_url="http://testserver") as client:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://testserver") as client:
         yield client
 
     # Pop only what this fixture registered. `tests/unit/conftest.py`'s async_client writes

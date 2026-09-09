@@ -1,0 +1,4 @@
+# Allowlist: the context is a wheel and one script, whatever stray build output lands here.
+*
+!scripts/*.sh
+!dist/*.whl
