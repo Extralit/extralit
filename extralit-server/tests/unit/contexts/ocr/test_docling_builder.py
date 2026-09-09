@@ -1,7 +1,8 @@
 """Tests for the DoclingDocument builder seam shared by every layout parser."""
 
 import pytest
-from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, Size, TableCell
+from docling_core.transforms.chunker import HierarchicalChunker
+from docling_core.types.doc import BoundingBox, ContentLayer, CoordOrigin, DocItemLabel, Size, TableCell
 
 from extralit_server.contexts.ocr.docling_builder import (
     LayoutBlock,
@@ -317,6 +318,23 @@ class TestAppendBlocks:
         append_blocks(doc, ctx, blocks)
 
         assert doc.texts[0].label == DocItemLabel.TITLE
+
+    def test_page_headers_and_footers_are_furniture(self, doc, ctx):
+        blocks = [
+            LayoutBlock(label=DocItemLabel.PAGE_HEADER, bbox=bbox(t=0, b=20), text="Running head"),
+            LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=40, b=60), text="body"),
+            LayoutBlock(label=DocItemLabel.PAGE_FOOTER, bbox=bbox(t=770, b=790), text="Page 1"),
+        ]
+
+        append_blocks(doc, ctx, blocks)
+
+        layers = {t.text: t.content_layer for t in doc.texts}
+        assert layers == {
+            "Running head": ContentLayer.FURNITURE,
+            "body": ContentLayer.BODY,
+            "Page 1": ContentLayer.FURNITURE,
+        }
+        assert [c.text for c in HierarchicalChunker().chunk(doc)] == ["body"]
 
     def test_empty_text_blocks_are_skipped(self, doc, ctx):
         blocks = [

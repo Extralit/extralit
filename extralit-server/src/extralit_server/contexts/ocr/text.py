@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from docling_core.types.doc import DocItemLabel, DoclingDocument
+from docling_core.types.doc import ContentLayer, DocItemLabel, DoclingDocument
 from docling_core.types.doc.document import NodeItem
 
 from extralit_server.contexts.ocr.docling_builder import (
@@ -14,6 +14,9 @@ from extralit_server.contexts.ocr.docling_builder import (
     is_contained,
     make_prov,
 )
+
+# The labels docling itself files as furniture; a label alone does not keep them out of chunks.
+FURNITURE_LABELS = frozenset({DocItemLabel.PAGE_HEADER, DocItemLabel.PAGE_FOOTER})
 
 
 def add_text_block(
@@ -36,4 +39,5 @@ def add_text_block(
     if block.label == DocItemLabel.SECTION_HEADER:
         return doc.add_heading(text=text, level=block.level or 1, prov=prov, parent=parent)
 
-    return doc.add_text(label=block.label, text=text, prov=prov, parent=parent)
+    layer = ContentLayer.FURNITURE if block.label in FURNITURE_LABELS else ContentLayer.BODY
+    return doc.add_text(label=block.label, text=text, prov=prov, parent=parent, content_layer=layer)
