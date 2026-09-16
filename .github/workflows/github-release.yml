@@ -13,7 +13,7 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: github-release-${{ github.ref }}
@@ -23,6 +23,8 @@ jobs:
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     # PyPI publishing is driven by this same tag push, so the wait below is for a sibling run,
     # not a finished one. Generous, because extralit-server publishes behind a full test suite.
     timeout-minutes: 90

@@ -24,6 +24,16 @@ jobs:
     name: Build Extralit server docker images
     runs-on: ubuntu-latest
 
+    env:
+      # <n>/merge for manual PR previews, so the HF-Space repo's resolve-env routes to
+      # pr_space_slug=pr-<n>; otherwise the ref that triggered the build.
+      DISPATCH_BRANCH: ${{ inputs.pr_number != '' && format('{0}/merge', inputs.pr_number) || github.ref_name }}
+      PLATFORMS: ${{ inputs.is_release && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+      SERVER_DOCKER_IMAGE: ${{ inputs.is_release && 'extralit/extralit-server' || 'extralitdev/extralit-server' }}
+      HF_SPACES_DOCKER_IMAGE: ${{ inputs.is_release && 'extralit/extralit-hf-space' || 'extralitdev/extralit-hf-space' }}
+      # A PR preview never moves dev :latest.
+      PUBLISH_LATEST: ${{ (inputs.is_release && inputs.publish_latest) || (!inputs.is_release && inputs.pr_number == '') }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -44,47 +54,13 @@ jobs:
         id: docker-image-tag-from-ref
         uses: ./.github/actions/docker-image-tag-from-ref
 
-      - name: Setup environment variables
-        run: |
-          if [[ -n "$PR_NUMBER" ]]; then
-            echo "DISPATCH_BRANCH=$PR_NUMBER/merge" >> $GITHUB_ENV
-          else
-            echo "DISPATCH_BRANCH=$REF_NAME" >> $GITHUB_ENV
-          fi
-          if [[ $IS_RELEASE == true ]]; then
-            echo "PLATFORMS=linux/amd64,linux/arm64" >> $GITHUB_ENV
-            echo "IMAGE_TAG=v$PACKAGE_VERSION" >> $GITHUB_ENV
-            echo "SERVER_DOCKER_IMAGE=extralit/extralit-server" >> $GITHUB_ENV
-            echo "HF_SPACES_DOCKER_IMAGE=extralit/extralit-hf-space" >> $GITHUB_ENV
-            echo "DOCKER_USERNAME=$DOCKER_USERNAME" >> $GITHUB_ENV
-            echo "DOCKER_PASSWORD=$DOCKER_PASSWORD" >> $GITHUB_ENV
-            echo "PUBLISH_LATEST=$PUBLISH_LATEST" >> $GITHUB_ENV
-          else
-            echo "PLATFORMS=linux/amd64" >> $GITHUB_ENV
-            echo "SERVER_DOCKER_IMAGE=extralitdev/extralit-server" >> $GITHUB_ENV
-            echo "HF_SPACES_DOCKER_IMAGE=extralitdev/extralit-hf-space" >> $GITHUB_ENV
-            echo "DOCKER_USERNAME=$DOCKER_USERNAME_DEV" >> $GITHUB_ENV
-            echo "DOCKER_PASSWORD=$DOCKER_PASSWORD_DEV" >> $GITHUB_ENV
-            if [[ -n "$PR_NUMBER" ]]; then
-              # Manual PR preview: force the identifiable pr-<n> tag and don't move dev :latest.
-              echo "IMAGE_TAG=pr-$PR_NUMBER" >> $GITHUB_ENV
-              echo "PUBLISH_LATEST=false" >> $GITHUB_ENV
-            else
-              echo "IMAGE_TAG=$DOCKER_IMAGE_TAG" >> $GITHUB_ENV
-              echo "PUBLISH_LATEST=true" >> $GITHUB_ENV
-            fi
-          fi
+      - name: Resolve the image tag
+        run: echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
         env:
-          IS_RELEASE: ${{ inputs.is_release }}
-          PUBLISH_LATEST: ${{ inputs.publish_latest }}
-          PR_NUMBER: ${{ inputs.pr_number }}
-          REF_NAME: ${{ github.ref_name }}
-          PACKAGE_VERSION: ${{ steps.package-info.outputs.PACKAGE_VERSION }}
-          DOCKER_IMAGE_TAG: ${{ steps.docker-image-tag-from-ref.outputs.docker-image-tag }}
-          DOCKER_USERNAME: ${{ secrets.AR_DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.AR_DOCKER_PASSWORD }}
-          DOCKER_USERNAME_DEV: ${{ secrets.AR_DOCKER_USERNAME_DEV }}
-          DOCKER_PASSWORD_DEV: ${{ secrets.AR_DOCKER_PASSWORD_DEV }}
+          TAG: >-
+            ${{ inputs.is_release && format('v{0}', steps.package-info.outputs.PACKAGE_VERSION)
+            || (inputs.pr_number != '' && format('pr-{0}', inputs.pr_number)
+            || steps.docker-image-tag-from-ref.outputs.docker-image-tag) }}
 
       - name: Set up QEMU
         if: ${{ inputs.is_release }}
@@ -96,8 +72,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ env.DOCKER_USERNAME }}
-          password: ${{ env.DOCKER_PASSWORD }}
+          username: ${{ inputs.is_release && secrets.AR_DOCKER_USERNAME || secrets.AR_DOCKER_USERNAME_DEV }}
+          password: ${{ inputs.is_release && secrets.AR_DOCKER_PASSWORD || secrets.AR_DOCKER_PASSWORD_DEV }}
 
       - name: Download python package
         uses: actions/download-artifact@v4
@@ -119,6 +95,10 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ env.SERVER_DOCKER_IMAGE }}:${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
+          # Only the wheel differs between two builds of the same tree; the lance extension
+          # fetch and both apt layers do not. image-manifest is what Docker Hub accepts.
+          cache-from: type=registry,ref=${{ env.SERVER_DOCKER_IMAGE }}:buildcache
+          cache-to: ${{ inputs.pr_number == '' && format('type=registry,ref={0}:buildcache,mode=max,image-manifest=true,oci-mediatypes=true', env.SERVER_DOCKER_IMAGE) || '' }}
           push: true
 
       - name: Test CLI command in docker image
@@ -133,6 +113,7 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ env.SERVER_DOCKER_IMAGE }}:latest
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ env.SERVER_DOCKER_IMAGE }}:buildcache
           push: true
 
       # Cross-repo, so the token must be scoped past this repository explicitly: GITHUB_TOKEN
@@ -153,6 +134,4 @@ jobs:
           token: ${{ steps.dispatch-token.outputs.token }}
           repository: extralit/extralit-hf-space
           event-type: build-hf-space
-          # DISPATCH_BRANCH is <n>/merge for manual PR previews (so resolve-env routes to
-          # pr_space_slug=pr-<n>), otherwise github.ref_name. Computed in "Setup environment variables".
           client-payload: '{"tag":"${{ env.IMAGE_TAG }}","is_release":${{ inputs.is_release }},"branch":"${{ env.DISPATCH_BRANCH }}"}'

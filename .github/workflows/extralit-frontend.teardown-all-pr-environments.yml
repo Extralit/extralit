@@ -5,6 +5,9 @@ on:
   # schedule:
   #   - cron: "0 8,20 * * *" # every day at 8:00 and 20:00 UTC
 
+permissions:
+  contents: read
+
 jobs:
   teardown_pr_environments:
     name: Teardown Cloud Run PR environments

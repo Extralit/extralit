@@ -31,8 +31,7 @@ on:
       - ".github/workflows/extralit.yml"
 
 permissions:
-  id-token: write
-  contents: write
+  contents: read
 
 jobs:
   build:
