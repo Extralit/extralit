@@ -5,6 +5,9 @@ on:
   # pull_request:
   #   types: [closed]
 
+permissions:
+  contents: read
+
 jobs:
   teardown_pr_environment:
     name: Teardown Cloud Run PR environment
