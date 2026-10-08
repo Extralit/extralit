@@ -3222,6 +3222,41 @@
         "title": "MultiLabelSelectionQuestionSettingsUpdate",
         "type": "object"
       },
+      "OAuthProvider": {
+        "description": "OAuth provider configuration for frontend display.",
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "display_name",
+          "enabled"
+        ],
+        "title": "OAuthProvider",
+        "type": "object"
+      },
       "ObjectMetadata": {
         "properties": {
           "content_type": {
@@ -5351,6 +5386,14 @@
                 "type": "null"
               }
             ]
+          },
+          "oauth_providers": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/OAuthProvider"
+            },
+            "title": "Oauth Providers",
+            "type": "array"
           }
         },
         "required": [

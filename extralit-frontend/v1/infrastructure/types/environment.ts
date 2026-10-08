@@ -1,3 +1,10 @@
+export interface OAuthProvider {
+  name: string;
+  display_name: string;
+  enabled: boolean;
+  icon?: string;
+}
+
 export interface BackendEnvironment {
   extralit: {
     show_huggingface_space_persistent_storage_warning: boolean;
@@ -12,4 +19,5 @@ export interface BackendEnvironment {
     space_author_name: string;
     space_persistent_storage_enabled: boolean;
   };
+  oauth_providers: OAuthProvider[];
 }
