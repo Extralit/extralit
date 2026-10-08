@@ -23,19 +23,34 @@ export default defineConfig({
   },
 
   projects: [
+    // Legacy Argilla specs — kept out of the extraction suite (they are not a gate for it).
     {
       name: "chromium",
+      testIgnore: "extraction/**",
       use: { ...devices["Desktop Chrome"] },
     },
 
     {
       name: "firefox",
+      testIgnore: "extraction/**",
       use: { ...devices["Desktop Firefox"] },
     },
 
     {
       name: "webkit",
+      testIgnore: "extraction/**",
       use: { ...devices["Desktop Safari"] },
+    },
+
+    // Extraction vertical slice, real backend, no network mocks. Run with `playwright test --project=extraction`.
+    {
+      name: "extraction",
+      testMatch: "extraction/**/*.spec.ts",
+      retries: 0, // real backend: retries mask seeding/state bugs
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: process.env.E2E_BASE_URL ?? process.env.BASE_URL ?? "http://localhost:3000",
+      },
     },
   ],
 

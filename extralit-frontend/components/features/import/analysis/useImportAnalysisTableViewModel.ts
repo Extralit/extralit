@@ -10,6 +10,7 @@ export const useImportAnalysisTableViewModel = (props: {
   dataframeData: TableData | null;
   pdfData: {
     matchedFiles: any[];
+    unmatchedFiles?: any[];
   } | null;
 }) => {
   const importAnalysisUseCase = useResolve(GetImportAnalysisUseCase);
@@ -98,6 +99,8 @@ export const useImportAnalysisTableViewModel = (props: {
       workspaceId: props.workspace?.id,
       dataframeLength: props.dataframeData?.data?.length,
       matchedFilesLength: props.pdfData?.matchedFiles?.length,
+      // Add deep watch on dataframe data to catch cell edits
+      dataframeDataHash: props.dataframeData ? JSON.stringify(props.dataframeData.data) : null,
     }),
     (newVal, oldVal) => {
       // Only trigger if we have all required data and something actually changed
@@ -107,7 +110,8 @@ export const useImportAnalysisTableViewModel = (props: {
           !oldVal ||
           newVal.workspaceId !== oldVal.workspaceId ||
           newVal.dataframeLength !== oldVal.dataframeLength ||
-          newVal.matchedFilesLength !== oldVal.matchedFilesLength
+          newVal.matchedFilesLength !== oldVal.matchedFilesLength ||
+          newVal.dataframeDataHash !== oldVal.dataframeDataHash
         ) {
           analyzeImport(props.workspace!, props.dataframeData!, props.pdfData!.matchedFiles);
         }

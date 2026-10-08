@@ -1,11 +1,12 @@
-import { NuxtI18nInstance } from "@nuxtjs/i18n";
 import { useLocalStorage } from "./useLocalStorage";
+
+type Locale = { code: string };
 
 type Context = {
   app: {
     i18n: {
-      locales: NuxtI18nInstance["locales"];
-      setLocale: NuxtI18nInstance["setLocale"];
+      locales: Locale[];
+      setLocale: (locale: string) => void | Promise<void>;
     };
   };
 };

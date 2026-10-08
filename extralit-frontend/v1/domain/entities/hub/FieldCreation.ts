@@ -13,7 +13,11 @@ export class FieldCreation {
 
   public readonly originalType: FieldType;
 
-  private constructor(public readonly name: string, type: string, public readonly primitiveType: string) {
+  private constructor(
+    public readonly name: string,
+    type: string,
+    public readonly primitiveType: string
+  ) {
     this.title = this.name;
 
     this.settings = {

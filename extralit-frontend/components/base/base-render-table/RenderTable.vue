@@ -1,95 +1,113 @@
 <template>
-  <div class="table-container"
-    @focusin="setFocus(true)"
-    @focusout="setFocus(false)"
-  >
+  <div class="table-container" @focusin="setFocus(true)" @focusout="setFocus(false)">
     <div class="__table-buttons">
-      <BaseDropdown v-show="editable" :visible="dropdownEditTableVisible" >
-        <span slot="dropdown-header">
-          <BaseButton @click.prevent="dropdownEditTableVisible=!dropdownEditTableVisible">
-            Edit table
-            <svgicon name="chevron-down" width="8" height="8" />
-          </BaseButton>
-        </span>
-        <span slot="dropdown-content">
-          <BaseButton v-show="editable && tabulator" @click.prevent="tabulator.undo();">
-            Undo
-          </BaseButton>
-          <BaseButton v-show="editable && tabulator" @click.prevent="tabulator.redo();">
-            Redo
-          </BaseButton>
-          <BaseButton v-show="editable" @click.prevent="clearTable(); dropdownEditTableVisible=false">
-            {{ tabulator?.getDataCount() > 0 ? 'Clear data' : 'Delete table' }}
-          </BaseButton>
-        </span>
+      <BaseDropdown v-show="editable" :visible="dropdownEditTableVisible">
+        <template #dropdown-header
+          ><span>
+            <BaseButton @click.prevent="dropdownEditTableVisible = !dropdownEditTableVisible">
+              Edit table
+              <svgicon name="chevron-down" width="8" height="8" />
+            </BaseButton> </span
+        ></template>
+        <template #dropdown-content
+          ><span>
+            <BaseButton v-show="editable && tabulator" @click.prevent="tabulator.undo()"> Undo </BaseButton>
+            <BaseButton v-show="editable && tabulator" @click.prevent="tabulator.redo()"> Redo </BaseButton>
+            <BaseButton
+              v-show="editable"
+              @click.prevent="
+                clearTable();
+                dropdownEditTableVisible = false;
+              "
+            >
+              {{ tabulator?.getDataCount() > 0 ? "Clear data" : "Delete table" }}
+            </BaseButton>
+          </span></template
+        >
       </BaseDropdown>
 
-      <BaseDropdown v-show="editable && tabulator" :visible="visibleColumnDropdown" class="dropdown"  >
-        <span slot="dropdown-header">
-          <BaseButton @click.prevent="visibleColumnDropdown=!visibleColumnDropdown">
-            ➕ Add Column
-            <svgicon name="chevron-down" width="8" height="8" />
-          </BaseButton>
-        </span>
-        <span slot="dropdown-content">
-          <BaseButton
-            v-for="(attrs, field) in remainingSchemaColumns"
-            :key="field"
-            :title="`${field}: ${attrs?.description}`"
-            @click.prevent="addColumn(null, field); visibleColumnDropdown=false"
-          >
-            {{ field }}
-          </BaseButton>
-        </span>
+      <BaseDropdown v-show="editable && tabulator" :visible="visibleColumnDropdown" class="dropdown">
+        <template #dropdown-header
+          ><span>
+            <BaseButton @click.prevent="visibleColumnDropdown = !visibleColumnDropdown">
+              ➕ Add Column
+              <svgicon name="chevron-down" width="8" height="8" />
+            </BaseButton> </span
+        ></template>
+        <template #dropdown-content
+          ><span>
+            <BaseButton
+              v-for="(attrs, field) in remainingSchemaColumns"
+              :key="field"
+              :title="`${field}: ${attrs?.description}`"
+              @click.prevent="
+                addColumn(null, field);
+                visibleColumnDropdown = false;
+              "
+            >
+              {{ field }}
+            </BaseButton>
+          </span></template
+        >
       </BaseDropdown>
 
-      <BaseButton v-show="editable && tabulator" @click.prevent="addRow()">
-        ➕ Add Row
-      </BaseButton>
+      <BaseButton v-show="editable && tabulator" @click.prevent="addRow()"> ➕ Add Row </BaseButton>
 
-      <BaseDropdown v-show="tabulator && columnValidators && Object.keys(columnValidators).length"
-        :visible="editable && visibleCheckdropdown" >
-        <span slot="dropdown-header">
-          <BaseButton
-            @click.prevent="validateTable({ scrollToError: true, saveData: true }); visibleCheckdropdown=!visibleCheckdropdown">
-            Check data <i v-if="tableJSON?.schema?.is_latest === false">!</i>
-          </BaseButton>
-        </span>
-        <span slot="dropdown-content">
-          <BaseButton @click.prevent="$emit('updateValidValues', true);">
-            Ignore errors
-          </BaseButton>
-          <BaseButton
-            v-if="tableJSON?.schema?.is_latest === false"
-            @click.prevent="fetchValidation({ latest: true });"
-          >
-            Fetch latest schema
-          </BaseButton>
-        </span>
+      <BaseDropdown
+        v-show="tabulator && columnValidators && Object.keys(columnValidators).length"
+        :visible="editable && visibleCheckdropdown"
+      >
+        <template #dropdown-header
+          ><span>
+            <BaseButton
+              @click.prevent="
+                validateTable({ scrollToError: true, saveData: true });
+                visibleCheckdropdown = !visibleCheckdropdown;
+              "
+            >
+              Check data
+            </BaseButton>
+          </span></template
+        >
+        <template #dropdown-content
+          ><span>
+            <BaseButton @click.prevent="$emit('updateValidValues', true)"> Ignore errors </BaseButton>
+          </span></template
+        >
       </BaseDropdown>
     </div>
 
-    <div
-      ref="tabulator"
-      class="__table"
-      @keydown.enter.prevent
-    />
-
+    <div ref="tabulator" class="__table" @keydown.enter.prevent />
   </div>
 </template>
 
 <script lang="ts">
-import { merge } from 'lodash';
-import { CellComponent, ColumnComponent, GroupComponent, RangeComponent, RowComponent, TabulatorFull as Tabulator } from "tabulator-tables";
+import { merge } from "lodash";
+import {
+  CellComponent,
+  ColumnComponent,
+  GroupComponent,
+  RangeComponent,
+  RowComponent,
+  TabulatorFull as Tabulator,
+  type Options,
+} from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
-import { cellTooltip, headerTooltip, groupHeader, getRangeRowData, getRangeColumns, getColumnEditorParams } from "./tableUtils";
+import {
+  cellTooltip,
+  headerTooltip,
+  groupHeader,
+  getRangeRowData,
+  getRangeColumns,
+  getColumnEditorParams,
+} from "./tableUtils";
 import { getColumnValidators } from "./validatorUtils";
 import { useReferenceTablesViewModel } from "./useReferenceTablesViewModel";
 import { useSchemaTableViewModel } from "./useSchemaTableViewModel";
 import { useLLMExtractionViewModel } from "./useLLMExtractionViewModel";
-import { Data, TableData } from '@/v1/domain/entities/table/TableData';
-import { DataFrameField } from '@/v1/domain/entities/table/Schema';
-import { Validators } from '@/v1/domain/entities/table/Validation';
+import { type Data, type ReferenceValues, TableData } from "@/v1/domain/entities/table/TableData";
+import { type DataFrameField } from "@/v1/domain/entities/table/Schema";
+import { type Validators } from "@/v1/domain/entities/table/Validation";
 import { Question } from "@/v1/domain/entities/question/Question";
 
 export default {
@@ -112,11 +130,6 @@ export default {
     },
   },
 
-  model: {
-    prop: "hasValidValues",
-    event: "updateValidValues",
-  },
-
   data() {
     return {
       tabulator: null,
@@ -126,6 +139,7 @@ export default {
       dropdownEditTableVisible: false,
       visibleColumnDropdown: false,
       addColumnSearchText: null,
+      error: null,
     };
   },
 
@@ -150,10 +164,11 @@ export default {
     //     }
     //   },
     // },
+
     validation: {
       handler(newValidation, oldValidation) {
         if (this.isLoaded) {
-          if (this.editable) console.warn('Changes validation', this.tableJSON.schema.schemaName, this.tableJSON.schema.version_tag);
+          if (this.editable) console.warn("Changes validation", this.tableJSON.schema.schemaName);
           this.tabulator?.setColumns(this.columnsConfig);
           this.validateTable();
         }
@@ -162,17 +177,16 @@ export default {
   },
 
   created() {
-    this.fetchValidation()
-      .catch((error) => {
-        console.error(`Failed to fetch validation: ${error}`);
-        this.$notification.notify({
-          message: `${error.response}: ${error.message}`,
-          type: "error",
-          onClick() {
-            this.$notification.clear();
-          },
-        });
-      })
+    this.fetchValidation().catch((error) => {
+      console.error(`Failed to fetch validation: ${error}`);
+      this.$notification.notify({
+        message: `${error.response}: ${error.message}`,
+        type: "danger",
+        onClick: () => {
+          this.$notification.clear();
+        },
+      });
+    });
   },
 
   computed: {
@@ -186,9 +200,12 @@ export default {
       return getColumnValidators(this.tableJSON, this.validation);
     },
     columns() {
-      return this.tabulator?.getColumns()
-        ?.map((col: ColumnComponent) => col.getField())
-        ?.filter((field: string) => field && !field.startsWith('_')) || [];
+      return (
+        this.tabulator
+          ?.getColumns()
+          ?.map((col: ColumnComponent) => col.getField())
+          ?.filter((field: string) => field && !field.startsWith("_")) || []
+      );
     },
     columnsConfig() {
       if (!this.tableJSON?.schema) return [];
@@ -196,7 +213,7 @@ export default {
       var configs = this.tableJSON.schema.fields.map((column: DataFrameField) => {
         const commonConfig = this.generateColumnConfig(column.name);
         const editableConfig = this.generateColumnEditableConfig(column.name);
-        return { ...commonConfig, ...editableConfig };
+        return { ...commonConfig, ...editableConfig, ...column };
       });
 
       if (!this.editable) {
@@ -219,7 +236,7 @@ export default {
           }
           const maxRefValue = this.getColumnMaxValue(component.getField(), this.tabulator.getData());
           if (rownum < maxRefValue) {
-            rownum = maxRefValue+1;
+            rownum = maxRefValue + 1;
           }
           return rownum++;
         },
@@ -234,23 +251,24 @@ export default {
       return {
         groupBy: this.groupbyColumns,
         groupToggleElement: "arrow",
-        // @ts-ignore
-        groupHeader: (...args: any[]) => groupHeader(...args, this.referenceValues, [...this.refColumns, ...this.indexColumns]),
+        groupHeader: (...args: any[]) =>
+          // @ts-ignore tabulator groupHeader is loosely typed; spread precedes positional args (TS2556)
+          groupHeader(...args, this.referenceValues, [...this.refColumns, ...this.indexColumns]),
         groupUpdateOnCellEdit: true,
         groupContextMenu: [
           {
             label: "Show reference",
             action: (e, group: GroupComponent) => {
               group.popup(`${group.getField()}: ${group.getKey()}`, "right");
-            }
+            },
           },
           {
             separator: true,
           },
           {
             label: (group) => {
-              const subGroupFields = (this.groupbyColumns.slice(group._group.level + 1));
-              return `Add missing <b>${subGroupFields.join(', ')}</b> references`;
+              const subGroupFields = this.groupbyColumns.slice(group._group.level + 1);
+              return `Add missing <b>${subGroupFields.join(", ")}</b> references`;
             },
             disabled: (group) => {
               if (!this.editable || !this.referenceValues) {
@@ -268,16 +286,18 @@ export default {
                 fixedValues[parentGroup.getField()] = parentGroup.getKey();
                 parentGroup = parentGroup.getParentGroup();
               }
-              const combinations = this.generateCombinations(this.referenceValues, fixedValues);
+              const combinations = this.generateCombinations(this.referenceValues as ReferenceValues, fixedValues);
 
-              combinations.filter((rowData) => {
-                return !group.getSubGroups().some((subGroup: GroupComponent) => {
-                  return subGroup.getKey() === rowData[subGroup.getField()];
+              combinations
+                .filter((rowData) => {
+                  return !group.getSubGroups().some((subGroup: GroupComponent) => {
+                    return subGroup.getKey() === rowData[subGroup.getField()];
+                  });
+                })
+                .forEach((rowData) => {
+                  this.addRow(null, rowData);
                 });
-              }).forEach(rowData => {
-                this.addRow(null, rowData);
-              });
-            }
+            },
           },
           {
             label: "Delete rows group",
@@ -285,7 +305,7 @@ export default {
             action: (e, group: GroupComponent) => {
               this.deleteGroupRows(group);
               this.updateTableJsonData();
-            }
+            },
           },
         ],
       };
@@ -297,8 +317,8 @@ export default {
 
       const reference = this.tableJSON?.reference;
       if (!reference) return null;
-      let recordTables = this.getTableDataFromRecords((record: any) => record?.metadata?.reference == reference)
-      const refToRowDict = this.findMatchingRefValues(this.refColumns, recordTables)
+      let recordTables = this.getTableDataFromRecords((record: any) => record?.metadata?.reference == reference);
+      const refToRowDict = this.findMatchingRefValues(this.refColumns, recordTables);
 
       return refToRowDict;
     },
@@ -306,13 +326,13 @@ export default {
 
   methods: {
     setFocus(isFocus) {
-			this.$emit("on-change-focus", isFocus);
-		},
+      this.$emit("on-change-focus", isFocus);
+    },
     exitEditionMode() {
-			this.setFocus(false)
-			this.$emit("on-exit-edition-mode");
-		},
-    updateTableJsonData(remove = false, add = false, update = false, newFieldName=null, oldFieldName=null) {
+      this.setFocus(false);
+      this.$emit("on-exit-edition-mode");
+    },
+    updateTableJsonData(remove = false, add = false, update = false, newFieldName = null, oldFieldName = null) {
       if (remove) {
         const removeColumns = this.tableJSON.schema.fields
           .filter((field) => !this.columns.includes(field.name))
@@ -324,17 +344,17 @@ export default {
             (field) => !removeColumns.includes(field.name)
           );
 
-          this.tabulator.rowManager.rows.forEach((row)=>{
+          this.tabulator.rowManager.rows.forEach((row) => {
             removeColumns.forEach((field) => {
               row.deleteCell(field);
-              this.$delete(row.data, field)
+              delete row.data[field];
             });
-          })
+          });
 
           // Remove removeColumns from this.tableJSON.data
           this.tableJSON.data.forEach((row) => {
             removeColumns.forEach((field) => {
-              this.$delete(row, field);
+              delete row[field];
             });
           });
         }
@@ -342,10 +362,11 @@ export default {
 
       if (add) {
         const addColumns = this.columns.filter(
-          (field) => !this.tableJSON.schema.fields.map((field) => field.name).includes(field) && field != undefined);
+          (field) => !this.tableJSON.schema.fields.map((field) => field.name).includes(field) && field != undefined
+        );
 
         // Add the new field to the schema
-        const data = this.tabulator.getData().map(({ _id, ...rest }) => rest)
+        const data = this.tabulator.getData().map(({ _id, ...rest }) => rest);
         data.forEach((item) => {
           addColumns.forEach((column) => {
             item[column] = null;
@@ -363,7 +384,7 @@ export default {
 
       if (update) {
         // Update the field name for all data
-        const data = this.tabulator.getData().map(({ _id, ...rest }) => rest)
+        const data = this.tabulator.getData().map(({ _id, ...rest }) => rest);
         data.forEach((row) => {
           row[newFieldName] = row[oldFieldName];
           delete row[oldFieldName];
@@ -431,11 +452,15 @@ export default {
         // },
       };
 
-      config = merge({}, config, getColumnEditorParams(field, this.validation, this.refColumns, this.referenceValues));
+      config = merge(
+        {},
+        config,
+        getColumnEditorParams(field, this.validation, this.refColumns, this.referenceValues as ReferenceValues)
+      );
 
       return config;
     },
-    validateTable(options: { scrollToError?: boolean, saveData?: boolean }): boolean {
+    validateTable(options: { scrollToError?: boolean; saveData?: boolean } = {}): boolean {
       var validErrors = this.tabulator.validate();
 
       const isValid = validErrors === true;
@@ -452,13 +477,12 @@ export default {
       if (options?.scrollToError == true) {
         const firstErrorCell = validErrors[0];
         this.tabulator.scrollToRow(firstErrorCell._cell.row);
-        this.tabulator.scrollToColumn(firstErrorCell._cell.column.field, 'middle');
+        this.tabulator.scrollToColumn(firstErrorCell._cell.column.field, "middle");
       }
 
       if (options?.saveData == true) {
         this.updateTableJsonData();
       }
-
       return isValid;
     },
     toggleShowRefColumns() {
@@ -472,7 +496,7 @@ export default {
         return aIndex - bIndex;
       });
     },
-    async addRow(selectedRow?: RowComponent, rowData: Record<string, any>={}): Promise<RowComponent> {
+    async addRow(selectedRow?: RowComponent, rowData: Record<string, any> = {}): Promise<RowComponent> {
       // const requiredFields = this.refColumns || this.indexColumns;
       // Select the last row if no row is selected
       if (!selectedRow) {
@@ -482,9 +506,12 @@ export default {
 
       for (const field of this.columns) {
         if (rowData[field] != undefined) {
-          continue
-        } else if (this.indexColumns.includes(field) && !this.refColumns.includes(field) &&
-            selectedRow?.getData()[field]) {
+          continue;
+        } else if (
+          this.indexColumns.includes(field) &&
+          !this.refColumns.includes(field) &&
+          selectedRow?.getData()[field]
+        ) {
           const maxRefValue = this.getColumnMaxValue(field, this.tabulator.getData());
           rowData[field] = this.incrementReferenceStr(maxRefValue);
         } else if (this.refColumns.includes(field) && selectedRow?.getData()[field]) {
@@ -518,7 +545,7 @@ export default {
       const range: RangeComponent = this.tabulator.getRanges()[0];
       if (!selectedColumn) {
         if (range) {
-          selectedColumn = range.getColumns()[0]
+          selectedColumn = range.getColumns()[0];
         }
       }
       // Assign a unique name to the new column
@@ -540,7 +567,8 @@ export default {
           editableTitle: newFieldName.includes("newColumn"),
         },
         false,
-        selectedColumnField)
+        selectedColumnField
+      );
 
       this.updateTableJsonData(false, true);
       this.columnMoved(null, this.tabulator.getColumns());
@@ -551,10 +579,9 @@ export default {
         cell.edit();
       }
       return column;
-
     },
     columnTitleChanged(column: ColumnComponent) {
-      const newFieldName = column.getDefinition().title.replace('.', ' ');
+      const newFieldName = column.getDefinition().title.replace(".", " ");
       const oldFieldName = column.getDefinition().field;
       if (!newFieldName?.length || newFieldName == oldFieldName) return;
       if (this.columns.includes(newFieldName)) {
@@ -562,7 +589,7 @@ export default {
           this.$notification.notify({
             message: `Column name '${newFieldName}' already exists. Please choose a different name.`,
             type: "warning",
-            onClick() {
+            onClick: () => {
               this.$notification.clear();
             },
           });
@@ -580,56 +607,58 @@ export default {
     },
     clearTable() {
       if (this.tabulator?.getDataCount() == 0) {
-        this.tableJSON = undefined;
+        this.$emit("change-text", "");
+        this.exitEditionMode();
+        this.dropdownEditTableVisible = false;
         return;
       }
-      this.tabulator?.clearData()
+      this.tabulator?.clearData();
       this.columns?.forEach((column) => {
         if (!this.refColumns.includes(column)) {
           this.tabulator?.deleteColumn(column);
         }
       });
+      this.updateTableJsonData();
     },
     addEmptyReferenceRows() {
-      const combinations = this.generateCombinations(this.referenceValues);
+      const combinations = this.generateCombinations(this.referenceValues as ReferenceValues);
 
-      combinations.forEach(rowData => {
+      combinations.forEach((rowData) => {
         this.addRow(null, rowData);
       });
     },
     async completionRange(range: RangeComponent) {
-      const rangeData = getRangeRowData(range)
+      const rangeData = getRangeRowData(range);
       const rangeColumns = getRangeColumns(range);
-      const selectedRowData: Record<string, any> = Object.values(rangeData)
-        .map(({ _id, ...rest }) => rest);
+      const selectedRowData: Data = Object.values(rangeData).map(({ _id, ...rest }) => rest);
 
-      this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues)
+      this.completeExtraction(selectedRowData, rangeColumns, this.referenceValues as ReferenceValues)
         .then((predictedRowData: Data) => {
           this.updateRangeData(predictedRowData, range);
         })
         .catch((error) => {
-          console.error(error)
+          console.error(error);
           this.$notification.notify({
             message: `${error.message}`,
-            type: "error",
-            onClick() {
+            type: "danger",
+            onClick: () => {
               this.$notification.clear();
             },
           });
-        })
+        });
     },
 
     updateRangeData(updateRowsData: Data, range: RangeComponent) {
-      const rangeData = getRangeRowData(range)
+      const rangeData = getRangeRowData(range);
       const rangeColumns = getRangeColumns(range);
       const selectedIndices = Object.keys(rangeData);
 
       selectedIndices.forEach((index: string, i: number) => {
         if (!updateRowsData || !updateRowsData[i]) return;
-        const predictedRow = updateRowsData[i]
+        const predictedRow = updateRowsData[i];
 
         const dataUpdate: Record<string, any> = Object.keys(predictedRow)
-          ?.filter(field => rangeColumns.includes(field))
+          ?.filter((field) => rangeColumns.includes(field))
           ?.reduce((acc, field) => {
             try {
               // @ts-ignore
@@ -637,7 +666,7 @@ export default {
               this.tabulator.modules.history.action("cellEdit", cell, {
                 oldValue: cell.getValue(),
                 newValue: predictedRow[field],
-                type: "cellEdit"
+                type: "cellEdit",
               });
             } catch (error) {
               console.log(`Failed to create history entry: ${error.message}`);
@@ -648,10 +677,11 @@ export default {
           }, {});
 
         if (dataUpdate) {
-          this.tabulator.updateData([{_id: index, ...dataUpdate}])
-            .catch(function(error) {
-              throw new Error(`Failed to update data: ${error.message} \n${JSON.stringify({_id: index, ...dataUpdate})}`);
-            });
+          this.tabulator.updateData([{ _id: index, ...dataUpdate }]).catch(function (error) {
+            throw new Error(
+              `Failed to update data: ${error.message} \n${JSON.stringify({ _id: index, ...dataUpdate })}`
+            );
+          });
         }
       });
 
@@ -661,14 +691,14 @@ export default {
     columnContextMenu() {
       let menu = [
         {
-          label: function(column: ColumnComponent) {
-            return !column.getDefinition().frozen ? "Freeze column": "Unfreeze column";
+          label: function (column: ColumnComponent) {
+            return !column.getDefinition().frozen ? "Freeze column" : "Unfreeze column";
           },
           action: (e, column) => {
             column.updateDefinition({
               frozen: !column.getDefinition().frozen,
             });
-          }
+          },
         },
         {
           label: "Filter values",
@@ -677,48 +707,57 @@ export default {
               // @ts-ignore
               headerFilter: !column.getDefinition().headerFilter,
             });
-          }
+          },
         },
         {
           separator: true,
         },
         {
-          label: "Add column ➡️",
+          label: "Add column",
           disabled: !this.editable,
           action: (e, column) => {
             this.addColumn(column);
-          }
+          },
         },
         {
           label: "Rename column",
           disabled: !this.editable,
-          action: function(e, column: ColumnComponent) {
+          action: function (e, column: ColumnComponent) {
             if (column.getDefinition().frozen) return;
 
             // @ts-ignore
             column.updateDefinition({
               editableTitle: !column.getDefinition().editableTitle,
               // @ts-ignore
-              headerMenu: function(e, column: ColumnComponent) {
-                return column.getDefinition().editableTitle ? [{
-                  label: "Accept",
-                  action: (e, column: ColumnComponent) => {
-                    if (column.getDefinition().frozen) return;
-                    // @ts-ignore
-                    column.updateDefinition({
-                      editableTitle: !column.getDefinition().editableTitle,
-                      headerMenu: null,
-                    });
-                  }
-                }] : null;
+              headerMenu: function (e, column: ColumnComponent) {
+                return column.getDefinition().editableTitle
+                  ? [
+                      {
+                        label: "Accept",
+                        action: (e, column: ColumnComponent) => {
+                          if (column.getDefinition().frozen) return;
+                          // @ts-ignore
+                          column.updateDefinition({
+                            editableTitle: !column.getDefinition().editableTitle,
+                            headerMenu: null,
+                          });
+                        },
+                      },
+                    ]
+                  : null;
               },
             });
-          }
+          },
         },
         {
           label: "Delete column(s)",
           disabled: (column: ColumnComponent) => {
-            if (!this.editable || column.getField() === "_id" || this.indexColumns.includes(column.getField()) || this.refColumns.includes(column.getField())) {
+            if (
+              !this.editable ||
+              column.getField() === "_id" ||
+              this.indexColumns.includes(column.getField()) ||
+              this.refColumns.includes(column.getField())
+            ) {
               return true;
             }
             return false;
@@ -733,7 +772,7 @@ export default {
               column.delete();
             }
             this.updateTableJsonData(true);
-          }
+          },
         },
       ];
       return menu;
@@ -745,7 +784,7 @@ export default {
           disabled: !this.editable,
           action: (e, row) => {
             const range = this.tabulator.getRanges()[0];
-            this.completionRange(range)
+            this.completionRange(range);
           },
         },
         {
@@ -756,7 +795,7 @@ export default {
           disabled: !this.editable,
           action: (e, row) => {
             this.addRow(row);
-          }
+          },
         },
         {
           label: "Duplicate row(s)",
@@ -783,7 +822,7 @@ export default {
               });
               this.addRow(row, newRowData);
             }
-          }
+          },
         },
         {
           label: "Delete row(s)",
@@ -799,8 +838,8 @@ export default {
               row.delete();
             }
 
-            this.updateTableJsonData(true)
-          }
+            this.updateTableJsonData(true);
+          },
         },
       ];
       return menu;
@@ -813,96 +852,110 @@ export default {
     try {
       Tabulator.extendModule("keybindings", "bindings", null);
 
-      this.tabulator = new Tabulator(this.$refs.tabulator, {
-        data: this.tableJSON.data,
-        reactiveData: true,
-        layout: this.columns.length <= 2 ? "fitData" : "fitDataTable",
-        height: 'auto',
-        // renderVertical: "basic",
-        layoutColumnsOnNewData: false,
-        autoResize: false,
-        placeholder: () => {
-          const div = document.createElement('div');
-          div.classList.add('tabulator-placeholder-contents');
+      this.tabulator = new Tabulator(
+        this.$refs.tabulator as HTMLElement,
+        {
+          data: this.tableJSON.data,
+          reactiveData: true,
+          layout: this.columns.length <= 2 ? "fitData" : "fitDataTable",
+          height: "auto",
+          // renderVertical: "basic",
+          layoutColumnsOnNewData: false,
+          autoResize: false,
+          placeholder: () => {
+            const div = document.createElement("div");
+            div.classList.add("tabulator-placeholder-contents");
 
-          const p = document.createElement('p');
-          p.textContent = 'No data available';
-          div.appendChild(p);
+            const p = document.createElement("p");
+            p.textContent = "No data available";
+            div.appendChild(p);
 
-          if (this.referenceValues) {
-            const button = document.createElement('button');
-            button.textContent = 'Generate empty rows for every reference';
-            // button.style.display = 'inline';
-            button.addEventListener('click', this.addEmptyReferenceRows);
-            div.appendChild(button);
-          }
-          return div;
-        },
+            if (this.referenceValues) {
+              const button = document.createElement("button");
+              button.textContent = "Generate empty rows for every reference";
+              // button.style.display = 'inline';
+              button.addEventListener("click", this.addEmptyReferenceRows);
+              div.appendChild(button);
+            }
 
-        // Row
-        movableRows: true,
-        rowHeader: {
-          headerSort: false, resizable: false, rowHandle: true, editor: false,
-          minWidth: 30, width: 30, maxWidth: 30, headerHozAlign: "center", hozAlign: "center",
-          formatter: "rownum", cssClass:"range-header-col",
-        },
-        rowContextMenu: this.rowContextMenu,
-        index: "_id",
-        ...this.groupConfigs,
-
-        // Column
-        columns: this.columnsConfig,
-        movableColumns: true,
-        columnDefaults: {
-          editor: "input",
-          headerSort: false,
-          resizable: 'header',
-          maxInitialWidth: 350,
-          tooltip: cellTooltip,
-          // @ts-ignore
-          headerTooltip: (...args: any[]) => headerTooltip(...args, this.validation, this.columnValidators),
-          headerWordWrap: true,
-          headerContextMenu: this.columnContextMenu,
-          editorEmptyValue: "NA",
-        },
-
-        // enable range selection
-        selectableRows: false,
-        selectableRange: 1,
-        selectableRangeColumns: true,
-        selectableRangeRows: false,
-        selectableRangeClearCells: true,
-        editTriggerEvent: this.editable ? "dblclick" : false,
-
-        // configure clipboard to allow copy and paste of range format data
-        clipboard: true,
-        clipboardCopyRowRange: "range",
-        clipboardPasteAction: this.editable ? "range" : null,
-        clipboardPasteParser: this.editable ? "range" : null,
-        clipboardCopyConfig: {
-          rowHeaders: false,
-          columnHeaders: false,
-        },
-        clipboardCopyStyled: false,
-
-        // persistence
-        persistence: this.editable ? {
-          sort: true,
-          filter: true,
-          headerFilter: true,
-          // columns: ["frozen"],
-          group: {
-            groupBy: true,
-            groupStartOpen: true,
-            groupHeader: true,
+            return div;
           },
-          page: true,
-        } : false,
-        persistenceID: `tabulator-${this.tableJSON.schema.schemaName}-${this.tableJSON.reference}`,
 
-        validationMode: "highlight",
-        history: this.editable,
-      });
+          // Row
+          movableRows: true,
+          rowHeader: {
+            headerSort: false,
+            resizable: false,
+            rowHandle: true,
+            editor: false,
+            minWidth: 30,
+            width: 30,
+            maxWidth: 30,
+            headerHozAlign: "center",
+            hozAlign: "center",
+            formatter: "rownum",
+            cssClass: "range-header-col",
+          },
+          rowContextMenu: this.rowContextMenu,
+          index: "_id",
+          ...this.groupConfigs,
+
+          // Column
+          columns: this.columnsConfig,
+          movableColumns: true,
+          columnDefaults: {
+            editor: "input",
+            headerSort: false,
+            resizable: "header",
+            maxInitialWidth: 350,
+            tooltip: cellTooltip,
+            // @ts-ignore
+            headerTooltip: (...args: any[]) => headerTooltip(...args, this.validation, this.columnValidators),
+            headerWordWrap: true,
+            headerContextMenu: this.columnContextMenu,
+            editorEmptyValue: "NA",
+          },
+
+          // enable range selection
+          selectableRows: false,
+          selectableRange: 1,
+          selectableRangeColumns: true,
+          selectableRangeRows: false,
+          selectableRangeClearCells: true,
+          editTriggerEvent: this.editable ? "dblclick" : false,
+
+          // configure clipboard to allow copy and paste of range format data
+          clipboard: true,
+          clipboardCopyRowRange: "range",
+          clipboardPasteAction: this.editable ? "range" : null,
+          clipboardPasteParser: this.editable ? "range" : null,
+          clipboardCopyConfig: {
+            rowHeaders: false,
+            columnHeaders: false,
+          },
+          clipboardCopyStyled: false,
+
+          // persistence
+          persistence: this.editable
+            ? {
+                sort: true,
+                filter: true,
+                headerFilter: true,
+                // columns: ["frozen"],
+                group: {
+                  groupBy: true,
+                  groupStartOpen: true,
+                  groupHeader: true,
+                },
+                page: true,
+              }
+            : false,
+          persistenceID: `tabulator-${this.tableJSON.schema.schemaName}-${this.tableJSON.reference}`,
+
+          validationMode: "highlight",
+          history: this.editable,
+        } as unknown as Options
+      );
 
       if (this.editable) {
         this.tabulator.on("columnTitleChanged", this.columnTitleChanged.bind(this));
@@ -911,9 +964,10 @@ export default {
 
         this.tabulator.on("cellEdited", (cell: CellComponent) => {
           this.updateTableJsonData();
+          this.$emit("cell-edited", cell);
           // const rowPos: number | boolean = cell.getRow().getPosition();
           // if (typeof rowPos != 'number' || rowPos < 0 || rowPos > this.tableJSON.data.length) return;
-          // this.$set(this.tableJSON.data[rowPos-1], cell.getColumn().getField(), cell.getValue());
+          // this.tableJSON.data[rowPos-1][cell.getColumn().getField()] = cell.getValue();
         });
 
         this.tabulator.on("clipboardPasted", (clipboard, rowData, rows) => {
@@ -931,7 +985,7 @@ export default {
           this.validateTable();
         });
 
-        this.tabulator.on("validationFailed", function(cell: CellComponent, value, validators: Validators) {
+        this.tabulator.on("validationFailed", function (cell: CellComponent, value, validators: Validators) {
           if (value === "NA") {
             cell.clearValidation();
           }
@@ -942,15 +996,14 @@ export default {
         this.isLoaded = true;
         this.tabulator?.setColumns(this.columnsConfig);
         this.validateTable();
+        this.$emit("table-built");
       });
-
     } catch (error) {
       const message = `Failed to load table: ${error}`;
       this.$notification.notify({
         message: message,
-        numberOfChars: message.length,
-        type: "error",
-        onClick() {
+        type: "danger",
+        onClick: () => {
           this.$notification.clear();
         },
       });
@@ -1018,6 +1071,65 @@ export default {
       }
     }
   }
+
+  // Frozen column header — hardcoded light bg to defeat Tabulator's !important
+  .tabulator-col.tabulator-frozen {
+    background-color: hsl(0, 0%, 96%) !important;
+    will-change: transform;
+  }
+
+  // Frozen body cells — hardcoded light bg; will-change avoids sticky repaints
+  .tabulator-cell.tabulator-frozen {
+    background-color: #fff !important;
+    will-change: transform;
+  }
+
+  .tabulator-row-even .tabulator-cell.tabulator-frozen {
+    background-color: hsl(0, 0%, 100%) !important;
+  }
+}
+
+// List-editor popup is appended to <body> — must be global with hardcoded light colors
+.tabulator-popup-container,
+.tabulator-edit-list {
+  background-color: #fff !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+  border: 1px solid hsl(0, 0%, 94%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  .tabulator-edit-list-item {
+    background-color: #fff !important;
+    color: rgba(0, 0, 0, 0.87) !important;
+
+    &:hover,
+    &.focused {
+      background-color: hsl(227, 56%, 92%) !important;
+      color: hsl(227, 56%, 30%) !important;
+    }
+
+    // Selected item — prominent brand-color highlight
+    &.active {
+      background-color: hsl(227, 56%, 52%) !important;
+      color: #fff !important;
+      font-weight: 600;
+
+      &:hover,
+      &.focused {
+        background-color: hsl(227, 50%, 44%) !important;
+        color: #fff !important;
+      }
+    }
+  }
+
+  .tabulator-edit-list-group {
+    background-color: hsl(0, 0%, 96%) !important;
+    color: rgba(0, 0, 0, 0.54) !important;
+  }
+
+  .tabulator-edit-list-notice {
+    background-color: #fff !important;
+    color: rgba(0, 0, 0, 0.54) !important;
+  }
 }
 
 .tabulator {
@@ -1055,14 +1167,15 @@ export default {
     // box-shadow: 0 0 0 1px #999;
     $group-header-height: 27px;
 
-    span, small {
+    span,
+    small {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       text-decoration: none;
     }
 
-    @media (hover:hover) and (pointer:fine) {
+    @media (hover: hover) and (pointer: fine) {
       &:hover {
         cursor: auto;
         background: palette(white);

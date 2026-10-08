@@ -13,75 +13,96 @@ keywords = [
     "human-in-the-loop",
     "mlops",
 ]
-authors = [
-    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
-]
-maintainers = [
-    { name = "Extralit Labs", email = "extralit.contact@gmail.com" },
-]
+authors = [{ name = "Extralit Labs", email = "extralit.contact@gmail.com" }]
+maintainers = [{ name = "Extralit Labs", email = "extralit.contact@gmail.com" }]
 dependencies = [
     # Basic dependencies
-    "fastapi ~= 0.115.0",
-    "pydantic ~= 2.9.0",
-    "pydantic-settings ~= 2.6.0",
-    "uvicorn[standard] ~= 0.32.0",
-    "opensearch-py ~= 2.0.0",
-    "elasticsearch8[async] ~= 8.7.0",
-    "brotli-asgi ~= 1.4.0",
-    "backoff ~= 2.2.0",
+    "fastapi >= 0.115.0",
+    "pydantic >= 2.9.0",
+    "pydantic-settings >= 2.6.0",
+    "uvicorn[standard] >= 0.32.0",
+    "opensearch-py >= 2.0.0",
+    "elasticsearch8[async] >= 8.7.0",
+    "brotli-asgi >= 1.4.0",
+    "tenacity>=9.1.2",
     # Database dependencies
-    "alembic ~= 1.13.0",
-    "SQLAlchemy ~= 2.0.0",
-    "greenlet ~= 3.1.0",
+    "alembic >= 1.13.0",
+    "SQLAlchemy >= 2.0.0",
+    "greenlet >= 3.1.0",
     # Async SQLite
     "aiosqlite == 0.20.0",
     # Statics server
-    "aiofiles ~= 24.1.0",
     "PyYAML >= 5.4.1,< 6.1.0",
     # security dependencies
-    "python-jose[cryptography] ~= 3.3.0",
-    "bcrypt ~= 4.2.0",
+    "python-jose[cryptography] >= 3.3.0",
+    "bcrypt >= 4.2.0",
     # required by fastapi
-    "python-multipart ~= 0.0.16",
+    "python-multipart >= 0.0.16",
     # OAuth2 integration
-    "httpx ~= 0.27.0",
-    "oauthlib ~= 3.2.0",
-    "social-auth-core ~= 4.5.0",
+    "httpx >= 0.27.0",
+    "oauthlib >= 3.2.0",
+    "social-auth-core >= 4.5.0",
+    # LiteLLM for chat integration
+    "litellm >= 1.80.0,<=1.82.6",
+    # GitHub Copilot OAuth device flow + token file locking
+    "authlib>=1.6.9",
+    "filelock>=3.25.2",
     # Background processing
-    "rq~=2.4.1",
+    "rq>=2.4.1",
     "lazy-loader>=0.4",
     # Info status
-    "psutil ~= 5.8, <5.10",
+    "psutil >= 5.8, <5.10",
     # For logging, tracebacks, printing, progressbars
     "rich != 13.1.0",
     # For CLI
-    "typer >= 0.6.0, < 0.10.0", # spaCy only supports typer<0.10.0
+    "typer>=0.19.1", # spaCy only supports typer<0.10.0
+    "click >= 8.2.0", # click >=8.2.0 has TypeError: Parameter.make_metavar() missing 1 required positional argument: 'ctx'
     "packaging>=23.2",
     # For Webhooks
     "standardwebhooks>=1.0.0",
     # For HF dataset import
-    "datasets ~= 3.0.2",
-    "pillow>=11.3.0",
+    "datasets>=3.6.0",
+    "pillow>=10.1.0",
     # NumPy 2.x compatibility
     "numpy>=2.0.0,<3.0.0",
     # For Telemetry
-    "huggingface-hub~=0.26.2",
-    "Jinja2>=3.1.4",           # Used by huggingface-hub to render dataset card templates
+    "huggingface-hub>=0.34.0",
+    "Jinja2>=3.1.4", # Used by huggingface-hub to render dataset card templates
     # For file storage
-    "aioboto3>=13.1.1",
-    "types-aiobotocore-s3==2.24.2",
     # For document processing
-    "ocrmypdf>=16.10.4",
+    "ocrmypdf>=16.11.0",
     "pdf2image>=1.17.0",
-    "opencv-python-headless>=4.12.0",
+    "opencv-python-headless>=4.11.0.86",
+    "pandera[io]>=0.32.0",
+    "lancedb>=0.37.1",
+    "pylance>=10.0.0",
+    "duckdb>=1.5.4",
+    # ships lance.duckdb_extension in the wheel and pins duckdb to the release it was built for
+    "duckdb-extension-lance>=1.5.5",
+    "docling-core>=2.91.0,<3.0.0",
+    "pyarrow>=23.0.1",
+    "pdf-inspector>=1.14.2",
+    # abi3 wheels from 2.14, so the block extractor is not tied to one CPython
+    "liteparse>=2.14.0",
+    # what docling_core.transforms.chunker imports; the [chunking] extra would add transformers
+    "semchunk>=2.2",
+    "tree-sitter>=0.25,<0.27",
+    "tree-sitter-python",
+    "tree-sitter-c",
+    "tree-sitter-javascript",
+    "tree-sitter-typescript",
+    "xxhash>=3.6.0",
+    "obstore>=0.11.0",
 ]
 
 [project.optional-dependencies]
 postgresql = [
-    "psycopg2 ~= 2.9.0",
+    "psycopg2 >= 2.9.0",
     # Async PostgreSQL
-    "asyncpg ~= 0.30.0",
+    "asyncpg >= 0.30.0",
 ]
+# AGPL — must stay optional so the Apache-2.0 distribution never requires it
+pymupdf = ["pymupdf4llm~=0.3.4"]
 
 [project.urls]
 homepage = "https://extralit.ai"
@@ -89,32 +110,33 @@ documentation = "https://docs.extralit.ai"
 repository = "https://github.com/extralit/extralit"
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["hatchling>=1.18.0"]
+build-backend = "hatchling.build"
 
-[tool.pdm]
-distribution = true
-
-[tool.pdm.build]
-excludes = [".env.dev", ".env.test"]
-
-[tool.pdm.version]
-source = "file"
+[tool.hatch.version]
 path = "src/extralit_server/_version.py"
 
-[tool.pdm.dev-dependencies]
-test = [
+[tool.hatch.build.targets.wheel]
+packages = ["src/extralit_server"]
+
+[tool.hatch.build]
+ignore-vcs = true
+exclude = [".env.dev", ".env.test"]
+
+[dependency-groups]
+dev = [
+    "ty>=0.0.46",
     "pytest>=7.4.4",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.12.0",
-    "pytest-asyncio~=1.1.0",
+    "pytest-asyncio>=1.1.0",
     "pytest-env>=1.1.3",
-    "factory-boy~=3.2.1",
+    "factory-boy>=3.2.1",
     "httpx>=0.26.0",
     "pytest-randomly>=3.16.0",
     # For mocking httpx requests and responses
     "respx>=0.21.1",
-    "ruff>=0.12.11"
+    "ruff>=0.12.11",
 ]
 
 [tool.pytest.ini_options]
@@ -123,6 +145,8 @@ log_date_format = "%Y-%m-%d %H:%M:%S"
 testpaths = ["tests"]
 env = ["HF_HUB_DISABLE_TELEMETRY=1"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 
 [tool.coverage.run]
 concurrency = ["greenlet", "thread", "multiprocessing"]
@@ -139,6 +163,14 @@ exclude_lines = [
     "if _TYPE_CHECKING:",
     "if typing.TYPE_CHECKING:",
 ]
+
+[tool.ty.environment]
+# Match requires-python; ty otherwise infers from the active interpreter.
+python-version = "3.10"
+python = ".venv"
+
+[tool.ty.src]
+root = "./src"
 
 [tool.ruff]
 exclude = [
@@ -167,15 +199,15 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = [
-    "F",    # Pyflakes (undefined names, logical issues)
-    "E7",   # Syntax/indentation errors
-    "E9",   # Runtime-like errors
-    "E4",   # Import-related errors (E401, E402, etc.)
-    "B012", # return in finally (can suppress real exceptions)
-    "B",    # flake8-bugbear (broader than just B012)
-    "C4",   # flake8-comprehensions
-    "I",    # isort (import sorting)
-    "UP",   # pyupgrade (modern Python syntax)
+    "F",     # Pyflakes (undefined names, logical issues)
+    "E7",    # Syntax/indentation errors
+    "E9",    # Runtime-like errors
+    "E4",    # Import-related errors (E401, E402, etc.)
+    "B012",  # return in finally (can suppress real exceptions)
+    "B",     # flake8-bugbear (broader than just B012)
+    "C4",    # flake8-comprehensions
+    "I",     # isort (import sorting)
+    "UP",    # pyupgrade (modern Python syntax)
     "ASYNC", # flake8-async - async/await specific rules
     "PLE",   # pylint errors (includes await-outside-async)
     "FAST",  # FastAPI-specific rules (valuable for your backend)
@@ -183,23 +215,36 @@ select = [
 ]
 
 ignore = [
-    "E402",   # imports not at top (lazy / optional import patterns)
-    "B904",   # exception chaining (will phase in later)
-    "UP007",  # | union syntax modernization
-    "UP045",  # Optional[...] -> X | None modernization
-    "B027",   # empty abstract method not marked abstract
-    "B024",   # abstract base class without abstract methods
-    "B017",   # broad exception asserts in tests
-    "RUF012", # mutable class var typing inference
-    "B008",   # FastAPI Depends pattern
-    "FAST002" # FastAPI Depends suggestion
+    "E402",    # imports not at top (lazy / optional import patterns)
+    "B904",    # exception chaining (will phase in later)
+    "UP007",   # | union syntax modernization
+    "UP045",   # Optional[...] -> X | None modernization
+    "UP038",
+    "B027",    # empty abstract method not marked abstract
+    "B024",    # abstract base class without abstract methods
+    "B017",    # broad exception asserts in tests
+    "RUF012",  # mutable class var typing inference
+    "B008",    # FastAPI Depends pattern
+    "FAST002", # FastAPI Depends suggestion
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401", "F403", "I001"]  # Ignore unused imports and wildcard imports in __init__.py
-"tests/**/*.py" = ["ASYNC", "F821"]  # More lenient async rules in tests (ignore undefined names like forward refs/fixtures)
-"src/extralit_server/cli/**/*.py" = ["UP007", "UP045"]  # Typer doesn't support new union syntax
+"__init__.py" = [
+    "F401",
+    "F403",
+    "I001",
+] # Ignore unused imports and wildcard imports in __init__.py
+"tests/**/*.py" = [
+    "ASYNC",
+    "F821",
+] # More lenient async rules in tests (ignore undefined names like forward refs/fixtures)
+"src/extralit_server/cli/**/*.py" = [
+    "UP007",
+    "UP045",
+] # Typer doesn't support new union syntax
 
+# Legacy PDM scripts retained for backward compatibility with pdm run commands.
+# Preferred: use uv run directly, e.g. `uv run pytest tests`, `uv run ruff check`
 [tool.pdm.scripts]
 _.env_file = ".env.dev"
 cli = { cmd = "python -m extralit_server.cli" }
@@ -219,4 +264,4 @@ test = { cmd = "pytest --verbosity=1 --disable-warnings", env_file = ".env.test"
 test-cov = { cmd = "pytest tests --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings", env_file = ".env.test" }
 lint = "ruff check"
 
-docker-build-extralit-server = { shell = "pdm build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }
+docker-build-extralit-server = { shell = "uv build && cp -R dist docker/server && docker build -t extralit/extralit-server:local docker/server" }

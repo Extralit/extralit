@@ -23,7 +23,6 @@
   </div>
 </template>
 <script>
-import "assets/icons/chevron-right";
 export default {
   props: {
     categories: {

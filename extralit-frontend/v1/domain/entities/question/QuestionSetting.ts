@@ -1,4 +1,4 @@
-import { QuestionType, QuestionTypes } from "./QuestionType";
+import { QuestionType, type QuestionTypes } from "./QuestionType";
 
 export interface QuestionPrototype {
   type: QuestionTypes;

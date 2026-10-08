@@ -8,9 +8,6 @@
 </template>
 
 <script>
-import "assets/icons/text-classification";
-import "assets/icons/question-answering";
-import "assets/icons/text-to-image";
 export default {
   props: {
     text: {

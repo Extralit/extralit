@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """
 Common environment vars / settings
 """
@@ -20,8 +6,10 @@ import logging
 import os
 import re
 import warnings
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
+from urllib.request import url2pathname
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_core.core_schema import ValidationInfo
@@ -39,6 +27,49 @@ from extralit_server.constants import (
     SEARCH_ENGINE_ELASTICSEARCH,
     SEARCH_ENGINE_OPENSEARCH,
 )
+
+
+@dataclass(frozen=True)
+class StorageRoot:
+    """`settings.storage_url` parsed: where the bucket ends and the key prefix begins."""
+
+    scheme: str
+    endpoint: str | None
+    bucket: str | None
+    prefix: str
+    local_path: Path | None
+
+    @property
+    def remote(self) -> bool:
+        return self.scheme != "file"
+
+
+def parse_storage_url(url: str) -> StorageRoot:
+    parsed = urlparse(url)
+    # Never echo the URL once it may carry a secret: this message reaches logs and the doctor.
+    if parsed.username or parsed.password:
+        raise ValueError(
+            "Credentials must not be embedded in the storage URL. "
+            "Use EXTRALIT_S3_ACCESS_KEY and EXTRALIT_S3_SECRET_KEY."
+        )
+
+    if parsed.scheme == "file":
+        if parsed.netloc not in ("", "localhost"):
+            raise ValueError(f"file:// storage URL must be an absolute local path: {url}")
+        return StorageRoot("file", None, None, "", Path(url2pathname(parsed.path)))
+
+    if parsed.scheme == "s3":
+        bucket, prefix = parsed.netloc, parsed.path.strip("/")
+        endpoint = None
+    elif parsed.scheme in ("http", "https"):
+        bucket, _, prefix = parsed.path.strip("/").partition("/")
+        endpoint = f"{parsed.scheme}://{parsed.netloc}"
+    else:
+        raise ValueError(f"Unsupported storage URL scheme {parsed.scheme!r}: {url}")
+
+    if not bucket:
+        raise ValueError(f"Storage URL needs a bucket segment, e.g. {url.rstrip('/')}/extralit")
+    return StorageRoot(parsed.scheme, endpoint, bucket, prefix, None)
 
 
 class Settings(BaseSettings):
@@ -112,8 +143,12 @@ class Settings(BaseSettings):
         description="Enable connection validation before use for PostgreSQL",
     )
     database_postgresql_pool_recycle: int = Field(
-        default=3600,
+        default=300,
         description="Number of seconds to recycle connections in PostgreSQL pool",
+    )
+    database_postgresql_pool_timeout: int = Field(
+        default=30,
+        description="Number of seconds to wait for a connection from the pool",
     )
     database_postgresql_connect_timeout: int = Field(
         default=30,
@@ -123,11 +158,32 @@ class Settings(BaseSettings):
         default=30,
         description="PostgreSQL query execution timeout in seconds",
     )
+    # Connection pooler compatibility mode (for Supabase, PgBouncer, etc.)
+    database_postgresql_pooler_mode: bool = Field(
+        default=False,
+        description="Enable compatibility mode for external connection poolers (disables prepared statements)",
+    )
 
-    s3_endpoint: str | None = Field(default=None, description="The S3 endpoint for data storage")
+    storage_url: str | None = Field(
+        default=None,
+        validate_default=True,
+        description="Root of object storage; every workspace is a prefix under it. "
+        "`file:///path` (default `{home_path}/storage`), `s3://bucket[/prefix]`, or "
+        "`http(s)://host[:port]/bucket[/prefix]` for MinIO, R2 and other S3-compatible endpoints.",
+    )
     s3_access_key: str | None = Field(default=None, description="The access key for the S3 storage")
     s3_secret_key: str | None = Field(default=None, description="The secret key for the S3 storage")
     s3_region: str | None = Field(default=None, description="The region for the S3 storage")
+
+    lancedb_uri: str | None = Field(
+        default=None,
+        validate_default=True,
+        description="URI for the LanceDB index store (see ENG-36). Defaults to `{home_path}/lance`. "
+        "A local path works on the compose named volume and HF-Spaces persistent storage; "
+        "an s3:// URI is accepted by lancedb.connect but unsupported/unvalidated for now.",
+    )
+
+    extralit_url: str | None = Field(default=None, description="The extralit server url for LLM serving endpoint")
 
     hub_url: str = Field(default="https://hub.extralit.ai", description="The Extralit Hub endpoint")
 
@@ -199,6 +255,22 @@ class Settings(BaseSettings):
     def set_home_path_default(cls, home_path: str) -> str:
         return home_path if home_path else os.path.join(Path.home(), ".extralit")
 
+    @field_validator("lancedb_uri", mode="before")
+    @classmethod
+    def set_lancedb_uri_default(cls, lancedb_uri: str | None, info: ValidationInfo) -> str:
+        if lancedb_uri:
+            return lancedb_uri
+        home_path = info.data.get("home_path") or os.path.join(Path.home(), ".extralit")
+        return os.path.join(home_path, "lance")
+
+    @field_validator("storage_url", mode="before")
+    @classmethod
+    def set_storage_url_default(cls, storage_url: str | None, info: ValidationInfo) -> str:
+        if storage_url:
+            return storage_url
+        home_path = info.data.get("home_path") or os.path.join(Path.home(), ".extralit")
+        return Path(home_path, "storage").as_uri()
+
     @field_validator("base_url")
     @classmethod
     def normalize_base_url(cls, base_url: str):
@@ -258,26 +330,16 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     @classmethod
     def validate_s3_config(cls, instance: "Settings") -> "Settings":
-        """Validate that S3 configuration is complete when any S3 setting is provided."""
-        s3_fields = [instance.s3_endpoint, instance.s3_access_key, instance.s3_secret_key]
-
-        # If any S3 field is provided, all required fields must be provided
-        if any(s3_fields):
-            missing_fields = []
-            if not instance.s3_endpoint:
-                missing_fields.append("s3_endpoint")
-            if not instance.s3_access_key:
-                missing_fields.append("s3_access_key")
-            if not instance.s3_secret_key:
-                missing_fields.append("s3_secret_key")
-
-            if missing_fields:
-                raise ValueError(
-                    f"S3 configuration incomplete. Missing required fields: {', '.join(missing_fields)}. "
-                    "When using S3 storage, s3_endpoint, s3_access_key, and s3_secret_key are all required."
-                )
+        """Keys come as a pair or not at all; without them obstore falls back to the AWS credential chain."""
+        if bool(instance.s3_access_key) != bool(instance.s3_secret_key):
+            raise ValueError("s3_access_key and s3_secret_key must be set together")
+        parse_storage_url(instance.storage_url)
 
         return instance
+
+    @property
+    def storage_root(self) -> StorageRoot:
+        return parse_storage_url(self.storage_url)
 
     @property
     def database_engine_args(self) -> dict:
@@ -289,17 +351,28 @@ class Settings(BaseSettings):
             }
 
         if self.database_is_postgresql:
+            connect_args = {
+                "server_settings": {
+                    "application_name": "extralit-server",
+                },
+                "command_timeout": self.database_postgresql_command_timeout,
+            }
+
+            # For external connection poolers (Supabase, PgBouncer), disable prepared statements
+            # This is required for Transaction mode pooling
+            if self.database_postgresql_pooler_mode:
+                connect_args["prepared_statement_cache_size"] = 0
+                connect_args["statement_cache_size"] = 0
+
             return {
                 "pool_size": self.database_postgresql_pool_size,
                 "max_overflow": self.database_postgresql_max_overflow,
                 "pool_pre_ping": self.database_postgresql_pool_pre_ping,
                 "pool_recycle": self.database_postgresql_pool_recycle,
-                "connect_args": {
-                    "server_settings": {
-                        "application_name": "extralit-server",
-                    },
-                    "command_timeout": self.database_postgresql_command_timeout,
-                },
+                "pool_timeout": self.database_postgresql_pool_timeout,
+                # Use LIFO to reuse recently-used connections (better for connection poolers)
+                "pool_use_lifo": True,
+                "connect_args": connect_args,
             }
 
         return {}

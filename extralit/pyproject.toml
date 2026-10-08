@@ -24,12 +24,9 @@ dependencies = [
     "standardwebhooks>=1.0.0",
     "typer>=0.9.0",
     "lazy-loader>=0.4",
-
     "bibtexparser>=1.4.3",
     "pandera[io]>=0.26.1, < 0.27.0",
     "pandas>=2.3.2",
-
-    "llama-index-embeddings-openai>=0.5.0"
 ]
 nlp = [
     "textdescriptives",
@@ -37,8 +34,22 @@ nlp = [
 ]
 
 [build-system]
-requires = ["pdm-backend>=2.0.0", "setuptools>=68.0.0"]
-build-backend = "pdm.backend"
+requires = ["hatchling>=1.18.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/extralit/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/extralit"]
+
+[tool.ty.environment]
+# Match requires-python; ty otherwise infers from the active interpreter.
+python-version = "3.9"
+python = ".venv"
+
+[tool.ty.src]
+root = "./src"
 
 [tool.ruff]
 line-length = 120
@@ -78,18 +89,8 @@ ignore = [
 "tests/**/*.py" = ["ASYNC", "F821"]
 "src/extralit/cli/**/*.py" = ["UP007", "UP045"]
 
-[tool.black]
-line-length = 120
 
-[tool.pdm]
-distribution = true
-use-venv = true
-
-[tool.pdm.version]
-source = "file"
-path = "src/extralit/_version.py"
-
-[tool.pdm.dev-dependencies]
+[dependency-groups]
 dev = [
     "ipython>=8.12.3",
     "pytest>=7.4.4",
@@ -99,7 +100,6 @@ dev = [
     "ruff>=0.1.12",
     "pytest-mock>=3.12.0",
     "pytest-httpx ~=0.29.0",
-    "black>=23.12.1",
     "build>=1.0.3",
     "pre-commit>=3.5.0",
     "mkdocs-material >= 9.5.17",
@@ -114,14 +114,8 @@ dev = [
     "CairoSVG >= 2.7.1",
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
+    "ty>=0.0.46",
 ]
-
-[tool.pdm.scripts]
-test = { cmd = "pytest tests --disable-warnings", env_file = ".env.test" }
-test-cov = { cmd = "pytest tests --disable-warnings --cov=extralit --cov-report=term --cov-report=xml", env_file = ".env.test" }
-lint = "ruff check"
-format = "black ."
-all = { composite = ["format", "lint", "test"] }
 
 [project.scripts]
 extralit = "extralit.cli.app:app"
@@ -129,3 +123,6 @@ extralit = "extralit.cli.app:app"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 env = ["HF_HUB_DISABLE_TELEMETRY=1"]
+markers = [
+    "slow: marks tests as slow / network-dependent (e.g. live Hugging Face Hub). Omitted by default; run with --runslow.",
+]

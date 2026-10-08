@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import traceback
 from typing import TYPE_CHECKING, Optional, Union
 
@@ -149,9 +135,9 @@ def print_rich_table(
                 "Name": lambda r: r.name,
                 "Workspace": lambda r: r.workspace.name,
                 "Creation Date": lambda r: r.inserted_at.isoformat(sep=" ") if r.inserted_at else "",
-                "Last Activity Date": lambda r: r._model.last_activity_at.isoformat(sep=" ")
-                if r._model.last_activity_at
-                else "",
+                "Last Activity Date": lambda r: (
+                    r._model.last_activity_at.isoformat(sep=" ") if r._model.last_activity_at else ""
+                ),
             },
             "styles": {
                 "ID": "cyan",
@@ -196,19 +182,17 @@ def print_rich_table(
             },
         },
         "ObjectMetadata": {
-            "columns": ["Object Name", "Size", "Last Modified", "Version ID", "Content Type"],
+            "columns": ["Object Name", "Size", "Last Modified", "Content Type"],
             "getters": {
                 "Object Name": lambda r: r.object_name,
                 "Size": lambda r: r.size,
                 "Last Modified": lambda r: r.last_modified.isoformat() if r.last_modified else "",
-                "Version ID": lambda r: r.version_id,
                 "Content Type": lambda r: r.content_type,
             },
             "styles": {
                 "Object Name": "cyan",
                 "Size": "green",
                 "Last Modified": "yellow",
-                "Version ID": "magenta",
                 "Content Type": "blue",
             },
         },

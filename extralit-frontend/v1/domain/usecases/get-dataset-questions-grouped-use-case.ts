@@ -1,5 +1,5 @@
 import { Question } from "../entities/question/Question";
-import { IQuestionRepository } from "../services/IQuestionRepository";
+import { type IQuestionRepository } from "../services/IQuestionRepository";
 
 export class GetDatasetQuestionsGroupedUseCase {
   constructor(private readonly questionRepository: IQuestionRepository) {}

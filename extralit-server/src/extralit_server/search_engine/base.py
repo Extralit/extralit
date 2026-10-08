@@ -1,16 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import dataclasses
 from abc import ABCMeta, abstractmethod
 from collections.abc import AsyncGenerator, Iterable
@@ -233,6 +220,17 @@ class SearchEngine(metaclass=ABCMeta):
     @abstractmethod
     async def create_index(self, dataset: Dataset):
         pass
+
+    @abstractmethod
+    async def index_exists(self, dataset: Dataset) -> bool:
+        """Whether `dataset`'s index already exists.
+
+        `create_index` is NOT idempotent -- both backends issue a bare `indices.create`
+        (elasticsearch.py, opensearch.py) that raises `resource_already_exists_exception` on a
+        second call for the same dataset, since `es_index_name_for_dataset` is stable per
+        dataset. Callers that may run against an already-published dataset (e.g. republishing a
+        schema version) must check this first rather than relying on `create_index` to no-op.
+        """
 
     @abstractmethod
     async def delete_index(self, dataset: Dataset):

@@ -1,35 +1,41 @@
 <template>
   <div class="table-upload">
     <div class="table-upload__section-header">
-      <h3 class="table-upload__section-title">Step 1: Upload Your Bibliography File</h3>
+      <h3 class="table-upload__section-title">Bibliography / Metadata (Optional)</h3>
       <p class="table-upload__section-description">
-        Import your reference list to begin.<br />
-        We support .bib files exported from reference managers like Zotero, EndNote, or Mendeley, and .csv files with tabular data.
+        Have a reference file from Zotero, EndNote, or Mendeley? Upload it to auto-match metadata. If not, you can edit
+        the table in the next step.
       </p>
     </div>
 
-    <div class="table-upload__dropzone" :class="{
-      'table-upload__dropzone--dragover': dragOver,
-      'table-upload__dropzone--error': hasError,
-      'table-upload__dropzone--success': uploaded,
-    }" @drop="handleDrop" @dragover="handleDragOver" @dragleave="handleDragLeave"
-      @click="triggerFileInput">
-      <input ref="fileInput" type="file" accept=".bib,.bibtex,.csv" style="display: none"
-        @change="handleFileSelect" />
+    <div
+      class="table-upload__dropzone"
+      :class="{
+        'table-upload__dropzone--dragover': dragOver,
+        'table-upload__dropzone--error': hasError,
+        'table-upload__dropzone--success': uploaded,
+      }"
+      @drop="handleDrop"
+      @dragover="handleDragOver"
+      @dragleave="handleDragLeave"
+      @click="triggerFileInput"
+    >
+      <input ref="fileInput" type="file" accept=".bib,.bibtex,.csv" style="display: none" @change="handleFileSelect" />
 
       <div class="table-upload__dropzone-content">
         <BaseIcon :icon-name="getDropzoneIcon" class="table-upload__dropzone-icon" />
         <p class="table-upload__dropzone-text">
           {{ getDropzoneText }}
         </p>
-        <p class="table-upload__dropzone-subtext">Supported formats: .bib, .bibtex, .csv</p>
+        <p class="table-upload__dropzone-subtext">Supports .bib, .bibtex, .csv</p>
       </div>
     </div>
 
     <!-- Success Display -->
     <div v-if="uploaded && !hasError" class="table-upload__upload-success">
       <span class="table-upload__upload-success-text">
-        Successfully uploaded {{ data.fileName }} ({{ data.dataframeData ? data.dataframeData.data.length : 0 }} entries found)
+        Successfully uploaded {{ data.fileName }} ({{ data.dataframeData ? data.dataframeData.data.length : 0 }} entries
+        found)
       </span>
     </div>
 
@@ -56,9 +62,6 @@
 
 <script lang="ts">
 import CsvColumnSelection from "./CsvColumnSelection.vue";
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/document";
 import { useTableUploadLogic } from "./useTableUploadLogic";
 import type { BibliographyData } from "./types";
 

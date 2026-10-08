@@ -1,89 +1,67 @@
-# CLAUDE.md
+# Extralit Monorepo Project
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Architecture Notes
+- **extralit-server/**: FastAPI + PostgreSQL + Redis Queue
+- **extralit-frontend/**: Vue 3 / Nuxt 4 (Vite); Pinia state management
+- **extralit/**: Python SDK client
+- **extralit-hf-space/**: Self-contained HF Spaces deployment bundle (Docker; bundles Elasticsearch + Redis + OCR) — git submodule
+- **Vector DB**: Elasticsearch/OpenSearch (migrating to Lancedb)
 
-## Architecture Overview
+### Key Patterns
+- Backend: SQLAlchemy ORM, Alembic migrations, async pytest
+- Frontend: Domain-driven design, dependency injection
+- Database: Always use Alembic for schema changes
 
-Extralit is a multi-component system for scientific literature data extraction with human-in-the-loop workflows:
+## Component-Specific Setup
 
-- **extralit-server/**: FastAPI backend server with PostgreSQL database, handles users, datasets, records, and API interactions
-- **extralit-frontend/**: Vue.js/Nuxt.js web UI for data visualization, annotation, and team collaboration
-- **extralit/**: Python SDK client library for programmatic interaction with the server
-- **Vector Database**: External Elasticsearch/OpenSearch for scalable vector similarity searches
+Each component has its own `CLAUDE.md` with setup details:
+- **extralit-server/CLAUDE.md** - Backend server setup
+- **extralit-frontend/CLAUDE.md** - Frontend UI setup
+- **extralit/CLAUDE.md** - Python SDK setup
 
-## Development Commands
+## Prerequisites
 
-### Server (extralit-server/)
+- Python 3.10+ (server) / 3.9+ (SDK)
+- Node.js 18+
+- Docker & Docker Compose (for full stack)
+- uv (Python package manager)
+
+## Quick Setup
+
 ```bash
-cd extralit-server/
-pdm run server-dev        # Start server with auto-reload + worker
-pdm run server           # Start server only
-pdm run worker           # Start background worker only
-pdm run migrate          # Run database migrations
-pdm run test             # Run tests
-pdm run test-cov         # Run tests with coverage
-pdm run lint             # Run ruff linting
+# Setup all components
+cd extralit-server && uv sync --dev
+cd ../extralit && uv sync
+cd ../extralit-frontend && npm install
+
+# Run migrations
+cd extralit-server && uv run alembic -c src/extralit_server/alembic.ini upgrade head
+
+# Start services (requires Docker)
+docker-compose up -d
 ```
 
-### Frontend (extralit-frontend/)
+## Deployment and Branching
+
+| Ref | Role | Deploys to |
+|---|---|---|
+| `main` | trunk; every merged PR | `extralit-dev/develop` (dev HF Space) |
+| `release` | long-lived production pointer, moved only by `release.yml` | `extralit/public-demo` |
+| `vX.Y.Z` tag | the release itself | PyPI, versioned docs, GitHub Release |
+| PR (non-fork) | preview | ephemeral `extralit-dev/pr-N` |
+
+**Never push to `release` or create tags by hand.** Releases are one dispatch:
+
 ```bash
-cd extralit-frontend/
-npm run dev              # Development server
-npm run build            # Production build
-npm run test             # Run Jest tests
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Run tests with coverage report
-npm run e2e              # Run Playwright e2e tests (interactive UI)
-npm run e2e:silent       # Run e2e tests in headless mode
-npm run e2e:report       # Show Playwright test report
-npm run lint             # ESLint check
-npm run lint:fix         # Fix ESLint issues
-npm run format           # Format with Prettier
-npm run format:check     # Check formatting without modifying files
-npm run generate-icons   # Generate icon components from SVG files
+gh workflow run release.yml -f version=X.Y.Z                    # dry run (the default)
+gh workflow run release.yml -f version=X.Y.Z -f dry_run=false   # cut it
 ```
 
-### Client SDK (extralit/)
-```bash
-cd extralit/
-pdm run test             # Run tests
-pdm run test-cov         # Run tests with coverage
-pdm run lint             # Run ruff linting
-pdm run format           # Format with black
-pdm run all              # Format, lint, and test
-```
+That stamps the version via `scripts/bump_version.py` and pushes `main`, `release`, and the
+tag atomically. The version lives in three files — always change it with
+`python scripts/bump_version.py set --version X.Y.Z`, never by hand.
 
-## Key Development Notes
+See `docs/architecture/deployment.md` for the full pipeline
 
-### Frontend Architecture
-- Transitioning from Vuex to Pinia (v1/ directory contains new architecture)
-- Uses domain-driven design with entities, use cases, and dependency injection
-- Component structure: base (stateless) → features (page-specific) → global (reusable)
-
-### Backend Structure
-- FastAPI with SQLAlchemy ORM and Alembic migrations
-- Background job processing with Redis Queue (rq)
-- OAuth2 authentication with JWT tokens
-- Webhook system for external integrations
-- Document processing with OCR capabilities
-
-### Database Management
-- Alembic handles all database schema changes
-- Use `pdm run revision` to create new migrations after model changes
-- Always run `pdm run migrate` before starting development
-
-### Testing
-- Backend: pytest with async support, factory-boy for fixtures
-- Frontend: Jest for unit tests, Playwright for e2e
-- Python packages require Python 3.9+ (extralit) or 3.10+ (extralit-server)
-- Node.js 18+ required for frontend
-
-### Container Environment
-- Docker Compose setup available for full stack development
-- Services: Elasticsearch, Redis, MinIO for file storage
-- See `.github/workflows/copilot-setup-steps.yml` for complete environment setup
-
-### Linting Configuration
-- Python: Ruff with shared configuration across packages
-- Frontend: ESLint + Prettier with TypeScript support
-- Pre-commit hooks for code formatting and linting
+## Gotchas & Rules
+- **Check the library before writing a helper.** Before adding any function that renders, serializes, parses or walks a `DoclingDocument`, or splits chunks or fuses scores.

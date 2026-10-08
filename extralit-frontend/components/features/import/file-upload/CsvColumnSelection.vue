@@ -11,7 +11,11 @@
       <div class="csv-column-selection__column-group">
         <label class="csv-column-selection__column-label">
           Reference Column (Required)
-          <select v-model="localConfig.referenceColumn" class="csv-column-selection__column-select" @change="updateConfig">
+          <select
+            v-model="localConfig.referenceColumn"
+            class="csv-column-selection__column-select"
+            @change="updateConfig"
+          >
             <option value="">Select column...</option>
             <option v-for="column in csvData.columns" :key="column" :value="column">
               {{ column }}
@@ -45,23 +49,33 @@
         <table class="csv-column-selection__table">
           <thead>
             <tr>
-              <th v-for="column in csvData.columns" :key="column" :class="{
-                'csv-column-selection__preview-header--selected':
-                  column === localConfig.referenceColumn || column === localConfig.filesColumn
-              }">
+              <th
+                v-for="column in csvData.columns"
+                :key="column"
+                :class="{
+                  'csv-column-selection__preview-header--selected':
+                    column === localConfig.referenceColumn || column === localConfig.filesColumn,
+                }"
+              >
                 {{ column }}
-                <span v-if="column === localConfig.referenceColumn" class="csv-column-selection__preview-badge">REF</span>
+                <span v-if="column === localConfig.referenceColumn" class="csv-column-selection__preview-badge"
+                  >REF</span
+                >
                 <span v-if="column === localConfig.filesColumn" class="csv-column-selection__preview-badge">FILES</span>
               </th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(row, index) in csvData.previewRows" :key="index">
-              <td v-for="column in csvData.columns" :key="column" :class="{
-                'csv-column-selection__preview-cell--selected':
-                  column === localConfig.referenceColumn || column === localConfig.filesColumn
-              }">
-                {{ row[column] || '' }}
+              <td
+                v-for="column in csvData.columns"
+                :key="column"
+                :class="{
+                  'csv-column-selection__preview-cell--selected':
+                    column === localConfig.referenceColumn || column === localConfig.filesColumn,
+                }"
+              >
+                {{ row[column] || "" }}
               </td>
             </tr>
           </tbody>
@@ -70,16 +84,10 @@
     </div>
 
     <div class="csv-column-selection__actions">
-      <BaseButton
-        variant="primary"
-        :disabled="!localConfig.referenceColumn"
-        @click="$emit('process-csv')"
-      >
+      <BaseButton variant="primary" :disabled="!localConfig.referenceColumn" @click="$emit('process-csv')">
         Process CSV Data
       </BaseButton>
-      <BaseButton variant="secondary" @click="$emit('cancel')">
-        Cancel
-      </BaseButton>
+      <BaseButton variant="secondary" @click="$emit('cancel')"> Cancel </BaseButton>
     </div>
   </div>
 </template>

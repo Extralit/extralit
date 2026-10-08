@@ -3,7 +3,6 @@
 </template>
 
 <script>
-import "assets/icons";
 export default {
   props: {
     iconName: {

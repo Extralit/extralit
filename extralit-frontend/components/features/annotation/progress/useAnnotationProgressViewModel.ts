@@ -1,4 +1,4 @@
-import { computed, onBeforeMount, ref } from "vue-demi";
+import { computed, onBeforeMount, ref } from "vue";
 import { useEvents, UpdateMetricsEventHandler } from "~/v1/infrastructure/events";
 import { useRunningEnvironment } from "~/v1/infrastructure/services";
 import { useMetrics } from "~/v1/infrastructure/storage/MetricsStorage";

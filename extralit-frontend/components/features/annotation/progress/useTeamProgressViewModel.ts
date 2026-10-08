@@ -1,4 +1,4 @@
-import { onBeforeMount } from "vue-demi";
+import { onBeforeMount } from "vue";
 import { useEvents, UpdateTeamProgressEventHandler } from "~/v1/infrastructure/events";
 import { useTeamProgress } from "~/v1/infrastructure/storage/TeamProgressStorage";
 

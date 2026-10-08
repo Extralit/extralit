@@ -19,7 +19,9 @@ export class Environment {
   ) {}
 
   get shouldShowHuggingfaceSpacePersistentStorageWarning(): boolean {
-    return this.extralit.showHuggingfaceSpacePersistentStorageWarning && !this.huggingface.spacePersistentStorageEnabled;
+    return (
+      this.extralit.showHuggingfaceSpacePersistentStorageWarning && !this.huggingface.spacePersistentStorageEnabled
+    );
   }
 
   get shareYourProgressEnabled() {
@@ -37,10 +39,10 @@ export class Environment {
   }
 
   get availableOAuthProviders(): OAuthProvider[] {
-    return this.oauthProviders.filter(provider => provider.enabled);
+    return this.oauthProviders.filter((provider) => provider.enabled);
   }
 
   hasOAuthProvider(providerName: string): boolean {
-    return this.oauthProviders.some(provider => provider.name === providerName && provider.enabled);
+    return this.oauthProviders.some((provider) => provider.name === providerName && provider.enabled);
   }
 }

@@ -12,13 +12,10 @@ Extralit (https://github.com/Extralit/extralit) is a multi-component system for 
 ### Server (extralit-server/)
 ```bash
 cd extralit-server/
-pdm run server-dev        # Start server with auto-reload + worker
-pdm run server           # Start server only
-pdm run worker           # Start background worker only
-pdm run migrate          # Run database migrations
-pdm run test             # Run tests
-pdm run test-cov         # Run tests with coverage
-pdm run lint             # Run ruff linting
+uv run uvicorn extralit_server:app --host 0.0.0.0 --port 6900 --reload  # Start server with auto-reload
+uv run python -m extralit_server worker                                  # Start background worker only
+uv run alembic -c src/extralit_server/alembic.ini upgrade head           # Run database migrations
+uv run pytest tests                                                      # Run tests
 ```
 
 ### Frontend (extralit-frontend/)
@@ -27,26 +24,13 @@ cd extralit-frontend/
 npm run dev              # Development server
 npm run build            # Production build
 npm run test             # Run Jest tests
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Run tests with coverage report
-npm run e2e              # Run Playwright e2e tests (interactive UI)
-npm run e2e:silent       # Run e2e tests in headless mode
-npm run e2e:report       # Show Playwright test report
-npm run lint             # ESLint check
-npm run lint:fix         # Fix ESLint issues
-npm run format           # Format with Prettier
-npm run format:check     # Check formatting without modifying files
-npm run generate-icons   # Generate icon components from SVG files
 ```
 
 ### Client SDK (extralit/)
 ```bash
 cd extralit/
-pdm run test             # Run tests
-pdm run test-cov         # Run tests with coverage
-pdm run lint             # Run ruff linting
-pdm run format           # Format with black
-pdm run all              # Format, lint, and test
+uv run pytest tests      # Run tests
+uv run ruff check        # Run ruff linting
 ```
 
 ## Key Development Notes
@@ -65,8 +49,8 @@ pdm run all              # Format, lint, and test
 
 ### Database Management
 - Alembic handles all database schema changes
-- Use `pdm run revision` to create new migrations after model changes
-- Always run `pdm run migrate` before starting development
+- Use `uv run alembic -c src/extralit_server/alembic.ini revision --autogenerate` to create new migrations after model changes
+- Always run `uv run alembic -c src/extralit_server/alembic.ini upgrade head` before starting development
 
 ### Testing
 - Backend: pytest with async support, factory-boy for fixtures
@@ -81,7 +65,7 @@ pdm run all              # Format, lint, and test
 
 ### Linting Configuration
 - Python: Ruff with shared configuration across packages
-- Frontend: ESLint + Prettier with TypeScript support
+- Frontend: oxlint + ESLint (Vue templates/i18n) for linting, oxfmt for formatting
 - Pre-commit hooks for code formatting and linting
 
 # `extralit-server/` Backend Architecture Overview
@@ -100,28 +84,26 @@ Extralit-server is the FastAPI backend component of the Extralit ecosystem for s
 
 ```bash
 # Core development workflow
-pdm run server-dev        # Start server with auto-reload + worker + migrations
-pdm run server           # Start server only (production mode)
-pdm run worker           # Start background worker only
-pdm run migrate          # Run database migrations
-pdm run revision         # Create new Alembic migration after model changes
+uv run uvicorn extralit_server:app --host 0.0.0.0 --port 6900 --reload  # Start server with auto-reload
+uv run python -m extralit_server worker                                  # Start background worker only
+uv run alembic -c src/extralit_server/alembic.ini upgrade head           # Run database migrations
+uv run alembic -c src/extralit_server/alembic.ini revision --autogenerate -m "description"  # Create migration
 
 # Testing and quality
-pdm run test             # Run pytest test suite
-pdm run test-cov         # Run tests with coverage report
-pdm run lint             # Run ruff linting (required before commits)
+uv run pytest tests                                                      # Run pytest test suite
+uv run pytest tests --cov=extralit_server --cov-report=term              # Run tests with coverage
+uv run ruff check                                                        # Run ruff linting
 
 # Database management
-pdm run cli database migrate                    # Run migrations
-pdm run cli database users create_default      # Create default admin user
-pdm run cli database users create              # Interactive user creation
-pdm run cli database revisions                 # Generate migration files
+uv run python -m extralit_server cli database migrate                    # Run migrations
+uv run python -m extralit_server cli database users create_default       # Create default admin user
+uv run python -m extralit_server cli database users create               # Interactive user creation
 
 # Background job management
-pdm run cli worker       # Start RQ worker for background jobs
+uv run python -m extralit_server worker       # Start RQ worker for background jobs
 
 # Search engine management
-pdm run cli search_engine reindex             # Reindex all datasets in search engine
+uv run python -m extralit_server search-engine reindex  # Reindex all datasets in search engine
 ```
 
 ## Key Architecture Patterns
@@ -142,7 +124,7 @@ pdm run cli search_engine reindex             # Reindex all datasets in search e
 ### Background Job Processing (RQ)
 - **Queue Setup**: `src/extralit_server/jobs/queues.py` - Redis connection and queue configuration
 - **Job Modules**: `src/extralit_server/jobs/` - Background tasks for documents, imports, OCR, webhooks
-- **Worker**: Started via `pdm run worker` for processing async tasks
+- **Worker**: Started via `uv run python -m extralit_server worker` for processing async tasks
 
 ### Search Engine Integration
 - **Abstraction**: `src/extralit_server/search_engine/base.py` - Common interface for search engines
@@ -169,7 +151,7 @@ EXTRALIT_DATABASE_URL=sqlite+aiosqlite:///extralit.db    # Database connection
 EXTRALIT_REDIS_URL=redis://localhost:6379/0             # Redis for background jobs
 EXTRALIT_ELASTICSEARCH=http://localhost:9200            # Search engine endpoint
 EXTRALIT_SEARCH_ENGINE=elasticsearch                    # elasticsearch|opensearch
-EXTRALIT_S3_ENDPOINT=http://localhost:9000              # MinIO/S3 storage
+EXTRALIT_STORAGE_URL=http://localhost:9000/extralit     # MinIO/S3 storage root (unset = ~/.extralit/storage)
 EXTRALIT_CORS_ORIGINS=["*"]                             # CORS configuration
 ```
 
@@ -184,8 +166,8 @@ EXTRALIT_CORS_ORIGINS=["*"]                             # CORS configuration
 ## Important Development Notes
 
 ### Database Migrations
-- Always run `pdm run revision` after model changes to generate migrations
-- Review generated migrations before applying with `pdm run migrate`
+- Always run `uv run alembic -c src/extralit_server/alembic.ini revision --autogenerate` after model changes to generate migrations
+- Review generated migrations before applying with `uv run alembic -c src/extralit_server/alembic.ini upgrade head`
 - Never edit existing migration files; create new ones for changes
 
 ### Background Job Development
@@ -195,7 +177,7 @@ EXTRALIT_CORS_ORIGINS=["*"]                             # CORS configuration
 
 ### Search Engine Operations
 - Dataset records are automatically indexed/updated in the search engine
-- Use `pdm run cli search_engine reindex` after significant data changes
+- Use `uv run python -m extralit_server search-engine reindex` after significant data changes
 - Search operations are asynchronous and may have eventual consistency
 
 ### Security Considerations
@@ -235,21 +217,6 @@ This SDK package allows researchers to:
 
 ## Development Commands
 
-### Testing and Quality
-```bash
-pdm run test             # Run pytest with warnings disabled
-pdm run test-cov         # Run tests with coverage reporting
-pdm run lint             # Run ruff linting
-pdm run format           # Format code with black
-pdm run all              # Format, lint, and test in sequence
-```
-
-### Package Management
-```bash
-pdm install             # Install dependencies and development packages
-pdm install --prod       # Install production dependencies only
-```
-
 ### CLI Development
 The package provides an `extralit` CLI command that registers multiple subcommands:
 - `extralit datasets` - Dataset management
@@ -275,7 +242,6 @@ The package provides an `extralit` CLI command that registers multiple subcomman
 
 ### Configuration
 - **Ruff Linting**: Line length 120, comprehensive rule set including FastAPI-specific rules
-- **Black Formatting**: Line length 120
 - **pytest**: Async support, custom fixtures, environment variable handling
 
 ### Testing Structure
@@ -309,20 +275,6 @@ npm run start            # Start production server (after build)
 
 # Testing
 npm run test             # Run Jest unit tests
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Run tests with coverage report
-npm run e2e              # Run Playwright e2e tests (interactive UI)
-npm run e2e:silent       # Run e2e tests in headless mode
-npm run e2e:report       # Show Playwright test report
-
-# Code Quality
-npm run lint             # ESLint check
-npm run lint:fix         # Fix ESLint issues automatically
-npm run format           # Format code with Prettier
-npm run format:check     # Check formatting without modifying files
-
-# Assets
-npm run generate-icons   # Generate icon components from SVG files
 ```
 
 ## Architecture Patterns

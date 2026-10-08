@@ -14,8 +14,7 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/code";
-import { BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
+import { type BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
 
 export default {
   data() {
@@ -25,7 +24,7 @@ export default {
   },
   props: {
     breadcrumbs: {
-      type: Array  as () =>  BreadcrumbItem[],
+      type: Array as () => BreadcrumbItem[],
     },
   },
   methods: {

@@ -1,28 +1,40 @@
 <template>
   <div class="pdf-upload">
     <div class="pdf-upload__section-header">
-      <h3 class="pdf-upload__section-title">Step 2: Upload Full-Text PDFs</h3>
+      <h3 class="pdf-upload__section-title">PDF Documents</h3>
       <p class="pdf-upload__section-description">
-        Upload the PDF files that correspond to the references in your .bib file.<br />
-        Extralit will match them automatically for extraction.
+        We will attempt to automatically link these PDFs to the metadata file below.
       </p>
     </div>
 
-    <div class="pdf-upload__dropzone" :class="{
-      'pdf-upload__dropzone--dragover': dragOver,
-      'pdf-upload__dropzone--error': hasError,
-      'pdf-upload__dropzone--success': uploaded,
-    }" @drop="handleDrop" @dragover="handleDragOver" @dragleave="handleDragLeave"
-      @click="triggerFolderInput">
-      <input ref="folderInput" type="file" accept=".pdf" multiple webkitdirectory style="display: none"
-        @change="handleFolderSelect" />
+    <div
+      class="pdf-upload__dropzone"
+      :class="{
+        'pdf-upload__dropzone--dragover': dragOver,
+        'pdf-upload__dropzone--error': hasError,
+        'pdf-upload__dropzone--success': uploaded,
+      }"
+      @drop="handleDrop"
+      @dragover="handleDragOver"
+      @dragleave="handleDragLeave"
+      @click="triggerFolderInput"
+    >
+      <input
+        ref="folderInput"
+        type="file"
+        accept=".pdf"
+        multiple
+        webkitdirectory
+        style="display: none"
+        @change="handleFolderSelect"
+      />
 
       <div class="pdf-upload__dropzone-content">
         <BaseIcon :icon-name="getDropzoneIcon" class="pdf-upload__dropzone-icon" />
         <p class="pdf-upload__dropzone-text">
           {{ getDropzoneText }}
         </p>
-        <p class="pdf-upload__dropzone-subtext">Upload a folder containing your PDF files.<br /></p>
+        <p class="pdf-upload__dropzone-subtext">Supports individual files or folder uploads.<br /></p>
       </div>
     </div>
 
@@ -59,9 +71,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/import";
 import { usePdfUploadLogic } from "./usePdfUploadLogic";
 import type { PdfData } from "./types";
 

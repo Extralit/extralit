@@ -1,5 +1,5 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { ImportStatus } from "../entities/import/ImportAnalysis";
+import type { AxiosInstance } from "axios";
+import { type ImportStatus } from "../entities/import/ImportAnalysis";
 
 export interface ImportHistoryListItem {
   id: string;
@@ -56,7 +56,7 @@ interface ImportHistoryResponse {
 }
 
 export class GetImportHistoryUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async execute(params: ImportHistoryListRequest = {}): Promise<ImportHistoryListResponse> {
     const queryParams = new URLSearchParams();

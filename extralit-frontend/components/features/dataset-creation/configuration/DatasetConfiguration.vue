@@ -93,23 +93,24 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/document";
+import { type PropType } from "vue";
 import { useDatasetConfiguration } from "./useDatasetConfiguration";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
+import { type DatasetCreation } from "~/v1/domain/entities/hub/DatasetCreation";
 
 export default {
   props: {
     dataset: {
-      type: Object,
+      type: Object as PropType<DatasetCreation>,
       required: true,
     },
     dataSource: {
-      type: String,
+      type: String as PropType<"hub" | "import">,
       default: "hub",
       validator: (value: string) => ["hub", "import"].includes(value),
     },
     importData: {
-      type: [ImportHistoryDetails, Object],
+      type: [ImportHistoryDetails, Object] as PropType<ImportHistoryDetails>,
       default: null,
     },
     isLoadingImportData: {

@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import os
 import subprocess
 import tempfile
@@ -89,7 +75,6 @@ class TestCLICommands:
             except Exception:
                 pass
 
-    @pytest.mark.skip(reason="buckets with versioning enabled still list deleted files, needs further investigation")
     def test_files_upload_download_and_delete_command(self, test_workspace):
         """Test the 'files upload', 'files download', and 'files delete' commands."""
         with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as temp_file:

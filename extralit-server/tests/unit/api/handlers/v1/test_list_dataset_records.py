@@ -1,18 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 import pytest
 from httpx import AsyncClient
 
@@ -60,6 +45,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"record_a": "value_a"},
                     "metadata": None,
                     "external_id": record_a.external_id,
+                    "reference": record_a.reference,
                     "status": "pending",
                     "inserted_at": record_a.inserted_at.isoformat(),
                     "updated_at": record_a.updated_at.isoformat(),
@@ -70,6 +56,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"record_b": "value_b"},
                     "metadata": {"unit": "test"},
                     "external_id": record_b.external_id,
+                    "reference": record_b.reference,
                     "status": "pending",
                     "inserted_at": record_b.inserted_at.isoformat(),
                     "updated_at": record_b.updated_at.isoformat(),
@@ -80,6 +67,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"record_c": "value_c"},
                     "metadata": None,
                     "external_id": record_c.external_id,
+                    "reference": record_c.reference,
                     "status": "pending",
                     "inserted_at": record_c.inserted_at.isoformat(),
                     "updated_at": record_c.updated_at.isoformat(),
@@ -113,6 +101,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"input": "value_a"},
                     "metadata": None,
                     "external_id": record_a.external_id,
+                    "reference": record_a.reference,
                     "inserted_at": record_a.inserted_at.isoformat(),
                     "updated_at": record_a.updated_at.isoformat(),
                 },
@@ -121,6 +110,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"input": "value_b"},
                     "metadata": {"unit": "test"},
                     "external_id": record_b.external_id,
+                    "reference": record_b.reference,
                     "inserted_at": record_b.inserted_at.isoformat(),
                     "updated_at": record_b.updated_at.isoformat(),
                 },
@@ -129,6 +119,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"input": "value_c"},
                     "metadata": None,
                     "external_id": record_c.external_id,
+                    "reference": record_c.reference,
                     "inserted_at": record_c.inserted_at.isoformat(),
                     "updated_at": record_c.updated_at.isoformat(),
                 },
@@ -221,6 +212,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"text": "This is a text", "sentiment": "neutral"},
                     "metadata": None,
                     "external_id": record_a.external_id,
+                    "reference": record_a.reference,
                     "vectors": {
                         "vector-a": [1.0, 2.0, 3.0],
                         "vector-b": [4.0, 5.0],
@@ -235,6 +227,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"text": "This is a text", "sentiment": "neutral"},
                     "metadata": None,
                     "external_id": record_b.external_id,
+                    "reference": record_b.reference,
                     "vectors": {
                         "vector-b": [1.0, 2.0],
                     },
@@ -248,6 +241,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"text": "This is a text", "sentiment": "neutral"},
                     "metadata": None,
                     "external_id": record_c.external_id,
+                    "reference": record_c.reference,
                     "vectors": {},
                     "status": "pending",
                     "inserted_at": record_c.inserted_at.isoformat(),
@@ -290,6 +284,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"text": "This is a text", "sentiment": "neutral"},
                     "metadata": None,
                     "external_id": record_a.external_id,
+                    "reference": record_a.reference,
                     "vectors": {
                         "vector-a": [1.0, 2.0, 3.0],
                         "vector-b": [4.0, 5.0],
@@ -304,6 +299,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"text": "This is a text", "sentiment": "neutral"},
                     "metadata": None,
                     "external_id": record_b.external_id,
+                    "reference": record_b.reference,
                     "vectors": {
                         "vector-b": [1.0, 2.0],
                     },
@@ -317,6 +313,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"text": "This is a text", "sentiment": "neutral"},
                     "metadata": None,
                     "external_id": record_c.external_id,
+                    "reference": record_c.reference,
                     "vectors": {},
                     "status": "pending",
                     "inserted_at": record_c.inserted_at.isoformat(),
@@ -486,6 +483,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"record_a": "value_a"},
                     "metadata": None,
                     "external_id": record_a.external_id,
+                    "reference": record_a.reference,
                     "status": "pending",
                     "inserted_at": record_a.inserted_at.isoformat(),
                     "updated_at": record_a.updated_at.isoformat(),
@@ -496,6 +494,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"record_b": "value_b"},
                     "metadata": None,
                     "external_id": record_b.external_id,
+                    "reference": record_b.reference,
                     "status": "pending",
                     "inserted_at": record_b.inserted_at.isoformat(),
                     "updated_at": record_b.updated_at.isoformat(),
@@ -506,6 +505,7 @@ class TestSuiteListDatasetRecords:
                     "fields": {"record_c": "value_c"},
                     "metadata": None,
                     "external_id": record_c.external_id,
+                    "reference": record_c.reference,
                     "status": "pending",
                     "inserted_at": record_c.inserted_at.isoformat(),
                     "updated_at": record_c.updated_at.isoformat(),

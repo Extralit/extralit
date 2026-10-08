@@ -15,7 +15,6 @@
 </template>
 
 <script>
-import "assets/icons/rows";
 export default {
   props: {
     dataset: {

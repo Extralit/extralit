@@ -1,5 +1,5 @@
 import { Criteria } from "../common/Criteria";
-import { RangeValue, ValuesOption } from "../common/Filter";
+import { type RangeValue, type ValuesOption } from "../common/Filter";
 
 export interface ConfigurationSearch {
   name: "score" | "value" | "agent";
@@ -21,7 +21,7 @@ export class SuggestionCriteria extends Criteria {
       const [questionName, configurationName, ...rest] = suggestion.split(".") as [
         string,
         ConfigurationSearch["name"],
-        ...string[]
+        ...string[],
       ];
 
       if (configurationName === "score" || configurationName === "value") {

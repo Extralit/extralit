@@ -54,8 +54,6 @@ export default {
     this.input = this.$el.querySelectorAll("input, textarea, select, .re-file")[0];
 
     if (!this.input) {
-      this.$destroy();
-
       throw new Error("Missing input/select/textarea inside re-input-container");
     }
   },

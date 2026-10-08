@@ -1,37 +1,77 @@
 <template>
-  <BaseFlowModal :visible="isVisible" :title="$t('import.title', { workspaceName: workspace?.name })" :steps="steps"
-    :current-step="currentStep" :can-go-back="canGoBack" :can-go-next="canGoNext" :can-complete="canComplete"
-    :loading="isProcessing" :step-data="stepData" :confirm-close="shouldConfirmClose" :submit-step-index="1"
-    @step-change="handleStepChange" @validate-step="handleValidateStep" @complete="handleComplete" @close="handleClose"
-    @cancel="handleCancel">
+  <BaseFlowModal
+    :visible="isVisible"
+    :title="$t('import.title', { workspaceName: workspace?.name })"
+    :steps="steps"
+    :current-step="currentStep"
+    :can-go-back="canGoBack"
+    :can-go-next="canGoNext"
+    :can-complete="canComplete"
+    :loading="isProcessing"
+    :step-data="stepData"
+    :confirm-close="shouldConfirmClose"
+    :submit-step-index="1"
+    @step-change="handleStepChange"
+    @validate-step="handleValidateStep"
+    @complete="handleComplete"
+    @close="handleClose"
+    @cancel="handleCancel"
+  >
     <template #default="{ currentStep: stepIndex }">
-      <!-- Step 1: Combined File Upload -->
-      <ImportFileUpload v-if="stepIndex === 0" ref="fileUploadComponent" :initial-bib-data="bibData"
-        :initial-pdf-data="pdfData" @bib-update="handleBibUpdate" @pdf-update="handlePdfUpdate" />
+      <!-- Step 1: PDF First, then Optional Table Upload -->
+      <ImportFileUpload
+        v-if="stepIndex === 0"
+        ref="fileUploadComponent"
+        :initial-bib-data="bibData"
+        :initial-pdf-data="pdfData"
+        @bib-update="handleBibUpdate"
+        @pdf-update="handlePdfUpdate"
+      />
 
       <!-- Step 2: Import Analysis -->
-      <ImportAnalysisTable v-if="stepIndex === 1" ref="analysisTableComponent" :dataframe-data="bibData.dataframeData"
-        :pdf-data="pdfData" :workspace="workspace" :loading="isAnalyzing" @update="handleAnalysisUpdate"
-        @analysis-complete="handleAnalysisComplete" />
+      <ImportAnalysisTable
+        v-if="stepIndex === 1"
+        ref="analysisTableComponent"
+        :dataframe-data="bibData.dataframeData"
+        :pdf-data="pdfData"
+        :workspace="workspace"
+        :loading="isAnalyzing"
+        :initial-document-actions="uploadData.documentActions"
+        @update="handleAnalysisUpdate"
+        @analysis-complete="handleAnalysisComplete"
+      />
 
       <!-- Step 3: Upload Progress -->
-      <ImportBatchProgress v-if="stepIndex === 2" ref="batchProgressComponent" :upload-data="uploadData"
-        :workspace="workspace" :dataframe-data="bibData.dataframeData" :bib-file-name="bibData.fileName"
-        :pdf-files="getAllPdfFiles()" @completed="handleUploadCompleted" @cancelled="handleUploadCancelled"
-        @error="handleUploadError" @progress="handleUploadProgress" />
+      <ImportBatchProgress
+        v-if="stepIndex === 2"
+        ref="batchProgressComponent"
+        :upload-data="uploadData"
+        :workspace="workspace"
+        :dataframe-data="bibData.dataframeData"
+        :bib-file-name="bibData.fileName"
+        :pdf-files="getAllPdfFiles()"
+        @completed="handleUploadCompleted"
+        @cancelled="handleUploadCancelled"
+        @error="handleUploadError"
+        @progress="handleUploadProgress"
+      />
 
       <!-- Step 4: Import Summary -->
-      <ImportSummary v-if="stepIndex === 3" ref="summaryComponent" :import-summary="importSummary"
-        :workspace="workspace" :bibFileName="bibData.fileName" :failed-documents="failedDocuments"
-        @return-to-library="handleReturnToLibrary" @view-import-history="handleViewImportHistory" />
+      <ImportSummary
+        v-if="stepIndex === 3"
+        ref="summaryComponent"
+        :import-summary="importSummary"
+        :workspace="workspace"
+        :bibFileName="bibData.fileName"
+        :failed-documents="failedDocuments"
+        @return-to-library="handleReturnToLibrary"
+        @view-import-history="handleViewImportHistory"
+      />
     </template>
   </BaseFlowModal>
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/import";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
@@ -131,16 +171,7 @@ export default {
     canGoNext() {
       switch (this.currentStep) {
         case 0:
-          // Allow flexible upload order - can proceed if either:
-          // 1. Both bibliography and PDFs are uploaded, OR
-          // 2. Only bibliography is uploaded (can import references without PDFs)
-          return (
-            this.bibData.dataframeData &&
-            this.bibData.dataframeData.data &&
-            this.bibData.dataframeData.data.length > 0 &&
-            !this.hasError &&
-            !!this.workspace
-          );
+          return this.pdfData && this.pdfData.totalFiles > 0 && !this.hasError && !!this.workspace;
         case 1:
           return Object.keys(this.uploadData.confirmedDocuments).length > 0 && !this.hasError && !!this.workspace;
         case 2:
@@ -201,15 +232,9 @@ export default {
 
       switch (step) {
         case 0:
-          // Allow flexible upload order - can proceed if bibliography is uploaded
-          // PDFs are optional for proceeding to analysis step
-          isValid =
-            this.bibData.dataframeData &&
-            this.bibData.dataframeData.data &&
-            this.bibData.dataframeData.data.length > 0 &&
-            !this.hasError &&
-            !!this.workspace;
+          isValid = this.pdfData && this.pdfData.totalFiles > 0 && !this.hasError && !!this.workspace;
           break;
+
         case 1:
           isValid = Object.keys(this.uploadData.confirmedDocuments).length > 0 && !this.hasError && !!this.workspace;
 
@@ -249,6 +274,7 @@ export default {
         dataframeData: data.dataframeData || null,
         rawContent: data.rawContent || "",
       };
+      this.uploadData.documentActions = {};
       this.clearError();
     },
 
@@ -258,6 +284,7 @@ export default {
         unmatchedFiles: data.unmatchedFiles || [],
         totalFiles: data.totalFiles || 0,
       };
+      this.uploadData.documentActions = {};
       this.clearError();
     },
 
@@ -333,7 +360,7 @@ export default {
 
     cancelUpload() {
       if (this.$refs.batchProgressComponent) {
-        this.$refs.batchProgressComponent.cancelUpload();
+        (this.$refs.batchProgressComponent as { cancelUpload: () => void }).cancelUpload();
       }
     },
 
@@ -373,7 +400,6 @@ export default {
 
     retryCurrentStep() {
       this.clearError();
-
     },
 
     handleClose() {
@@ -387,10 +413,12 @@ export default {
 
     hasDataToLose() {
       // Check if user has uploaded any data that would be lost on close
+      const analysisTable = this.$refs.analysisTableComponent as { editableTableData?: unknown[] };
       return (
         (this.bibData.dataframeData && this.bibData.dataframeData.data && this.bibData.dataframeData.data.length > 0) ||
         this.pdfData.totalFiles > 0 ||
-        Object.keys(this.uploadData.confirmedDocuments).length > 0
+        Object.keys(this.uploadData.confirmedDocuments).length > 0 ||
+        (analysisTable && analysisTable.editableTableData && analysisTable.editableTableData.length > 0)
       );
     },
 
@@ -444,21 +472,12 @@ export default {
 
       // Reset child components
       this.$nextTick(() => {
-        if (this.$refs.fileUploadComponent) {
-          this.$refs.fileUploadComponent.reset();
-        }
-        if (this.$refs.analysisTableComponent) {
-          this.$refs.analysisTableComponent.reset();
-        }
-        if (this.$refs.batchProgressComponent) {
-          this.$refs.batchProgressComponent.reset();
-        }
-        if (this.$refs.summaryComponent) {
-          this.$refs.summaryComponent.reset();
-        }
+        (this.$refs.fileUploadComponent as { reset?: () => void } | undefined)?.reset();
+        (this.$refs.analysisTableComponent as { reset?: () => void } | undefined)?.reset();
+        (this.$refs.batchProgressComponent as { reset?: () => void } | undefined)?.reset();
+        (this.$refs.summaryComponent as { reset?: () => void } | undefined)?.reset();
       });
     },
-
 
     initializeUploadData() {
       // Initialize upload tracking data
@@ -474,7 +493,7 @@ export default {
 
       // Add matched files
       if (this.pdfData.matchedFiles) {
-        this.pdfData.matchedFiles.forEach(matchedFile => {
+        this.pdfData.matchedFiles.forEach((matchedFile) => {
           if (matchedFile.file) {
             files.push(matchedFile.file);
           }
@@ -483,7 +502,7 @@ export default {
 
       // Add unmatched files
       if (this.pdfData.unmatchedFiles) {
-        this.pdfData.unmatchedFiles.forEach(unmatchedFile => {
+        this.pdfData.unmatchedFiles.forEach((unmatchedFile) => {
           // Unmatched files are stored directly as File objects
           if (unmatchedFile instanceof File) {
             files.push(unmatchedFile);

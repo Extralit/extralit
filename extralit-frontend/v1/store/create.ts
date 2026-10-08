@@ -1,8 +1,9 @@
 import { defineStore } from "pinia";
 import { create } from "./non-reactive";
 
-interface Class<T> extends Function {
+interface Class<T> {
   new (...args: any[]): T;
+  name: string;
 }
 
 export interface ImplicitStorage<T> {

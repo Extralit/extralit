@@ -1,6 +1,6 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { BackendVector } from "../types/vector";
-import { Response } from "../types";
+import type { AxiosInstance } from "axios";
+import { type BackendVector } from "../types/vector";
+import { type Response } from "../types";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 import { Vector } from "~/v1/domain/entities/vector/Vector";
 
@@ -10,7 +10,7 @@ const enum VECTOR_API_ERRORS {
 }
 
 export class VectorRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async getVectors(datasetId: string): Promise<BackendVector[]> {
     try {

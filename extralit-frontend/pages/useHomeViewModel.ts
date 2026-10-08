@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { ref, useFetch, computed, watch, useRoute, useRouter } from "@nuxtjs/composition-api";
+import { ref, computed, watch, onMounted } from "vue";
 import { useRoutes, useFocusTab } from "~/v1/infrastructure/services";
 import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 import { GetDatasetsUseCase } from "@/v1/domain/usecases/get-datasets-use-case";
@@ -7,9 +7,9 @@ import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-ca
 import { useDatasets } from "~/v1/infrastructure/storage/DatasetsStorage";
 import { useWorkspaces } from "~/v1/infrastructure/storage/WorkspaceStorage";
 import { useRole } from "~/v1/infrastructure/services/useRole";
-import { ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
+import { type ImportHistoryListItem } from "~/v1/domain/usecases/get-import-history-use-case";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
-import { BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
+import { type BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
 
 export const useHomeViewModel = () => {
   const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
@@ -33,7 +33,7 @@ export const useHomeViewModel = () => {
 
   // Restore workspace selection from URL parameters
   const restoreWorkspaceFromUrl = () => {
-    const workspaceParam = route.value.query.workspace as string;
+    const workspaceParam = route.query.workspace as string;
     if (workspaceParam && workspaces.value.length > 0) {
       // Find workspace by name (as used in breadcrumb links)
       const workspace = workspaces.value.find((w) => w.name === workspaceParam);
@@ -45,7 +45,7 @@ export const useHomeViewModel = () => {
 
   // Update URL parameters when workspace selection changes
   const updateUrlForWorkspace = (workspace: Workspace | null) => {
-    const currentQuery = { ...route.value.query };
+    const currentQuery = { ...route.query };
 
     if (workspace) {
       currentQuery.workspace = workspace.name;
@@ -54,12 +54,12 @@ export const useHomeViewModel = () => {
     }
 
     // Only update URL if the query actually changed
-    const currentWorkspaceParam = route.value.query.workspace as string;
+    const currentWorkspaceParam = route.query.workspace as string;
     const newWorkspaceParam = workspace?.name;
 
     if (currentWorkspaceParam !== newWorkspaceParam) {
       router.replace({
-        path: route.value.path,
+        path: route.path,
         query: currentQuery,
       });
     }
@@ -69,7 +69,7 @@ export const useHomeViewModel = () => {
     await onLoadDatasets();
   });
 
-  useFetch(async () => {
+  onMounted(async () => {
     loadDatasets();
     const workspaces = await getWorkspacesUseCase.execute();
     saveWorkspaces(workspaces);
@@ -136,7 +136,7 @@ export const useHomeViewModel = () => {
 
   // Watch for URL changes (browser back/forward navigation)
   watch(
-    () => route.value.query.workspace,
+    () => route.query.workspace,
     () => {
       restoreWorkspaceFromUrl();
     }

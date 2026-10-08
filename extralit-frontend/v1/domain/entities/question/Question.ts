@@ -1,4 +1,4 @@
-import { Answer, LabelAnswer } from "../IAnswer";
+import { type Answer, type LabelAnswer } from "../IAnswer";
 import { Guard } from "../error";
 import { Color } from "../color/Color";
 import {

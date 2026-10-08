@@ -17,6 +17,9 @@
 </template>
 
 <script lang="ts">
+import { type PropType } from "vue";
+import { type TableData } from "~/v1/domain/entities/table/TableData";
+
 export default {
   name: "TableField",
   props: {
@@ -28,7 +31,7 @@ export default {
       type: String,
     },
     content: {
-      type: [Object, String],
+      type: [Object, String] as PropType<TableData>,
       required: true,
     },
   },

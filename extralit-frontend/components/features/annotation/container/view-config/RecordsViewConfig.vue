@@ -1,13 +1,13 @@
 <template>
   <BaseDropdown class="view-config" :visible="dropdownIsVisible" @visibility="onChangeDropDownVisibility"
-    ><template slot="dropdown-header"
+    ><template #dropdown-header
       ><BaseButton
         class="view-config__button"
         :data-title="!dropdownIsVisible && $t('bulkAnnotation.recordsViewSettings')"
       >
         <svgicon class="view-config__icon" width="20" height="20" name="change-height" aria-hidden="true" /></BaseButton
     ></template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <div class="view-config__content">
         <BaseRadioButton
           v-for="option in recordsViewConfig.height"
@@ -25,7 +25,6 @@
 </template>
 
 <script>
-import "assets/icons/change-height";
 export default {
   data() {
     return {
@@ -43,22 +42,19 @@ export default {
     };
   },
   props: {
-    recordHeight: {
+    modelValue: {
       type: String,
       default: false,
     },
   },
-  model: {
-    prop: "recordHeight",
-    event: "change",
-  },
+  emits: ["update:modelValue"],
   computed: {
     recordHeightValue: {
       get() {
-        return this.recordHeight;
+        return this.modelValue;
       },
       set(newValue) {
-        this.$emit("change", newValue);
+        this.$emit("update:modelValue", newValue);
       },
     },
   },

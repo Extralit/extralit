@@ -16,7 +16,7 @@ interface PrefixMatchResult {
 
 export class PdfMatchingService implements IFileMatchingService {
   matchFiles(files: File[], dataframeData: TableData): FileMatchingResult {
-    // @ts-ignore
+    // @ts-expect-error -- TableData.data shape is untyped here
     const entries: ParsedEntry[] = dataframeData?.data || [];
 
     if (!entries || entries.length === 0 || files.length === 0) {

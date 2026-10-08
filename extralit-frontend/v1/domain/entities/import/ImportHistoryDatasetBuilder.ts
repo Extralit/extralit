@@ -5,9 +5,9 @@
 
 import { DatasetCreation } from "../hub/DatasetCreation";
 import { Subset } from "../hub/Subset";
-import { FieldCreationTypes } from "../hub/FieldCreation";
-import { MetadataTypes, MetadataCreation } from "../hub/MetadataCreation";
-import { ImportHistoryDetailsResponse } from "../../usecases/get-import-history-details-use-case";
+import { type FieldCreationTypes } from "../hub/FieldCreation";
+import { type MetadataTypes, MetadataCreation } from "../hub/MetadataCreation";
+import { type ImportHistoryDetailsResponse } from "../../usecases/get-import-history-details-use-case";
 
 export interface ImportHistoryFeature {
   dtype: "string" | "int32" | "int64" | "float32" | "boolean";
@@ -20,7 +20,6 @@ export const METADATA_FIELDS = ["reference", "doi", "pmid"] as const;
 export class ImportHistoryDatasetBuilder {
   private readonly importHistoryData: ImportHistoryDetailsResponse;
   private readonly datasetName: string;
-
 
   constructor(importHistoryData: ImportHistoryDetailsResponse) {
     this.importHistoryData = importHistoryData;
@@ -177,12 +176,8 @@ export class ImportHistoryDatasetBuilder {
    */
   private hasReferenceField(): boolean {
     return (
-      this.importHistoryData.data.schema.fields.some((field) =>
-        METADATA_FIELDS.includes(field.name as any)
-      ) ||
-      this.importHistoryData.data.data.some((record) =>
-        METADATA_FIELDS.some((field) => field in record)
-      )
+      this.importHistoryData.data.schema.fields.some((field) => METADATA_FIELDS.includes(field.name as any)) ||
+      this.importHistoryData.data.data.some((record) => METADATA_FIELDS.some((field) => field in record))
     );
   }
 

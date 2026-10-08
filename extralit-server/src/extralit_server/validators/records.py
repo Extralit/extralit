@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import copy
 import mimetypes
 from abc import ABC
@@ -58,6 +44,15 @@ class RecordValidatorBase(ABC):
         cls._validate_image_fields(dataset=dataset, fields=fields)
         cls._validate_chat_fields(dataset=dataset, fields=fields)
         cls._validate_custom_fields(dataset=dataset, fields=fields)
+        # No `_validate_column_fields` collector, deliberately. A column field is an
+        # extraction input declared by the dataset's Pandera schema version, not an
+        # annotator-editable answer: `Field.settings["dtype"]` exists to type the search
+        # index, not to gate ingestion. Because every collector above selects its fields
+        # with `filter(lambda field: field.is_<type>, dataset.fields)`, column fields fall
+        # through all of them and are never value-validated — while
+        # `_validate_extra_fields` still requires them to be declared, and editable
+        # columns are validated on the Question/Response path by ResponseValueValidator.
+        # Do not "fix" this by adding a collector.
 
     @classmethod
     def _validate_non_empty_fields(cls, fields: dict[str, str]) -> None:
@@ -168,7 +163,7 @@ class RecordValidatorBase(ABC):
                 f"image field {field_name!r} value is exceeding the maximum length of {IMAGE_FIELD_DATA_URL_MAX_LENGTH} characters for Data URLs"
             )
 
-        type, encoding = mimetypes.guess_type(field_value)
+        type, _encoding = mimetypes.guess_type(field_value)
         if type not in IMAGE_FIELD_DATA_URL_VALID_MIME_TYPES:
             raise UnprocessableEntityError(
                 f"image field {field_name!r} value is using an unsupported MIME type, supported MIME types are: {IMAGE_FIELD_DATA_URL_VALID_MIME_TYPES!r}"

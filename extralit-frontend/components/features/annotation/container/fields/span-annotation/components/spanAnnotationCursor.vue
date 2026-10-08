@@ -87,7 +87,7 @@ export default {
 
     document.addEventListener("mousemove", this.updateCursorPosition);
   },
-  destroyed() {
+  unmounted() {
     if (!this.area) return;
 
     this.area.removeEventListener("mouseover", this.addCursorClass);

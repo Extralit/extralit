@@ -23,7 +23,7 @@
 <a href="https://www.linkedin.com/company/extralit-ai">
 <img src="https://img.shields.io/badge/linkedin-blue?logo=linkedin"/>
 </a>
-<a href="https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ">
+<a href="https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw">
 <img src="https://img.shields.io/badge/Slack-4A154B?&logo=slack&logoColor=white"/>
 </a>
 </p>
@@ -48,7 +48,7 @@ Whether you're conducting a systematic review, meta-analysis, or building a scie
 
 We're an open-source project built for researchers, by researchers. Here's how to get involved:
 
-- [Slack Community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ): Connect with other researchers and developers
+- [Slack Community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw): Connect with other researchers and developers
 - [Documentation](https://docs.extralit.ai): Learn how to use and contribute to Extralit
 - [Roadmap](https://github.com/orgs/extralit/projects/1/views/1): See what we're building and share your ideas
 
@@ -83,19 +83,44 @@ client = ex.Extralit(
 
 ### Create an extraction schema
 
-Define what data you want to extract:
+Define the fields the dataset will display and the questions annotators answer:
 
-TBD
+```python
+settings = ex.Settings(
+    fields=[
+        ex.TextField(name="text", title="Document Text"),
+        ex.ImageField(name="image", required=False),
+    ],
+    questions=[
+        ex.LabelQuestion(name="label", labels=["positive", "negative"]),
+        ex.TextQuestion(name="comment", use_markdown=False),
+    ],
+    guidelines="Classify the sentiment and provide a comment.",
+)
+```
 
 ### Add documents and start extraction
 
-TBD
+Create a dataset with the schema, then log records. Pre-filled values (e.g. from an LLM) become suggestions that annotators can accept or override.
+
+```python
+dataset = ex.Dataset(name="my_extraction_dataset", settings=settings).create()
+
+records = [
+    {"text": "This product is amazing!", "label": "positive"},
+    {"text": "Terrible experience.", "label": "negative"},
+]
+dataset.records.log(records)
+
+for record in dataset.records(with_suggestions=True):
+    print(record.id, record.fields)
+```
 
 Need more help? Check out our [detailed tutorials](https://docs.extralit.ai/latest/tutorials).
 
 ## 🥇 Contributors
 
-Want to contribute? Great! Check out our [contribution guide](https://docs.extralit.ai/latest/community/contributor) or join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ).
+Want to contribute? Great! Check out our [contribution guide](https://docs.extralit.ai/latest/community/contributor) or join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).
 
 <a href="https://github.com/extralit/extralit/graphs/contributors">
 <img src="https://contrib.rocks/image?repo=extralit/extralit" />

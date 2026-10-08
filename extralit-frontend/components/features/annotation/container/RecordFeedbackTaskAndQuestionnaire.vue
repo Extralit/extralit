@@ -1,5 +1,5 @@
 <template>
-  <BaseLoading v-if="$fetchState.pending || $fetchState.error" />
+  <BaseLoading v-if="pending || error" />
 
   <BulkAnnotation
     v-else-if="recordCriteria.committed.page.isBulkMode && recordCriteria.committed.isPending"
@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import { eventBus } from "~/v1/infrastructure/eventBus";
 import { useRecordFeedbackTaskViewModel } from "./useRecordFeedbackTaskViewModel";
 
 export default {
@@ -40,6 +41,8 @@ export default {
   },
   data() {
     return {
+      pending: true,
+      error: false,
       fetching: false,
       isDocumentPanelOn: false,
     };
@@ -58,10 +61,20 @@ export default {
       return this.record?.isSubmitted && this.record?.isModified;
     },
   },
-  async fetch() {
-    await this.onLoadRecords();
-  },
   methods: {
+    async loadInitialRecords() {
+      this.pending = true;
+      this.error = false;
+
+      try {
+        await this.onLoadRecords();
+      } catch (e) {
+        this.error = true;
+        throw e;
+      } finally {
+        this.pending = false;
+      }
+    },
     async onLoadRecords() {
       if (this.fetching) return Promise.resolve();
 
@@ -69,7 +82,7 @@ export default {
 
       await this.loadRecords(this.recordCriteria);
 
-      this.$nuxt.$emit("on-change-record-metadata", this.metadata);
+      eventBus.emit("on-change-record-metadata", this.metadata);
 
       this.fetching = false;
     },
@@ -82,7 +95,7 @@ export default {
 
       await this.paginateRecords(this.recordCriteria);
 
-      this.$nuxt.$emit("on-change-record-metadata", this.metadata);
+      eventBus.emit("on-change-record-metadata", this.metadata);
 
       this.fetching = false;
     },
@@ -130,13 +143,15 @@ export default {
     return useRecordFeedbackTaskViewModel(props);
   },
   mounted() {
-    this.$root.$on("on-change-record-page", this.onChangeRecordPage);
+    this.loadInitialRecords();
 
-    this.$root.$on("on-change-record-criteria-filter", this.onChangeRecordFilter);
+    eventBus.on("on-change-record-page", this.onChangeRecordPage);
+
+    eventBus.on("on-change-record-criteria-filter", this.onChangeRecordFilter);
   },
-  destroyed() {
-    this.$root.$off("on-change-record-page");
-    this.$root.$off("on-change-record-criteria-filter");
+  unmounted() {
+    eventBus.off("on-change-record-page");
+    eventBus.off("on-change-record-criteria-filter");
     this.$notification.clear();
   },
 };

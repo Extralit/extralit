@@ -2,24 +2,30 @@ import { shallowMount } from "@vue/test-utils";
 import HeaderFeedbackTask from "./HeaderFeedbackTask";
 import * as useRole from "~/v1/infrastructure/services/useRole";
 
+vi.mock("~/v1/infrastructure/services/useRoutes", () => ({
+  useRoutes: vi.fn(() => ({})),
+}));
+
 const options = {
-  stubs: [
-    "BaseTopbarBrand",
-    "BaseBreadcrumbs",
-    "BaseButton",
-    "DatasetSettingsIconFeedbackTask",
-    "UserAvatarTooltip",
-    "NuxtLink",
-  ],
-  propsData: {
+  global: {
+    stubs: [
+      "BaseTopbarBrand",
+      "BaseBreadcrumbs",
+      "BaseButton",
+      "DatasetSettingsIconFeedbackTask",
+      "UserAvatarTooltip",
+      "NuxtLink",
+    ],
+  },
+  props: {
     breadcrumbs: [
       { link: { name: "datasets" }, name: "Home" },
-      { link: { path: "/?workspace=recognai" }, name: "recognai" },
+      { link: { path: "/?workspace=extralit" }, name: "extralit" },
       {
         link: {
           name: null,
           params: {
-            workspace: "recognai",
+            workspace: "extralit",
             dataset: "imdb-single-label-all-records",
           },
         },
@@ -32,12 +38,12 @@ const options = {
 
 describe("HeaderFeedbackTask", () => {
   test("render the component", () => {
-    jest.spyOn(useRole, "useRole").mockReturnValue({
+    vi.spyOn(useRole, "useRole").mockReturnValue({
       isAdminOrOwnerRole: true,
     });
 
     const wrapper = shallowMount(HeaderFeedbackTask, options);
 
-    expect(wrapper.is(HeaderFeedbackTask)).toBeTruthy();
+    expect(wrapper.findComponent(HeaderFeedbackTask).exists()).toBeTruthy();
   });
 });

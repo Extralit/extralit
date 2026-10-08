@@ -45,6 +45,7 @@
 <script>
 export default {
   name: "SearchLabelComponent",
+  emits: ["input"],
   props: {
     value: {
       type: String,

@@ -737,59 +737,41 @@ const longAndShortQuestions = [
 ];
 
 export const mockQuestion = async (page: Page, datasetId: string) => {
-  await page.route(
-    `*/**/api/v1/datasets/${datasetId}/questions`,
-    async (route) => {
-      await route.fulfill({
-        json: {
-          items: questions,
-        },
-      });
-    }
-  );
+  await page.route(`*/**/api/v1/datasets/${datasetId}/questions`, async (route) => {
+    await route.fulfill({
+      json: {
+        items: questions,
+      },
+    });
+  });
 };
 
-export const mockQuestionWith12Ranking = async (
-  page: Page,
-  datasetId: string
-) => {
-  await page.route(
-    `*/**/api/v1/datasets/${datasetId}/questions`,
-    async (route) => {
-      await route.fulfill({
-        json: {
-          items: rankingQuestionWith12Slots,
-        },
-      });
-    }
-  );
+export const mockQuestionWith12Ranking = async (page: Page, datasetId: string) => {
+  await page.route(`*/**/api/v1/datasets/${datasetId}/questions`, async (route) => {
+    await route.fulfill({
+      json: {
+        items: rankingQuestionWith12Slots,
+      },
+    });
+  });
 };
 
 export const mockQuestionWithRating = async (page: Page, datasetId: string) => {
-  await page.route(
-    `*/**/api/v1/datasets/${datasetId}/questions`,
-    async (route) => {
-      await route.fulfill({
-        json: {
-          items: ratingQuestions,
-        },
-      });
-    }
-  );
+  await page.route(`*/**/api/v1/datasets/${datasetId}/questions`, async (route) => {
+    await route.fulfill({
+      json: {
+        items: ratingQuestions,
+      },
+    });
+  });
 };
 
-export const mockQuestionLongAndShortQuestions = async (
-  page: Page,
-  datasetId: string
-) => {
-  await page.route(
-    `*/**/api/v1/datasets/${datasetId}/questions`,
-    async (route) => {
-      await route.fulfill({
-        json: {
-          items: longAndShortQuestions,
-        },
-      });
-    }
-  );
+export const mockQuestionLongAndShortQuestions = async (page: Page, datasetId: string) => {
+  await page.route(`*/**/api/v1/datasets/${datasetId}/questions`, async (route) => {
+    await route.fulfill({
+      json: {
+        items: longAndShortQuestions,
+      },
+    });
+  });
 };

@@ -4,10 +4,10 @@ import { Metadata } from "../../entities/metadata/Metadata";
 import { Question } from "../../entities/question/Question";
 import { Suggestion } from "../../entities/question/Suggestion";
 import { Vector } from "../../entities/vector/Vector";
-import { IDatasetRepository } from "../../services/IDatasetRepository";
-import { IDatasetSettingStorage } from "../../services/IDatasetSettingStorage";
-import { IQuestionRepository } from "../../services/IQuestionRepository";
-import { RoleService } from "../../services/RoleService";
+import { type IDatasetRepository } from "../../services/IDatasetRepository";
+import { type IDatasetSettingStorage } from "../../services/IDatasetSettingStorage";
+import { type IQuestionRepository } from "../../services/IQuestionRepository";
+import { type RoleService } from "../../services/RoleService";
 import { FieldRepository, MetadataRepository, VectorRepository } from "~/v1/infrastructure/repositories";
 
 export class GetDatasetSettingsUseCase {

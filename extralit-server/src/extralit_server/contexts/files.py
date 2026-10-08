@@ -1,87 +1,165 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import hashlib
 import logging
-from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Any, BinaryIO
+import mimetypes
+import shutil
+from datetime import timedelta
+from typing import Any, BinaryIO
 from uuid import UUID
 
-from botocore.exceptions import ClientError
+import obstore
 from fastapi import HTTPException
+from obstore.exceptions import BaseError as ObjectStoreError
+from obstore.store import LocalStore, S3Store
 
 from extralit_server.api.schemas.v1.files import FileObjectResponse, ListObjectsResponse, ObjectMetadata
 from extralit_server.helpers import shared_resources
+from extralit_server.settings import settings
 
-if TYPE_CHECKING:
-    from types_aiobotocore_s3.client import S3Client
-
-EXCLUDED_VERSIONING_PREFIXES = ["pdf"]
-CHUNK_LENGTH_MB = 10 * 1024 * 1024
+# LocalStore cannot persist attributes (obstore raises NotImplementedError for `put_opts` with
+# attributes), so in local mode the content type has to be recovered from the key. These are the
+# extension-less prefixes minted below; everything else is guessed from the filename.
+_CONTENT_TYPE_BY_PREFIX = {
+    "pdf/": "application/pdf",
+    "thumbnails/": "image/png",
+    "layout/": "application/json",
+    "schemas/": "application/json",
+}
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def get_s3_client() -> "S3Client":
-    """Dependency function to get shared S3 client."""
-    s3_client = shared_resources.get("s3_client")
-    if s3_client is None:
-        from extralit_server.helpers import create_s3_client
+class ObjectStorage:
+    """One obstore store per workspace, each scoped to `{root}/{workspace}/`.
 
+    Every caller addresses objects by workspace name and a key under it; this is the only place that
+    knows whether that lands on a bucket prefix or a directory.
+    """
+
+    def __init__(self) -> None:
+        self.root = settings.storage_root
+        self._stores: dict[str, S3Store | LocalStore] = {}
+
+    @property
+    def signable(self) -> bool:
+        """Only S3 can presign; `LocalStore` is not a `SignCapableStore`."""
+        return self.root.remote
+
+    def for_workspace(self, workspace: str) -> S3Store | LocalStore:
+        # `LocalStore` happily accepts `..` in a prefix where `S3Store` rejects it, and the
+        # workspace arrives from a URL path segment, so the traversal guard has to be here.
+        if not workspace or workspace in (".", "..") or "/" in workspace or "\\" in workspace:
+            raise ValueError(f"Invalid workspace name: {workspace!r}")
+        store = self._stores.get(workspace)
+        if store is None:
+            store = self._build(workspace)
+            self._stores[workspace] = store
+        return store
+
+    def _prefix(self, workspace: str) -> str:
+        return f"{self.root.prefix}/{workspace}".strip("/")
+
+    def _build(self, workspace: str) -> S3Store | LocalStore:
+        if not self.root.remote:
+            return LocalStore(prefix=self.root.local_path / workspace, mkdir=True)
+
+        return S3Store(self.root.bucket, prefix=self._prefix(workspace), **self._s3_config())
+
+    def _s3_config(self) -> dict[str, Any]:
+        # Without keys obstore resolves credentials itself: IMDS, IRSA, ECS, or AWS_* env vars.
+        config: dict[str, Any] = {
+            "region": settings.s3_region or "us-east-1",
+            "virtual_hosted_style_request": False,
+            "client_options": {"allow_http": self.root.scheme == "http"},
+        }
+        if self.root.endpoint:
+            config["endpoint"] = self.root.endpoint
+        if settings.s3_access_key:
+            config["access_key_id"] = settings.s3_access_key
+            config["secret_access_key"] = settings.s3_secret_key
+        return config
+
+    def lance_uri(self, workspace: str, subdir: str) -> str:
+        """Where Lance datasets for a workspace live, addressed exactly like its objects."""
+        if not self.root.remote:
+            return str(self.root.local_path / workspace / subdir)
+        return f"s3://{self.root.bucket}/{self._prefix(workspace)}/{subdir}"
+
+    def lance_storage_options(self) -> dict[str, str] | None:
+        if not self.root.remote:
+            return None
+        options = {
+            "aws_region": settings.s3_region or "us-east-1",
+            "allow_http": str(self.root.scheme == "http").lower(),
+            "aws_virtual_hosted_style_request": "false",
+        }
+        if self.root.endpoint:
+            options["aws_endpoint"] = self.root.endpoint
+        if settings.s3_access_key:
+            options["aws_access_key_id"] = settings.s3_access_key
+            options["aws_secret_access_key"] = settings.s3_secret_key or ""
+        return options
+
+    async def healthy(self) -> bool:
+        """The root is reachable with the configured credentials."""
         try:
-            s3_client = await create_s3_client()
-            shared_resources["s3_client"] = s3_client
-        except ValueError as e:
-            raise HTTPException(status_code=500, detail=str(e)) from e
+            if not self.root.remote:
+                # A local root is reachable if it can exist; nothing has created it until the
+                # first workspace is written.
+                self.root.local_path.mkdir(parents=True, exist_ok=True)
+                return True
+            store = S3Store(self.root.bucket, prefix=self.root.prefix or None, **self._s3_config())
+            await store.list_with_delimiter_async()
+            return True
+        except Exception as e:
+            _LOGGER.warning(f"Storage root {settings.storage_url} is unreachable: {e}")
+            return False
 
-    return s3_client
+    def forget(self, workspace: str) -> None:
+        """Drop the cached store, so the next access rebuilds it (and remakes its directory)."""
+        self._stores.pop(workspace, None)
 
-
-async def get_file_chunk(
-    s3_client: "S3Client", bucket_name: str, key: str, chunk_length: int
-) -> AsyncGenerator[bytes, None]:
-    """Async generator to get file chunks for streaming."""
-    head = await s3_client.head_object(Bucket=bucket_name, Key=key)
-    content_length = head["ContentLength"]
-
-    for offset in range(0, content_length, chunk_length):
-        end = min(offset + chunk_length - 1, content_length - 1)
-        s3_file = await s3_client.get_object(Bucket=bucket_name, Key=key, Range=f"bytes={offset}-{end}")
-
-        async with s3_file["Body"] as stream:
-            yield await stream.read()
+    async def aclose(self) -> None:
+        self._stores.clear()
 
 
-async def _put_object_to_s3(
-    s3_client: "S3Client",
-    bucket: str,
-    key: str,
-    data: BinaryIO | bytes,
-    content_type: str,
-    metadata: dict[str, Any] | None = None,
-):
-    """Put object to S3."""
-    kwargs = {
-        "Bucket": bucket,
-        "Key": key,
-        "Body": data,
-        "ContentType": content_type,
-    }
-    if metadata:
-        kwargs["Metadata"] = metadata
+async def get_storage() -> ObjectStorage:
+    """Dependency function to get the shared object storage."""
+    storage = shared_resources.get("storage")
+    if storage is None:
+        storage = ObjectStorage()
+        shared_resources["storage"] = storage
 
-    return await s3_client.put_object(**kwargs)
+    return storage
+
+
+def content_type_of(key: str, attributes: Any = None) -> str:
+    declared = dict(attributes or {}).get("Content-Type")
+    if declared:
+        return declared
+
+    for prefix, content_type in _CONTENT_TYPE_BY_PREFIX.items():
+        if key.startswith(prefix):
+            return content_type
+
+    guessed, _ = mimetypes.guess_type(key)
+    return guessed or "application/octet-stream"
+
+
+def _user_metadata(attributes: Any = None) -> dict[str, str]:
+    return {key: value for key, value in dict(attributes or {}).items() if key != "Content-Type"}
+
+
+def _object_metadata(workspace: str, meta: Any, attributes: Any = None) -> ObjectMetadata:
+    key = meta["path"]
+    return ObjectMetadata(
+        workspace=workspace,
+        object_name=key,
+        etag=(meta["e_tag"] or "").strip('"') or None,
+        size=meta["size"],
+        last_modified=meta["last_modified"],
+        content_type=content_type_of(key, attributes),
+        metadata=_user_metadata(attributes),
+    )
 
 
 def compute_hash(data: bytes) -> str:
@@ -121,272 +199,190 @@ def get_thumbnail_s3_object_path(id: UUID | str) -> str:
     return object_path
 
 
-def get_proxy_document_url(bucket_name: str, object_path: str) -> str:
-    return f"/api/v1/file/{bucket_name}/{object_path}"
+def get_proxy_document_url(workspace: str, object_path: str) -> str:
+    return f"/api/v1/file/{workspace}/{object_path}"
 
 
-async def get_presigned_url_from_document_url(s3_client, document_url: str, expires: int = 3600) -> str:
-    """
-    Generate a presigned URL from a document URL by parsing the bucket_name and object_path.
+def split_document_url(document_url: str) -> tuple[str, str]:
+    """Split `/api/v1/file/{workspace}/{object}` back into workspace and key."""
+    prefix = "/api/v1/file/"
+    if not document_url.startswith(prefix):
+        raise ValueError(f"Invalid document URL format: {document_url}")
 
-    Args:
-        s3_client: aioboto3 S3 client
-        document_url: URL in format "/api/v1/file/{bucket_name}/{object_path}"
-        expires: Expiration time in seconds (default: 1 hour)
+    parts = document_url[len(prefix) :].split("/", 1)
+    if len(parts) != 2:
+        raise ValueError(f"Invalid document URL format: {document_url}")
 
-    Returns:
-        Presigned URL if successful, original URL if parsing fails
+    return parts[0], parts[1]
+
+
+async def get_presigned_url_from_document_url(storage: ObjectStorage, document_url: str, expires: int = 3600) -> str:
+    """Presign a `/api/v1/file/{workspace}/{object}` URL, valid for `expires` seconds.
+
+    Local storage cannot sign, so it keeps serving through the proxy route.
     """
     try:
-        # Parse the URL to extract bucket_name and object_path
-        # Expected format: "/api/v1/file/{bucket_name}/{object_path}"
-        if not document_url.startswith("/api/v1/file/"):
-            _LOGGER.warning(f"Invalid document URL format: {document_url}")
-            return document_url
+        workspace, object_path = split_document_url(document_url)
+    except ValueError:
+        _LOGGER.warning(f"Invalid document URL format: {document_url}")
+        return document_url
 
-        path_parts = document_url[13:].split("/", 1)  # 13 = len("/api/v1/file/")
-        if len(path_parts) != 2:
-            _LOGGER.warning(f"Invalid document URL format: {document_url}")
-            return document_url
+    if not storage.signable:
+        return document_url
 
-        bucket_name, object_path = path_parts
-
-        presigned_url = await s3_client.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": bucket_name, "Key": object_path},
-            ExpiresIn=expires,
+    try:
+        return await obstore.sign_async(
+            storage.for_workspace(workspace), "GET", object_path, timedelta(seconds=expires)
         )
-        return presigned_url
-
     except Exception as e:
         _LOGGER.error(f"Error generating presigned URL from document URL {document_url}: {e}")
         return document_url
 
 
 async def list_objects(
-    s3_client: "S3Client",
-    bucket: str,
+    storage: ObjectStorage,
+    workspace: str,
     prefix: str | None = None,
-    include_version=True,
     recursive=True,
     start_after: str | None = None,
 ) -> ListObjectsResponse:
-    """List objects in S3 bucket and return as ListObjectsResponse."""
+    """List objects in a workspace and return as ListObjectsResponse."""
+    store = storage.for_workspace(workspace)
     try:
-        kwargs = {"Bucket": bucket}
-        if prefix:
-            kwargs["Prefix"] = prefix
-        if not recursive:
-            kwargs["Delimiter"] = "/"
-
-        objects = []
-
-        if include_version:
-            # Use list_object_versions to get all versions of objects
-            version_kwargs = {"Bucket": bucket}
-            if prefix:
-                version_kwargs["Prefix"] = prefix
-            if start_after:
-                version_kwargs["KeyMarker"] = start_after
-            if not recursive:
-                version_kwargs["Delimiter"] = "/"
-
-            response = await s3_client.list_object_versions(**version_kwargs)
-
-            # Process versions
-            for version in response.get("Versions", []):
-                objects.append(
-                    ObjectMetadata(
-                        bucket_name=bucket,
-                        object_name=version.get("Key") or "",
-                        etag=version.get("ETag", "").strip('"'),
-                        size=version.get("Size"),
-                        last_modified=version.get("LastModified"),
-                        content_type="application/octet-stream",  # Default, would need head_object for actual
-                        version_id=version.get("VersionId"),
-                        is_latest=version.get("IsLatest", False),
-                        metadata={},
-                    )
-                )
-
-            # Process delete markers if needed
-            for delete_marker in response.get("DeleteMarkers", []):
-                objects.append(
-                    ObjectMetadata(
-                        bucket_name=bucket,
-                        object_name=delete_marker.get("Key") or "",
-                        etag="",  # Delete markers don't have ETags
-                        size=0,
-                        last_modified=delete_marker.get("LastModified"),
-                        content_type="application/octet-stream",
-                        version_id=delete_marker.get("VersionId"),
-                        is_latest=delete_marker.get("IsLatest", False),
-                        metadata={},
-                    )
-                )
+        if recursive:
+            metas = []
+            async for batch in store.list(prefix, offset=start_after):
+                metas.extend(batch)
         else:
-            # Use list_objects_v2 for current versions only
+            result = await store.list_with_delimiter_async(prefix)
+            metas = list(result["objects"])
             if start_after:
-                kwargs["StartAfter"] = start_after
+                metas = [meta for meta in metas if meta["path"] > start_after]
 
-            response = await s3_client.list_objects_v2(**kwargs)
-
-            for obj in response.get("Contents", []):
-                objects.append(
-                    ObjectMetadata(
-                        bucket_name=bucket,
-                        object_name=obj.get("Key") or "",
-                        etag=obj.get("ETag", "").strip('"'),
-                        size=obj.get("Size"),
-                        last_modified=obj.get("LastModified"),
-                        content_type="application/octet-stream",  # Default, would need head_object for actual
-                        is_latest=True,  # All objects from list_objects_v2 are latest versions
-                        metadata={},
-                    )
-                )
-
-        return ListObjectsResponse(objects=objects)
-    except ClientError as e:
-        _LOGGER.error(f"Error listing objects in bucket {bucket}: {e}")
-        raise HTTPException(status_code=404, detail=f"Bucket '{bucket}' not found")
+        # Attributes are not returned by listing APIs, so the content type is key-derived here.
+        return ListObjectsResponse(objects=[_object_metadata(workspace, meta) for meta in metas])
+    except FileNotFoundError:
+        _LOGGER.error(f"Workspace '{workspace}' not found")
+        raise HTTPException(status_code=404, detail=f"Workspace '{workspace}' not found")
+    except ObjectStoreError as e:
+        _LOGGER.error(f"Error listing objects in workspace {workspace}: {e}")
+        raise HTTPException(status_code=404, detail=f"Workspace '{workspace}' not found")
 
 
-async def get_object(
-    s3_client: "S3Client",
-    bucket: str,
-    object: str,
-    version_id: str | None = None,
-    include_versions=False,
-) -> FileObjectResponse:
-    """Get object from S3 and return as FileObjectResponse."""
+async def get_object(storage: ObjectStorage, workspace: str, object: str) -> FileObjectResponse:
+    """Get an object and return it as a FileObjectResponse whose `response` streams."""
     try:
-        # Get object metadata first
-        head_kwargs = {"Bucket": bucket, "Key": object}
-        if version_id:
-            head_kwargs["VersionId"] = version_id
-        head_response = await s3_client.head_object(**head_kwargs)
-
-        # Get the actual object
-        get_kwargs = {"Bucket": bucket, "Key": object}
-        if version_id:
-            get_kwargs["VersionId"] = version_id
-        get_response = await s3_client.get_object(**get_kwargs)
-
-        metadata = ObjectMetadata(
-            bucket_name=bucket,
-            object_name=object,
-            etag=head_response["ETag"].strip('"'),
-            size=head_response["ContentLength"],
-            last_modified=head_response["LastModified"],
-            content_type=head_response.get("ContentType", "application/octet-stream"),
-            version_id=head_response.get("VersionId") or version_id,
-            metadata=head_response.get("Metadata", {}),
-        )
-
-        versions = None
-        if include_versions:
-            versions = await list_objects(s3_client, bucket, prefix=object, include_version=include_versions)
-
+        result = await storage.for_workspace(workspace).get_async(object)
         return FileObjectResponse(
-            response=get_response["Body"],
-            metadata=metadata,
-            versions=versions,
+            response=result,
+            metadata=_object_metadata(workspace, result.meta, result.attributes),
         )
+    except FileNotFoundError:
+        _LOGGER.error(f"Object {object} not found in workspace {workspace}")
+        raise HTTPException(status_code=404, detail=f"Object {object} not found in workspace {workspace}")
+    except ObjectStoreError as e:
+        _LOGGER.error(f"Error getting object {object} from workspace {workspace}: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "NoSuchKey":
-            _LOGGER.error(f"Object {object} not found in bucket {bucket}")
-            raise HTTPException(status_code=404, detail=f"Object {object} not found in bucket {bucket}")
-        else:
-            _LOGGER.error(f"Error getting object {object} from bucket {bucket}: {e}")
-            raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
+
+async def _put(
+    storage: ObjectStorage,
+    workspace: str,
+    key: str,
+    data: bytes,
+    content_type: str,
+    metadata: dict[str, Any] | None = None,
+):
+    attributes = {"Content-Type": content_type, **{k: str(v) for k, v in (metadata or {}).items()}}
+    store = storage.for_workspace(workspace)
+    if isinstance(store, LocalStore):
+        # LocalStore rejects attributes outright; the content type is recovered from the key.
+        return await store.put_async(key, data)
+
+    return await store.put_async(key, data, attributes=attributes)
 
 
 async def put_object(
-    s3_client: "S3Client",
-    bucket: str,
+    storage: ObjectStorage,
+    workspace: str,
     object: str,
     data: BinaryIO | bytes | str,
     content_type: str = "application/octet-stream",
     metadata: dict[str, Any] | None = None,
 ) -> ObjectMetadata:
-    """Put object to S3 and return ObjectMetadata."""
+    """Put an object and return its ObjectMetadata."""
+    if isinstance(data, str):
+        data = data.encode("utf-8")
+    elif hasattr(data, "read"):
+        data = data.read()
+
     try:
-        # Prepare data
-        if isinstance(data, str):
-            data = data.encode("utf-8")
-        elif hasattr(data, "read"):  # File-like object
-            data = data.read()
-
-        # Upload to S3
-        await _put_object_to_s3(s3_client, bucket, object, data, content_type, metadata)
-
-        # Get metadata for response
-        head_response = await s3_client.head_object(Bucket=bucket, Key=object)
+        result = await _put(storage, workspace, object, data, content_type, metadata)
 
         return ObjectMetadata(
-            bucket_name=bucket,
+            workspace=workspace,
             object_name=object,
-            etag=head_response["ETag"].strip('"'),
-            size=head_response["ContentLength"],
-            last_modified=head_response["LastModified"],
-            content_type=head_response.get("ContentType", content_type),
-            metadata=head_response.get("Metadata", {}),
+            etag=(result["e_tag"] or "").strip('"') or None,
+            size=len(data),
+            content_type=content_type,
+            metadata=metadata or {},
         )
-
-    except ClientError as e:
-        _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {e}")
+    except ObjectStoreError as e:
+        _LOGGER.error(f"Error putting object {object} in workspace {workspace}: {e}")
         raise HTTPException(status_code=500, detail=f"Error uploading file: {e!s}")
     except Exception as e:
-        _LOGGER.error(f"Error putting object {object} in bucket {bucket}: {e}")
+        _LOGGER.error(f"Error putting object {object} in workspace {workspace}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
-async def delete_object(s3_client, bucket: str, object: str, version_id: str | None = None):
-    """Delete object from S3."""
+async def delete_object(storage: ObjectStorage, workspace: str, object: str):
+    """Delete an object. Deleting a key that is already gone is not an error."""
     try:
-        kwargs = {"Bucket": bucket, "Key": object}
-        if version_id:
-            kwargs["VersionId"] = version_id
-        await s3_client.delete_object(**kwargs)
-    except ClientError as e:
-        _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
+        await storage.for_workspace(workspace).delete_async(object)
+    except FileNotFoundError:
+        pass
+    except ObjectStoreError as e:
+        _LOGGER.error(f"Error deleting object {object} from workspace {workspace}: {e}")
         raise HTTPException(status_code=500, detail=f"Error deleting file: {e!s}")
     except Exception as e:
-        _LOGGER.error(f"Error deleting object {object} from bucket {bucket}: {e}")
+        _LOGGER.error(f"Error deleting object {object} from workspace {workspace}: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
 
 
-async def create_bucket(
-    s3_client: "S3Client",
-    workspace_name: str,
-    excluded_prefixes: list[str] = EXCLUDED_VERSIONING_PREFIXES,
-):
-    """Create S3 bucket."""
+async def delete_workspace_objects(storage: ObjectStorage, workspace: str) -> None:
+    """Remove everything under the workspace prefix."""
+    store = storage.for_workspace(workspace)
+    async for batch in store.list():
+        await store.delete_async([meta["path"] for meta in batch])
+    if isinstance(store, LocalStore):
+        shutil.rmtree(store.prefix, ignore_errors=True)
+        storage.forget(workspace)
+
+
+async def delete_document_artifacts(storage: ObjectStorage, workspace: str, document_id: UUID | str) -> None:
+    """Remove every artifact of a document: PDF, thumbnail, layout JSON and layout rows.
+
+    Best effort — the DB rows are already gone by the time this runs, so a storage hiccup leaves a
+    leaked object rather than a document the caller cannot delete. A leak here is negligible and can
+    be ignored: the objects are unreachable and layout rows only survive until the document is
+    re-parsed or a sweeper runs.
+    """
+    from extralit_server.contexts.ocr import storage as layout_storage
+
+    for object_path in (get_pdf_s3_object_path(document_id), get_thumbnail_s3_object_path(document_id)):
+        try:
+            await delete_object(storage, workspace, object_path)
+        except Exception as e:
+            _LOGGER.warning(f"Could not delete {object_path} for document {document_id}: {e}")
+
     try:
-        await s3_client.create_bucket(Bucket=workspace_name)
-
-        await s3_client.put_bucket_versioning(
-            Bucket=workspace_name,
-            VersioningConfiguration={
-                "Status": "Enabled",
-                "MFADelete": "Disabled",
-            },
-        )
-
-    except ClientError as e:
-        if e.response["Error"]["Code"] in ["BucketAlreadyOwnedByYou", "BucketAlreadyExists"]:
-            pass  # Bucket already exists, that's fine
-        else:
-            _LOGGER.error(f"Error creating bucket {workspace_name}: {e}")
-            raise HTTPException(status_code=500, detail=f"Error creating bucket: {e!s}")
+        await layout_storage.delete_layout(storage, workspace, document_id)
     except Exception as e:
-        _LOGGER.error(f"Error creating bucket {workspace_name}: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")
+        _LOGGER.warning(f"Could not delete layout artifacts for document {document_id}: {e}")
 
 
 async def put_document_file(
-    s3_client: "S3Client",
+    storage: ObjectStorage,
     workspace_name: str,
     document_id: UUID,
     file_data: bytes,
@@ -395,26 +391,15 @@ async def put_document_file(
     metadata: dict[str, Any] | None = None,
 ) -> str | None:
     """
-    Upload a document file to S3 with deduplication.
-
-    Args:
-        s3_client: aioboto3 S3 client
-        workspace_name: Name of the workspace bucket
-        document_id: UUID of the document
-        file_data: File data as bytes
-        filename: Original filename
-        metadata: Optional metadata to store with the file
+    Upload a document file with deduplication.
 
     Returns:
-        S3 object URL if file was uploaded, None if file already exists with same hash
+        The proxy object URL if the file was uploaded, None if an identical file already exists.
     """
     object_path = get_pdf_s3_object_path(document_id)
 
-    # Check if file already exists with same hash
     try:
-        existing_files = await list_objects(
-            s3_client, workspace_name, prefix=object_path, include_version=False, recursive=False
-        )
+        existing_files = await list_objects(storage, workspace_name, prefix=object_path, recursive=False)
 
         should_upload = True
         if existing_files.objects:
@@ -427,14 +412,7 @@ async def put_document_file(
                 should_upload = False
 
         if should_upload:
-            await _put_object_to_s3(
-                s3_client,
-                workspace_name,
-                object_path,
-                file_data,
-                content_type,
-                metadata,
-            )
+            await _put(storage, workspace_name, object_path, file_data, content_type, metadata)
 
             return get_proxy_document_url(workspace_name, object_path)
 
@@ -445,58 +423,16 @@ async def put_document_file(
         raise HTTPException(status_code=500, detail=f"Error uploading document: {e!s}")
 
 
-async def download_file_content(s3_client, document_url: str) -> bytes:
-    """
-    Download file content from a document URL.
-
-    Args:
-        s3_client: aioboto3 S3 client
-        document_url: URL in format "/api/v1/file/{bucket_name}/{object_path}"
-
-    Returns:
-        File content as bytes
-    """
-    # Parse URL to get bucket and object path
-    if not document_url.startswith("/api/v1/file/"):
-        raise ValueError(f"Invalid document URL format: {document_url}")
-
-    url_parts = document_url.replace("/api/v1/file/", "").split("/", 1)
-    if len(url_parts) != 2:
-        raise ValueError(f"Invalid document URL format: {document_url}")
-
-    bucket_name, object_path = url_parts
+async def download_file_content(storage: ObjectStorage, document_url: str) -> bytes:
+    """Download the whole body behind a `/api/v1/file/{workspace}/{object}` URL."""
+    workspace, object_path = split_document_url(document_url)
 
     try:
-        response = await s3_client.get_object(Bucket=bucket_name, Key=object_path)
-        return await response["Body"].read()
-    except ClientError as e:
+        result = await storage.for_workspace(workspace).get_async(object_path)
+        return bytes(await result.bytes_async())
+    except FileNotFoundError:
+        _LOGGER.error(f"File not found: {document_url}")
+        raise HTTPException(status_code=404, detail=f"File not found: {document_url}")
+    except ObjectStoreError as e:
         _LOGGER.error(f"Error downloading file content from {document_url}: {e}")
         raise HTTPException(status_code=404, detail=f"File not found: {document_url}")
-
-
-async def delete_bucket(s3_client, workspace_name: str):
-    """Delete S3 bucket and all its contents."""
-    try:
-        # First, delete all objects in the bucket
-        response = await s3_client.list_objects_v2(Bucket=workspace_name)
-
-        if "Contents" in response:
-            for obj in response["Contents"]:
-                try:
-                    await s3_client.delete_object(Bucket=workspace_name, Key=obj["Key"])
-                except ClientError as remove_err:
-                    _LOGGER.warning(f"Error removing object {obj['Key']} during bucket delete: {remove_err}")
-
-        # Then delete the bucket itself
-        await s3_client.delete_bucket(Bucket=workspace_name)
-        _LOGGER.info(f"Successfully deleted bucket: {workspace_name}")
-
-    except ClientError as e:
-        if e.response["Error"]["Code"] in ["NoSuchBucket", "NotImplemented"]:
-            pass  # Bucket doesn't exist, that's fine
-        else:
-            _LOGGER.error(f"Error deleting S3 bucket {workspace_name}: {e}")
-            raise HTTPException(status_code=500, detail=f"Error deleting bucket: {e!s}")
-    except Exception as e:
-        _LOGGER.error(f"Error deleting S3 bucket {workspace_name}: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e!s}")

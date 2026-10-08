@@ -1,6 +1,6 @@
 import { Criteria } from "../common/Criteria";
-import { RangeValue } from "../common/Filter";
-import { MetadataSearch } from "./MetadataFilter";
+import { type RangeValue } from "../common/Filter";
+import { type MetadataSearch } from "./MetadataFilter";
 
 export class MetadataCriteria extends Criteria {
   public value: MetadataSearch[] = [];

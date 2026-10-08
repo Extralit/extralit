@@ -1,4 +1,4 @@
-import { ILocalStorageService, Options } from "~/v1/domain/services/ILocalStorageService";
+import { type ILocalStorageService, type Options } from "~/v1/domain/services/ILocalStorageService";
 
 const STORAGE_KEY = "extralit";
 
@@ -31,7 +31,9 @@ export const useLocalStorage = (): ILocalStorageService => {
           [key]: value,
         })
       );
-    } catch { }
+    } catch {
+      /* ignore: localStorage may be unavailable or full */
+    }
   };
 
   const pop = <T>(key: Options) => {

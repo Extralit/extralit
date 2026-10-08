@@ -25,6 +25,7 @@
 </template>
 
 <script lang="ts">
+import { type BreadcrumbItem } from "~/v1/infrastructure/types/breadcrumb";
 import { useRoutes } from "~/v1/infrastructure/services";
 
 export default {
@@ -34,7 +35,7 @@ export default {
       type: String,
     },
     breadcrumbs: {
-      type: Array,
+      type: Array as () => BreadcrumbItem[],
       default: () => [],
     },
     showSettingButton: {

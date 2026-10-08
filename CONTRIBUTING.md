@@ -8,7 +8,7 @@ Everyone is welcome to contribute, and we value everybody's contribution. Code c
 - Contribute code improvements or bug fixes
 - Improve documentation
 - Share your experiences using Extralit
-- Answer questions in the [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ)
+- Answer questions in the [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw)
 - Spread the word about Extralit in blog posts, social media, or presentations
 
 ## Ground rules
@@ -24,7 +24,7 @@ Please follow these guidelines when contributing:
 ## Contribution workflow
 
 1. Check our [project board](https://github.com/orgs/extralit/projects/2/views/1) for current tasks
-2. Join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ) to discuss your contribution
+2. Join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw) to discuss your contribution
 3. Follow the complete workflow in our [contributor guide](https://docs.extralit.ai/latest/community/contributor/)
 
 The contributor guide covers:
@@ -37,6 +37,14 @@ The contributor guide covers:
 
 ## Development setup
 
-Refer to our [development setup documentation](https://docs.extralit.ai/latest/getting_started/development_setup.md) for instructions on setting up your local environment.
+Refer to our [development setup documentation](https://docs.extralit.ai/latest/getting_started/development_setup/) for instructions on setting up your local environment, and the per-component `CLAUDE.md` files (`extralit-server/CLAUDE.md`, `extralit-frontend/CLAUDE.md`, `extralit/CLAUDE.md`) for component-specific commands.
+
+### Choose a dev environment
+
+Pick the environment that matches what you're working on:
+
+- **Tilt** (`Tiltfile`) — Recommended for active full-stack development. Brings up server + frontend + dependencies with live reload. Use this when iterating on backend and frontend together.
+- **`docker-compose.yaml`** — Quickest way to run a complete stack against fixed images. Use when you need a reproducible environment to demo or test against, but don't need code-level reload.
+- **Bare `uv sync` + `npm run dev`** — Fastest inner loop when only one component is in scope. See the per-component `CLAUDE.md` files.
 
 Thank you for contributing to Extralit! 🚀

@@ -26,9 +26,6 @@
 </template>
 
 <script>
-import "assets/icons/info";
-import "assets/icons/suggestion";
-
 export default {
   name: "QuestionHeader",
   props: {

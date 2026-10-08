@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import contextlib
 import glob
 import inspect
@@ -25,7 +11,6 @@ from pathlib import Path
 from typing import Annotated
 from urllib.parse import urlencode
 
-import backoff
 import redis
 from brotli_asgi import BrotliMiddleware
 from fastapi import FastAPI, Query, Request
@@ -34,14 +19,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.datastructures import URL
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse, RedirectResponse
+from tenacity import retry, stop_after_delay, wait_exponential
 
 from extralit_server import helpers
 from extralit_server._version import __version__ as extralit_version
 from extralit_server.api.routes import api_v1
 from extralit_server.constants import DEFAULT_API_KEY, DEFAULT_PASSWORD, DEFAULT_USERNAME
-from extralit_server.contexts import accounts, files
+from extralit_server.contexts import accounts
 from extralit_server.database import get_async_db
-from extralit_server.helpers import create_s3_client, shared_resources
+from extralit_server.helpers import shared_resources
 from extralit_server.jobs.queues import REDIS_CONNECTION
 from extralit_server.logging import configure_logging
 from extralit_server.models import User, Workspace
@@ -61,14 +47,12 @@ async def app_lifespan(app: FastAPI):
     configure_redis()
 
     try:
-        await create_s3_client()
         track_server_startup()
         yield
     finally:
-        # Clean up S3 client if it exists
-        s3_client = shared_resources.get("s3_client")
-        if s3_client:
-            await s3_client.__aexit__(None, None, None)
+        storage = shared_resources.get("storage")
+        if storage:
+            await storage.aclose()
         shared_resources.clear()
 
 
@@ -264,7 +248,7 @@ def configure_app_statics(app: FastAPI):
         BASE_URL_VAR_NAME = "@@baseUrl@@"
         temp_dir = tempfile.mkdtemp()
         new_folder = shutil.copytree(path_from, temp_dir + "/statics")
-        base_url = helpers.remove_suffix(settings.base_url or "", suffix="/")
+        base_url = (settings.base_url or "").removesuffix("/")
         for extension in ["*.js", "*.html"]:
             for file in glob.glob(
                 f"{new_folder}/**/{extension}",
@@ -317,12 +301,6 @@ async def _create_oauth_allowed_workspaces(db: AsyncSession):
     for allowed_workspace in security_settings.oauth.allowed_workspaces:
         if await Workspace.get_by(db, name=allowed_workspace.name) is None:
             _LOGGER.info(f"Creating workspace with name {allowed_workspace.name!r}")
-            try:
-                client = await files.get_s3_client()
-                await files.create_bucket(client, allowed_workspace.name)
-            except Exception as e:
-                _LOGGER.error(f"Failed to create bucket for workspace {allowed_workspace.name!r}: {e}")
-
             await accounts.create_workspace(db, {"name": allowed_workspace.name})
 
 
@@ -361,7 +339,7 @@ async def configure_search_engine():
         logging.getLogger("opensearch").setLevel(logging.ERROR)
         logging.getLogger("opensearch_transport").setLevel(logging.ERROR)
 
-    @backoff.on_exception(backoff.expo, ConnectionError, max_time=60)
+    @retry(stop=stop_after_delay(60), wait=wait_exponential(multiplier=1, min=1, max=60))
     async def ping_search_engine():
         async for search_engine in get_search_engine():
             if not await search_engine.ping():
@@ -376,7 +354,7 @@ async def configure_search_engine():
 
 
 def configure_redis():
-    @backoff.on_exception(backoff.expo, ConnectionError, max_time=60)
+    @retry(stop=stop_after_delay(60), wait=wait_exponential(multiplier=1, min=1, max=60))
     def ping_redis():
         try:
             REDIS_CONNECTION.ping()

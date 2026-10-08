@@ -1,5 +1,5 @@
 <template>
-  <RatingShortcuts>
+  <RatingShortcuts :question="question">
     <div class="wrapper">
       <QuestionHeaderComponent :question="question" />
 

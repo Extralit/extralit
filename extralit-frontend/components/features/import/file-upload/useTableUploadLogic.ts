@@ -3,7 +3,7 @@
  * Gradual migration to Composition API while maintaining existing structure
  */
 
-import { ref, watch, onMounted, computed } from "@nuxtjs/composition-api";
+import { ref, watch, onMounted, computed } from "vue";
 import { useResolve } from "ts-injecty";
 import type { BibliographyData, CsvData } from "./types";
 import type { CSVConfig } from "~/v1/domain/services/IFileParsingService";
@@ -20,7 +20,8 @@ export const useTableUploadLogic = (
   const uploaded = ref(false);
   const hasError = ref(false);
   const errorMessage = ref("");
-  
+  const fileInput = ref<HTMLInputElement | null>(null);
+
   const data = ref<BibliographyData>({
     fileName: "",
     dataframeData: null,
@@ -43,13 +44,13 @@ export const useTableUploadLogic = (
   const getDropzoneIcon = computed(() => {
     if (hasError.value) return "danger";
     if (uploaded.value) return "check";
-    return "document";
+    return "import";
   });
 
   const getDropzoneText = computed(() => {
     if (hasError.value) return "Error parsing bibliography file";
-    if (uploaded.value) return "Upload BibTeX File";
-    return "Upload BibTeX File";
+    if (uploaded.value) return "Drop file here";
+    return "Drop file here";
   });
 
   // Drag and drop handlers
@@ -65,7 +66,7 @@ export const useTableUploadLogic = (
   const handleDrop = (event: DragEvent) => {
     event.preventDefault();
     dragOver.value = false;
-    
+
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) {
       processFile(files[0]);
@@ -74,10 +75,7 @@ export const useTableUploadLogic = (
 
   // File input handling
   const triggerFileInput = () => {
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-    }
+    fileInput.value?.click();
   };
 
   const handleFileSelect = (event: Event) => {
@@ -92,7 +90,8 @@ export const useTableUploadLogic = (
   const emitUpdate = () => {
     if (emit) {
       emit("update", {
-        isValid: uploaded.value && !hasError.value && data.value.dataframeData && data.value.dataframeData.data.length > 0,
+        isValid:
+          uploaded.value && !hasError.value && data.value.dataframeData && data.value.dataframeData.data.length > 0,
         fileName: data.value.fileName,
         dataframeData: data.value.dataframeData,
         rawContent: data.value.rawContent,
@@ -194,10 +193,7 @@ export const useTableUploadLogic = (
         return;
       }
 
-      data.value.dataframeData = await fileService.parseCSVWithConfig(
-        csvData.value.rawData,
-        csvConfig.value
-      );
+      data.value.dataframeData = await fileService.parseCSVWithConfig(csvData.value.rawData, csvConfig.value);
 
       showCsvColumnSelection.value = false;
       uploaded.value = true;
@@ -269,7 +265,11 @@ export const useTableUploadLogic = (
   };
 
   const initializeWithExistingData = () => {
-    if (props.initialData && (props.initialData.fileName || (props.initialData.dataframeData && props.initialData.dataframeData.data.length > 0))) {
+    if (
+      props.initialData &&
+      (props.initialData.fileName ||
+        (props.initialData.dataframeData && props.initialData.dataframeData.data.length > 0))
+    ) {
       data.value = {
         fileName: props.initialData.fileName || "",
         dataframeData: props.initialData.dataframeData || null,
@@ -319,6 +319,7 @@ export const useTableUploadLogic = (
     handleDrop,
     triggerFileInput,
     handleFileSelect,
+    fileInput,
     processFile,
     processCsvWithConfig,
     emitUpdate,

@@ -5,7 +5,7 @@ import BaseFeedbackErrorComponent from "./base-feedback-error/BaseFeedbackError.
 let wrapper = null;
 const options = {
   components: { BaseFeedbackErrorComponent },
-  propsData: {
+  props: {
     feedbackInput: {
       message: null,
       buttonLabels: null,
@@ -19,7 +19,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("BaseFeedbackComponent", () => {

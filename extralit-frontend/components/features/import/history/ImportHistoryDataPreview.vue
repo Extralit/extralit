@@ -12,9 +12,7 @@
       <div class="error-content">
         <h4>Failed to Load Data</h4>
         <p>{{ errorMessage }}</p>
-        <BaseButton variant="outline" @click="$emit('retry')">
-          Retry
-        </BaseButton>
+        <BaseButton variant="outline" @click="$emit('retry')"> Retry </BaseButton>
       </div>
     </div>
 
@@ -40,7 +38,6 @@
           @row-click="handleRowClick"
         />
       </div>
-
     </div>
 
     <!-- Empty state -->
@@ -53,11 +50,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/danger";
-import "assets/icons/document";
-import "assets/icons/search";
-import "assets/icons/check";
-import "assets/icons/close";
 import { ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 
 interface ColumnComponent {
@@ -125,13 +117,15 @@ export default {
     },
 
     summary() {
-      return this.importHistoryDetails?.summary || {
-        total_documents: 0,
-        add_count: 0,
-        update_count: 0,
-        skip_count: 0,
-        failed_count: 0,
-      };
+      return (
+        this.importHistoryDetails?.summary || {
+          total_documents: 0,
+          add_count: 0,
+          update_count: 0,
+          skip_count: 0,
+          failed_count: 0,
+        }
+      );
     },
 
     tableData(): PreviewRecord[] {
@@ -241,7 +235,7 @@ export default {
       }
 
       try {
-        const dateObj = typeof date === 'string' ? new Date(date) : date;
+        const dateObj = typeof date === "string" ? new Date(date) : date;
 
         // Check if the date is valid
         if (isNaN(dateObj.getTime())) {
@@ -262,9 +256,7 @@ export default {
     },
 
     formatColumnTitle(fieldName: string): string {
-      return fieldName
-        .replace(/([A-Z])/g, " $1")
-        .trim();
+      return fieldName.replace(/([A-Z])/g, " $1").trim();
     },
 
     getColumnWidth(fieldName: string, fieldType: string): number {
@@ -292,18 +284,18 @@ export default {
     booleanFormatter(cell: any): string {
       const value = cell.getValue();
       const boolValue = Boolean(value);
-      return `<span class="boolean-cell boolean-${boolValue}">${boolValue ? '✓' : '✗'}</span>`;
+      return `<span class="boolean-cell boolean-${boolValue}">${boolValue ? "✓" : "✗"}</span>`;
     },
 
     numberFormatter(cell: any): string {
       const value = cell.getValue();
-      if (value == null || value === '') return '-';
+      if (value == null || value === "") return "-";
       return `<span class="number-cell">${Number(value).toLocaleString()}</span>`;
     },
 
     urlFormatter(cell: any): string {
       const value = cell.getValue();
-      if (!value || typeof value !== 'string') return '-';
+      if (!value || typeof value !== "string") return "-";
       return `<a href="${value}" target="_blank" class="url-link">${value}</a>`;
     },
 
@@ -453,7 +445,6 @@ export default {
       font-size: 0.9rem;
     }
   }
-
 }
 
 // Controls
@@ -466,7 +457,6 @@ export default {
   overflow: auto;
   width: 100%;
 }
-
 
 // Table cell styles (applied globally to override Tabulator)
 :deep(.tabulator) {

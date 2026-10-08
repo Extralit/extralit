@@ -1,7 +1,9 @@
 name: Build Extralit server package
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.sha }}
+  # Keyed on the ref, not the sha: a release pushes `main`, `release` and the tag at the same
+  # commit, so a sha-keyed group would make those runs cancel each other at random.
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 on:
@@ -10,15 +12,18 @@ on:
   push:
     branches:
       - main
-      - develop
-      - releases/**
+      - release
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
     paths:
       - "extralit-server/**"
+      - "openapi/v1.json"
       - ".github/workflows/extralit-server.yml"
 
   pull_request:
     paths:
       - "extralit-server/**"
+      - "openapi/v1.json"
       - ".github/workflows/extralit-server.yml"
 
 permissions:
@@ -27,7 +32,6 @@ permissions:
 jobs:
   build:
     name: Build `extralit-server` package
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
 
     defaults:
@@ -82,7 +86,7 @@ jobs:
 
     env:
       HF_HUB_DISABLE_TELEMETRY: 1
-      EXTRALIT_S3_ENDPOINT: http://localhost:9000
+      EXTRALIT_STORAGE_URL: http://localhost:9000/extralit
       EXTRALIT_S3_ACCESS_KEY: minioadmin
       EXTRALIT_S3_SECRET_KEY: minioadmin
 
@@ -91,32 +95,35 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
           pyproject-file: "extralit-server/pyproject.toml"
+          python-version: "3.12"
           enable-cache: true
           cache-local-path: ~/.cache/uv
-          cache-dependency-glob: "extralit-server/pdm.lock"
-
-      - name: Install PDM
-        run: uv tool install pdm
+          cache-dependency-glob: "extralit-server/uv.lock"
 
       - name: Install dependencies
-        run: |
-          pdm config use_uv true
-          pdm config python.install_root "$(uv python dir)"
-          pdm install --dev
+        run: uv sync --dev --extra postgresql
+
+      # The server never creates buckets; `EXTRALIT_STORAGE_URL` points at one that must exist.
+      - name: Create storage bucket
+        env:
+          AWS_ACCESS_KEY_ID: minioadmin
+          AWS_SECRET_ACCESS_KEY: minioadmin
+          AWS_DEFAULT_REGION: us-east-1
+        run: aws --endpoint-url http://localhost:9000 s3 mb s3://extralit
 
       - name: Run tests 📈
         id: run-tests
         continue-on-error: true
         env:
           HF_TOKEN_EXTRALIT_INTERNAL_TESTING: ${{ secrets.HF_TOKEN_EXTRALIT_INTERNAL_TESTING }}
+          EXTRALIT_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/extralit
+          EXTRALIT_ELASTICSEARCH: http://localhost:9200
+          EXTRALIT_SEARCH_ENGINE: elasticsearch
         run: |
-          EXTRALIT_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/extralit
-          EXTRALIT_ELASTICSEARCH=http://localhost:9200
-          EXTRALIT_SEARCH_ENGINE=elasticsearch
-          pdm test-cov tests/unit
+          uv run pytest tests/unit --cov=extralit_server --cov-report=term --cov-report=xml --verbosity=0 --disable-warnings
 
       - name: Upload test coverage
         if: always()
@@ -137,26 +144,20 @@ jobs:
           flags: extralit-server
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # This section is used to build the frontend and copy the build files to the server.
-      # In the future, static files should be downloaded after the frontend is built and uploaded as an artifact.
-      - name: Setup Node.js for frontend dependencies
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      # The server no longer builds the frontend from source. The live UI is published to Vercel
+      # by extralit-frontend.yml; here we just bake a prebuilt SPA into the wheel as the bundled
+      # fallback UI. Always sourced from `main` (see the action for why).
+      - name: Download prebuilt frontend statics
+        uses: ./.github/actions/download-frontend-artifact
 
-      - name: Install frontend dependencies
-        working-directory: extralit-frontend
-        env:
-          BASE_URL: "@@baseUrl@@"
-          DIST_FOLDER: ./dist
-        run: |
-          npm install
-          npm run build
-      # End of frontend build section
       - name: Build package
         run: |
-          cp -r ../extralit-frontend/dist src/extralit_server/static
-          pdm build
+          set -euo pipefail
+          # Bake the compiled SPA into the wheel's static dir. Fail loudly if it's missing or
+          # empty, otherwise the server ships with no statics and 404s every route.
+          cp -r ../extralit-frontend/.output/public src/extralit_server/static
+          test -f src/extralit_server/static/index.html
+          uv build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -167,28 +168,26 @@ jobs:
   build_docker_images:
     name: Build docker images
     uses: ./.github/workflows/extralit-server.build-docker-images.yml
-    if: |
-      github.ref == 'refs/heads/main'
-      || github.ref == 'refs/heads/develop'
-      || contains(github.ref, 'releases/')
-      || github.event_name == 'workflow_dispatch'
-      || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && !github.event.pull_request.draft)
+    # Branch pushes (`main`, `release`) and manual dispatch only. PRs get tests here and nothing
+    # else — their preview images are built by extralit-frontend.build-push-dev.yml on
+    # `ready_for_review`. Tags only publish to PyPI; the image was already built from `release`.
+    if: github.ref_type == 'branch' && github.event_name != 'pull_request'
     needs:
       - build
     with:
-      is_release: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
-      publish_latest: ${{ github.ref == 'refs/heads/main' }}
+      is_release: ${{ github.ref_name == 'release' }}
+      publish_latest: ${{ github.ref_name == 'release' }}
     secrets: inherit
 
   # This job will publish extralit-server python package into PyPI repository
   publish_release:
     name: Publish Release
     runs-on: ubuntu-latest
-    if: ${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
+    # Tags are the only thing that publishes. release.yml creates them; never push one by hand.
+    if: startsWith(github.ref, 'refs/tags/v')
 
     needs:
       - build
-      - build_docker_images
 
     defaults:
       run:
@@ -205,39 +204,22 @@ jobs:
       - name: Checkout Code 🛎
         uses: actions/checkout@v4
 
-      - name: Update repo visualizer
-        uses: githubocto/repo-visualizer@0.7.1
-        with:
-          root_path: "extralit-server/"
-          excluded_paths: "dist,build,node_modules,docs,tests,.swm,assets,.github,package-lock.json,pdm.lock"
-          excluded_globs: "*.spec.js;**/*.{png,jpg,svg,md};**/!(*.module).ts,**/__pycache__/,**/__mocks__/,LICENSE*,**/.gitignore,**/*.egg-info/,**/.*/"
-          output_file: "repo-visualizer.svg"
-          should_push: false
-
-      - name: Upload repo visualizer diagram as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: repo-visualizer
-          path: repo-visualizer.svg
-          retention-days: 10
-
       - name: Download python package
         uses: actions/download-artifact@v4
         with:
           name: extralit-server
           path: extralit-server/dist
 
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
         with:
-          python-version-file: extralit-server/pyproject.toml
-          cache-dependency-path: extralit-server/pdm.lock
-          cache: true
+          pyproject-file: "extralit-server/pyproject.toml"
+          python-version: "3.12"
 
       - name: Read package info
         run: |
-          PACKAGE_VERSION=$(pdm show --version)
-          PACKAGE_NAME=$(pdm show --name)
+          PACKAGE_VERSION=$(python3 "$GITHUB_WORKSPACE/scripts/bump_version.py" check)
+          PACKAGE_NAME="extralit-server"
           echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
           echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
           echo "$PACKAGE_NAME==$PACKAGE_VERSION"
@@ -245,7 +227,7 @@ jobs:
       - name: Publish Package to PyPI test environment 🥪
         continue-on-error: true
         run: |
-          pdm publish --no-build --repository testpypi --username __token__ --password ${{ secrets.AR_TEST_PYPI_API_TOKEN }}
+          uv publish --index-url https://test.pypi.org/legacy/ --token ${{ secrets.AR_TEST_PYPI_API_TOKEN }} dist/*
 
       - name: Test Installing 🍿
         continue-on-error: true
@@ -253,6 +235,5 @@ jobs:
           pip install --index-url https://test.pypi.org/simple --no-deps  $PACKAGE_NAME==$PACKAGE_VERSION
 
       - name: Publish Package to PyPI 🥩
-        if: github.ref == 'refs/heads/main'
         run: |
-          pdm publish --no-build --username __token__ --password ${{ secrets.AR_PYPI_API_TOKEN }}
+          uv publish --token ${{ secrets.AR_PYPI_API_TOKEN }} dist/*

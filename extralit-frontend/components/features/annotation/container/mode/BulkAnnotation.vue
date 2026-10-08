@@ -164,6 +164,7 @@
   </span>
 </template>
 <script>
+import { eventBus } from "~/v1/infrastructure/eventBus";
 import { useBulkAnnotationViewModel } from "./useBulkAnnotationViewModel";
 export default {
   props: {
@@ -348,7 +349,7 @@ export default {
     "recordCriteria.page.client.many"() {
       this.recordCriteria.page.goToFirst();
 
-      this.$root.$emit("on-change-record-criteria-filter", this.recordCriteria);
+      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
     },
     isSelectedAll(value) {
       if (!value) {

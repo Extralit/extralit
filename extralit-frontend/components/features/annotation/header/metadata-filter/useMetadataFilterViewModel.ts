@@ -1,4 +1,4 @@
-import { ref } from "vue-demi";
+import { ref } from "vue";
 import { Metadata } from "~/v1/domain/entities/metadata/Metadata";
 import { MetadataFilterList } from "~/v1/domain/entities/metadata/MetadataFilter";
 import { useFeatureToggle } from "~/v1/infrastructure/services";

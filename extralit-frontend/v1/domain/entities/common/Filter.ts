@@ -31,7 +31,10 @@ export abstract class Filter {
 }
 
 export class FilterWithOption extends Filter {
-  constructor(public readonly name: string, public readonly options: OptionForFilter[] = []) {
+  constructor(
+    public readonly name: string,
+    public readonly options: OptionForFilter[] = []
+  ) {
     super();
   }
 

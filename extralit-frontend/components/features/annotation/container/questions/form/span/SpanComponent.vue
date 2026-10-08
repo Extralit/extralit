@@ -20,7 +20,6 @@
 </template>
 
 <script>
-import "assets/icons/danger";
 export default {
   name: "SpanComponent",
   props: {

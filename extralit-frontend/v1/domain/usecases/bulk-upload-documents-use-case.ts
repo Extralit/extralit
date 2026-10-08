@@ -2,7 +2,7 @@
  * Use case for bulk document upload with sequential batch processing
  */
 
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import type { DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
 
 // Bulk upload request structure
@@ -23,7 +23,7 @@ export interface DocumentsBulkResponse {
 }
 
 export class BulkUploadDocumentsUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async execute(confirmedDocuments: Record<string, DocumentMetadata>, files: File[]): Promise<DocumentsBulkResponse> {
     // Create file mapping for quick lookup

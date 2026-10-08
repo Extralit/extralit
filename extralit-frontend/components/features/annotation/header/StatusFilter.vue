@@ -3,7 +3,7 @@
     v-if="options.length"
     class="filter-status"
     :options="options"
-    :selected-option="selectedOption"
+    :selected-option="modelValue"
     @change="onChangeOption"
     aria-label="Filter Records by Status"
     aria-controls="dropdown-menu"
@@ -15,14 +15,11 @@ import { RecordStatus } from "~/v1/domain/entities/record/RecordStatus";
 
 export default {
   props: {
-    selectedOption: {
+    modelValue: {
       type: String,
     },
   },
-  model: {
-    prop: "selectedOption",
-    event: "change",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       options: [
@@ -56,7 +53,7 @@ export default {
   },
   methods: {
     onChangeOption(option) {
-      this.$emit("change", option);
+      this.$emit("update:modelValue", option);
     },
   },
 };

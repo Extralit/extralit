@@ -28,8 +28,6 @@
 </template>
 
 <script>
-import "assets/icons/chevron-right";
-import "assets/icons/chevron-down";
 export default {
   props: {
     isExpanded: {
@@ -60,6 +58,12 @@ export default {
   &__header {
     overflow: visible;
     color: var(--fg-secondary);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $base-space $base-space * 2;
+    @include font-size(13px);
 
     &__container {
       width: 100%;
@@ -72,12 +76,6 @@ export default {
       }
     }
 
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: $base-space $base-space * 2;
-    @include font-size(13px);
     :deep(p) {
       text-transform: uppercase;
     }

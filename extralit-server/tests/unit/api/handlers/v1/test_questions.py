@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
@@ -53,17 +39,17 @@ if TYPE_CHECKING:
                 "description": "New Description",
                 "settings": {"type": "text", "use_markdown": True},
             },
-            {"type": "text", "use_markdown": True, "use_table": False},
+            {"type": "text", "use_markdown": True, "use_table": False, "columns": None},
         ),
         (
             TextQuestionFactory,
             {"description": None, "settings": {"type": "text"}},
-            {"type": "text", "use_markdown": False, "use_table": False},
+            {"type": "text", "use_markdown": False, "use_table": False, "columns": None},
         ),
         (
             TextQuestionFactory,
             {"name": "New Name", "required": True, "dataset_id": str(uuid4()), "settings": {"type": "text"}},
-            {"type": "text", "use_markdown": False, "use_table": False},
+            {"type": "text", "use_markdown": False, "use_table": False, "columns": None},
         ),
         (
             RatingQuestionFactory,
@@ -440,7 +426,7 @@ async def test_delete_question(async_client: "AsyncClient", db: "AsyncSession", 
         "title": "title",
         "description": "description",
         "required": False,
-        "settings": {"type": "text", "use_markdown": False, "use_table": False},
+        "settings": {"type": "text", "use_markdown": False, "use_table": False, "columns": None},
         "dataset_id": str(question.dataset_id),
         "inserted_at": question.inserted_at.isoformat(),
         "updated_at": question.updated_at.isoformat(),

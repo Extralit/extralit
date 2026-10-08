@@ -6,9 +6,14 @@
         <p class="form__title" v-text="$t('login.title')" />
         <LoginInput v-model="username" :name="$t('login.username')" type="text" :autofocus="true" autocomplete="on" />
         <LoginInput v-model="password" :name="$t('login.password')" type="password" autocomplete="on" />
-        <base-button type="submit" :disabled="!isButtonEnabled" class="form__button primary full-width">{{
-          $t("button.login")
-        }}</base-button>
+        <base-button type="submit" :disabled="!isButtonEnabled" class="form__button primary full-width">
+          <template v-if="isLoading">
+            {{ $t("button.logging_in") }}
+          </template>
+          <template v-else>
+            {{ $t("button.login") }}
+          </template>
+        </base-button>
         <p v-if="error" class="form__error">{{ formattedError }}</p>
       </form>
 
@@ -28,6 +33,7 @@ export default {
       username: "",
       password: "",
       hasAuthToken: false,
+      isLoading: false,
     };
   },
   components: {
@@ -43,11 +49,14 @@ export default {
 
       if (username && password) {
         this.hasAuthToken = true;
+        this.isLoading = true;
 
         try {
           await this.loginUser({ username, password });
         } catch {
           this.hasAuthToken = false;
+        } finally {
+          this.isLoading = false;
         }
       }
     } catch {
@@ -61,7 +70,7 @@ export default {
       }
     },
     isButtonEnabled() {
-      return !!this.username && !!this.password;
+      return !!this.username && !!this.password && !this.isLoading;
     },
   },
   methods: {
@@ -69,6 +78,8 @@ export default {
       await this.login(username, password);
     },
     async onLoginUser() {
+      this.isLoading = true;
+      this.error = undefined;
       try {
         await this.loginUser({
           username: this.username,
@@ -76,6 +87,8 @@ export default {
         });
       } catch (err) {
         this.error = err;
+      } finally {
+        this.isLoading = false;
       }
     },
   },

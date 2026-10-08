@@ -87,6 +87,29 @@ List all workspaces you have access to:
 extralit workspaces list
 ```
 
+### Diagnosing Workspace Issues
+
+Run health checks on a workspace to identify and fix common issues:
+
+```bash
+# Run diagnostics with automatic fixes
+extralit workspaces --name my-workspace doctor --autofix
+
+# Run diagnostics without fixing issues (informational only)
+extralit workspaces --name my-workspace doctor --no-autofix
+```
+
+The doctor command checks:
+- **Storage root**: The configured `EXTRALIT_STORAGE_URL` is reachable
+- **RQ worker pool**: Tests connectivity to the background job queue (informational)
+- **Elasticsearch indexes**: Checks if dataset indexes exist (informational)
+
+Use this command when:
+- Setting up a new workspace to verify configuration
+- Troubleshooting upload or storage issues
+- After environment changes or migrations
+- Regular health monitoring
+
 ## Document Management
 
 ### Importing Documents

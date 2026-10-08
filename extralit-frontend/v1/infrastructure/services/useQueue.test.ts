@@ -1,7 +1,7 @@
 import { useQueue } from "./useQueue";
 
 describe("Queue should", () => {
-  test("execute each element in a queue synchronously", (done) => {
+  test("execute each element in a queue synchronously", (done: () => void) => {
     let current = 0;
     const queue = useQueue();
 

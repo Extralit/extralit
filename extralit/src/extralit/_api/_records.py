@@ -1,23 +1,8 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import builtins
 from typing import Optional, Union
 from uuid import UUID
 
 import httpx
-from typing_extensions import deprecated
 
 from extralit._api._base import ResourceAPI
 from extralit._exceptions import api_error_handler
@@ -137,29 +122,6 @@ class RecordsAPI(ResourceAPI[RecordModel]):
         json_items = response_json["items"]
         total = response_json["total"]
         return [(self._model_from_json(item["record"]), item["query_score"]) for item in json_items], total
-
-    @api_error_handler
-    @deprecated("Use `bulk_create` or `bulk_upsert` instead")
-    def create_many(self, dataset_id: UUID, records: builtins.list[RecordModel]) -> None:
-        record_dicts = [record.model_dump() for record in records]
-        response = self.http_client.post(
-            url=f"/api/v1/datasets/{dataset_id}/records",
-            json={"items": record_dicts},
-        )
-        response.raise_for_status()
-        self._log_message(message=f"Created {len(records)} records in dataset {dataset_id}")
-        # TODO: Once server returns the records, return them here
-
-    @api_error_handler
-    @deprecated("Use `bulk_create` or `bulk_upsert` instead")
-    def update_many(self, dataset_id: UUID, records: builtins.list[RecordModel]) -> None:
-        record_dicts = [record.model_dump() for record in records]
-        response = self.http_client.patch(
-            url=f"/api/v1/datasets/{dataset_id}/records",
-            json={"items": record_dicts},
-        )
-        response.raise_for_status()
-        self._log_message(message=f"Updated {len(records)} records in dataset {dataset_id}")
 
     @api_error_handler
     def delete_many(self, dataset_id: UUID, records: builtins.list[RecordModel]) -> None:

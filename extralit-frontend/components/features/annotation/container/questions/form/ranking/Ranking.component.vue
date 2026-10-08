@@ -5,15 +5,15 @@
     <DndSelectionComponent
       :ranking="ranking"
       :suggestion="question.suggestion"
+      :is-focused="isFocused"
       @on-reorder="onChanged"
-      :isFocused="isFocused"
       @on-focus="onFocus"
     />
   </div>
 </template>
 
 <script>
-import { adaptQuestionsToSlots } from "./ranking-adapter";
+import { adaptQuestionsToSlots } from "@/components/base/inputs/ranking/ranking-adapter";
 
 export default {
   name: "RankingComponent",

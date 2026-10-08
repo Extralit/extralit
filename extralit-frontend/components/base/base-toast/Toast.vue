@@ -75,6 +75,10 @@ export default {
       type: Function,
       default: async () => {},
     },
+    destroy: {
+      type: Function,
+      default: undefined,
+    },
     queue: Boolean,
     pauseOnHover: {
       type: Boolean,
@@ -149,10 +153,10 @@ export default {
   },
   mounted() {
     this.showNotice();
-    eventBus.$on("toast.clear", this.close);
+    eventBus.on("toast.clear", this.close);
   },
-  beforeDestroy() {
-    eventBus.$off("toast.clear", this.close);
+  beforeUnmount() {
+    eventBus.off("toast.clear", this.close);
   },
   methods: {
     setupContainer() {
@@ -186,8 +190,9 @@ export default {
       this.isActive = false;
       // Timeout for the animation complete before destroying
       setTimeout(() => {
-        this.$destroy();
         removeElement(this.$el);
+        // Vue 3: unmount the programmatically-created app (see base-toast/api.ts).
+        this.destroy?.();
       }, 150);
     },
     showNotice() {
@@ -381,7 +386,7 @@ $toast-colors: map-merge(
   transition: opacity 150ms ease-out;
 }
 
-.fade-enter,
+.fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }

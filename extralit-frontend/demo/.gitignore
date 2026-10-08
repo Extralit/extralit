@@ -1,0 +1,9 @@
+# Generated per run — see README. Committing these would let a stale composition render
+# against a fresh recording.
+video/src/data.ts
+video/public/
+video/out/
+video/node_modules/
+
+# Default seed-manifest location when --output is not passed.
+demo-seed.json

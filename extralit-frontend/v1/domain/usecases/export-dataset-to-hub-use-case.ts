@@ -1,7 +1,7 @@
 import { Dataset } from "../entities/dataset/Dataset";
-import { DatasetExportSettings } from "../entities/dataset/DatasetExport";
-import { IDatasetRepository } from "../services/IDatasetRepository";
-import { ILocalStorageService } from "../services/ILocalStorageService";
+import { type DatasetExportSettings } from "../entities/dataset/DatasetExport";
+import { type IDatasetRepository } from "../services/IDatasetRepository";
+import { type ILocalStorageService } from "../services/ILocalStorageService";
 
 export class ExportDatasetToHubUseCase {
   constructor(

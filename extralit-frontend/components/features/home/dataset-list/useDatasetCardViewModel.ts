@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { onBeforeMount, ref } from "@nuxtjs/composition-api";
+import { onBeforeMount, ref } from "vue";
 import { GetDatasetProgressUseCase } from "@/v1/domain/usecases/get-dataset-progress-use-case";
 import { Progress } from "~/v1/domain/entities/dataset/Progress";
 import { useRoutes } from "@/v1/infrastructure/services";

@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { onBeforeMount, ref } from "vue-demi";
+import { onBeforeMount, ref } from "vue";
 import { Field } from "~/v1/domain/entities/field/Field";
 import { Metadata } from "~/v1/domain/entities/metadata/Metadata";
 import { Question } from "~/v1/domain/entities/question/Question";
@@ -37,7 +37,9 @@ export const useDatasetsFiltersViewModel = ({ recordCriteria }: { recordCriteria
   const loadFields = async () => {
     try {
       datasetFields.value = await getFieldsUseCase.execute(recordCriteria.datasetId);
-    } catch {}
+    } catch {
+      /* best-effort: leave datasetFields empty if loading fails */
+    }
   };
 
   onBeforeMount(() => {

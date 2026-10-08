@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 API_KEY_HEADER_NAME = "X-Extralit-Api-Key"
 WORKSPACE_HEADER_NAME = "X-Extralit-Workspace"
 
@@ -28,6 +14,9 @@ DEFAULT_API_KEY = "extralit.apikey"
 DEFAULT_DATABASE_SQLITE_TIMEOUT = 5
 
 DEFAULT_DATABASE_POSTGRESQL_SCHEME = "postgresql+asyncpg"
+# Lower defaults for compatibility with connection poolers like Supabase/PgBouncer
+# Supabase Nano: ~15 connections, Small: ~60 connections in Session mode
+# With multiple workers, keep individual pool sizes small
 DEFAULT_DATABASE_POSTGRESQL_POOL_SIZE = 15
 DEFAULT_DATABASE_POSTGRESQL_MAX_OVERFLOW = 10
 

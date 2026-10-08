@@ -9,8 +9,7 @@
                 "Vue.volar",
                 "bradlc.vscode-tailwindcss",
                 "mrmlnc.vscode-scss",
-                "sibiraj-s.vscode-scss-formatter",
-                "esbenp.prettier-vscode",
+                "oxc.oxc-vscode",
                 "ms-vscode.live-server",
                 "usernamehw.errorlens",
                 "charliermarsh.ruff",
@@ -20,6 +19,9 @@
                 "workbench.colorTheme": "Default Light+",
                 "editor.fontSize": 14,
                 "editor.formatOnSave": true,
+                "[javascript][typescript][vue][json][jsonc][css][scss][markdown][html]": {
+                    "editor.defaultFormatter": "oxc.oxc-vscode"
+                },
                 "files.exclude": {
                     "**/.git": true,
                     "**/node_modules": true,

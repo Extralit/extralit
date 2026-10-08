@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from collections.abc import Awaitable, Callable
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
@@ -99,6 +85,7 @@ class TestSuiteRecords:
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [],
             "vectors": {},
@@ -121,6 +108,7 @@ class TestSuiteRecords:
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [
                 {
@@ -153,6 +141,7 @@ class TestSuiteRecords:
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [
                 {
                     "id": str(user_response.id),
@@ -185,6 +174,7 @@ class TestSuiteRecords:
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [],
             "vectors": {vector_settings.name: vector.value},
@@ -287,6 +277,7 @@ class TestSuiteRecords:
                 "extra-metadata": "yes",
             },
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [
                 {
@@ -344,6 +335,7 @@ class TestSuiteRecords:
             "fields": {"text": "Updated text", "sentiment": "positive"},
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [],
             "vectors": {},
@@ -375,6 +367,7 @@ class TestSuiteRecords:
             "fields": {"text": "Updated text"},
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [],
             "vectors": {},
@@ -427,6 +420,7 @@ class TestSuiteRecords:
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [],
             "vectors": {},
@@ -456,6 +450,7 @@ class TestSuiteRecords:
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [],
             "vectors": {},
@@ -492,6 +487,7 @@ class TestSuiteRecords:
                 "terms-metadata-property": ["a", "b", "c"],
             },
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [],
             "vectors": {},
@@ -521,6 +517,7 @@ class TestSuiteRecords:
             "fields": {"text": "This is a text", "sentiment": "neutral"},
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "responses": [],
             "suggestions": [],
             "vectors": {},
@@ -1634,6 +1631,7 @@ class TestSuiteRecords:
             "fields": record.fields,
             "metadata": None,
             "external_id": record.external_id,
+            "reference": record.reference,
             "dataset_id": str(record.dataset_id),
             "inserted_at": record.inserted_at.isoformat(),
             "updated_at": record.updated_at.isoformat(),

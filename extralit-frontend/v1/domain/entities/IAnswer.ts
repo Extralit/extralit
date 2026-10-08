@@ -24,14 +24,9 @@ export type TableAnswer = {
     metadata?: {
       schemaName?: string;
       etag?: string;
-      version_id?: string;
       last_modified?: Date;
-      version_tag?: string;
-      is_latest?: boolean;
     };
     schemaName?: string;
-    version_id?: string;
-    is_latest?: boolean;
   };
   reference?: string;
   validation?: {

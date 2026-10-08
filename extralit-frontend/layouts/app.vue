@@ -1,16 +1,20 @@
 <template>
   <div :lang="currentLang">
-    <Nuxt v-if="!$slots.default" />
     <slot />
   </div>
 </template>
 
 <script>
+import { useOnline } from "@vueuse/core";
+
 export default {
   name: "Index",
+  setup() {
+    return { online: useOnline() };
+  },
   computed: {
     imOffline() {
-      return this.$nuxt.isOffline;
+      return !this.online;
     },
     currentLang() {
       return this.$i18n.locale;

@@ -1,4 +1,3 @@
-import { useContext, useRoute, useRouter } from "@nuxtjs/composition-api";
 import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
 
 type KindOfParam =
@@ -28,17 +27,18 @@ export const ROUTES = {
 };
 
 export const useRoutes = () => {
-  const context = useContext();
   const router = useRouter();
   const route = useRoute();
 
   const getPreviousRoute = (): string => {
-    return context.from.value.fullPath;
+    // Nuxt 2's context.from is unavailable in Nuxt 4; the previous route is
+    // tracked by vue-router's history state (the "back" entry).
+    return (router.options.history.state.back as string) ?? "";
   };
 
   const previousRouteMatchWith = (value: string): boolean => {
     const previousRoute = getPreviousRoute();
-    const currentRoute = route.value.fullPath;
+    const currentRoute = route.fullPath;
 
     if (previousRoute !== currentRoute) return previousRoute.includes(value);
 
@@ -74,7 +74,7 @@ export const useRoutes = () => {
   };
 
   const setQueryParams = async (...params: QueryParam[]) => {
-    const actualQuery = route.value.query;
+    const actualQuery = route.query;
     const funcToUse = Object.keys(actualQuery).length ? "push" : "replace";
     let newQuery = {};
 
@@ -88,7 +88,7 @@ export const useRoutes = () => {
     });
 
     await router[funcToUse]({
-      path: route.value.path,
+      path: route.path,
       query: {
         ...newQuery,
       },
@@ -114,14 +114,14 @@ export const useRoutes = () => {
   };
 
   const getQueryParams = <T>(key: KindOfParam): T => {
-    const value = route.value.query[key] as string;
+    const value = route.query[key] as string;
     if (!value) return;
 
     return decodeURIComponent(value) as T;
   };
 
   const getParams = () => {
-    return route.value.params;
+    return route.params;
   };
 
   const go = (
@@ -143,7 +143,7 @@ export const useRoutes = () => {
   };
 
   const getQuery = () => {
-    return route.value.query;
+    return route.query;
   };
 
   const goBack = () => {

@@ -1,22 +1,10 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from extralit_server.contexts.ocr.parsers.registry import list_parsers
 
 
 class StartWorkflowRequest(BaseModel):
@@ -28,6 +16,16 @@ class StartWorkflowRequest(BaseModel):
     force: bool = Field(False, description="Force restart if workflow already exists")
     wait: bool = Field(True, description="Wait for job to finish before returning")
     timeout: Optional[int] = Field(60, description="Max seconds to wait if wait=True")
+    layout_parser: Optional[str] = Field(
+        None, description="Layout parser to run (e.g. `pdf_inspector`, `pymupdf`); omit to skip layout extraction"
+    )
+
+    @field_validator("layout_parser")
+    @classmethod
+    def _known_parser(cls, value: Optional[str]) -> Optional[str]:
+        if value is not None and value not in list_parsers():
+            raise ValueError(f"unknown layout parser {value!r}; available: {list_parsers()}")
+        return value
 
 
 class StartWorkflowResponse(BaseModel):

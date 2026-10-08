@@ -1,4 +1,4 @@
-import { OAuthParams, OAuthProvider, ProviderType } from "../entities/oauth/OAuthProvider";
+import { type OAuthParams, OAuthProvider, type ProviderType } from "../entities/oauth/OAuthProvider";
 
 export interface IOAuthRepository {
   getProviders(): Promise<OAuthProvider[]>;

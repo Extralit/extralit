@@ -33,7 +33,7 @@
       v-else-if="question.settings.use_markdown && !isEditionModeActive"
       class="textarea--markdown"
       :markdown="question.answer.value"
-      @click.native="onFocus"
+      @click="onFocus"
       role="textbox"
     />
     <ContentEditableFeedbackTask

@@ -37,41 +37,6 @@ The Codespaces will automatically:
 
 Then, select from three different development environments through devcontainers, each optimized for different purposes:
 
-=== "Tilt on K8s (Recommended)"
-    This environment provides full-stack development with Kubernetes and live-reloading capabilities:
-
-    ```bash
-    # Initialize the Kubernetes cluster and deploy all services
-    tilt up
-    ```
-
-    Then, simply monitor the deployment in the Tilt UI. The URL will be available in the "Ports" tab, usually http://localhost:10350, or another URL in your VSCode Ports tab.
-
-    **Advanced Configuration:** You can customize your deployment by setting environment variables:
-
-    ```bash
-    # Use external database instead of deploying PostgreSQL
-    export EXTRALIT_DATABASE_URL="postgresql://user:password@external-host:5432/dbname"
-
-    # Use external S3-compatible storage instead of deploying MinIO
-    export S3_ENDPOINT="https://your-s3-endpoint"
-    export S3_ACCESS_KEY="your-access-key"
-    export S3_SECRET_KEY="your-secret-key"
-
-    # Use external OpenAI API key
-    export OPENAI_API_KEY="your-openai-api-key"
-
-    # Use external Weaviate instance
-    export WCS_HTTP_URL="https://your-weaviate-instance"
-    export WCS_GRPC_URL="grpc://your-weaviate-instance:50051"
-    export WCS_API_KEY="your-weaviate-api-key"
-
-    # Start Tilt with custom configuration
-    tilt up
-    ```
-
-    To edit the environment variables used by all services, go to `examples/deployments/k8s/extralit-configs.yaml`.
-
 === "Docker-Compose"
     This environment uses Docker Compose for a simpler, leaner setup without Kubernetes:
 
@@ -82,10 +47,10 @@ Then, select from three different development environments through devcontainers
 
     # Install server dependencies
     cd extralit-server
-    pdm install
+    uv sync
 
     # Start the server in development mode
-    pdm run server-dev
+    uv run python -m extralit_server server-dev
     ```
 
 === "UI/UX Design"
@@ -103,13 +68,79 @@ Then, select from three different development environments through devcontainers
     API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
     ```
 
+=== "Setup with Supabase database"
+
+For a persistent **PostgreSQL database**, Supabase can be used as the backend service. Supabase Storage (S3-compatible) can also be used if the workflow requires file storage.
+
+1. Create a Supabase Project
+    - Go to https://supabase.com
+    - Create a new project.
+    - After the project is created, open Project Settings -> Database
+    - Copy the **Session pooler connection string**.
+
+2. Configure the Database Environment Variable
+
+    Update the backend environment variables before starting `server-dev`:
+
+    ```bash
+    # Use Supabase PostgreSQL (Session pooler)
+    unset EXTRALIT_DATABASE_URL
+    export EXTRALIT_DATABASE_URL="postgresql+asyncpg://<user>:<password>@<session-pooler-host>:6543/<database>?ssl=require"
+    ```
+    You can find the values in Supabase Dashboard -> Settings -> Database -> Connection String
+
+3. Install Backend Dependencies
+
+    If installation fails on PostgreSQL-related dependencies in Github Codespaces, install server dependencies without the PostgreSQL extra and then add `asyncpg` explicitly:
+
+    ```bash
+    cd extralit-server
+    uv sync
+    uv pip install asyncpg
+    ```
+
+4. Initialize Python Environment
+
+    Install the development dependencies for the Python SDK.
+
+    ```bash
+    cd extralit
+    uv sync
+    ```
+    Verify the package loads correctly:
+    ```
+    uv run python -c "import extralit; print('ok')"
+    ```
+5. Start the backend and frontend in separate terminals:
+
+    ```bash
+    # Terminal 1: backend
+    cd extralit-server
+    uv run python -m extralit_server server-dev
+    ```
+
+    ```bash
+    # Terminal 2: frontend
+    cd extralit-frontend
+    npm install
+    API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
+    ```
+6. Optional: Initialize Database Tables
+
+    If the required tables do not yet exist in Supabase when starting the extralit server, you can initialize them by running the script:
+    ```
+    uv run alembic -c src/extralit_server/alembic.ini upgrade head
+    ```
+    This will trigger table creation with alembic schema migrations.
+
+
 ### 3. Development workflow*
 
     - **Backend Development**: Changes to `extralit-server/src/extralit_server/` or `extralit/src/extralit/` are automatically updated if Tilt is running
     - **Python SDK packages**
       ```bash
       cd extralit
-      pdm install
+      uv sync
       ```
     - **Frontend Development**: For frontend live-reloading:
       ```bash
@@ -147,19 +178,19 @@ cd extralit
 
 ### 2. Set Up Python Environment
 
-We recommend using PDM for package management:
+We recommend using uv for package management:
 
 ```bash
-# Install PDM if not already installed
-pip install pdm uv
+# Install uv if not already installed
+pip install uv
 
 # Install server dependencies
 cd extralit-server
-pdm install
+uv sync
 
 # Install client dependencies
 cd ../extralit
-pdm install
+uv sync
 ```
 
 ### 3. Build the Frontend
@@ -214,9 +245,9 @@ docker compose up -d
 
 ```bash
 cd extralit-server
-pdm run migrate
-pdm run cli database users create_default
-pdm run server
+uv run alembic -c src/extralit_server/alembic.ini upgrade head
+uv run python -m extralit_server cli database users create_default
+uv run python -m extralit_server server
 ```
 
 ### 7. Access the Web Interface
@@ -281,7 +312,7 @@ To build and run the Extralit Server using Docker, follow these steps:
 
 ```bash
 cd extralit-server
-pdm build && cp -r dist/ docker/server/
+uv build && cp -r dist/ docker/server/
 ```
 
 ```bash
@@ -336,15 +367,15 @@ pre-commit install
 In addition, run the following scripts to check the code formatting and linting:
 
 ```sh
-pdm run format
-pdm run lint
+uv run ruff format
+uv run ruff check
 ```
 
 ??? tip "Running linting, formatting, and tests"
     You can run all the checks at once by using the following command:
 
     ```sh
-    pdm run all
+    uv run ruff format && uv run ruff check && uv run pytest tests --disable-warnings
     ```
 
 ## Documentation Development
@@ -378,7 +409,7 @@ If database migrations fail:
 ```bash
 # Reset the database
 rm -rf ~/.extralit/extralit-dev.db
-pdm run migrate
+uv run alembic -c src/extralit_server/alembic.ini upgrade head
 ```
 
 ### Frontend Build Issues
@@ -419,5 +450,5 @@ After setting up your development environment:
 
 For more information on using Extralit, see the [Quickstart Guide](quickstart.md).
 
-For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA).
+For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).
 

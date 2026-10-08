@@ -1,5 +1,5 @@
 import { Dataset } from "../../entities/dataset/Dataset";
-import { IDatasetRepository } from "../../services/IDatasetRepository";
+import { type IDatasetRepository } from "../../services/IDatasetRepository";
 
 export class UpdateDatasetSettingUseCase {
   constructor(private readonly datasetRepository: IDatasetRepository) {}

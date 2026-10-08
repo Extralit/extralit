@@ -15,4 +15,4 @@ Before you begin, ensure you have the following:
 - Kubernetes cluster (for scalable deployment)
 - Access to a PostgreSQL database
 - Access to an Elasticsearch instance
-- MinIO or S3-compatible object storage
+- MinIO or S3-compatible object storage (optional; defaults to local disk under `EXTRALIT_HOME_PATH/storage`)

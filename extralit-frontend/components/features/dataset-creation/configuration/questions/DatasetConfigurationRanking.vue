@@ -32,10 +32,6 @@ export default {
       default: "",
     },
   },
-  model: {
-    prop: "value",
-    event: "on-value-change",
-  },
   methods: {
     removeOption(item) {
       const newValue = this.value.filter((value) => value !== item);

@@ -1,33 +1,49 @@
-import { shallowMount } from "@vue/test-utils";
+import { shallowMount, flushPromises } from "@vue/test-utils";
 import SignIn from "./sign-in.vue";
 
-const stubs = ["BaseLoading", "brand-logo", "geometric-shape-a", "base-button", "OAuthLogin", "LoginInput"];
+// @vue/test-utils v2: top-level stubs/mocks move under `global`.
+const stubs = {
+  BaseLoading: true,
+  "brand-logo": true,
+  "geometric-shape-a": true,
+  "base-button": true,
+  OAuthLogin: true,
+  LoginInput: true,
+  AuthenticationLayout: { template: "<div><slot /></div>" },
+};
 
 const validAuthToken = btoa("USERNAME:PASSWORD");
 
+// The component's setup() returns useSignInViewModel(), which must expose `login`.
+const loginMock = vi.fn();
+
+vi.mock("./useSignInViewModel", () => ({
+  useSignInViewModel: () => ({ login: loginMock }),
+}));
+
 const mountLoginPage = ({ auth } = {}) => {
   return shallowMount(SignIn, {
-    stubs,
-    mocks: {
-      $config: {},
-      $route: {
-        query: {
-          auth,
+    global: {
+      stubs,
+      mocks: {
+        $config: {},
+        $route: {
+          query: {
+            auth,
+          },
         },
       },
     },
   });
 };
 
-jest.mock("./useSignInViewModel", () => {
-  const useSignInViewModel = jest.fn();
-
-  return { useSignInViewModel };
-});
-
 describe("Login page should", () => {
+  beforeEach(() => {
+    loginMock.mockReset();
+  });
+
   it("still in the same page if the auth token is not valid", () => {
-    const loginUserSpy = jest.spyOn(SignIn.methods, "loginUser");
+    const loginUserSpy = vi.spyOn(SignIn.methods, "loginUser");
 
     mountLoginPage({ auth: "INVALID" });
 
@@ -35,23 +51,25 @@ describe("Login page should", () => {
   });
 
   it("still in the same page if the auth token query params is empty", () => {
-    const loginUserSpy = jest.spyOn(SignIn.methods, "loginUser");
+    const loginUserSpy = vi.spyOn(SignIn.methods, "loginUser");
 
     mountLoginPage();
 
     expect(loginUserSpy).toHaveBeenCalledTimes(0);
   });
 
-  it("try to login user when the auth token is valid", () => {
-    const loginUserSpy = jest.spyOn(SignIn.methods, "loginUser");
+  it("try to login user when the auth token is valid", async () => {
+    const loginUserSpy = vi.spyOn(SignIn.methods, "loginUser");
 
     mountLoginPage({ auth: validAuthToken });
+    await flushPromises();
 
     expect(loginUserSpy).toHaveBeenCalledTimes(1);
   });
 
-  it("the auth token is valid when the object has the username and password", () => {
+  it("the auth token is valid when the object has the username and password", async () => {
     const wrapper = mountLoginPage({ auth: validAuthToken });
+    await flushPromises();
 
     expect(wrapper.vm.hasAuthToken).toBeTruthy();
   });
@@ -88,8 +106,9 @@ describe("Login page should", () => {
     expect(wrapper.vm.hasAuthToken).toBeFalsy();
   });
 
-  it("show the loading logo when the token is valid", () => {
+  it("show the loading logo when the token is valid", async () => {
     const wrapper = mountLoginPage({ auth: validAuthToken });
+    await flushPromises();
 
     const loadingLogo = wrapper.findComponent({
       name: "BaseLoading",

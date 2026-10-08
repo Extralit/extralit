@@ -8,7 +8,7 @@
   >
     <div class="fixed-tooltip__content" :class="isSmallTooltip">
       <span v-html="content" />
-      <BaseButton @click.native.stop="closeTooltip" class="fixed-tooltip__button">
+      <BaseButton @click.stop="closeTooltip" class="fixed-tooltip__button">
         <svgicon name="close" width="12" />
       </BaseButton>
     </div>
@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import "assets/icons/close";
 export default {
   props: {
     content: {
@@ -105,7 +104,7 @@ export default {
       this.updatePosition();
     });
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.getScrollableParent(this.triggerElement).removeEventListener("scroll", this.scrollInParent);
     window.removeEventListener("resize", this.updatePosition);
     this.triggerElement.removeEventListener("click", this.toggleTooltip);

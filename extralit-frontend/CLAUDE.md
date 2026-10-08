@@ -1,234 +1,132 @@
-# CLAUDE.md
+# extralit-frontend Setup
 
-This file provides guidance to Claude Code (claude.ai/code) when working with the Extralit frontend codebase.
-
-## Frontend Architecture Overview
-
-Extralit frontend is a Vue.js/Nuxt.js web application for scientific literature data extraction and annotation with human-in-the-loop workflows.
-
-**Tech Stack:**
-- **Vue 2.7 + Nuxt 2** with Composition API support via `@nuxtjs/composition-api`
-- **TypeScript** for type safety
-- **SCSS** with design system and component-scoped styles
-- **Pinia** for state management (transitioning from Vuex)
-- **Domain-Driven Design** with clean architecture principles
-
-## Development Commands
+## Installation
 
 ```bash
-# Development
-npm run dev              # Start development server with hot reload
+cd extralit-frontend/
+
+# Install dependencies
+npm install
+```
+
+## Development
+
+```bash
+npm run dev              # Development server
 npm run build            # Production build
-npm run start            # Start production server (after build)
-
-# Testing
-npm run test             # Run Jest unit tests
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Run tests with coverage report
-npm run e2e              # Run Playwright e2e tests (interactive UI)
-npm run e2e:silent       # Run e2e tests in headless mode
-npm run e2e:report       # Show Playwright test report
-
-# Code Quality
-npm run lint             # ESLint check
-npm run lint:fix         # Fix ESLint issues automatically
-npm run format           # Format code with Prettier
-npm run format:check     # Check formatting without modifying files
-
-# Assets
-npm run generate-icons   # Generate icon components from SVG files
 ```
 
-## Architecture Patterns
+## Running with existing server API
 
-### Domain-Driven Design Structure
-
-The `v1/` directory contains the new clean architecture implementation:
-
-```
-v1/
-├── domain/                    # Business logic layer
-│   ├── entities/              # Domain entities and types
-│   ├── events/                # Domain events (Event suffix)
-│   ├── services/              # Domain service interfaces (I prefix)
-│   └── usecases/              # Use case implementations (kebab-case, use-case suffix)
-├── infrastructure/            # Technical implementation layer
-│   ├── events/                # Event handlers (EventHandler suffix)
-│   ├── repositories/          # API repository implementations (Repository suffix)
-│   ├── services/              # UI hooks and utilities (use* pattern)
-│   ├── storage/               # Client-side storage (Storage suffix)
-│   └── types/                 # Infrastructure types and API models
-├── di/                        # Dependency injection container
-└── store/                     # Pinia stores
+```bash
+API_BASE_URL=https://extralit-public-demo.hf.space/ npm run dev
 ```
 
-### Component Architecture
+## Testing
 
-```
-components/
-├── base/                      # Stateless, reusable UI components
-│   ├── base-button/           # BaseButton.vue
-│   ├── base-input/            # BaseInput.vue
-│   └── base-modal/            # BaseModal.vue, etc.
-├── features/                  # Feature-specific components by domain
-│   ├── annotation/            # Annotation workflow components
-│   ├── dataset-creation/      # Dataset creation components
-│   ├── documents/             # Document management components
-│   └── user-settings/         # User settings components
-└── components/                # Legacy component organization (being phased out)
+```bash
+npm run test             # Vitest unit tests (run once)
+npm run test:watch       # Watch mode
+npm run test:coverage    # With coverage
+
+npm run e2e              # Playwright e2e (interactive)
+npm run e2e:silent       # Playwright headless
+npm run e2e:report       # View test report
 ```
 
-### View Model Pattern
+> Unit tests run on **Vitest** (`vitest.config.ts` + `test/setup.ts`), using
+> `@vue/test-utils` v2 and `@nuxt/test-utils`. Specs needing Nuxt runtime context use
+> `// @vitest-environment nuxt` or `mockNuxtImport`.
+>
+> The Playwright e2e suite is inherited from upstream Argilla. The shared login helper
+> (`e2e/common/login-and-wait-for.ts`) has been reconciled to Extralit's real sign-in UI:
+> it fills `getByLabel("Username"/"Password")`, submits the `"Sign in"` button, mocks
+> `/api/v1/token` + `/api/v1/me` offline, and waits for the home/datasets landing at `/`
+> (there is no `/datasets` route). This flow is runtime-verified via the CDP browser. The
+> per-page specs still need fresh Extralit screenshot baselines (`--update-snapshots`); the
+> inherited ones are Argilla's. The local Playwright chromium **does** launch on the Orin
+> host (verified 2026-07-18: `chromium.launch({headless:true})` → Chrome 149 after a plain
+> `npx playwright install chromium`; no `install-deps`/sudo needed), so the headless gate
+> can run locally as well as in CI.
 
-Components use the view model pattern for separation of concerns:
+## extraction e2e suite (`e2e/extraction/`, real backend — the extraction slice's integration gate)
 
-```typescript
-// Component setup
-export default {
-  setup(props) {
-    return useComponentNameViewModel(props);
-  }
-};
+Separate Playwright project (`--project=extraction`, `testMatch: extraction/**/*.spec.ts`);
+the legacy Argilla specs above are **not** an extraction gate. No network mocking — it
+exercises real bearer auth on `/api/v1`, slashed-DOI encoding, the suggestion→response loop,
+drafts and search freshness. Env knobs (see `e2e/extraction/fixtures.ts`): `E2E_API_URL`
+(default `http://localhost:6900`), `E2E_BASE_URL`/`BASE_URL` (default `http://localhost:3000`),
+`E2E_USERNAME`/`E2E_PASSWORD` (default `extralit`/`12345678`), optional `E2E_CDP_URL` to drive
+a remote chromium.
 
-// View model composable
-export function useComponentNameViewModel(props) {
-  // Business logic, API calls, reactive state
-  return {
-    // Reactive properties and methods for template
-  };
-}
+```bash
+npm run e2e:extraction:seed   # uv run ../extralit-server python e2e/extraction/seed/seed_v2_e2e.py
+npm run dev -- --host         # dev server reachable from the browser
+npm run e2e:extraction        # playwright test --project=extraction (local chromium)
 ```
 
-### Dependency Injection
+Requires the full stack up with the server on :6900. On the Orin host the backing services
+publish to `localhost` (postgres :5432, minio :9000, elasticsearch :9200) but the compose
+`redis` is **not** published, and the server `.env` uses docker-network hostnames
+(`minio`/`elasticsearch`/`redis`) — running the server on the host needs those overridden
+to `localhost` plus a throwaway redis on :6379.
 
-Services are registered in `v1/di/di.ts` using the `ts-injecty` container:
+## Code Quality
 
-```typescript
-// Registration
-register(UseCase).withDependency(Repository).build()
+```bash
+npm run lint             # oxlint, then eslint 10 (vue-eslint-parser) — both --quiet
+npm run lint:oxc         # oxlint only (the blocking CI gate; ~1s)
+npm run lint:eslint      # eslint only (Vue template + i18n rules; advisory in CI)
+npm run lint:fix         # Autofix both linters
+npm run format           # Format with oxfmt
+npm run format:check     # Check formatting (blocking in CI)
+npm run generate-icons   # Generate icon components from SVG
 
-// Usage in composables
-const useCase = useResolve(UseCase);
+npx nuxi typecheck       # vue-tsc type check
+npm run build            # Production build (vite/nitro)
 ```
 
-## Key Development Patterns
+## Requirements
 
-### API Communication
+- Node.js 18+ (developed on Node 24)
+- Backend server running for full functionality
 
-- **Repositories**: Handle API communication (`v1/infrastructure/repositories/`)
-- **Axios Integration**: Uses `@nuxtjs/axios` with proxy configuration
-- **Base URL**: All API calls go through `/api/` proxy to backend
-- **Error Handling**: Centralized in `plugins/axios/axios-global-handler.ts`
+## Architecture
 
-### State Management
+- **v1/** directory: Pinia + domain-driven design (entities, use cases, dependency injection
+  via `ts-injecty`). The domain/use-case layer is framework-agnostic; only the Vue/Nuxt
+  adapters (HTTP, Auth, Icons) were swapped during the Vue 3 / Nuxt 4 migration.
+- Component hierarchy: base (stateless) → features (page-specific) → global (reusable)
+- HTTP: plain `axios` in `plugins/2.axios.ts` (replaced `@nuxtjs/axios`), re-injected into DI.
+- Auth: `AuthService` (`v1/infrastructure/services/AuthService.ts`) implementing `IAuthService`,
+  provided as `$auth` by `plugins/1.auth.ts` (replaced `@nuxtjs/auth-next`).
+- Icons: custom `<svg-icon>` (`components/base/BaseSvgIcon.vue`) reading `static/icons/*.svg`
+  (replaced `vue-svgicon`).
+- Plugins load in order via numeric prefixes (`1.auth` → `2.axios` → `3.di`); middleware are
+  Nuxt-4 globals (`middleware/*.global.ts`).
 
-- **Pinia Stores**: New state management in `v1/store/`
-- **Storage Services**: Client-side persistence in `v1/infrastructure/storage/`
-- **Reactive State**: Using Composition API reactivity
+> **TS posture:** `tsconfig.json` keeps `strict:false` (matching the pre-Vue3 config) and
+> disables Nuxt-4's new `verbatimModuleSyntax`/`noImplicitOverride`. Tightening to strict is a
+> separate hardening effort. Note: Vite/esbuild (`isolatedModules`) requires type-only imports
+> to use the inline `import { type X }` modifier or they throw at runtime in dev.
 
-### Component Patterns
+## Key Technologies
 
-- **Base Components**: Stateless, prop-driven components in `components/base/`
-- **Feature Components**: Domain-specific components with business logic
-- **View Models**: Business logic extracted to composable functions
-- **Props & Events**: TypeScript interfaces for component contracts
+- Vue 3.5 + Nuxt 4 (Vite + Nitro)
+- Pinia (state management; Vuex fully removed)
+- Vitest + @vue/test-utils v2 (unit) + Playwright (e2e)
+- @nuxtjs/i18n v10 (vue-i18n v11), @vueuse/core, mitt
+- oxlint + ESLint 10 (lint), oxfmt (format)
 
-### Testing Patterns
+## Structure
 
-#### Unit Tests (Jest)
-
-```typescript
-// Component testing
-import { mount } from '@vue/test-utils';
-import Component from './Component.vue';
-
-describe('Component', () => {
-  it('should render correctly', () => {
-    const wrapper = mount(Component);
-    expect(wrapper.exists()).toBe(true);
-  });
-});
 ```
-
-Configuration in `jest.config.js`:
-- Uses `@vue/vue2-jest` for Vue SFC transformation
-- Module aliases for `~` and `@` paths
-- JSDOM environment for DOM testing
-- Coverage collection from components and pages
-
-#### E2E Tests (Playwright)
-
-```typescript
-// Page object model
-import { test, expect } from '@playwright/test';
-
-test('annotation workflow', async ({ page }) => {
-  await page.goto('/dataset/123');
-  await expect(page.locator('[data-testid="record-form"]')).toBeVisible();
-});
+/components      # Vue components
+/v1              # New Pinia architecture
+/pages           # Nuxt pages
+/layouts         # Layouts
+/plugins         # Plugins
+/middleware      # Middleware
+/assets          # Static assets
+/e2e             # Playwright tests
 ```
-
-Configuration in `playwright.config.ts`:
-- Screenshot comparison for visual regression testing
-- API mocking in `e2e/common/` directory
-- Page object patterns for reusable test utilities
-
-### Styling Patterns
-
-- **SCSS Architecture**: Organized in `assets/scss/` with abstracts, base, and components
-- **Component Scoped**: Use `<style scoped>` for component-specific styles
-- **Design System**: Consistent spacing, colors, and typography via SCSS variables
-- **Responsive**: Mobile-first approach with mixins in `assets/scss/abstract/mixins/`
-
-### Internationalization
-
-- **i18n**: 4 languages supported (en, de, es, ja) in `translation/` directory
-- **Strategy**: No prefix strategy for cleaner URLs
-- **Fallback**: English as default fallback language
-
-## Common Development Tasks
-
-### Adding New Components
-
-1. Create component in appropriate `components/` subdirectory
-2. Follow naming convention: `ComponentName.vue`
-3. Add TypeScript props interface
-4. Create view model composable if business logic is needed
-5. Add unit tests in same directory
-
-### Creating Use Cases
-
-1. Define interface in `v1/domain/services/`
-2. Implement use case in `v1/domain/usecases/`
-3. Create repository if API access needed
-4. Register dependencies in `v1/di/di.ts`
-5. Add unit tests for business logic
-
-### API Integration
-
-1. Define API types in `v1/infrastructure/types/`
-2. Create repository in `v1/infrastructure/repositories/`
-3. Implement use case consuming repository
-4. Register dependencies in DI container
-5. Use in view models via `useResolve()`
-
-### Running Tests
-
-- **Unit Tests**: Focus on business logic and component behavior
-- **E2E Tests**: Critical user workflows and integration scenarios
-- **Coverage**: Aim for high coverage on use cases and view models
-- **CI**: Tests run automatically in GitHub Actions
-
-### File Organization
-
-- **Kebab-case**: For directory names (`user-settings/`)
-- **PascalCase**: For component files (`UserSettings.vue`)
-- **camelCase**: For variables and functions
-- **Interfaces**: Prefix with `I` for service interfaces
-
-### Performance Considerations
-
-- **Code Splitting**: Nuxt handles automatic code splitting
-- **Lazy Loading**: Use dynamic imports for heavy components
-- **Bundle Analysis**: Use `npm run build` with analyze option
-- **Image Optimization**: Use appropriate formats and sizes

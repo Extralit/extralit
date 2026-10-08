@@ -1,29 +1,19 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import inspect
 import random
 import uuid
-from unittest.mock import MagicMock
 
 import factory
 from factory.alchemy import SESSION_PERSISTENCE_COMMIT, SESSION_PERSISTENCE_FLUSH
 from factory.builder import BuildStep, StepBuilder, parse_declarations
 from sqlalchemy.ext.asyncio import async_object_session
 
-from extralit_server.contexts.files import ObjectMetadata, get_s3_client
-from extralit_server.enums import DatasetDistributionStrategy, FieldType, MetadataPropertyType, OptionsOrder
+from extralit_server.contexts.files import ObjectMetadata
+from extralit_server.enums import (
+    DatasetDistributionStrategy,
+    FieldType,
+    MetadataPropertyType,
+    OptionsOrder,
+)
 from extralit_server.models import (
     Dataset,
     DatasetUser,
@@ -35,6 +25,7 @@ from extralit_server.models import (
     QuestionType,
     Record,
     Response,
+    SchemaVersion,
     Suggestion,
     User,
     UserRole,
@@ -166,16 +157,6 @@ class WorkspaceSyncFactory(BaseSyncFactory):
 
     name = factory.Sequence(lambda n: f"workspace-{n}")
 
-    @classmethod
-    async def create_with_s3(cls, **kwargs):
-        workspace = await cls.create(**kwargs)
-        s3_client = await get_s3_client()
-        try:
-            await s3_client.make_bucket(workspace.name)
-        except Exception as e:
-            print(f"Error creating bucket for workspace {workspace.name}: {e!s}")
-        return workspace
-
 
 class WorkspaceFactory(BaseFactory):
     class Meta:
@@ -246,6 +227,20 @@ class DatasetUserFactory(BaseFactory):
     user = factory.SubFactory(UserFactory)
 
 
+class SchemaVersionFactory(BaseFactory):
+    class Meta:
+        model = SchemaVersion
+
+    dataset = factory.SubFactory(DatasetFactory)
+    version = 1
+    # The SubFactory result is a coroutine during attribute evaluation (AsyncStepBuilder.build
+    # resolves pre-declarations before AsyncSQLAlchemyModelFactory._create awaits them), so
+    # `v.dataset.id` raises AttributeError here. Derive the key from `version` only.
+    object_key = factory.LazyAttribute(lambda v: f"schemas/v{v.version}.json")
+    etag = "etag"
+    checksum = "checksum"
+
+
 class RecordSyncFactory(BaseSyncFactory):
     class Meta:
         model = Record
@@ -267,6 +262,7 @@ class RecordFactory(BaseFactory):
         "sentiment": "neutral",
     }
     external_id = factory.Sequence(lambda n: f"external-id-{n}")
+    reference = None
     dataset = factory.SubFactory(DatasetFactory)
 
 
@@ -367,6 +363,13 @@ class CustomFieldFactory(FieldFactory):
         "template": "<div>{{ value }}</div>",
         "advanced_mode": False,
     }
+
+
+class ColumnFieldFactory(FieldFactory):
+    # `dtype` mirrors `str(pandera.Column.dtype)`; "string" is one of the values the
+    # pandera/pandas round-trip actually emits (see index/mapping.py `_STRING_DTYPES`).
+    # "str" is not — never use it here or downstream mappings get tuned to a dead key.
+    settings = {"type": "column", "dtype": "string", "nullable": True}
 
 
 class MetadataPropertySyncFactory(BaseSyncFactory):
@@ -592,62 +595,27 @@ class MinioFileFactory(factory.Factory):
     class Meta:
         model = ObjectMetadata
 
-    bucket_name = "test-bucket"
+    workspace = "test-bucket"
     object_name = factory.Sequence(lambda n: f"test-object-{n}")
     last_modified = None
     etag = None
     size = 0
     content_type = "application/octet-stream"
-    version_id = None
-    is_latest = True
     metadata = None
-    version_tag = factory.LazyAttribute(lambda o: f"v{factory.Faker('pyint', min_value=1, max_value=5).generate()}")
 
     @classmethod
     def attributes(cls, **kwargs):
         return {
-            "bucket_name": kwargs.get("bucket_name", cls.bucket_name),
+            "workspace": kwargs.get("workspace", cls.workspace),
             "object_name": kwargs.get("object_name", "test-object-0"),
             "last_modified": kwargs.get("last_modified", None),
             "etag": kwargs.get("etag", None),
             "size": kwargs.get("size", 0),
             "content_type": kwargs.get("content_type", "application/octet-stream"),
-            "version_id": kwargs.get("version_id", None),
-            "is_latest": kwargs.get("is_latest", True),
             "metadata": kwargs.get("metadata", None),
-            "version_tag": kwargs.get("version_tag", "v1"),
         }
 
     @classmethod
     def build(cls, **kwargs):
         attributes = cls.attributes(**kwargs)
         return cls._meta.model(**attributes)
-
-    @classmethod
-    def create(cls, **kwargs):
-        """Create a MinioFile and mock the put_object and get_object methods to return it."""
-        from extralit_server.contexts.files import get_s3_client
-
-        file = cls.build(**kwargs)
-
-        client = get_s3_client()
-
-        # Store original methods
-        getattr(client, "put_object", None)
-        getattr(client, "get_object", None)
-
-        # Mock put_object to return our file
-        def mock_put_object(bucket_name, object_name, data, content_type=None, metadata=None):
-            return file
-
-        # Mock get_object to return file data
-        def mock_get_object(bucket_name, object_name, version_id=None):
-            response = MagicMock()
-            response.data = b"test data"
-            return response
-
-        # Apply mocks
-        client.put_object = mock_put_object
-        client.get_object = mock_get_object
-
-        return file

@@ -14,14 +14,11 @@ const fieldOne = {
 };
 
 export const mockFields = async (page: Page, datasetId: string) => {
-  await page.route(
-    `*/**/api/v1/datasets/${datasetId}/fields`,
-    async (route) => {
-      await route.fulfill({
-        json: {
-          items: [fieldOne],
-        },
-      });
-    }
-  );
+  await page.route(`*/**/api/v1/datasets/${datasetId}/fields`, async (route) => {
+    await route.fulfill({
+      json: {
+        items: [fieldOne],
+      },
+    });
+  });
 };

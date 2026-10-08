@@ -12,7 +12,10 @@ type Status = keyof typeof STATUS;
 
 export class RecordStatus extends String {
   public readonly color: Color;
-  private constructor(public readonly name: Status, color: string) {
+  private constructor(
+    public readonly name: Status,
+    color: string
+  ) {
     super(name);
 
     const resolvedColor = color.startsWith("var(") ? this.resolveCssVariable(color.slice(4, -1).trim()) : color;

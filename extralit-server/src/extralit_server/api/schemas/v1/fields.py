@@ -1,19 +1,5 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, constr
@@ -120,8 +106,29 @@ class TableFieldSettingsUpdate(BaseModel):
     type: Literal[FieldType.table]
 
 
+class ColumnFieldSettings(BaseModel):
+    type: Literal[FieldType.column]
+    dtype: str
+    nullable: bool = True
+    # Opaque per-column review widget overlay, carried through to the client verbatim.
+    # Replaces the former SchemaVersion.review_widgets column.
+    review: dict[str, Any] | None = None
+
+
+class ColumnFieldSettingsCreate(BaseModel):
+    type: Literal[FieldType.column]
+    dtype: str
+    nullable: bool = True
+    review: dict[str, Any] | None = None
+
+
 FieldSettings = Annotated[
-    TextFieldSettings | ImageFieldSettings | ChatFieldSettings | CustomFieldSettings | TableFieldSettings,
+    TextFieldSettings
+    | ImageFieldSettings
+    | ChatFieldSettings
+    | CustomFieldSettings
+    | TableFieldSettings
+    | ColumnFieldSettings,
     PydanticField(..., discriminator="type"),
 ]
 
@@ -130,10 +137,16 @@ FieldSettingsCreate = Annotated[
     | ImageFieldSettingsCreate
     | ChatFieldSettingsCreate
     | CustomFieldSettingsCreate
-    | TableFieldSettingsCreate,
+    | TableFieldSettingsCreate
+    | ColumnFieldSettingsCreate,
     PydanticField(..., discriminator="type"),
 ]
 
+# No `column` member: a column field is derived from the dataset's Pandera schema version
+# (contexts/schema_versions.derive_column_fields), so `PATCH /fields/{id}` must not be able to
+# change its dtype out of band -- that would contradict the immutability
+# `contexts/schema_versions._reject_incompatible_columns` enforces at publish time. Republish
+# the schema version instead. A PATCH against a column field is rejected by the discriminator.
 FieldSettingsUpdate = Annotated[
     TextFieldSettingsUpdate
     | ImageFieldSettingsUpdate

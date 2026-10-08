@@ -1,5 +1,5 @@
 import { Criteria } from "../common/Criteria";
-import { SortSearch } from "./SortList";
+import { type SortSearch } from "./SortList";
 
 export class SortCriteria extends Criteria {
   public value: SortSearch[] = [];

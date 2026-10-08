@@ -44,11 +44,11 @@ Once you have your environment set up, you can return to this guide to learn mor
 
 The Extralit repository has a monorepo structure, which means that all the components are located in the same repository: [`extralit/extralit`](https://github.com/extralit/extralit). This repo is divided into the following folders:
 
-- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/develop/extralit): The Extralit SDK
-- [`extralit/docs/`](https://github.com/extralit/extralit/tree/develop/extralit/docs): The documentation project
-- [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/develop/extralit-server): The FastAPI server project for annotation
-- [`extralit-frontend/`](https://github.com/extralit/extralit/tree/develop/extralit-frontend): The Vue.js annotation UI project
-- [`examples`](https://github.com/extralit/extralit/tree/develop/examples): Example resources for deployments, scripts and notebooks
+- [`extralit/src/extralit/`](https://github.com/extralit/extralit/tree/main/extralit): The Extralit SDK
+- [`extralit/docs/`](https://github.com/extralit/extralit/tree/main/extralit/docs): The documentation project
+- [`extralit-server/src/extralit_server/`](https://github.com/extralit/extralit/tree/main/extralit-server): The FastAPI server project for annotation
+- [`extralit-frontend/`](https://github.com/extralit/extralit/tree/main/extralit-frontend): The Vue.js annotation UI project
+- [`examples`](https://github.com/extralit/extralit/tree/main/examples): Example resources for deployments, scripts and notebooks
 
 !!! note "How to contribute?"
     Before starting to develop, we recommend reading our [contribution guide](contributor.md) to understand the contribution process and the guidelines to follow. Once you have [cloned the Extralit repository](contributor.md#fork-the-extralit-repository) and [checked out to the correct branch](contributor.md#create-a-new-branch), you can start setting up your development environment.
@@ -81,11 +81,8 @@ cd extralit
 Next, activate your virtual Python environment and make the required installations:
 
 ```sh
-# Install the `pdm` package manager
-pip install pdm
-
 # Install extralit in editable mode and the development dependencies
-pdm install --dev
+uv sync
 ```
 
 To install specific sub-packages with editable mode, you can use the following command:
@@ -132,23 +129,23 @@ Running tests at the end of every development cycle is indispensable to ensure n
 
 ```sh
 cd extralit/
-pdm run test-cov tests/unit
-pdm run test-cov tests/integration
+uv run pytest tests/unit --disable-warnings --cov=extralit
+uv run pytest tests/integration --disable-warnings --cov=extralit
 ```
 
 ??? tip "Running linting, formatting, and tests"
     You can run all the checks at once by using the following command:
 
     ```sh
-        pdm run all
+        uv run ruff format && uv run ruff check && uv run pytest tests --disable-warnings
     ```
 
 ## Set up the documentation
 
 Documentation is essential to provide users with a comprehensive guide about Extralit.
 
-!!! note "From `main` or `develop`?"
-    If you are updating, improving, or fixing the current documentation without a code change, work on the `main` branch. For new features or bug fixes that require documentation, use the `develop` branch.
+!!! note "Which branch?"
+    `main` — always. Extralit is trunk-based, so documentation-only changes and code changes both branch from `main` and merge back into it. Docs published from `main` appear at `docs.extralit.ai/latest`; a `docs/**` branch additionally gets its own hidden preview build.
 
 To contribute to the documentation and generate it locally, ensure you installed the development dependencies as shown in the ["Set up the Python environment"](#set-up-the-python-environment) section, and run the following command to create the development server with `mkdocs`:
 
@@ -185,7 +182,7 @@ When making changes to the database schema, you need to create database revision
 
 ```bash
 cd extralit-server
-pdm run revision -m "description of change"
+uv run alembic -c src/extralit_server/alembic.ini revision --autogenerate -m "description of change"
 ```
 
 3. Review the generated revision file in `extralit-server/migrations/versions/`
@@ -193,10 +190,10 @@ pdm run revision -m "description of change"
 
 ```bash
 # Apply the migration
-pdm run alembic upgrade head
+uv run alembic -c src/extralit_server/alembic.ini upgrade head
 
 # Rollback if needed
-pdm run alembic downgrade -1
+uv run alembic -c src/extralit_server/alembic.ini downgrade -1
 ```
 
 #### Applying Migrations
@@ -204,13 +201,13 @@ pdm run alembic downgrade -1
 To apply all pending migrations:
 
 ```bash
-pdm run alembic upgrade head
+uv run alembic -c src/extralit_server/alembic.ini upgrade head
 ```
 
 To check the current database version:
 
 ```bash
-pdm run alembic current
+uv run alembic -c src/extralit_server/alembic.ini current
 ```
 
 #### Guidelines for Database Changes
@@ -284,7 +281,7 @@ app.add_typer(mycommand.app, name="mycommand")
 
 - Create commands that fit into existing workflows
 - Follow consistent naming and structure patterns
-- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/develop/extralit/src/extralit/cli/rich.py#L115) function to print tables in a rich format
+- Provide clear help text for all commands and options, e.g. use the [`print_rich_table`](https://github.com/extralit/extralit/blob/main/extralit/src/extralit/cli/rich.py#L115) function to print tables in a rich format
 - Use sensible defaults to minimize required input
 - Follow the Unix philosophy: commands should do one thing well
 
@@ -304,5 +301,5 @@ Common deployment problems:
 - `elasticsearch`: Can fail on restart due to data-shard issues
 - `main-db` Postgres: May fail to remount volumes after redeployment due to password changes
 
-For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-32blg3602-0m0XewPBXF7776BQ3m7ZlA).
+For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).
 

@@ -1,10 +1,5 @@
 import { test, expect } from "@playwright/test";
-import {
-  newDatasetsMocked,
-  mockAllDatasets,
-  loginUserAndWaitFor,
-  mockRecord,
-} from "../common";
+import { newDatasetsMocked, mockAllDatasets, loginUserAndWaitFor, mockRecord } from "../common";
 import {
   metadataPropertiesCompleted,
   mockRecordForMetadataFilter,
@@ -42,28 +37,18 @@ test.describe("Annotation page Metadata filters", () => {
 
       await expect(page).toHaveScreenshot();
 
-      await page
-        .locator("span")
-        .filter({ hasText: "Metadata" })
-        .locator("div")
-        .click();
+      await page.locator("span").filter({ hasText: "Metadata" }).locator("div").click();
 
       await expect(page).toHaveScreenshot();
     });
 
-    test("The user can filter  automatically when the user just click over term metadata", async ({
-      page,
-    }) => {
+    test("The user can filter  automatically when the user just click over term metadata", async ({ page }) => {
       const dataset = await goToAnnotationPage(page);
       await mockRecordForMetadataFilter(page, dataset.id);
 
       await expect(page).toHaveScreenshot();
 
-      await page
-        .locator("span")
-        .filter({ hasText: "Metadata" })
-        .locator("div")
-        .click();
+      await page.locator("span").filter({ hasText: "Metadata" }).locator("div").click();
 
       await expect(page).toHaveScreenshot();
 
@@ -84,19 +69,13 @@ test.describe("Annotation page Metadata filters", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("The user can filter the metadata terms with keyboard", async ({
-      page,
-    }) => {
+    test("The user can filter the metadata terms with keyboard", async ({ page }) => {
       const dataset = await goToAnnotationPage(page);
       await mockRecordForMetadataFilter(page, dataset.id);
 
       await expect(page).toHaveScreenshot();
 
-      await page
-        .locator("span")
-        .filter({ hasText: "Metadata" })
-        .locator("div")
-        .click();
+      await page.locator("span").filter({ hasText: "Metadata" }).locator("div").click();
 
       await expect(page).toHaveScreenshot();
 
@@ -111,19 +90,13 @@ test.describe("Annotation page Metadata filters", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("The user can filter automatically by range with mouse", async ({
-      page,
-    }) => {
+    test("The user can filter automatically by range with mouse", async ({ page }) => {
       const dataset = await goToAnnotationPage(page);
       await mockRecordForMetadataFilter(page, dataset.id);
 
       await expect(page).toHaveScreenshot();
 
-      await page
-        .locator("span")
-        .filter({ hasText: "Metadata" })
-        .locator("div")
-        .click();
+      await page.locator("span").filter({ hasText: "Metadata" }).locator("div").click();
 
       await expect(page).toHaveScreenshot();
 
@@ -145,19 +118,13 @@ test.describe("Annotation page Metadata filters", () => {
       await expect(page).toHaveScreenshot();
     });
 
-    test("The min value never can be less than prefilled by the backend", async ({
-      page,
-    }) => {
+    test("The min value never can be less than prefilled by the backend", async ({ page }) => {
       const dataset = await goToAnnotationPage(page);
       await mockRecordForMetadataFilter(page, dataset.id);
 
       await expect(page).toHaveScreenshot();
 
-      await page
-        .locator("span")
-        .filter({ hasText: "Metadata" })
-        .locator("div")
-        .click();
+      await page.locator("span").filter({ hasText: "Metadata" }).locator("div").click();
 
       await expect(page).toHaveScreenshot();
 
@@ -167,9 +134,7 @@ test.describe("Annotation page Metadata filters", () => {
       await expect(page).toHaveScreenshot();
 
       await page.keyboard.press("Tab");
-      await page
-        .getByRole("button", { name: "cpu-user-title" })
-        .waitFor({ state: "visible" });
+      await page.getByRole("button", { name: "cpu-user-title" }).waitFor({ state: "visible" });
 
       await expect(page).toHaveScreenshot();
     });

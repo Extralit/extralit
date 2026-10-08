@@ -17,19 +17,6 @@ Please, review your backend and upgrade it if necessary.
 
 ## Launching
 
-### Using a proxy
-
-If you run Extralit behind a proxy by adding some extra prefix to expose the service, you should set the `EXTRALIT_BASE_URL`
-environment variable to properly route requests to the server application.
-
-For example, if your proxy exposes Extralit in the URL `https://my-proxy/custom-path-for-extralit`, you should launch the
-Extralit server with `EXTRALIT_BASE_URL=/custom-path-for-extralit`.
-
-NGINX and Traefik have been tested and are known to work with Extralit:
-
-- [NGINX example](https://github.com/extralit/extralit/tree/main/examples/deployments/docker/nginx)
-- [Traefik example](https://github.com/extralit/extralit/tree/main/examples/deployments/docker/traefik)
-
 ## Environment variables
 
 You can set the following environment variables to further configure your server and client.
@@ -90,6 +77,23 @@ The following environment variables are useful only when PostgreSQL is used:
 - `EXTRALIT_ES_RECORDS_INDEX_SHARDS`: Default number of elasticsearch/opensearch shards for each search index. (Default: `1`).
 
 - `EXTRALIT_ES_RECORDS_INDEX_REPLICAS`: Default number of elasticsearch/opensearch replicas for each search index. (Default: `0`).
+
+### Object storage
+
+- `EXTRALIT_STORAGE_URL`: Root of object storage. Every workspace is a directory under it, holding its `pdf/`, `thumbnails/`, `layout/` and `schemas/` keys (Default: `file://$EXTRALIT_HOME_PATH/storage`). Accepted forms:
+    - `file:///path/to/dir` — local disk.
+    - `s3://bucket[/prefix]` — AWS S3.
+    - `http(s)://host[:port]/bucket[/prefix]` — MinIO, Cloudflare R2 (`https://<ACCOUNT_ID>.r2.cloudflarestorage.com/bucket`) or any S3-compatible endpoint, addressed path-style.
+
+    The bucket must already exist; the server never creates or deletes buckets. Use `https` in production: plain `http` sends your objects and their signatures in the clear, and is only appropriate on an isolated development host or a trusted internal network. Credentials belong in `EXTRALIT_S3_ACCESS_KEY`/`_SECRET_KEY`, never in the URL — a URL carrying them is rejected at startup.
+
+- `EXTRALIT_S3_ACCESS_KEY`, `EXTRALIT_S3_SECRET_KEY`: Static credentials, set together or not at all. When unset, credentials are resolved from the environment the way the AWS SDKs do: `AWS_*` variables, EC2 instance profile (IMDSv2), ECS task role, or EKS IRSA web identity. That is the recommended setup on AWS; `~/.aws/config` profiles and `credential_process` are not read.
+- `EXTRALIT_S3_REGION`: Region for request signing (Default: `us-east-1`; use `auto` for R2).
+
+!!! note "Migrating from bucket-per-workspace"
+    Servers before this setting created one bucket per workspace. Copy each into the new root before switching, e.g. `mc mirror minio/<workspace> minio/<bucket>/<prefix>/<workspace>`; the object keys are unchanged.
+
+    **Local storage moved too.** It used to sit directly under `$EXTRALIT_HOME_PATH/<workspace>/`, alongside `extralit.db` and `lance/`; the default root is now the `storage/` subdirectory. Move each workspace into it — `mkdir -p $EXTRALIT_HOME_PATH/storage && mv $EXTRALIT_HOME_PATH/<workspace> $EXTRALIT_HOME_PATH/storage/` — or keep the old layout by setting `EXTRALIT_STORAGE_URL=file://$EXTRALIT_HOME_PATH`. Nothing is deleted if you skip this, but the server will not find the existing files.
 
 ### Redis
 

@@ -5,7 +5,7 @@
 import { marked } from "marked";
 import { markedHighlight } from "marked-highlight";
 import hljs from "highlight.js";
-import * as DOMPurify from "dompurify";
+import DOMPurify from "dompurify";
 import markedKatex from "marked-katex-extension";
 
 const preprocess = (html) => {
@@ -63,9 +63,10 @@ export default {
       return this.$language.isRTL(this.markdown) ? "--rtl" : "--ltr";
     },
     markdownToHtml() {
+      // `headerIds` and `mangle` were removed in marked >5 (split out to
+      // marked-gfm-heading-id / marked-mangle); marked 18 defaults match the
+      // old `false` behaviour (no auto ids, no email mangling), so we drop them.
       let html = marked.parse(this.markdown, {
-        headerIds: false,
-        mangle: false,
         breaks: true,
       });
 

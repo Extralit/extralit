@@ -1,25 +1,12 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import asyncio
 from typing import Optional
 
 import typer
-from pydantic import constr
+from pydantic import ValidationError, constr
 
 from extralit_server.api.schemas.v1.users import USER_PASSWORD_MIN_LENGTH, UserCreate
 from extralit_server.api.schemas.v1.workspaces import WorkspaceCreate
-from extralit_server.contexts import accounts, files
+from extralit_server.contexts import accounts
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.models import User, UserRole
 
@@ -78,15 +65,20 @@ async def _create(
             typer.echo(f"User with api_key {api_key!r} already exists in database. Skipping...")
             return
 
-        user_create = UserCreateForTask(
-            first_name=first_name,
-            last_name=last_name,
-            username=username,
-            role=role,
-            password=password,
-            api_key=api_key,
-            workspaces=[WorkspaceCreate(name=workspace_name) for workspace_name in workspace],
-        )
+        try:
+            user_create = UserCreateForTask(
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                role=role,
+                password=password,
+                api_key=api_key,
+                workspaces=[WorkspaceCreate(name=workspace_name) for workspace_name in workspace],
+            )
+        except ValidationError as e:
+            for error in e.errors():
+                typer.echo(f"• {'.'.join(str(part) for part in error['loc'])}: {error['msg']}")
+            raise typer.Exit(code=1)
 
         user = await User.create(
             session,
@@ -98,19 +90,6 @@ async def _create(
             api_key=user_create.api_key,
             workspaces=[await get_or_new_workspace(session, workspace.name) for workspace in user_create.workspaces],
         )
-
-        # Create S3 buckets for each workspace if they don't exist
-        if workspace:
-            s3_client = await files.get_s3_client()
-            if s3_client is not None:
-                for workspace_name in workspace:
-                    try:
-                        await files.create_bucket(s3_client, workspace_name)
-                        typer.echo(f"✓ Created/verified bucket for workspace: {workspace_name}")
-                    except Exception as e:
-                        typer.echo(f"⚠ Warning: Failed to create bucket for workspace {workspace_name}: {e}")
-            else:
-                typer.echo("⚠ Warning: S3 client not available, skipping bucket creation")
 
         typer.echo("User successfully created:")
         typer.echo(f"• first_name: {user.first_name!r}")

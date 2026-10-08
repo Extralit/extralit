@@ -15,9 +15,6 @@
 </template>
 
 <script>
-import "assets/icons/chevron-down";
-import "assets/icons/sort";
-import "assets/icons/filter";
 export default {
   props: {
     buttonName: {

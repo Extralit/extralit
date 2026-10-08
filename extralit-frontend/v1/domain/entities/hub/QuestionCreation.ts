@@ -9,7 +9,7 @@ import {
   SpanQuestionAnswer,
   TextQuestionAnswer,
 } from "../question/QuestionAnswer";
-import { QuestionSetting, QuestionPrototype } from "../question/QuestionSetting";
+import { QuestionSetting, type QuestionPrototype } from "../question/QuestionSetting";
 import { QuestionType } from "../question/QuestionType";
 import { Subset } from "./Subset";
 

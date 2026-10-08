@@ -14,7 +14,7 @@ const loadMockedURL = (url: string) => {
 
 describe("useRunningEnvironment", () => {
   describe("isRunningOnHuggingFace", () => {
-    test("should return true and user name if argilla is running on huggingface", () => {
+    test("should return true and user name if running on huggingface", () => {
       loadMockedURL("https://huggingface.co/spaces/damianpumar/awesome-space");
 
       const { isRunningOnHuggingFace } = useRunningEnvironment();
@@ -22,7 +22,7 @@ describe("useRunningEnvironment", () => {
       expect(isRunningOnHuggingFace()).toBeTruthy();
     });
 
-    test("should be false if argilla is not running on huggingface", () => {
+    test("should be false if not running on huggingface", () => {
       loadMockedURL("https://other.domain.com/damianpumar/awesome-space");
 
       const { isRunningOnHuggingFace } = useRunningEnvironment();
@@ -32,7 +32,7 @@ describe("useRunningEnvironment", () => {
   });
 
   describe("getHuggingFaceSpace", () => {
-    test("should return the space name if argilla is running on huggingface", async () => {
+    test("should return the space name if running on huggingface", async () => {
       const mockedGetEnvironmentUseCase = () => ({
         getEnvironment: () =>
           Promise.resolve(

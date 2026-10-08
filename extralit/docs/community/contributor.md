@@ -11,14 +11,14 @@ Thank you for investing your time in contributing to the project! Any contributi
 ??? Question "New to contributing in general?"
     If you're a new contributor, read the [README](https://github.com/extralit/extralit/blob/main/README.md) to get an overview of the project. In addition, here are some resources to help you get started with open-source contributions:
 
-    * **Slack**: You are welcome to join the [Extralit Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ), where you can keep in touch with other users, contributors and the Extralit team. In the following [section](#first-contact-in-slack), you can find more information on how to get started in Slack.
+    * **Slack**: You are welcome to join the [Extralit Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw), where you can keep in touch with other users, contributors and the Extralit team. In the following [section](#first-contact-in-slack), you can find more information on how to get started in Slack.
     * **Git**: This is a very useful tool to keep track of the changes in your files. Using the command-line interface (CLI), you can make your contributions easily. For that, you need to have it [installed and updated](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) on your computer.
     * **GitHub**: It is a platform and cloud-based service that uses git and allows developers to collaborate on projects. To contribute to Extralit, you'll need to create an account. Check the [Contributor Workflow with Git and Github](#contributor-workflow-with-git-and-github) for more info.
     * **Developer Documentation**: To collaborate, you'll need to set up an efficient environment. Check the [developer documentation](developer.md) to know how to do it.
 
 ## First Contact in Slack
 
-Slack is our primary communication tool for contributors and users. Click [here](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ) to join the Extralit Slack community.
+Slack is our primary communication tool for contributors and users. Click [here](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw) to join the Extralit Slack community.
 
 When you join our Slack workspace, you'll find several channels:
 
@@ -52,7 +52,7 @@ Below, you can see an example of the `Feature request` template. Once you choose
 
 After having reported the issue, you can start working on it. For that, you will need to create a fork of the project. To do that, click on the `Fork` button.
 
-Now, fill in the information. Remember to uncheck the `Copy develop branch only` if you are going to work in or from another branch (for instance, to fix documentation the `main` branch is used). Then, click on `Create fork`.
+Now, fill in the information. Leave `Copy the main branch only` checked — `main` is the only branch you need, whatever kind of change you're making. Then, click on `Create fork`.
 
 Now, you will be redirected to your fork. You can see that you are in your fork because the name of the repository will be your `username/extralit`, and it will indicate `forked from extralit/extralit`.
 
@@ -71,13 +71,13 @@ cd extralit
 
 For each issue you're addressing, it's advisable to create a new branch. GitHub offers a straightforward method to streamline this process.
 
-> ⚠️ Never work directly on the `main` or `develop` branch. Always create a new branch for your changes.
+> ⚠️ Never work directly on the `main` branch. Always create a new branch for your changes.
 
 Navigate to your issue and on the right column, select `Create a branch`.
 
-After the new window pops up, the branch will be named after the issue, include a prefix such as feature/, bug/, or docs/ to facilitate quick recognition of the issue type. In the `Repository destination`, pick your fork ( [your-github-username]/extralit), and then select `Change branch source` to specify the source branch for creating the new one. Complete the process by clicking `Create branch`.
+After the new window pops up, the branch will be named after the issue, include a prefix such as `feat/`, `fix/`, or `docs/` to facilitate quick recognition of the issue type. In the `Repository destination`, pick your fork ( [your-github-username]/extralit), and then select `Change branch source` to specify the source branch for creating the new one. Complete the process by clicking `Create branch`.
 
-> 🤔 Remember that the `main` branch is only used to work with the documentation. For any other changes, use the `develop` branch.
+> 🤔 Extralit is trunk-based: `main` is the single source branch for everything — features, fixes, and documentation alike. Always set the branch source to `main`.
 
 Now, locally change to the new branch you just created.
 
@@ -144,7 +144,7 @@ Come back to GitHub, navigate to the original repository where you created your 
 
 First, click on `compare across forks` and select the right repositories and branches.
 
-> In the base repository, keep in mind to select either `main` or `develop` based on the modifications made. In the head repository, indicate your forked repository and the branch corresponding to the issue.
+> In the base repository, select `main` — it is the base for every kind of change. In the head repository, indicate your forked repository and the branch corresponding to the issue.
 
 Then, fill in the pull request template. You should add a prefix to the PR name as we did with the branch above. If you are working on a new feature, you can name your PR as `feat: TITLE`. If your PR consists of a solution for a bug, you can name your PR as `bug: TITLE` And, if your work is for improving the documentation, you can name your PR as `docs: TITLE`.
 
@@ -168,7 +168,7 @@ Congratulations 🎉🎊 We thank you 🤩
 
 Once your PR is merged, your contributions will be publicly visible on the [Extralit GitHub](https://github.com/extralit/extralit#contributors).
 
-Additionally, we will include your changes in the next release based on our [development branch](https://github.com/extralit/extralit/tree/develop).
+Additionally, your changes ship in the next release cut from our [trunk](https://github.com/extralit/extralit/tree/main).
 
 ## Additional resources
 

@@ -24,8 +24,7 @@
 </template>
 
 <script>
-import "assets/icons/focus-mode";
-import "assets/icons/bulk-mode";
+import { eventBus } from "~/v1/infrastructure/eventBus";
 export default {
   props: {
     recordCriteria: {
@@ -37,12 +36,12 @@ export default {
     switchFocusMode() {
       this.recordCriteria.page.focusMode();
 
-      this.$root.$emit("on-change-record-criteria-filter", this.recordCriteria);
+      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
     },
     switchBulkMode() {
       this.recordCriteria.page.bulkMode();
 
-      this.$root.$emit("on-change-record-criteria-filter", this.recordCriteria);
+      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
     },
   },
 };

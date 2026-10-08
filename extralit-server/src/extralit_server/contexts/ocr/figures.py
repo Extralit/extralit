@@ -1,14 +1,21 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""Appends a single picture `LayoutBlock` to a `DoclingDocument`."""
 
+from __future__ import annotations
+
+from typing import Optional
+
+from docling_core.types.doc import DoclingDocument
+from docling_core.types.doc.document import NodeItem, PictureItem
+
+from extralit_server.contexts.ocr.docling_builder import LayoutBlock, PageContext, make_prov
+
+
+def add_picture_block(
+    doc: DoclingDocument,
+    block: LayoutBlock,
+    ctx: PageContext,
+    parent: Optional[NodeItem] = None,
+) -> PictureItem:
+    """Add one picture, anchored by its page bbox."""
+    prov = make_prov(ctx, block.bbox, text=None)
+    return doc.add_picture(prov=prov, image=block.image, parent=parent)

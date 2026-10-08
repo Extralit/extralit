@@ -1,17 +1,17 @@
 <template>
   <div class="import-file-upload">
     <div class="import-file-upload__header">
-      <h1 class="import-file-upload__title">Upload References and PDF Files</h1>
-      <p class="import-file-upload__description">Upload your BibTeX file and PDF folder to import your references</p>
+      <h1 class="import-file-upload__title">Import Documents</h1>
+      <!-- <p class="import-file-upload__description">Upload your PDF files first. You can optionally upload a BibTeX/CSV file afterward.</p> -->
     </div>
 
     <div class="import-file-upload__content">
       <div class="import-file-upload__main">
-        <!-- Table Upload Section -->
-        <TableUpload :initial-data="bibData" @update="handleBibUpdate" />
-
         <!-- PDF Upload Section -->
         <PdfUpload :initial-data="pdfData" :bibliography-entries="bibData.dataframeData" @update="handlePdfUpdate" />
+
+        <!-- Table Upload Section -->
+        <TableUpload :initial-data="bibData" @update="handleBibUpdate" />
       </div>
 
       <!-- Summary Sidebar -->

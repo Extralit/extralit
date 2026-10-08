@@ -9,10 +9,7 @@ import {
   mockRecordForLongAndShortQuestion,
 } from "../common";
 
-export const goToAnnotationPage = async (
-  page,
-  shortAndLongQuestions = false
-) => {
+export const goToAnnotationPage = async (page, shortAndLongQuestions = false) => {
   const dataset = newDatasetsMocked[0];
 
   await mockAllDatasets(page);

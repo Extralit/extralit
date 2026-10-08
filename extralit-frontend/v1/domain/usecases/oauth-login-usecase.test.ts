@@ -1,3 +1,7 @@
+// jest-mock-extended (used by @codescouts/test/jest) lazily calls jest.fn();
+// alias the jest global to vitest's vi so the mock factory works under Vitest.
+(globalThis as any).jest ??= vi;
+
 import { mock } from "@codescouts/test/jest";
 import { IOAuthRepository } from "../services/IOAuthRepository";
 import { IAuthService } from "../services/IAuthService";
@@ -11,7 +15,7 @@ describe("OAuthLoginUseCase should", () => {
     const oauthRepository = mock<IOAuthRepository>();
     const loadUserUseCase = new LoadUserUseCase(auth, mock<IUserRepository>());
 
-    oauthRepository.login.mockRejectedValue(new Error("FAKE"));
+    (oauthRepository.login as any).mockRejectedValue(new Error("FAKE"));
 
     const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 
@@ -39,7 +43,7 @@ describe("OAuthLoginUseCase should", () => {
     const oauthRepository = mock<IOAuthRepository>();
     const loadUserUseCase = new LoadUserUseCase(auth, mock<IUserRepository>());
 
-    oauthRepository.login.mockResolvedValue("FAKE_TOKEN");
+    (oauthRepository.login as any).mockResolvedValue("FAKE_TOKEN");
 
     const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 
@@ -53,7 +57,7 @@ describe("OAuthLoginUseCase should", () => {
     const oauthRepository = mock<IOAuthRepository>();
     const loadUserUseCase = new LoadUserUseCase(auth, mock<IUserRepository>());
 
-    oauthRepository.login.mockResolvedValue("");
+    (oauthRepository.login as any).mockResolvedValue("");
 
     const useCase = new OAuthLoginUseCase(auth, oauthRepository, loadUserUseCase);
 

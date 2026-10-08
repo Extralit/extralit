@@ -63,18 +63,18 @@ The development environment uses Docker Compose to run all required services. Ke
 # Start all services
 docker-compose up -d
 
+# Install dependencies
+uv sync --dev
+
 # Run server in dev mode
-pdm run dev
+uv run uvicorn extralit_server:app --host 0.0.0.0 --port 6900 --reload
 
 # Run tests
-pdm test
+uv run pytest tests
 
 # Format and lint
-pdm format
-pdm lint
-
-# Run all checks
-pdm all
+uv run ruff format
+uv run ruff check
 ```
 
 ## Key Components
@@ -142,7 +142,7 @@ However, expect some tests to fail or be skipped when running locally.
 
 ## Contributing
 
-Check our [contribution guide](https://docs.extralit.ai/latest/community/contributor) and join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-2kt8t12r7-uFj0bZ5SPAOhRFkxP7ZQaQ).
+Check our [contribution guide](https://docs.extralit.ai/latest/community/contributor) and join our [Slack community](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).
 
 ## Roadmap
 

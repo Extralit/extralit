@@ -1,17 +1,17 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { BackendEnvironment } from "../types/environment";
-import { PublicNuxtAxiosInstance } from "../services/useAxiosExtension";
+import type { AxiosInstance } from "axios";
+import { type BackendEnvironment } from "../types/environment";
+import { type PublicAxiosInstance } from "../services/useAxiosExtension";
 import { largeCache } from "./AxiosCache";
 import { Environment } from "~/v1/domain/entities/environment/Environment";
-import { IEnvironmentRepository } from "~/v1/domain/services/IEnvironmentRepository";
+import { type IEnvironmentRepository } from "~/v1/domain/services/IEnvironmentRepository";
 
 const enum ENVIRONMENT_API_ERRORS {
   FETCHING = "ERROR_FETCHING_ENVIRONMENT_SETTINGS",
 }
 
 export class EnvironmentRepository implements IEnvironmentRepository {
-  private readonly axios: NuxtAxiosInstance;
-  constructor(axios: PublicNuxtAxiosInstance) {
+  private readonly axios: AxiosInstance;
+  constructor(axios: PublicAxiosInstance) {
     this.axios = axios.makePublic();
   }
 

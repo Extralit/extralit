@@ -1,27 +1,14 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 import secrets
 from collections.abc import Iterable, Sequence
 from uuid import UUID
 
 import bcrypt
-from sqlalchemy import exists, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from extralit_server.contexts import datasets
-from extralit_server.database import retry_db_operation
+from extralit_server.database import db_retry_policy
 from extralit_server.enums import UserRole
 from extralit_server.errors.future import NotUniqueError, UnprocessableEntityError
 from extralit_server.models import User, Workspace, WorkspaceUser
@@ -79,37 +66,30 @@ async def create_workspace(db: AsyncSession, workspace_attrs: dict) -> Workspace
     )
 
 
-async def delete_workspace(db: AsyncSession, workspace: Workspace):
+async def delete_workspace(db: AsyncSession, workspace: Workspace, autocommit: bool = True):
     if await datasets.list_datasets(db, workspace_id=workspace.id):
         raise NotUniqueError(f"Cannot delete the workspace {workspace.id}. This workspace has some datasets linked")
 
-    return await workspace.delete(db)
+    return await workspace.delete(db, autocommit=autocommit)
 
 
+@db_retry_policy
 async def user_exists(db: AsyncSession, user_id: UUID) -> bool:
-    @retry_db_operation(max_retries=3, delay=0.1, backoff=2.0)
-    async def _execute_query():
-        return await db.scalar(select(exists().where(User.id == user_id)))
-
-    return await _execute_query()
+    return await db.scalar(select(exists().where(User.id == user_id)))
 
 
+@db_retry_policy
 async def get_user_by_username(db: AsyncSession, username: str) -> User | None:
-    @retry_db_operation(max_retries=3, delay=0.1, backoff=2.0)
-    async def _execute_query():
-        result = await db.execute(select(User).filter_by(username=username).options(selectinload(User.workspaces)))
-        return result.scalar_one_or_none()
-
-    return await _execute_query()
+    result = await db.execute(
+        select(User).filter(func.lower(User.username) == func.lower(username)).options(selectinload(User.workspaces))
+    )
+    return result.scalar_one_or_none()
 
 
+@db_retry_policy
 async def get_user_by_api_key(db: AsyncSession, api_key: str) -> User | None:
-    @retry_db_operation(max_retries=3, delay=0.1, backoff=2.0)
-    async def _execute_query():
-        result = await db.execute(select(User).where(User.api_key == api_key).options(selectinload(User.workspaces)))
-        return result.scalar_one_or_none()
-
-    return await _execute_query()
+    result = await db.execute(select(User).where(User.api_key == api_key).options(selectinload(User.workspaces)))
+    return result.scalar_one_or_none()
 
 
 async def list_users(db: "AsyncSession") -> Sequence[User]:

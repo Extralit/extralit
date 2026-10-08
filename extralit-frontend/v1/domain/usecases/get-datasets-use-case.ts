@@ -1,5 +1,5 @@
-import { IDatasetRepository } from "../services/IDatasetRepository";
-import { IDatasetsStorage } from "../services/IDatasetsStorage";
+import { type IDatasetRepository } from "../services/IDatasetRepository";
+import { type IDatasetsStorage } from "../services/IDatasetsStorage";
 
 export class GetDatasetsUseCase {
   constructor(

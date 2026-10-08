@@ -1,11 +1,10 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { Response } from "../types";
+import type { AxiosInstance } from "axios";
+import { type Response } from "../types";
+import type { components } from "~/types/generated/api";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 
-interface BackendWorkspace {
-  id: string;
-  name: string;
-}
+// Sourced from openapi/v1.json; regenerate with `npm run api:types`.
+type BackendWorkspace = components["schemas"]["Workspace"];
 
 const enum WORKSPACES_API_ERRORS {
   GET_WORKSPACES = "GET_WORKSPACES",
@@ -16,14 +15,18 @@ const enum WORKSPACES_API_ERRORS {
 }
 
 export class WorkspaceRepositoryError extends Error {
-  constructor(public readonly type: WORKSPACES_API_ERRORS, public readonly originalError: any, message?: string) {
+  constructor(
+    public readonly type: WORKSPACES_API_ERRORS,
+    public readonly originalError: any,
+    message?: string
+  ) {
     super(message || `Workspace API error: ${type}`);
     this.name = "WorkspaceRepositoryError";
   }
 }
 
 export class WorkspaceRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async getWorkspaces(): Promise<BackendWorkspace[]> {
     try {

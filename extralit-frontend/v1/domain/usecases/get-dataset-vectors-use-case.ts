@@ -1,4 +1,4 @@
-import { DatasetVector } from "../entities/vector/DatasetVector";
+import { type DatasetVector } from "../entities/vector/DatasetVector";
 import { VectorRepository } from "@/v1/infrastructure/repositories/VectorRepository";
 
 export class GetDatasetVectorsUseCase {

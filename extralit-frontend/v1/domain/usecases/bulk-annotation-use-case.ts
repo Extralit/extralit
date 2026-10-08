@@ -2,7 +2,7 @@ import { IEventDispatcher } from "@codescouts/events";
 import { Record } from "../entities/record/Record";
 import { RecordResponseUpdatedEvent } from "../events/RecordResponseUpdatedEvent";
 import { RecordCriteria } from "../entities/record/RecordCriteria";
-import { RecordStatus } from "../entities/record/RecordAnswer";
+import { type RecordStatus } from "../entities/record/RecordAnswer";
 import { GetRecordsByCriteriaUseCase } from "./get-records-by-criteria-use-case";
 import { LoadRecordsToAnnotateUseCase } from "./load-records-to-annotate-use-case";
 import { RecordRepository } from "~/v1/infrastructure/repositories";
@@ -28,7 +28,9 @@ export class BulkAnnotationUseCase {
     recordReference: Record,
     selectedRecords: Record[],
     affectAllRecords = false,
-    progress: Progress = () => {}
+    progress: Progress = () => {
+      /* no-op: progress reporting is optional */
+    }
   ) {
     const records = [...selectedRecords];
 
@@ -56,7 +58,9 @@ export class BulkAnnotationUseCase {
     status: AvailableStatus,
     recordReference: Record,
     selectedRecords: Record[],
-    progress: Progress = () => {}
+    progress: Progress = () => {
+      /* no-op: progress reporting is optional */
+    }
   ) {
     const results: boolean[] = [];
 

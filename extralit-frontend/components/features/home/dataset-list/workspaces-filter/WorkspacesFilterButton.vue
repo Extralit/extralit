@@ -3,7 +3,6 @@
 </template>
 
 <script>
-import "assets/icons/sort";
 export default {
   props: {
     isActive: {

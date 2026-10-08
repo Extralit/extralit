@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import logging
 import os
 from typing import TYPE_CHECKING, Any, Optional
@@ -38,6 +24,9 @@ if TYPE_CHECKING:
     from PIL.Image import Image
 
 _LOGGER = logging.getLogger(__name__)
+
+#: Margins are estimated by comparing the leading pages; the rest are never rendered.
+MARGIN_SAMPLE_PAGES = 5
 
 
 def pil_to_cv(image: "Image") -> "NDArray":
@@ -134,24 +123,28 @@ def find_horizontal_bands(mask: "Image", min_height: int = 15, min_ratio: float 
 
 
 class PDFAnalyzer:
-    def analyze_pdf_layout(self, pdf_data: bytes, filename: str) -> tuple[dict[str, Any], Optional[bytes]]:
+    def analyze_pdf_layout(
+        self, pdf_data: bytes, filename: str, max_pages: int = MARGIN_SAMPLE_PAGES
+    ) -> tuple[dict[str, Any], Optional[bytes]]:
         """
         Analyze PDF layout to extract margin and region information.
 
         Args:
             pdf_data: PDF file data as bytes
             filename: Filename for logging
+            max_pages: how many leading pages to render; only these are ever compared
 
         Returns:
             Tuple of (dictionary containing layout analysis metadata, thumbnail bytes or None)
         """
 
         try:
-            images = pdf2image.convert_from_bytes(pdf_data, dpi=150)  # type: ignore
+            # Rendering every page at 150 DPI cost minutes on long PDFs for a five-page comparison.
+            images = pdf2image.convert_from_bytes(pdf_data, dpi=150, first_page=1, last_page=max_pages)  # type: ignore
             if not images:
                 return {"error": "No pages found"}, None
 
-            _LOGGER.info(f"Analyzing layout for {filename} with {len(images)} pages")
+            _LOGGER.info(f"Analyzing layout for {filename} with {len(images)} of its leading pages")
 
             # Generate thumbnail from first page
             thumbnail_bytes = None
@@ -166,7 +159,7 @@ class PDFAnalyzer:
             layout_data = self._analyze_page_layout(images)
 
             layout_result = {
-                "page_count": len(images),
+                "pages_sampled": len(images),
                 "page_dimensions": {"width": images[0].size[0], "height": images[0].size[1]} if images else {},
                 **layout_data,
             }
@@ -188,7 +181,7 @@ class PDFAnalyzer:
         reference_img = images[0].convert("RGB")
         margin_data = []
 
-        for i in range(1, min(len(images), 5)):  # Analyze up to 5 pages for efficiency
+        for i in range(1, len(images)):
             compare_img = images[i].convert("RGB")
             page_margins = self._compare_pages_for_margins(reference_img, compare_img)
             if page_margins:
@@ -224,7 +217,7 @@ class PDFAnalyzer:
             horizontal_bands = find_horizontal_bands(sameness_mask)
 
             # Step 4: Use contour-based region classification
-            annotated_img, detected_regions = classify_and_draw_layout_regions(
+            _annotated_img, detected_regions = classify_and_draw_layout_regions(
                 reference, sameness_mask, min_area=5000, label=False
             )
 
@@ -243,7 +236,7 @@ class PDFAnalyzer:
         """
         Advanced region classification combining horizontal bands and contour detection.
         """
-        width, height = page_size
+        _width, height = page_size
         regions = {
             "header_bands": [],
             "footer_bands": [],
@@ -332,7 +325,7 @@ class PDFAnalyzer:
         """
         Classify horizontal bands into headers, footers, and margins.
         """
-        width, height = page_size
+        _width, height = page_size
         regions = {"header_bands": [], "footer_bands": [], "estimated_margins": {}}
 
         for start_y, end_y in bands:

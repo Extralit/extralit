@@ -61,9 +61,6 @@
 </template>
 
 <script>
-import "assets/icons/close";
-import "assets/icons/suggestion";
-
 export default {
   name: "EntityComponent",
   props: {
@@ -131,8 +128,8 @@ export default {
             ? i === 0
               ? `${width - left}px`
               : i === linesCount
-              ? `${right}px`
-              : `${width}px`
+                ? `${right}px`
+                : `${width}px`
             : `${width}px`,
           left: i === 0 ? `${left}px` : 0,
           top: `${top + i * this.entityPosition.lineHeight}px`,
@@ -224,7 +221,7 @@ export default {
       }
     });
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.scroll) {
       this.scroll.removeEventListener("scroll", this.getPosition);
     }

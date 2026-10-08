@@ -154,6 +154,23 @@ workspace = client.workspaces("my_workspace")
 removed_user = workspace.remove_user("my_username")
 ```
 
+## Diagnose workspace health
+
+
+You can run health diagnostics on a workspace to check for common issues like an unreachable storage root, connectivity problems, or configuration issues. The `doctor` method checks various aspects of the workspace setup and can automatically fix certain issues.
+
+!!! tip "CLI Usage"
+    You can run workspace diagnostics from the command line:
+    ```bash
+    extralit workspaces --name my_workspace doctor
+    ```
+
+The doctor checks:
+- **Storage root**: The configured `EXTRALIT_STORAGE_URL` is reachable with the server's credentials
+- **RQ worker pool**: Tests background job queue connectivity (informational)
+- **Elasticsearch indexes**: Checks dataset index availability (informational)
+
+
 ## Delete a workspace
 
 To delete a workspace, **no dataset can be associated with it**. If the workspace contains any dataset, deletion will fail. You can delete a workspace by calling the `delete` method on the `Workspace` class.

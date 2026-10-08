@@ -132,6 +132,7 @@ export default {
   button: {
     ignore_and_continue: "Ignorieren und fortfahren",
     login: "Anmelden",
+    logging_in: "Anmeldung läuft...",
     signin_with_provider: "Mit {provider} anmelden",
     "hf-login": "Mit Hugging Face anmelden",
     "extralithub-login": "Mit Extralit Hub anmelden",
@@ -272,7 +273,7 @@ export default {
     },
   },
   home: {
-    argillaDatasets: "Extralit Datensätze",
+    extralitDatasets: "Extralit Datensätze",
     none: "Bis jetzt keine",
     importTitle: "Importiere ein Datensatz aus dem Hugging Face Hub",
     importText: "Starten Sie mit einem Datensatz aus dem Hub, indem Sie einfach den Repository-Namen einfügen",

@@ -1,19 +1,5 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 import pytest
@@ -35,7 +21,7 @@ class DocumentDeleteRequest(BaseModel):
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="LocalFileStorage can't be used in 'await' expression")
 async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
-    workspace = await WorkspaceFactory.create_with_s3(name="test-workspace")
+    workspace = await WorkspaceFactory.create(name="test-workspace")
 
     document_json = {
         "id": str(uuid4()),
@@ -74,7 +60,7 @@ async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owne
 @pytest.mark.asyncio
 @pytest.mark.skip(reason="LocalFileStorage can't be used in 'await' expression")
 async def test_upload_duplicate_document(async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict):
-    workspace = await WorkspaceFactory.create_with_s3(name="test-workspace")
+    workspace = await WorkspaceFactory.create(name="test-workspace")
 
     existing_document = {
         "id": str(uuid4()),
@@ -265,3 +251,49 @@ async def test_list_documents(async_client: "AsyncClient", db: "AsyncSession", o
     assert response.status_code == 200
     assert len(response.json()) == 2
     assert response.json()[0]["id"] == str(doc_id)
+
+
+@pytest.mark.asyncio
+async def test_delete_documents_removes_every_artifact(
+    async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict
+):
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(workspace=workspace)
+
+    with patch("extralit_server.contexts.files.delete_document_artifacts", new_callable=AsyncMock) as fan_out:
+        response = await async_client.request(
+            "DELETE",
+            f"/api/v1/documents/workspace/{workspace.id}",
+            json={"id": str(document.id)},
+            headers=owner_auth_header,
+        )
+
+    assert response.status_code == 200, response.json()
+    assert fan_out.await_args.args[1:] == (workspace.name, document.id)
+
+
+@pytest.mark.asyncio
+async def test_delete_documents_succeeds_when_layout_cleanup_fails(
+    async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict
+):
+    # The rows are already gone; a stuck Lance dataset must not make the document undeletable.
+    workspace = await WorkspaceFactory.create()
+    document = await DocumentFactory.create(workspace=workspace)
+
+    with (
+        patch("extralit_server.contexts.files.delete_object", new_callable=AsyncMock),
+        patch(
+            "extralit_server.contexts.ocr.storage.delete_layout",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("lance down"),
+        ),
+    ):
+        response = await async_client.request(
+            "DELETE",
+            f"/api/v1/documents/workspace/{workspace.id}",
+            json={"id": str(document.id)},
+            headers=owner_auth_header,
+        )
+
+    assert response.status_code == 200, response.json()
+    assert response.json() == 1

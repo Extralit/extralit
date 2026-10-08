@@ -3,3 +3,14 @@ node_modules
 /test-results/
 /playwright-report/
 /playwright/.cache/
+.nuxtrc
+.nuxt/
+.output/
+.nitro/
+.cache/
+dist/
+.vercel
+.env*
+
+# extraction e2e generated seed output (regenerated per run)
+e2e/extraction/seed/seed-output.json
