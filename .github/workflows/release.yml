@@ -102,7 +102,7 @@ jobs:
           echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Checkout main
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: main
           # Full history + tags: the convergence check reads out an existing tag's commit.
@@ -272,7 +272,7 @@ jobs:
           private-key: ${{ secrets.EXTRALIT_OPS_PRIVATE_KEY }}
 
       - name: Checkout the base commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ needs.plan.outputs.base_sha }}
           # An App token, NOT GITHUB_TOKEN: pushes made with GITHUB_TOKEN emit no
