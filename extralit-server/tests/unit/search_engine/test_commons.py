@@ -92,7 +92,6 @@ async def dataset_for_pagination(opensearch: OpenSearch):
 
 
 @pytest_asyncio.fixture(scope="function")
-@pytest.mark.asyncio
 async def test_banking_sentiment_dataset_non_indexed():
     text_question = await TextQuestionFactory(name="text")
     rating_question = await RatingQuestionFactory(name="rating")
@@ -210,7 +209,6 @@ async def test_banking_sentiment_dataset_non_indexed():
 
 
 @pytest_asyncio.fixture(scope="function")
-@pytest.mark.asyncio
 async def test_banking_sentiment_dataset(
     search_engine: BaseElasticAndOpenSearchEngine,
     opensearch: OpenSearch,
@@ -225,7 +223,6 @@ async def test_banking_sentiment_dataset(
 
 
 @pytest_asyncio.fixture(scope="function")
-@pytest.mark.asyncio
 async def test_banking_sentiment_dataset_with_vectors(
     search_engine: BaseElasticAndOpenSearchEngine, opensearch: OpenSearch, test_banking_sentiment_dataset: Dataset
 ) -> Dataset:

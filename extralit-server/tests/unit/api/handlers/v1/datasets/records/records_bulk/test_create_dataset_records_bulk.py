@@ -4,6 +4,7 @@ from uuid import UUID
 import pytest
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
+from pydantic.version import version_short
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,6 +35,8 @@ from tests.factories import (
     TextQuestionFactory,
     WebhookFactory,
 )
+
+PYDANTIC_ERRORS_URL = f"https://errors.pydantic.dev/{version_short()}/v"
 
 
 @pytest.mark.asyncio
@@ -545,13 +548,13 @@ class TestCreateDatasetRecordsBulk:
                             "have at least 1 character', "
                             "'input': '', 'ctx': {'min_length': "
                             "1}, 'url': "
-                            "'https://errors.pydantic.dev/2.9/v/string_too_short'}, "
+                            f"'{PYDANTIC_ERRORS_URL}/string_too_short'}}, "
                             "{'type': 'string_too_short', 'loc': "
                             "('content',), 'msg': 'String should "
                             "have at least 1 character', "
                             "'input': '', 'ctx': {'min_length': "
                             "1}, 'url': "
-                            "'https://errors.pydantic.dev/2.9/v/string_too_short'}]",
+                            f"'{PYDANTIC_ERRORS_URL}/string_too_short'}}]",
                             "type": "value_error",
                         }
                     ]
@@ -649,7 +652,7 @@ class TestCreateDatasetRecordsBulk:
                     "errors": [
                         {
                             "loc": ["body", "items", 0, "fields"],
-                            "msg": "Value error, Error parsing chat field 'chat': [{'type': 'missing', 'loc': ('content',), 'msg': 'Field required', 'input': {'role': 'user'}, 'url': 'https://errors.pydantic.dev/2.9/v/missing'}]",
+                            "msg": f"Value error, Error parsing chat field 'chat': [{{'type': 'missing', 'loc': ('content',), 'msg': 'Field required', 'input': {{'role': 'user'}}, 'url': '{PYDANTIC_ERRORS_URL}/missing'}}]",
                             "type": "value_error",
                         }
                     ]
@@ -733,7 +736,7 @@ class TestCreateDatasetRecordsBulk:
                         "params": {
                             "errors": [
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "constrained-str"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "str"],
                                     "msg": "Input should be a valid string",
                                     "type": "string_type",
                                 },
@@ -743,7 +746,7 @@ class TestCreateDatasetRecordsBulk:
                                     "type": "list_type",
                                 },
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[constrained-str,any]"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[str,any]"],
                                     "msg": "Input should be a valid dictionary",
                                     "type": "dict_type",
                                 },
@@ -760,7 +763,7 @@ class TestCreateDatasetRecordsBulk:
                         "params": {
                             "errors": [
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "constrained-str"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "str"],
                                     "msg": "Input should be a valid string",
                                     "type": "string_type",
                                 },
@@ -770,7 +773,7 @@ class TestCreateDatasetRecordsBulk:
                                     "type": "list_type",
                                 },
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[constrained-str,any]"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[str,any]"],
                                     "msg": "Input should be a valid dictionary",
                                     "type": "dict_type",
                                 },
@@ -787,7 +790,7 @@ class TestCreateDatasetRecordsBulk:
                         "params": {
                             "errors": [
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "constrained-str"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "str"],
                                     "msg": "Input should be a valid string",
                                     "type": "string_type",
                                 },
@@ -797,7 +800,7 @@ class TestCreateDatasetRecordsBulk:
                                     "type": "list_type",
                                 },
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[constrained-str,any]"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[str,any]"],
                                     "msg": "Input should be a valid dictionary",
                                     "type": "dict_type",
                                 },
