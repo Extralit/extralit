@@ -106,9 +106,9 @@
     "node": ">=20.0.0"
   },
   "overrides": {
-    "@intlify/shared": "11.4.5",
-    "@intlify/core-base": "11.4.5",
-    "@intlify/message-compiler": "11.4.5",
-    "@intlify/core": "11.4.5"
+    "@intlify/shared": "11.4.13",
+    "@intlify/core-base": "11.4.13",
+    "@intlify/message-compiler": "11.4.13",
+    "@intlify/core": "11.4.13"
   }
 }
