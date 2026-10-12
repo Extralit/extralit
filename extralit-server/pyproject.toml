@@ -51,7 +51,7 @@ dependencies = [
     "rq>=2.4.1",
     "lazy-loader>=0.4",
     # Info status
-    "psutil >= 5.8, <5.10",
+    "psutil>=5.8,<7.3",
     # For logging, tracebacks, printing, progressbars
     "rich != 13.1.0",
     # For CLI
