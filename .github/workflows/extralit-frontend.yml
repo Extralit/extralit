@@ -35,10 +35,10 @@ jobs:
 
     steps:
       - name: Checkout Code 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js ⚙️
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload frontend test coverage
         if: always()
-        uses: codecov/codecov-action@v5.4.3
+        uses: codecov/codecov-action@v7.1.1
         with:
           files: ./coverage/lcov.info
           flags: frontend
@@ -92,7 +92,7 @@ jobs:
           npm run generate
 
       - name: Upload frontend statics as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: extralit-frontend
           path: extralit-frontend/.output/public

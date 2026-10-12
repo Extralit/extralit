@@ -55,9 +55,9 @@ jobs:
       matrix:
         python-version: ["3.12"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
         with:
           pyproject-file: "extralit/pyproject.toml"
           python-version: ${{ matrix.python-version }}
@@ -117,7 +117,7 @@ jobs:
 
       - name: Upload test coverage
         if: always()
-        uses: codecov/codecov-action@v5.4.3
+        uses: codecov/codecov-action@v7.1.1
         with:
           files: coverage.xml
           flags: extralit
@@ -132,7 +132,7 @@ jobs:
         run: |
           uv build
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         # Upload the package to be used in the next jobs only once
         if: ${{ matrix.python-version == '3.12' }}
         with:
@@ -162,16 +162,16 @@ jobs:
 
     steps:
       - name: Checkout Code 🛎
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download python package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: extralit
           path: extralit/dist
 
       - name: Install uv
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
         with:
           pyproject-file: "extralit/pyproject.toml"
           python-version: "3.9"

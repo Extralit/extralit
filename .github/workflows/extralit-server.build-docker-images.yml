@@ -35,10 +35,10 @@ jobs:
       PUBLISH_LATEST: ${{ (inputs.is_release && inputs.publish_latest) || (!inputs.is_release && inputs.pr_number == '') }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
 
       - name: Read package info
         id: package-info
@@ -64,19 +64,19 @@ jobs:
 
       - name: Set up QEMU
         if: ${{ inputs.is_release }}
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ inputs.is_release && secrets.AR_DOCKER_USERNAME || secrets.AR_DOCKER_USERNAME_DEV }}
           password: ${{ inputs.is_release && secrets.AR_DOCKER_PASSWORD || secrets.AR_DOCKER_PASSWORD_DEV }}
 
       - name: Download python package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: extralit-server
           path: extralit-server/docker/server/dist
@@ -84,12 +84,12 @@ jobs:
       # Only `labels` is consumed downstream; tags come from IMAGE_TAG, not from this step.
       - name: Extract OCI image metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.SERVER_DOCKER_IMAGE }}
 
       - name: Build and push `extralit-server` image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: extralit-server/docker/server
           platforms: ${{ env.PLATFORMS }}
@@ -107,7 +107,7 @@ jobs:
 
       - name: Push latest `extralit-server` image
         if: ${{ env.PUBLISH_LATEST == 'true' }}
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: extralit-server/docker/server
           platforms: ${{ env.PLATFORMS }}
@@ -129,7 +129,7 @@ jobs:
           repositories: extralit-hf-space
 
       - name: Trigger HF-Space build
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ steps.dispatch-token.outputs.token }}
           repository: extralit/extralit-hf-space
