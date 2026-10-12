@@ -1757,7 +1757,7 @@ class TestSuiteDatasets:
                 "params": {
                     "errors": [
                         {
-                            "loc": ["body", "items", 0, "fields", "output", "constrained-str"],
+                            "loc": ["body", "items", 0, "fields", "output", "str"],
                             "msg": "Input should be a valid string",
                             "type": "string_type",
                         },
@@ -1767,7 +1767,7 @@ class TestSuiteDatasets:
                             "type": "list_type",
                         },
                         {
-                            "loc": ["body", "items", 0, "fields", "output", "dict[constrained-str,any]"],
+                            "loc": ["body", "items", 0, "fields", "output", "dict[str,any]"],
                             "msg": "Input should be a valid dictionary",
                             "type": "dict_type",
                         },
@@ -1867,7 +1867,7 @@ class TestSuiteDatasets:
                 "params": {
                     "errors": [
                         {
-                            "loc": ["body", "items", 0, "fields", "output", "constrained-str"],
+                            "loc": ["body", "items", 0, "fields", "output", "str"],
                             "msg": "Input should be a valid string",
                             "type": "string_type",
                         },
@@ -1877,7 +1877,7 @@ class TestSuiteDatasets:
                             "type": "list_type",
                         },
                         {
-                            "loc": ["body", "items", 0, "fields", "output", "dict[constrained-str,any]"],
+                            "loc": ["body", "items", 0, "fields", "output", "dict[str,any]"],
                             "msg": "Input should be a valid dictionary",
                             "type": "dict_type",
                         },

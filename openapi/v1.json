@@ -28,7 +28,7 @@
           "file_data": {
             "anyOf": [
               {
-                "format": "binary",
+                "contentMediaType": "application/octet-stream",
                 "type": "string"
               },
               {
@@ -53,7 +53,7 @@
           },
           "files": {
             "items": {
-              "format": "binary",
+              "contentMediaType": "application/octet-stream",
               "type": "string"
             },
             "title": "Files",
@@ -88,7 +88,7 @@
       "Body_put_file_file__workspace___object__post": {
         "properties": {
           "file": {
-            "format": "binary",
+            "contentMediaType": "application/octet-stream",
             "title": "File",
             "type": "string"
           }
@@ -142,9 +142,6 @@
         "properties": {
           "type": {
             "const": "chat",
-            "enum": [
-              "chat"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -164,9 +161,6 @@
         "properties": {
           "type": {
             "const": "chat",
-            "enum": [
-              "chat"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -186,9 +180,6 @@
         "properties": {
           "type": {
             "const": "chat",
-            "enum": [
-              "chat"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -312,6 +303,7 @@
           "review": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -322,9 +314,6 @@
           },
           "type": {
             "const": "column",
-            "enum": [
-              "column"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -350,6 +339,7 @@
           "review": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -360,9 +350,6 @@
           },
           "type": {
             "const": "column",
-            "enum": [
-              "column"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -416,9 +403,6 @@
           },
           "type": {
             "const": "custom",
-            "enum": [
-              "custom"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -444,9 +428,6 @@
           },
           "type": {
             "const": "custom",
-            "enum": [
-              "custom"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -470,9 +451,6 @@
           },
           "type": {
             "const": "custom",
-            "enum": [
-              "custom"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -545,6 +523,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -616,6 +595,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -755,9 +735,6 @@
           },
           "strategy": {
             "const": "overlap",
-            "enum": [
-              "overlap"
-            ],
             "title": "Strategy",
             "type": "string"
           }
@@ -779,9 +756,6 @@
           },
           "strategy": {
             "const": "overlap",
-            "enum": [
-              "overlap"
-            ],
             "title": "Strategy",
             "type": "string"
           }
@@ -803,9 +777,6 @@
           },
           "strategy": {
             "const": "overlap",
-            "enum": [
-              "overlap"
-            ],
             "title": "Strategy",
             "type": "string"
           }
@@ -895,6 +866,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -970,9 +942,6 @@
         "properties": {
           "status": {
             "const": "discarded",
-            "enum": [
-              "discarded"
-            ],
             "title": "Status",
             "type": "string"
           },
@@ -981,6 +950,11 @@
               {
                 "additionalProperties": {
                   "$ref": "#/components/schemas/ResponseValueUpdate"
+                },
+                "propertyNames": {
+                  "description": "The name of the question",
+                  "maxLength": 200,
+                  "minLength": 1
                 },
                 "type": "object"
               },
@@ -1006,9 +980,6 @@
           },
           "status": {
             "const": "discarded",
-            "enum": [
-              "discarded"
-            ],
             "title": "Status",
             "type": "string"
           },
@@ -1017,6 +988,11 @@
               {
                 "additionalProperties": {
                   "$ref": "#/components/schemas/ResponseValueUpdate"
+                },
+                "propertyNames": {
+                  "description": "The name of the question",
+                  "maxLength": 200,
+                  "minLength": 1
                 },
                 "type": "object"
               },
@@ -1075,6 +1051,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -1282,6 +1259,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -1398,6 +1376,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -1483,9 +1462,6 @@
         "properties": {
           "status": {
             "const": "draft",
-            "enum": [
-              "draft"
-            ],
             "title": "Status",
             "type": "string"
           },
@@ -1494,6 +1470,11 @@
               {
                 "additionalProperties": {
                   "$ref": "#/components/schemas/ResponseValueUpdate"
+                },
+                "propertyNames": {
+                  "description": "The name of the question",
+                  "maxLength": 200,
+                  "minLength": 1
                 },
                 "type": "object"
               },
@@ -1519,9 +1500,6 @@
           },
           "status": {
             "const": "draft",
-            "enum": [
-              "draft"
-            ],
             "title": "Status",
             "type": "string"
           },
@@ -1530,6 +1508,11 @@
               {
                 "additionalProperties": {
                   "$ref": "#/components/schemas/ResponseValueUpdate"
+                },
+                "propertyNames": {
+                  "description": "The name of the question",
+                  "maxLength": 200,
+                  "minLength": 1
                 },
                 "type": "object"
               },
@@ -1884,9 +1867,6 @@
           "type": {
             "const": "float",
             "default": "float",
-            "enum": [
-              "float"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -1920,9 +1900,6 @@
           },
           "type": {
             "const": "float",
-            "enum": [
-              "float"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -1959,9 +1936,6 @@
           },
           "type": {
             "const": "float",
-            "enum": [
-              "float"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -2146,9 +2120,6 @@
         "properties": {
           "type": {
             "const": "image",
-            "enum": [
-              "image"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -2163,9 +2134,6 @@
         "properties": {
           "type": {
             "const": "image",
-            "enum": [
-              "image"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -2180,9 +2148,6 @@
         "properties": {
           "type": {
             "const": "image",
-            "enum": [
-              "image"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -2245,6 +2210,7 @@
         "description": "Request schema for creating import history record.",
         "properties": {
           "data": {
+            "additionalProperties": true,
             "description": "Tabular dataframe data converted from BibTeX file",
             "title": "Data",
             "type": "object"
@@ -2257,6 +2223,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -2349,6 +2316,7 @@
           "data": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -2372,6 +2340,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -2480,9 +2449,6 @@
           "type": {
             "const": "integer",
             "default": "integer",
-            "enum": [
-              "integer"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -2516,9 +2482,6 @@
           },
           "type": {
             "const": "integer",
-            "enum": [
-              "integer"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -2555,9 +2518,6 @@
           },
           "type": {
             "const": "integer",
-            "enum": [
-              "integer"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -2617,9 +2577,6 @@
           },
           "type": {
             "const": "label_selection",
-            "enum": [
-              "label_selection"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -2659,9 +2616,6 @@
           },
           "type": {
             "const": "label_selection",
-            "enum": [
-              "label_selection"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -2715,9 +2669,6 @@
           },
           "type": {
             "const": "label_selection",
-            "enum": [
-              "label_selection"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -2878,9 +2829,6 @@
         "properties": {
           "entity": {
             "const": "metadata",
-            "enum": [
-              "metadata"
-            ],
             "title": "Entity",
             "type": "string"
           },
@@ -3086,9 +3034,6 @@
           },
           "type": {
             "const": "multi_label_selection",
-            "enum": [
-              "multi_label_selection"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -3132,9 +3077,6 @@
           },
           "type": {
             "const": "multi_label_selection",
-            "enum": [
-              "multi_label_selection"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -3198,9 +3140,6 @@
           },
           "type": {
             "const": "multi_label_selection",
-            "enum": [
-              "multi_label_selection"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -3261,6 +3200,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -3861,9 +3801,6 @@
           },
           "type": {
             "const": "range",
-            "enum": [
-              "range"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -3910,9 +3847,6 @@
           },
           "type": {
             "const": "ranking",
-            "enum": [
-              "ranking"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -3937,9 +3871,6 @@
           },
           "type": {
             "const": "ranking",
-            "enum": [
-              "ranking"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -3955,9 +3886,6 @@
         "properties": {
           "type": {
             "const": "ranking",
-            "enum": [
-              "ranking"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -3979,9 +3907,6 @@
           },
           "type": {
             "const": "rating",
-            "enum": [
-              "rating"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -4006,9 +3931,6 @@
           },
           "type": {
             "const": "rating",
-            "enum": [
-              "rating"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -4052,9 +3974,6 @@
         "properties": {
           "type": {
             "const": "rating",
-            "enum": [
-              "rating"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -4084,6 +4003,7 @@
             "title": "External Id"
           },
           "fields": {
+            "additionalProperties": true,
             "title": "Fields",
             "type": "object"
           },
@@ -4100,6 +4020,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -4210,6 +4131,7 @@
                   "type": "array"
                 },
                 {
+                  "additionalProperties": true,
                   "type": "object"
                 },
                 {
@@ -4223,6 +4145,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -4319,9 +4242,6 @@
         "properties": {
           "entity": {
             "const": "record",
-            "enum": [
-              "record"
-            ],
             "title": "Entity",
             "type": "string"
           },
@@ -4390,6 +4310,7 @@
                       "type": "array"
                     },
                     {
+                      "additionalProperties": true,
                       "type": "object"
                     },
                     {
@@ -4408,6 +4329,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -4493,6 +4415,7 @@
                       "type": "array"
                     },
                     {
+                      "additionalProperties": true,
                       "type": "object"
                     },
                     {
@@ -4523,6 +4446,7 @@
           "metadata": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -4811,6 +4735,11 @@
                 "additionalProperties": {
                   "$ref": "#/components/schemas/ResponseValueCreate"
                 },
+                "propertyNames": {
+                  "description": "The name of the question",
+                  "maxLength": 200,
+                  "minLength": 1
+                },
                 "type": "object"
               },
               {
@@ -4830,9 +4759,6 @@
         "properties": {
           "entity": {
             "const": "response",
-            "enum": [
-              "response"
-            ],
             "title": "Entity",
             "type": "string"
           },
@@ -4840,9 +4766,6 @@
             "anyOf": [
               {
                 "const": "status",
-                "enum": [
-                  "status"
-                ],
                 "type": "string"
               },
               {
@@ -4956,10 +4879,12 @@
                 "type": "string"
               },
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
                 "items": {
+                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -5004,10 +4929,12 @@
                 "type": "string"
               },
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
                 "items": {
+                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -5106,6 +5033,7 @@
           },
           "review_widgets": {
             "additionalProperties": {
+              "additionalProperties": true,
               "type": "object"
             },
             "title": "Review Widgets",
@@ -5427,9 +5355,6 @@
           },
           "type": {
             "const": "span",
-            "enum": [
-              "span"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -5478,9 +5403,6 @@
           },
           "type": {
             "const": "span",
-            "enum": [
-              "span"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -5536,9 +5458,6 @@
           },
           "type": {
             "const": "span",
-            "enum": [
-              "span"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -5695,10 +5614,12 @@
       "Status": {
         "properties": {
           "memory": {
+            "additionalProperties": true,
             "title": "Memory",
             "type": "object"
           },
           "search_engine": {
+            "additionalProperties": true,
             "title": "Search Engine",
             "type": "object"
           },
@@ -5719,15 +5640,17 @@
         "properties": {
           "status": {
             "const": "submitted",
-            "enum": [
-              "submitted"
-            ],
             "title": "Status",
             "type": "string"
           },
           "values": {
             "additionalProperties": {
               "$ref": "#/components/schemas/ResponseValueUpdate"
+            },
+            "propertyNames": {
+              "description": "The name of the question",
+              "maxLength": 200,
+              "minLength": 1
             },
             "title": "Values",
             "type": "object"
@@ -5749,15 +5672,17 @@
           },
           "status": {
             "const": "submitted",
-            "enum": [
-              "submitted"
-            ],
             "title": "Status",
             "type": "string"
           },
           "values": {
             "additionalProperties": {
               "$ref": "#/components/schemas/ResponseValueUpdate"
+            },
+            "propertyNames": {
+              "description": "The name of the question",
+              "maxLength": 200,
+              "minLength": 1
             },
             "title": "Values",
             "type": "object"
@@ -5923,10 +5848,12 @@
                 "type": "string"
               },
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
                 "items": {
+                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -5946,9 +5873,6 @@
         "properties": {
           "entity": {
             "const": "suggestion",
-            "enum": [
-              "suggestion"
-            ],
             "title": "Entity",
             "type": "string"
           },
@@ -6014,9 +5938,6 @@
         "properties": {
           "type": {
             "const": "table",
-            "enum": [
-              "table"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -6031,9 +5952,6 @@
         "properties": {
           "type": {
             "const": "table",
-            "enum": [
-              "table"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -6048,9 +5966,6 @@
         "properties": {
           "type": {
             "const": "table",
-            "enum": [
-              "table"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -6079,9 +5994,6 @@
           },
           "type": {
             "const": "table",
-            "enum": [
-              "table"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -6110,9 +6022,6 @@
           },
           "type": {
             "const": "table",
-            "enum": [
-              "table"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -6141,9 +6050,6 @@
           },
           "type": {
             "const": "table",
-            "enum": [
-              "table"
-            ],
             "title": "Type",
             "type": "string"
           }
@@ -6201,9 +6107,6 @@
           },
           "type": {
             "const": "terms",
-            "enum": [
-              "terms"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6234,9 +6137,6 @@
           "type": {
             "const": "terms",
             "default": "terms",
-            "enum": [
-              "terms"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6258,9 +6158,6 @@
         "properties": {
           "type": {
             "const": "terms",
-            "enum": [
-              "terms"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6287,9 +6184,6 @@
         "properties": {
           "type": {
             "const": "terms",
-            "enum": [
-              "terms"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6318,9 +6212,6 @@
         "properties": {
           "type": {
             "const": "text",
-            "enum": [
-              "text"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6345,9 +6236,6 @@
         "properties": {
           "type": {
             "const": "text",
-            "enum": [
-              "text"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6372,9 +6260,6 @@
         "properties": {
           "type": {
             "const": "text",
-            "enum": [
-              "text"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6437,9 +6322,6 @@
           },
           "type": {
             "const": "text",
-            "enum": [
-              "text"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6478,9 +6360,6 @@
           },
           "type": {
             "const": "text",
-            "enum": [
-              "text"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6519,9 +6398,6 @@
           },
           "type": {
             "const": "text",
-            "enum": [
-              "text"
-            ],
             "title": "Type",
             "type": "string"
           },
@@ -6709,9 +6585,6 @@
         "properties": {
           "status": {
             "const": "discarded",
-            "enum": [
-              "discarded"
-            ],
             "title": "Status",
             "type": "string"
           },
@@ -6725,6 +6598,11 @@
               {
                 "additionalProperties": {
                   "$ref": "#/components/schemas/ResponseValueCreate"
+                },
+                "propertyNames": {
+                  "description": "The name of the question",
+                  "maxLength": 200,
+                  "minLength": 1
                 },
                 "type": "object"
               },
@@ -6746,9 +6624,6 @@
         "properties": {
           "status": {
             "const": "draft",
-            "enum": [
-              "draft"
-            ],
             "title": "Status",
             "type": "string"
           },
@@ -6760,6 +6635,11 @@
           "values": {
             "additionalProperties": {
               "$ref": "#/components/schemas/ResponseValueCreate"
+            },
+            "propertyNames": {
+              "description": "The name of the question",
+              "maxLength": 200,
+              "minLength": 1
             },
             "title": "Values",
             "type": "object"
@@ -6815,9 +6695,6 @@
         "properties": {
           "status": {
             "const": "submitted",
-            "enum": [
-              "submitted"
-            ],
             "title": "Status",
             "type": "string"
           },
@@ -6829,6 +6706,11 @@
           "values": {
             "additionalProperties": {
               "$ref": "#/components/schemas/ResponseValueCreate"
+            },
+            "propertyNames": {
+              "description": "The name of the question",
+              "maxLength": 200,
+              "minLength": 1
             },
             "title": "Values",
             "type": "object"
@@ -7414,6 +7296,7 @@
           "meta": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -7450,6 +7333,7 @@
           "result": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -7585,6 +7469,7 @@
             "anyOf": [
               {
                 "items": {
+                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -8640,6 +8525,7 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "additionalProperties": true,
                   "title": "Response List Models Chat Models Get",
                   "type": "object"
                 }

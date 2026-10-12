@@ -1591,10 +1591,7 @@ export interface components {
         };
         /** Body_put_file_file__workspace___object__post */
         Body_put_file_file__workspace___object__post: {
-            /**
-             * File
-             * Format: binary
-             */
+            /** File */
             file: string;
         };
         /**
@@ -1729,7 +1726,9 @@ export interface components {
              */
             nullable: boolean;
             /** Review */
-            review?: Record<string, never> | null;
+            review?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -1746,7 +1745,9 @@ export interface components {
              */
             nullable: boolean;
             /** Review */
-            review?: Record<string, never> | null;
+            review?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -1831,7 +1832,9 @@ export interface components {
             last_activity_at: string;
             mapping?: components["schemas"]["DatasetMapping"] | null;
             /** Metadata */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /** Name */
             name: string;
             status: components["schemas"]["DatasetStatus"];
@@ -1863,7 +1866,9 @@ export interface components {
             /** Guidelines */
             guidelines?: string | null;
             /** Metadata */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Name
              * @description Dataset name
@@ -1924,7 +1929,6 @@ export interface components {
             /**
              * Strategy
              * @constant
-             * @enum {string}
              */
             strategy: "overlap";
         };
@@ -1938,7 +1942,6 @@ export interface components {
             /**
              * Strategy
              * @constant
-             * @enum {string}
              */
             strategy: "overlap";
         };
@@ -1952,7 +1955,6 @@ export interface components {
             /**
              * Strategy
              * @constant
-             * @enum {string}
              */
             strategy: "overlap";
         };
@@ -1980,7 +1982,9 @@ export interface components {
             /** Guidelines */
             guidelines?: string | null;
             /** Metadata */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /** Name */
             name?: string | null;
         };
@@ -2050,7 +2054,9 @@ export interface components {
              * Metadata
              * @description Additional metadata for the document
              */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Pmid
              * @description The PubMed ID of the document.
@@ -2162,7 +2168,9 @@ export interface components {
              */
             inserted_at: string;
             /** Metadata */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /** Pmid */
             pmid: string | null;
             /** Reference */
@@ -2217,7 +2225,9 @@ export interface components {
              * Metadata
              * @description Additional metadata for the document
              */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Pmid
              * @description The PubMed ID of the document.
@@ -2529,7 +2539,9 @@ export interface components {
              * Data
              * @description Tabular dataframe data converted from BibTeX file
              */
-            data: Record<string, never>;
+            data: {
+                [key: string]: unknown;
+            };
             /**
              * Filename
              * @description Import filename (.bib, .csv, etc.)
@@ -2539,7 +2551,9 @@ export interface components {
              * Metadata
              * @description Import metadata including ImportStatus and associated files for each reference
              */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Workspace Id
              * Format: uuid
@@ -2602,7 +2616,9 @@ export interface components {
              * Data
              * @description Tabular dataframe data (only in detailed view)
              */
-            data?: Record<string, never> | null;
+            data?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Filename
              * @description Import filename
@@ -2618,7 +2634,9 @@ export interface components {
              * Metadata
              * @description Import metadata with status and files (in list and detailed view)
              */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Username
              * @description Username who created the import
@@ -2973,7 +2991,9 @@ export interface components {
             /** Last Modified */
             last_modified?: string | null;
             /** Metadata */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /** Object Name */
             object_name: string;
             /** Size */
@@ -3217,7 +3237,9 @@ export interface components {
             /** External Id */
             external_id?: string | null;
             /** Fields */
-            fields: Record<string, never>;
+            fields: {
+                [key: string]: unknown;
+            };
             /**
              * Id
              * Format: uuid
@@ -3229,7 +3251,9 @@ export interface components {
              */
             inserted_at: string;
             /** Metadata */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /** Reference */
             reference?: string | null;
             /** Responses */
@@ -3253,10 +3277,14 @@ export interface components {
             external_id?: string | null;
             /** Fields */
             fields: {
-                [key: string]: string | components["schemas"]["ChatFieldValue"][] | Record<string, never> | null;
+                [key: string]: string | components["schemas"]["ChatFieldValue"][] | {
+                    [key: string]: unknown;
+                } | null;
             };
             /** Metadata */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /** Reference */
             reference?: string | null;
             /** Responses */
@@ -3308,10 +3336,14 @@ export interface components {
         RecordUpdate: {
             /** Fields */
             fields?: {
-                [key: string]: string | components["schemas"]["ChatFieldValue"][] | Record<string, never> | null;
+                [key: string]: string | components["schemas"]["ChatFieldValue"][] | {
+                    [key: string]: unknown;
+                } | null;
             } | null;
             /** Metadata */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /** Reference */
             reference?: string | null;
             /** Suggestions */
@@ -3327,12 +3359,16 @@ export interface components {
             external_id?: string | null;
             /** Fields */
             fields?: {
-                [key: string]: string | components["schemas"]["ChatFieldValue"][] | Record<string, never> | null;
+                [key: string]: string | components["schemas"]["ChatFieldValue"][] | {
+                    [key: string]: unknown;
+                } | null;
             } | null;
             /** Id */
             id?: string | null;
             /** Metadata */
-            metadata?: Record<string, never> | null;
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
             /** Reference */
             reference?: string | null;
             /** Responses */
@@ -3463,12 +3499,20 @@ export interface components {
         /** ResponseValueCreate */
         ResponseValueCreate: {
             /** Value */
-            value: components["schemas"]["SpanQuestionResponseValueItem"][] | components["schemas"]["RankingQuestionResponseValueItem"][] | string[] | number | string | Record<string, never> | Record<string, never>[];
+            value: components["schemas"]["SpanQuestionResponseValueItem"][] | components["schemas"]["RankingQuestionResponseValueItem"][] | string[] | number | string | {
+                [key: string]: unknown;
+            } | {
+                [key: string]: unknown;
+            }[];
         };
         /** ResponseValueUpdate */
         ResponseValueUpdate: {
             /** Value */
-            value: components["schemas"]["SpanQuestionResponseValueItem"][] | components["schemas"]["RankingQuestionResponseValueItem"][] | string[] | number | string | Record<string, never> | Record<string, never>[];
+            value: components["schemas"]["SpanQuestionResponseValueItem"][] | components["schemas"]["RankingQuestionResponseValueItem"][] | string[] | number | string | {
+                [key: string]: unknown;
+            } | {
+                [key: string]: unknown;
+            }[];
         };
         /** ResponsesBulk */
         ResponsesBulk: {
@@ -3507,7 +3551,9 @@ export interface components {
             body: string;
             /** Review Widgets */
             review_widgets?: {
-                [key: string]: Record<string, never>;
+                [key: string]: {
+                    [key: string]: unknown;
+                };
             };
         };
         /** SchemaVersionRead */
@@ -3759,9 +3805,13 @@ export interface components {
         /** Status */
         Status: {
             /** Memory */
-            memory: Record<string, never>;
+            memory: {
+                [key: string]: unknown;
+            };
             /** Search Engine */
-            search_engine: Record<string, never>;
+            search_engine: {
+                [key: string]: unknown;
+            };
             /** Version */
             version: string;
         };
@@ -3843,7 +3893,11 @@ export interface components {
             score?: number | number[] | null;
             type?: components["schemas"]["SuggestionType"] | null;
             /** Value */
-            value: components["schemas"]["SpanQuestionResponseValueItem"][] | components["schemas"]["RankingQuestionResponseValueItem"][] | string[] | number | string | Record<string, never> | Record<string, never>[];
+            value: components["schemas"]["SpanQuestionResponseValueItem"][] | components["schemas"]["RankingQuestionResponseValueItem"][] | string[] | number | string | {
+                [key: string]: unknown;
+            } | {
+                [key: string]: unknown;
+            }[];
         };
         /** SuggestionFilterScope */
         SuggestionFilterScope: {
@@ -4430,7 +4484,9 @@ export interface components {
              * Meta
              * @description Additional job metadata
              */
-            meta?: Record<string, never> | null;
+            meta?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Progress
              * @description Job progress (0.0-1.0)
@@ -4445,7 +4501,9 @@ export interface components {
              * Result
              * @description Job result data
              */
-            result?: Record<string, never> | null;
+            result?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Running Jobs
              * @description Number of running jobs in the group
@@ -4513,7 +4571,9 @@ export interface components {
              * Jobs
              * @description Detailed job information
              */
-            jobs?: Record<string, never>[] | null;
+            jobs?: {
+                [key: string]: unknown;
+            }[] | null;
             /**
              * Progress
              * @description Progress percentage (0.0-1.0)
@@ -5375,7 +5435,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Bad Request */
