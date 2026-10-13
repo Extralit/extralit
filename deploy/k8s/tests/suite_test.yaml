@@ -1,0 +1,206 @@
+suite: test extralit chart
+templates:
+  - templates/deployment.yaml
+  - templates/worker-deployment.yaml
+  - templates/secret.yaml
+  - templates/elasticsearch-operator.yaml
+  - templates/postgresql.yaml
+  - templates/redis.yaml
+  - templates/pvc.yaml
+  - templates/service.yaml
+  - templates/hpa.yaml
+  - templates/ingress.yaml
+
+tests:
+  - it: should render deployment with image and auth env
+    set:
+      extralit.replicaCount: 2
+      extralit.image.repository: extralitdev/extralit-server
+      extralit.image.tag: main
+    template: templates/deployment.yaml
+    asserts:
+      - isKind:
+          of: Deployment
+      - equal:
+          path: spec.replicas
+          value: 2
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: extralitdev/extralit-server:main
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: USERNAME
+            value: extralit
+
+  - it: should default the image tag to appVersion
+    template: templates/deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].image
+          value: extralit/extralit-server:latest
+
+  - it: should point server and worker at in-chart redis and ECK elasticsearch
+    templates:
+      - templates/deployment.yaml
+      - templates/worker-deployment.yaml
+    release:
+      name: rel
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: EXTRALIT_REDIS_URL
+            value: redis://rel-extralit-redis:6379/0
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: EXTRALIT_ELASTICSEARCH
+            value: http://elastic:$(ELASTIC_PASSWORD)@rel-extralit-es-http:9200
+
+  - it: should use external redis in the worker when redis is disabled
+    set:
+      redis.enabled: false
+      externalRedis.url: redis://ext:6379/1
+    template: templates/worker-deployment.yaml
+    asserts:
+      - contains:
+          path: spec.template.spec.containers[0].env
+          content:
+            name: EXTRALIT_REDIS_URL
+            value: redis://ext:6379/1
+
+  - it: should build the database url from in-chart postgresql
+    release:
+      name: rel
+    template: templates/secret.yaml
+    asserts:
+      - equal:
+          path: stringData.database-url
+          value: postgresql+asyncpg://postgres:postgres@rel-extralit-postgresql:5432/extralit
+
+  - it: should require externalDatabase.url when postgresql is disabled
+    set:
+      postgresql.enabled: false
+    template: templates/worker-deployment.yaml
+    asserts:
+      - failedTemplate:
+          errorMessage: externalDatabase.url is required when postgresql.enabled is false
+
+  - it: should not render postgresql or redis when disabled
+    set:
+      postgresql.enabled: false
+      externalDatabase.url: postgresql+asyncpg://u:p@db/extralit
+      redis.enabled: false
+    templates:
+      - templates/postgresql.yaml
+      - templates/redis.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render elasticsearch operator resources when enabled
+    set:
+      elasticsearch.version: 8.17.0
+      elasticsearch.nodeCount: 3
+      elasticsearch.persistence.size: 10Gi
+    template: templates/elasticsearch-operator.yaml
+    asserts:
+      - isKind:
+          of: Elasticsearch
+      - equal:
+          path: spec.version
+          value: 8.17.0
+      - equal:
+          path: spec.nodeSets[0].count
+          value: 3
+      - equal:
+          path: spec.nodeSets[0].volumeClaimTemplates[0].spec.resources.requests.storage
+          value: 10Gi
+
+  - it: should not render elasticsearch operator resources when disabled
+    set:
+      elasticsearch.useOperator: false
+      externalElasticsearch.url: http://es:9200
+    template: templates/elasticsearch-operator.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render PVC when persistence is enabled
+    set:
+      extralit.persistence.size: 5Gi
+    template: templates/pvc.yaml
+    asserts:
+      - isKind:
+          of: PersistentVolumeClaim
+      - equal:
+          path: spec.accessModes[0]
+          value: ReadWriteOnce
+      - equal:
+          path: spec.resources.requests.storage
+          value: 5Gi
+      - notExists:
+          path: spec.storageClassName
+
+  - it: should render service correctly
+    template: templates/service.yaml
+    asserts:
+      - isKind:
+          of: Service
+      - equal:
+          path: spec.ports[0].port
+          value: 6900
+      - equal:
+          path: spec.ports[0].name
+          value: http
+
+  - it: should render HPA when enabled
+    set:
+      extralit.hpa.enabled: true
+      extralit.hpa.minReplicas: 2
+      extralit.hpa.maxReplicas: 5
+      extralit.hpa.targetCPUUtilizationPercentage: 80
+    template: templates/hpa.yaml
+    asserts:
+      - isKind:
+          of: HorizontalPodAutoscaler
+      - equal:
+          path: spec.minReplicas
+          value: 2
+      - equal:
+          path: spec.maxReplicas
+          value: 5
+      - equal:
+          path: spec.metrics[0].resource.target.averageUtilization
+          value: 80
+
+  - it: should not render HPA when disabled
+    template: templates/hpa.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: should render Ingress when enabled
+    set:
+      extralit.ingress.enabled: true
+      extralit.ingress.host: extralit.example.com
+    template: templates/ingress.yaml
+    asserts:
+      - isKind:
+          of: Ingress
+      - equal:
+          path: spec.ingressClassName
+          value: nginx
+      - equal:
+          path: spec.rules[0].host
+          value: extralit.example.com
+      - equal:
+          path: spec.rules[0].http.paths[0].backend.service.port.number
+          value: 6900
+
+  - it: should not render Ingress when disabled
+    template: templates/ingress.yaml
+    asserts:
+      - hasDocuments:
+          count: 0

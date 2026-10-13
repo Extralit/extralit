@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "extralit.fullname" . }}
+  labels:
+    {{- include "extralit.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.extralit.service.type }}
+  selector:
+    {{- include "extralit.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: server
+  ports:
+    - name: http
+      port: {{ .Values.extralit.service.port }}
+      targetPort: http

@@ -1,0 +1,130 @@
+nameOverride: ""
+fullnameOverride: ""
+
+extralit:
+  replicaCount: 1
+  image:
+    # Use extralitdev/extralit-server for builds from `main`.
+    repository: extralit/extralit-server
+    tag: ""
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: 1Gi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+  # Generated and kept across upgrades when empty.
+  authSecretKey: ""
+  auth:
+    username: "extralit"
+    password: "12345678"
+    apiKey: "extralit.apikey"
+    workspace: "default"
+  baseUrl: ""
+  extraEnv: []
+  persistence:
+    enabled: true
+    # ReadWriteOnce pins server and worker pods to one node; use ReadWriteMany to spread them.
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    storageClass: ""
+    mountPath: "/var/lib/extralit"
+  service:
+    type: ClusterIP
+    port: 6900
+  ingress:
+    enabled: false
+    className: "nginx"
+    host: "extralit.local"
+    annotations:
+      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    tls: []
+  hpa:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 50
+
+worker:
+  replicaCount: 1
+  numWorkers: 2
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+# Object storage root. Empty means `file://<mountPath>/storage` on the extralit PVC.
+storage:
+  url: ""
+  s3:
+    accessKey: ""
+    secretKey: ""
+    region: ""
+
+postgresql:
+  enabled: true
+  image: postgres:14
+  auth:
+    username: postgres
+    password: postgres
+    database: extralit
+  persistence:
+    size: 2Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+
+# Used when postgresql.enabled is false, e.g. postgresql+asyncpg://user:pass@host:5432/extralit
+externalDatabase:
+  url: ""
+
+# Requires the ECK operator: https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-install-helm.html
+elasticsearch:
+  useOperator: true
+  version: 8.17.0
+  nodeCount: 1
+  resources:
+    requests:
+      cpu: 0.25
+      memory: 1Gi
+    limits:
+      cpu: 1
+      memory: 2Gi
+  persistence:
+    size: 1Gi
+    storageClass: ""
+
+# Used when elasticsearch.useOperator is false, e.g. http://elastic:pass@es.example.com:9200
+externalElasticsearch:
+  url: ""
+  sslVerify: true
+
+redis:
+  enabled: true
+  image: redis:7
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 512Mi
+
+externalRedis:
+  url: "redis://localhost:6379/0"
+  useCluster: false
+
+serviceAccount:
+  create: false
+  name: ""
+  annotations: {}
+  automount: true
