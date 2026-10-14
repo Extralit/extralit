@@ -35,7 +35,7 @@ For a local cluster, [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#inst
     helm install extralit deploy/k8s -n extralit --create-namespace
     ```
 
-    The owner password, API key and PostgreSQL password are generated unless you set `extralit.auth.password`, `extralit.auth.apiKey` and `postgresql.auth.password`.
+    The owner password, API key and PostgreSQL password are generated unless you set `extralit.auth.password`, `extralit.auth.apiKey` and `postgresql.auth.password`. Set all three when rendering without cluster access (`helm template`, Argo CD, Flux): the chart can't read back the previous values there, so it would generate new ones on every sync and the server would lose access to PostgreSQL.
 
 3. Wait for the pods to become ready. The server pod runs database migrations and creates the owner user on startup, so it takes a minute or two:
 

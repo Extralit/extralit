@@ -2,7 +2,7 @@
 apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
-  name: {{ include "extralit.fullname" . }}
+  name: {{ include "extralit.elasticsearchName" . }}
   labels:
     {{- include "extralit.labels" . | nindent 4 }}
 spec:

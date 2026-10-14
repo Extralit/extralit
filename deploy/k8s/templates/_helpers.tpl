@@ -18,6 +18,40 @@ Truncated to 52 chars so suffixes like -postgresql still fit the 63-char DNS lim
 {{- end }}
 {{- end }}
 
+{{/*
+StatefulSet names get "-0" and a revision hash appended in labels, so they must stay within 52 chars.
+*/}}
+{{- define "extralit.postgresqlName" -}}
+{{- printf "%s-postgresql" (include "extralit.fullname" . | trunc 41 | trimSuffix "-") }}
+{{- end }}
+
+{{/*
+ECK rejects Elasticsearch names longer than 36 chars.
+*/}}
+{{- define "extralit.elasticsearchName" -}}
+{{- include "extralit.fullname" . | trunc 36 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Required co-location of server and worker pods on the node holding the ReadWriteOnce volume.
+A pod that matches its own term may schedule when no other pod matches, so fresh installs work.
+*/}}
+{{- define "extralit.rwoAffinity" -}}
+{{- if include "extralit.rwoPersistence" . }}
+affinity:
+  podAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - topologyKey: kubernetes.io/hostname
+        labelSelector:
+          matchLabels:
+            {{- include "extralit.selectorLabels" . | nindent 12 }}
+          matchExpressions:
+            - key: app.kubernetes.io/component
+              operator: In
+              values: [server, worker]
+{{- end }}
+{{- end }}
+
 {{- define "extralit.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
@@ -96,10 +130,10 @@ Environment shared by the server and worker containers.
 - name: ELASTIC_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ include "extralit.fullname" . }}-es-elastic-user
+      name: {{ include "extralit.elasticsearchName" . }}-es-elastic-user
       key: elastic
 - name: EXTRALIT_ELASTICSEARCH
-  value: "http://elastic:$(ELASTIC_PASSWORD)@{{ include "extralit.fullname" . }}-es-http:9200"
+  value: "http://elastic:$(ELASTIC_PASSWORD)@{{ include "extralit.elasticsearchName" . }}-es-http:9200"
 {{- else }}
 - name: EXTRALIT_ELASTICSEARCH
   valueFrom:

@@ -14,8 +14,8 @@ Log in as `{{ .Values.extralit.auth.username }}`. Get the password and API key w
   kubectl --namespace {{ .Release.Namespace }} get secret {{ include "extralit.fullname" . }}-secrets -o jsonpath='{.data.api-key}' | base64 -d
 
 Backends:
-  Elasticsearch: {{ if .Values.elasticsearch.useOperator }}ECK cluster {{ include "extralit.fullname" . }} (requires the ECK operator){{ else }}external{{ end }}
-  PostgreSQL:    {{ if .Values.postgresql.enabled }}{{ include "extralit.fullname" . }}-postgresql{{ else }}external{{ end }}
+  Elasticsearch: {{ if .Values.elasticsearch.useOperator }}ECK cluster {{ include "extralit.elasticsearchName" . }} (requires the ECK operator){{ else }}external{{ end }}
+  PostgreSQL:    {{ if .Values.postgresql.enabled }}{{ include "extralit.postgresqlName" . }}{{ else }}external{{ end }}
   Redis:         {{ include "extralit.redisUrl" . }}
 {{- if not .Values.extralit.persistence.enabled }}
 

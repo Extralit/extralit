@@ -1,5 +1,5 @@
 {{- if .Values.postgresql.enabled }}
-{{- $name := printf "%s-postgresql" (include "extralit.fullname" .) }}
+{{- $name := include "extralit.postgresqlName" . }}
 apiVersion: v1
 kind: Service
 metadata:

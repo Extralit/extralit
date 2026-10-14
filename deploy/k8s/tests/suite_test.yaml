@@ -73,14 +73,14 @@ tests:
 
   - it: should build the database url from in-chart postgresql with an encoded password
     set:
-      postgresql.auth.password: p@ss/word
+      postgresql.auth.password: p@ss/w rd
     release:
       name: rel
     template: templates/secret.yaml
     asserts:
       - equal:
           path: stringData.database-url
-          value: postgresql+asyncpg://postgres:p%40ss%2Fword@rel-extralit-postgresql:5432/extralit
+          value: postgresql+asyncpg://postgres:p%40ss%2Fw%20rd@rel-extralit-postgresql:5432/extralit
 
   - it: should require externalDatabase.url when postgresql is disabled
     set:
@@ -209,12 +209,14 @@ tests:
       - hasDocuments:
           count: 0
 
-  - it: should co-schedule the worker with the server on a ReadWriteOnce volume
-    template: templates/worker-deployment.yaml
+  - it: should require server and worker to share a node on a ReadWriteOnce volume
+    templates:
+      - templates/deployment.yaml
+      - templates/worker-deployment.yaml
     asserts:
       - equal:
-          path: spec.template.spec.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchLabels["app.kubernetes.io/component"]
-          value: server
+          path: spec.template.spec.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchExpressions[0].values
+          value: [server, worker]
       - equal:
           path: spec.strategy.type
           value: Recreate
@@ -258,15 +260,26 @@ tests:
       - failedTemplate:
           errorMessage: Multiple server replicas (extralit.replicaCount > 1 or extralit.hpa.enabled) need extralit.persistence.accessMode=ReadWriteMany
 
-  - it: should cap fullname so suffixed names fit 63 chars
+  - it: should keep the postgresql statefulset name within 52 chars
     set:
       fullnameOverride: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     template: templates/postgresql.yaml
-    documentIndex: 0
+    documentIndex: 1
+    asserts:
+      - isKind:
+          of: StatefulSet
+      - equal:
+          path: metadata.name
+          value: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-postgresql
+
+  - it: should keep the elasticsearch name within ECK's 36-char limit
+    set:
+      fullnameOverride: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    template: templates/elasticsearch-operator.yaml
     asserts:
       - equal:
           path: metadata.name
-          value: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-postgresql
+          value: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
   - it: should persist redis by default
     template: templates/redis.yaml

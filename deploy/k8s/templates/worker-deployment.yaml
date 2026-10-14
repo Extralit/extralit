@@ -25,16 +25,7 @@ spec:
     spec:
       serviceAccountName: {{ include "extralit.serviceAccountName" . }}
       {{- include "extralit.scheduling" . | nindent 6 }}
-      {{- if include "extralit.rwoPersistence" . }}
-      affinity:
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - topologyKey: kubernetes.io/hostname
-              labelSelector:
-                matchLabels:
-                  {{- include "extralit.selectorLabels" . | nindent 18 }}
-                  app.kubernetes.io/component: server
-      {{- end }}
+      {{- include "extralit.rwoAffinity" . | nindent 6 }}
       securityContext:
         fsGroup: 1000
       containers:
