@@ -14,7 +14,6 @@
 
 """Tests for the chonkie-based text chunker."""
 
-
 from extralit_server.contexts.document.chunker import chunk_text
 
 
@@ -51,7 +50,7 @@ class TestChunkText:
 
     def test_long_text_produces_multiple_chunks(self):
         # Create text that exceeds a single chunk
-        text = ("This is a paragraph of text. " * 200)
+        text = "This is a paragraph of text. " * 200
         chunks = chunk_text(text, chunk_size=64)
         assert len(chunks) > 1
 
@@ -62,7 +61,7 @@ class TestChunkText:
             assert chunk["token_count"] > 0
 
     def test_start_end_index_ordering(self):
-        text = ("Sentence number one. " * 100)
+        text = "Sentence number one. " * 100
         chunks = chunk_text(text, chunk_size=32)
         for chunk in chunks:
             assert chunk["start_index"] < chunk["end_index"]
@@ -77,7 +76,7 @@ class TestChunkText:
         assert isinstance(serialised, str)
 
     def test_custom_chunk_size(self):
-        text = ("Word " * 500)
+        text = "Word " * 500
         chunks_small = chunk_text(text, chunk_size=32)
         chunks_large = chunk_text(text, chunk_size=256)
         # Smaller chunk size ⇒ more chunks

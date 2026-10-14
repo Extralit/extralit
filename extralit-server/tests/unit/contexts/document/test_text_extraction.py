@@ -14,7 +14,6 @@
 
 """Tests for TextExtractionMetadata with chunks and the RQ job helper."""
 
-
 from extralit_server.api.schemas.v1.document.metadata import (
     ChunkMetadata,
     DocumentProcessingMetadata,
@@ -107,9 +106,7 @@ class TestExtractTextFromResult:
         assert "block3" in text
 
     def test_pages_blocks_html_stripped(self):
-        result = {
-            "pages": [{"blocks": [{"html": "<p>hello</p>"}]}]
-        }
+        result = {"pages": [{"blocks": [{"html": "<p>hello</p>"}]}]}
         text = _extract_text_from_result(result)
         assert "<p>" not in text
         assert "hello" in text

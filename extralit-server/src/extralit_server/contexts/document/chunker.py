@@ -140,18 +140,23 @@ def chunk_text(
 
     result: list[dict[str, Any]] = []
     for chunk in chunks:
-        result.append({
-            "text": chunk.text,
-            "start_index": chunk.start_index,
-            "end_index": chunk.end_index,
-            "token_count": chunk.token_count,
-        })
+        result.append(
+            {
+                "text": chunk.text,
+                "start_index": chunk.start_index,
+                "end_index": chunk.end_index,
+                "token_count": chunk.token_count,
+            }
+        )
 
     if merge_table_chunks:
         result = _merge_adjacent_table_chunks(result, max_table_chunk_size=max_table_chunk_size)
 
     _LOGGER.debug(
         "Chunked %d chars into %d chunks (size=%d, merge_table_chunks=%s)",
-        len(text), len(result), chunk_size, merge_table_chunks,
+        len(text),
+        len(result),
+        chunk_size,
+        merge_table_chunks,
     )
     return result
