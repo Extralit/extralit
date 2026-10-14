@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:1.27-alpine
     container_name: "nginx_proxy"
     ports:
       - "80:80"
@@ -12,10 +12,6 @@ services:
     environment:
       HF_HUB_DISABLE_TELEMETRY: 1
       EXTRALIT_BASE_URL: /extralit
-
       USERNAME: extralit
-      PASSWORD: 12345678
-      API_KEY: extralit.apikey
-    ports:
-      - "6900:6900"
-
+      PASSWORD: ${EXTRALIT_PASSWORD:?set EXTRALIT_PASSWORD}
+      API_KEY: ${EXTRALIT_API_KEY:?set EXTRALIT_API_KEY}

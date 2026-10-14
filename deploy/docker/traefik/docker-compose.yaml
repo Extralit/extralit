@@ -10,7 +10,7 @@ services:
       - "--entrypoints.web.address=:80"
     ports:
       - "80:80"
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
@@ -20,8 +20,8 @@ services:
       HF_HUB_DISABLE_TELEMETRY: 1
       EXTRALIT_BASE_URL: /extralit
       USERNAME: extralit
-      PASSWORD: 12345678
-      API_KEY: extralit.apikey
+      PASSWORD: ${EXTRALIT_PASSWORD:?set EXTRALIT_PASSWORD}
+      API_KEY: ${EXTRALIT_API_KEY:?set EXTRALIT_API_KEY}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.extralit.rule=PathPrefix(`/extralit/`)"

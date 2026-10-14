@@ -15,6 +15,7 @@ tests:
   - it: should render deployment with image and auth env
     set:
       extralit.replicaCount: 2
+      extralit.persistence.accessMode: ReadWriteMany
       extralit.image.repository: extralitdev/extralit-server
       extralit.image.tag: main
     template: templates/deployment.yaml
@@ -70,14 +71,16 @@ tests:
             name: EXTRALIT_REDIS_URL
             value: redis://ext:6379/1
 
-  - it: should build the database url from in-chart postgresql
+  - it: should build the database url from in-chart postgresql with an encoded password
+    set:
+      postgresql.auth.password: p@ss/word
     release:
       name: rel
     template: templates/secret.yaml
     asserts:
       - equal:
           path: stringData.database-url
-          value: postgresql+asyncpg://postgres:postgres@rel-extralit-postgresql:5432/extralit
+          value: postgresql+asyncpg://postgres:p%40ss%2Fword@rel-extralit-postgresql:5432/extralit
 
   - it: should require externalDatabase.url when postgresql is disabled
     set:
@@ -159,6 +162,7 @@ tests:
     set:
       extralit.hpa.enabled: true
       extralit.hpa.minReplicas: 2
+      extralit.persistence.accessMode: ReadWriteMany
       extralit.hpa.maxReplicas: 5
       extralit.hpa.targetCPUUtilizationPercentage: 80
     template: templates/hpa.yaml
@@ -235,3 +239,39 @@ tests:
       - equal:
           path: spec.template.spec.containers[0].readinessProbe.httpGet.path
           value: /extralit/api/v1/version
+
+  - it: should generate credentials when none are set
+    template: templates/secret.yaml
+    asserts:
+      - matchRegex:
+          path: stringData.password
+          pattern: ^[A-Za-z0-9]{32}$
+      - matchRegex:
+          path: stringData.postgres-password
+          pattern: ^[A-Za-z0-9]{32}$
+
+  - it: should reject HPA with a ReadWriteOnce volume
+    set:
+      extralit.hpa.enabled: true
+    template: templates/deployment.yaml
+    asserts:
+      - failedTemplate:
+          errorMessage: Multiple server replicas (extralit.replicaCount > 1 or extralit.hpa.enabled) need extralit.persistence.accessMode=ReadWriteMany
+
+  - it: should cap fullname so suffixed names fit 63 chars
+    set:
+      fullnameOverride: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    template: templates/postgresql.yaml
+    documentIndex: 0
+    asserts:
+      - equal:
+          path: metadata.name
+          value: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-postgresql
+
+  - it: should persist redis by default
+    template: templates/redis.yaml
+    documentIndex: 1
+    asserts:
+      - equal:
+          path: spec.template.spec.volumes[0].persistentVolumeClaim.claimName
+          value: RELEASE-NAME-extralit-redis

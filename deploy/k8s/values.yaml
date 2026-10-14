@@ -18,10 +18,11 @@ extralit:
   # Generated and kept across upgrades when empty.
   authSecretKey: ""
   # Only applied on first install; the owner user is not updated afterwards.
+  # Empty password/apiKey are generated and kept across upgrades.
   auth:
     username: "extralit"
-    password: "12345678"
-    apiKey: "extralit.apikey"
+    password: ""
+    apiKey: ""
     workspace: "default"
   baseUrl: ""
   extraEnv: []
@@ -73,7 +74,8 @@ postgresql:
   image: postgres:14
   auth:
     username: postgres
-    password: postgres
+    # Generated and kept across upgrades when empty.
+    password: ""
     database: extralit
   persistence:
     size: 2Gi
@@ -113,6 +115,11 @@ externalElasticsearch:
 redis:
   enabled: true
   image: redis:7
+  # Keeps queued RQ jobs across Redis pod restarts.
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClass: ""
   resources:
     requests:
       cpu: 100m

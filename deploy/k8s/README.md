@@ -22,8 +22,8 @@ helm install extralit deploy/k8s
 kubectl port-forward svc/extralit 6900
 ```
 
-Extralit is then at http://localhost:6900 (user `extralit`, password `12345678`, API key
-`extralit.apikey` — change these via `extralit.auth.*`).
+Extralit is then at http://localhost:6900 as user `extralit`. The password and API key are
+generated unless set via `extralit.auth.*`; the install notes show how to read them.
 
 For a minikube ingress: `minikube addons enable ingress`, then install with
 `--set extralit.ingress.enabled=true` and map `extralit.local` to `minikube ip` in `/etc/hosts`.

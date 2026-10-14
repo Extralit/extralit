@@ -5,7 +5,7 @@ The Helm chart in [`deploy/k8s`](https://github.com/extralit/extralit/tree/main/
 - `extralit` server: web UI and API on port 6900
 - `extralit-worker`: RQ worker for background jobs (PDF parsing, indexing)
 - PostgreSQL: main database (in-chart StatefulSet, or external)
-- Redis: job queue (in-chart Deployment, or external)
+- Redis: job queue, persisted with AOF (in-chart Deployment, or external)
 - Elasticsearch: search engine for records (managed by the ECK operator, or external)
 
 Uploaded files and LanceDB indexes live under `EXTRALIT_HOME_PATH` on a PersistentVolumeClaim shared by the server and worker, unless you point `storage.url` at S3-compatible storage.
@@ -32,10 +32,10 @@ For a local cluster, [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#inst
     ```bash
     git clone https://github.com/extralit/extralit.git
     cd extralit
-    helm install extralit deploy/k8s -n extralit --create-namespace \
-      --set extralit.auth.password=<password> \
-      --set extralit.auth.apiKey=<api-key>
+    helm install extralit deploy/k8s -n extralit --create-namespace
     ```
+
+    The owner password, API key and PostgreSQL password are generated unless you set `extralit.auth.password`, `extralit.auth.apiKey` and `postgresql.auth.password`.
 
 3. Wait for the pods to become ready. The server pod runs database migrations and creates the owner user on startup, so it takes a minute or two:
 
@@ -49,7 +49,11 @@ For a local cluster, [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#inst
     kubectl -n extralit port-forward svc/extralit 6900
     ```
 
-    Then go to http://localhost:6900 and log in as `extralit` with the password you set.
+    Then go to http://localhost:6900 and log in as `extralit`. Get the password with:
+
+    ```bash
+    kubectl -n extralit get secret extralit-secrets -o jsonpath='{.data.password}' | base64 -d
+    ```
 
 5. Optionally, check the release with the bundled Helm test:
 
@@ -64,18 +68,18 @@ Set values with `--set` or a values file (`helm install ... -f my-values.yaml`).
 | Value | Default | Notes |
 |---|---|---|
 | `extralit.image.repository` / `tag` | `extralit/extralit-server` / chart `appVersion` | Use `extralitdev/extralit-server` for builds from `main` |
-| `extralit.auth.username` / `password` / `apiKey` / `workspace` | `extralit` / `12345678` / `extralit.apikey` / `default` | Owner user created on first install only |
+| `extralit.auth.username` / `password` / `apiKey` / `workspace` | `extralit` / generated / generated / `default` | Owner user created on first install only |
 | `extralit.authSecretKey` | generated | Kept across upgrades |
 | `extralit.baseUrl` | `""` | Serve under a path prefix, e.g. `/extralit` |
 | `extralit.persistence.*` | 2Gi `ReadWriteOnce` at `/var/lib/extralit` | With `ReadWriteOnce` the worker runs on the server's node and rollouts use `Recreate`; use `ReadWriteMany` to spread pods |
 | `extralit.ingress.*` | disabled | `className`, `host`, `annotations`, `tls` |
-| `extralit.hpa.*` | disabled | Needs a `ReadWriteMany` volume or S3 storage |
+| `extralit.hpa.*` | disabled | Needs `ReadWriteMany` persistence; the chart refuses to render it with `ReadWriteOnce` |
 | `nodeSelector`, `tolerations` | none | Applied to server and worker pods |
 | `extralit.extraEnv` | `[]` | Any other `EXTRALIT_*` [server setting](../reference/extralit-server/configuration.md) |
 | `storage.url`, `storage.s3.*` | files on the PVC | `s3://bucket[/prefix]`, or `http(s)://host[:port]/bucket` for MinIO and R2 |
 | `postgresql.enabled` / `externalDatabase.url` | `true` / `""` | External format: `postgresql+asyncpg://user:pass@host:5432/db` |
 | `elasticsearch.useOperator` / `externalElasticsearch.url` | `true` / `""` | External format: `http://user:pass@host:9200` |
-| `redis.enabled` / `externalRedis.url` | `true` / `redis://localhost:6379/0` | |
+| `redis.enabled` / `externalRedis.url` | `true` / `redis://localhost:6379/0` | `redis.persistence.*` keeps queued jobs across restarts |
 
 ### Ingress
 

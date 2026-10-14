@@ -1,3 +1,6 @@
+{{- if and (include "extralit.rwoPersistence" .) (or .Values.extralit.hpa.enabled (gt (int .Values.extralit.replicaCount) 1)) }}
+{{- fail "Multiple server replicas (extralit.replicaCount > 1 or extralit.hpa.enabled) need extralit.persistence.accessMode=ReadWriteMany" }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

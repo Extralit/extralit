@@ -3,17 +3,17 @@
 {{- end }}
 
 {{/*
-Truncated to 63 chars for DNS names; the release name is used alone if it already contains the chart name.
+Truncated to 52 chars so suffixes like -postgresql still fit the 63-char DNS limit; the release name is used alone if it already contains the chart name.
 */}}
 {{- define "extralit.fullname" -}}
 {{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- .Values.fullnameOverride | trunc 52 | trimSuffix "-" }}
 {{- else }}
 {{- $name := default .Chart.Name .Values.nameOverride }}
 {{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- .Release.Name | trunc 52 | trimSuffix "-" }}
 {{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" .Release.Name $name | trunc 52 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -67,13 +67,15 @@ tolerations:
 {{ .Values.extralit.image.repository }}:{{ .Values.extralit.image.tag | default .Chart.AppVersion }}
 {{- end }}
 
-{{- define "extralit.databaseUrl" -}}
-{{- if .Values.postgresql.enabled }}
-{{- with .Values.postgresql.auth }}
-{{- printf "postgresql+asyncpg://%s:%s@%s-postgresql:5432/%s" .username .password (include "extralit.fullname" $) .database }}
-{{- end }}
+{{/*
+Returns .value, else the value already stored under .key in the release Secret, else a random string.
+*/}}
+{{- define "extralit.secretValue" -}}
+{{- if .value }}
+{{- .value }}
 {{- else }}
-{{- required "externalDatabase.url is required when postgresql.enabled is false" .Values.externalDatabase.url }}
+{{- $existing := lookup "v1" "Secret" .ctx.Release.Namespace (printf "%s-secrets" (include "extralit.fullname" .ctx)) }}
+{{- $existing.data | default dict | dig .key "" | b64dec | default (randAlphaNum 32) }}
 {{- end }}
 {{- end }}
 

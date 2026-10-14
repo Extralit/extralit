@@ -9,7 +9,9 @@ Port-forward and open http://localhost:6900{{ include "extralit.basePath" . }}:
   kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "extralit.fullname" . }} 6900:{{ .Values.extralit.service.port }}
 {{- end }}
 
-Log in as `{{ .Values.extralit.auth.username }}`; the password and API key are in secret {{ include "extralit.fullname" . }}-secrets.
+Log in as `{{ .Values.extralit.auth.username }}`. Get the password and API key with:
+  kubectl --namespace {{ .Release.Namespace }} get secret {{ include "extralit.fullname" . }}-secrets -o jsonpath='{.data.password}' | base64 -d
+  kubectl --namespace {{ .Release.Namespace }} get secret {{ include "extralit.fullname" . }}-secrets -o jsonpath='{.data.api-key}' | base64 -d
 
 Backends:
   Elasticsearch: {{ if .Values.elasticsearch.useOperator }}ECK cluster {{ include "extralit.fullname" . }} (requires the ECK operator){{ else }}external{{ end }}
