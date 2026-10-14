@@ -1,0 +1,88 @@
+{{- if and (include "extralit.rwoPersistence" .) (or .Values.extralit.hpa.enabled (gt (int .Values.extralit.replicaCount) 1)) }}
+{{- fail "Multiple server replicas (extralit.replicaCount > 1 or extralit.hpa.enabled) need extralit.persistence.accessMode=ReadWriteMany" }}
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "extralit.fullname" . }}
+  labels:
+    {{- include "extralit.labels" . | nindent 4 }}
+    app.kubernetes.io/component: server
+spec:
+  {{- if not .Values.extralit.hpa.enabled }}
+  replicas: {{ .Values.extralit.replicaCount }}
+  {{- end }}
+  {{- if include "extralit.rwoPersistence" . }}
+  strategy:
+    type: Recreate
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "extralit.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        {{- include "extralit.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: server
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "extralit.serviceAccountName" . }}
+      {{- include "extralit.scheduling" . | nindent 6 }}
+      {{- include "extralit.rwoAffinity" . | nindent 6 }}
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: extralit
+          image: {{ include "extralit.image" . | quote }}
+          imagePullPolicy: {{ .Values.extralit.image.pullPolicy }}
+          env:
+            {{- include "extralit.env" . | trim | nindent 12 }}
+            - name: USERNAME
+              value: {{ .Values.extralit.auth.username | quote }}
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "extralit.fullname" . }}-secrets
+                  key: password
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "extralit.fullname" . }}-secrets
+                  key: api-key
+            - name: WORKSPACE
+              value: {{ .Values.extralit.auth.workspace | quote }}
+          ports:
+            - name: http
+              containerPort: 6900
+          startupProbe:
+            httpGet:
+              path: {{ include "extralit.basePath" . }}/api/v1/version
+              port: http
+            periodSeconds: 10
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: {{ include "extralit.basePath" . }}/api/v1/version
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: {{ include "extralit.basePath" . }}/api/v1/version
+              port: http
+            periodSeconds: 20
+            failureThreshold: 3
+          {{- if .Values.extralit.persistence.enabled }}
+          volumeMounts:
+            - name: extralit-data
+              mountPath: {{ .Values.extralit.persistence.mountPath }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.extralit.resources | nindent 12 }}
+      {{- if .Values.extralit.persistence.enabled }}
+      volumes:
+        - name: extralit-data
+          persistentVolumeClaim:
+            claimName: {{ include "extralit.fullname" . }}-pvc
+      {{- end }}

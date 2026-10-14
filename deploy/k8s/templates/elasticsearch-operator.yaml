@@ -1,0 +1,39 @@
+{{- if .Values.elasticsearch.useOperator }}
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: {{ include "extralit.elasticsearchName" . }}
+  labels:
+    {{- include "extralit.labels" . | nindent 4 }}
+spec:
+  version: {{ .Values.elasticsearch.version }}
+  volumeClaimDeletePolicy: DeleteOnScaledownOnly
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  nodeSets:
+    - name: default
+      count: {{ .Values.elasticsearch.nodeCount }}
+      config:
+        node.store.allow_mmap: false
+      podTemplate:
+        spec:
+          containers:
+            - name: elasticsearch
+              {{- with .Values.elasticsearch.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            {{- with .Values.elasticsearch.persistence.storageClass }}
+            storageClassName: {{ . | quote }}
+            {{- end }}
+            resources:
+              requests:
+                storage: {{ .Values.elasticsearch.persistence.size }}
+{{- end }}
