@@ -32,7 +32,7 @@
     "@perspective-dev/client": "4.5.2",
     "@perspective-dev/server": "4.5.2",
     "@perspective-dev/viewer": "4.5.2",
-    "@perspective-dev/viewer-datagrid": "4.5.2",
+    "@perspective-dev/viewer-datagrid": "5.5.1",
     "@pinia/nuxt": "^1.0.2",
     "@sereneinserenade/tiptap-search-and-replace": "^0.1.1",
     "@tiptap/core": "^3.31.4",
