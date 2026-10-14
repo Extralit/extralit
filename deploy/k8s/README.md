@@ -42,6 +42,11 @@ For a minikube ingress: `minikube addons enable ingress`, then install with
 | `redis.enabled` / `externalRedis.url` | `true` / `redis://localhost:6379/0` | |
 | `extralit.extraEnv` | `[]` | Any other `EXTRALIT_*` setting |
 
+## Limitations
+
+- The worker runs the `extralit-server` image, which lacks `extralit_ocr`, so text-extraction jobs on the `ocr` queue fail.
+- The in-chart Redis is a single pod with no failover; use `externalRedis` for high availability.
+
 ## Tests
 
 ```bash

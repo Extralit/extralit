@@ -41,7 +41,17 @@ spec:
         - name: worker
           image: {{ include "extralit.image" . | quote }}
           imagePullPolicy: {{ .Values.extralit.image.pullPolicy }}
-          command: ["python", "-m", "extralit_server", "worker", "--num-workers", {{ .Values.worker.numWorkers | quote }}]
+          command:
+            - python
+            - -m
+            - extralit_server
+            - worker
+            - --num-workers
+            - {{ .Values.worker.numWorkers | quote }}
+            {{- range .Values.worker.queues }}
+            - --queues
+            - {{ . | quote }}
+            {{- end }}
           env:
             {{- include "extralit.env" . | trim | nindent 12 }}
           {{- if .Values.extralit.persistence.enabled }}

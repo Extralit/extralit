@@ -1,0 +1,117 @@
+# Extralit behind a reverse proxy at http://localhost/extralit/. Pick one proxy:
+#   cp example.env .env   # then set the credentials
+#   docker compose --profile nginx up -d
+#   docker compose --profile traefik up -d
+x-extralit: &extralit
+  image: ${EXTRALIT_IMAGE:-extralit/extralit-server:latest}
+  restart: unless-stopped
+  environment: &extralit-env
+    EXTRALIT_HOME_PATH: /var/lib/extralit
+    EXTRALIT_BASE_URL: /extralit
+    EXTRALIT_DATABASE_URL: postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/extralit
+    EXTRALIT_ELASTICSEARCH: http://elasticsearch:9200
+    EXTRALIT_REDIS_URL: redis://redis:6379/0
+    HF_HUB_DISABLE_TELEMETRY: 1
+  volumes:
+    - extralitdata:/var/lib/extralit
+
+services:
+  extralit:
+    <<: *extralit
+    environment:
+      <<: *extralit-env
+      USERNAME: extralit
+      PASSWORD: ${EXTRALIT_PASSWORD:?set EXTRALIT_PASSWORD}
+      API_KEY: ${EXTRALIT_API_KEY:?set EXTRALIT_API_KEY}
+      WORKSPACE: default
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:6900/extralit/api/v1/version')"]
+      interval: 10s
+      start_period: 120s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.extralit.rule=PathPrefix(`/extralit`)"
+      - "traefik.http.routers.extralit.entrypoints=web"
+      - "traefik.http.services.extralit.loadbalancer.server.port=6900"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    <<: *extralit
+    # `high` first: RQ takes jobs from queues in the order listed.
+    command: python -m extralit_server worker --num-workers ${EXTRALIT_NUM_WORKERS:-2} --queues high --queues default --queues ocr
+    depends_on:
+      extralit:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:14
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: extralit
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    restart: unless-stopped
+    environment:
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - discovery.type=single-node
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - xpack.security.enabled=false
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health"]
+      interval: 10s
+      start_period: 60s
+    volumes:
+      - elasticdata:/usr/share/elasticsearch/data
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+    volumes:
+      - redisdata:/data
+
+  nginx:
+    image: nginx:1.27-alpine
+    profiles: [nginx]
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - extralit
+
+  traefik:
+    image: traefik:v3.6
+    profiles: [traefik]
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+volumes:
+  extralitdata:
+  postgresdata:
+  elasticdata:
+  redisdata:

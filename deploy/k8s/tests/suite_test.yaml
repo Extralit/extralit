@@ -275,3 +275,10 @@ tests:
       - equal:
           path: spec.template.spec.volumes[0].persistentVolumeClaim.claimName
           value: RELEASE-NAME-extralit-redis
+
+  - it: should listen on high before default in the worker
+    template: templates/worker-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].command
+          value: [python, -m, extralit_server, worker, --num-workers, "2", --queues, high, --queues, default, --queues, ocr]

@@ -41,6 +41,7 @@ These are the section headers that we use:
 
 ### Fixed
 
+- `extralit_server worker` now listens on `high` before `default` by default. RQ takes jobs from queues in the order listed, so webhook jobs on `high` were waiting behind document processing.
 - Username authentication is now case-insensitive, allowing users to login with any case variation of their username.
 - Improved database connection pool configuration to prevent connection timeout issues after periods of inactivity.
 - Added `wait` parameter to the POST /workflows/start endpoint to waiting for the workflow to complete and return the final status.

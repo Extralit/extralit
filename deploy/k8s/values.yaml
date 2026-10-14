@@ -53,6 +53,8 @@ extralit:
 worker:
   replicaCount: 1
   numWorkers: 2
+  # RQ takes jobs from queues in this order. `ocr` jobs need the extralit_ocr package, which this image lacks.
+  queues: [high, default, ocr]
   resources:
     requests:
       cpu: 250m

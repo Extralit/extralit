@@ -3,7 +3,7 @@
 The Helm chart in [`deploy/k8s`](https://github.com/extralit/extralit/tree/main/deploy/k8s) deploys:
 
 - `extralit` server: web UI and API on port 6900
-- `extralit-worker`: RQ worker for background jobs (PDF parsing, indexing)
+- `extralit-worker`: RQ workers for background jobs. Every worker pod pulls from the same Redis queues, so raising `worker.replicaCount` spreads jobs across pods
 - PostgreSQL: main database (in-chart StatefulSet, or external)
 - Redis: job queue, persisted with AOF (in-chart Deployment, or external)
 - Elasticsearch: search engine for records (managed by the ECK operator, or external)
@@ -61,6 +61,12 @@ For a local cluster, [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#inst
     helm test extralit -n extralit
     ```
 
+## Limitations
+
+- **Text extraction jobs fail.** The `ocr` queue's text-extraction job imports `extralit_ocr`, which is installed in the HF Space image but not in `extralit-server`. Layout extraction and the other `ocr` jobs run.
+- **Redis is a single pod.** It keeps queued jobs across restarts but has no failover; use `externalRedis` with a managed Redis for high availability.
+- **Workers share one node by default.** With a `ReadWriteOnce` volume and file storage, every worker runs on the server's node. To spread workers across nodes, use S3 storage (`storage.url`) and `extralit.persistence.accessMode=ReadWriteMany`.
+
 ## Configuration
 
 Set values with `--set` or a values file (`helm install ... -f my-values.yaml`). See [`values.yaml`](https://github.com/extralit/extralit/blob/main/deploy/k8s/values.yaml) for all options.
@@ -75,6 +81,7 @@ Set values with `--set` or a values file (`helm install ... -f my-values.yaml`).
 | `extralit.ingress.*` | disabled | `className`, `host`, `annotations`, `tls` |
 | `extralit.hpa.*` | disabled | Needs `ReadWriteMany` persistence; the chart refuses to render it with `ReadWriteOnce` |
 | `nodeSelector`, `tolerations` | none | Applied to server and worker pods |
+| `worker.replicaCount` / `numWorkers` / `queues` | `1` / `2` / `[high, default, ocr]` | Pods × processes per pod; queues in priority order |
 | `extralit.extraEnv` | `[]` | Any other `EXTRALIT_*` [server setting](../reference/extralit-server/configuration.md) |
 | `storage.url`, `storage.s3.*` | files on the PVC | `s3://bucket[/prefix]`, or `http(s)://host[:port]/bucket` for MinIO and R2 |
 | `postgresql.enabled` / `externalDatabase.url` | `true` / `""` | External format: `postgresql+asyncpg://user:pass@host:5432/db` |

@@ -9,7 +9,7 @@ DEFAULT_NUM_WORKERS = 2
 
 def worker(
     queues: list[str] = typer.Option(
-        [DEFAULT_QUEUE.name, HIGH_QUEUE.name, OCR_QUEUE.name], help="Name of queues to listen"
+        [HIGH_QUEUE.name, DEFAULT_QUEUE.name, OCR_QUEUE.name], help="Queues to listen on, highest priority first"
     ),
     num_workers: int = typer.Option(DEFAULT_NUM_WORKERS, help="Number of workers to start"),
 ) -> None:
