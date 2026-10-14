@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import logging
 from os.path import basename
 from uuid import UUID, uuid4
@@ -37,7 +23,6 @@ from extralit_server.api.schemas.v1.imports import (
 )
 from extralit_server.contexts import files as file_context
 from extralit_server.database import AsyncSessionLocal
-from extralit_server.helpers import shared_resources
 from extralit_server.models.database import Document, ImportHistory, Workspace
 from extralit_server.workflows.documents import create_document_workflow
 
@@ -388,9 +373,9 @@ async def process_bulk_upload(
             )
         reference_to_doc[doc.reference] = doc
 
-    s3_client = shared_resources.get("s3_client")
-    if s3_client is None:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="S3 client not available")
+    # Not `shared_resources["storage"]`: nothing populates it eagerly, and an RQ worker never
+    # runs the app lifespan at all, so the cache is empty until some other caller fills it.
+    storage = await file_context.get_storage()
 
     # Process each reference: upload files to S3, create documents, start workflows
     job_ids: dict[str, str] = {}
@@ -399,7 +384,6 @@ async def process_bulk_upload(
     async with AsyncSessionLocal() as db:
         for reference, doc in reference_to_doc.items():
             try:
-                # Get workspace for bucket name
                 workspace = await Workspace.get(db, doc.document_create.workspace_id)
                 if not workspace:
                     failed_validations.append(f"{reference}: Workspace not found")
@@ -446,7 +430,7 @@ async def process_bulk_upload(
 
                         # Upload file to S3
                         file_url = await file_context.put_document_file(
-                            s3_client=s3_client,
+                            storage=storage,
                             workspace_name=workspace.name,
                             document_id=document_new.id,  # type: ignore[arg-type]
                             file_data=await file.read(),
@@ -468,10 +452,10 @@ async def process_bulk_upload(
                         _LOGGER.error(error_msg)
 
                         # Provide more specific error information for S3 issues
-                        if "bucket" in str(e).lower() or "storage" in str(e).lower():
+                        if "storage" in str(e).lower():
                             error_msg += " - This may be a storage configuration issue. Please check S3 endpoint and credentials."
                         elif "404" in str(e) or "not found" in str(e).lower():
-                            error_msg += " - The storage bucket or endpoint may not be accessible."
+                            error_msg += " - The storage root may not be accessible."
 
                         failed_validations.append(f"{filename}: {error_msg}")
                         reference_failed = True

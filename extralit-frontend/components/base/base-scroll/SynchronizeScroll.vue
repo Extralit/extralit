@@ -12,12 +12,10 @@ export default {
   },
   methods: {
     synchronizeScrolls() {
-      const children = this.$slots.default
-        .filter((child) => !!child.tag)
-        .map((child) => ({
-          isSyncing: false,
-          element: child.elm,
-        }));
+      const children = Array.from(this.$el.children).map((element) => ({
+        isSyncing: false,
+        element,
+      }));
 
       const applyProportionalScroll = (elementScrolling, elementToScroll) => {
         const elementScrollingTop = elementScrolling.scrollTop;

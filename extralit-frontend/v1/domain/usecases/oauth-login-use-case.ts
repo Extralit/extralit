@@ -1,6 +1,6 @@
-import { OAuthParams, OAuthProvider, ProviderType } from "../entities/oauth/OAuthProvider";
-import { IAuthService } from "../services/IAuthService";
-import { IOAuthRepository } from "../services/IOAuthRepository";
+import { type OAuthParams, OAuthProvider, type ProviderType } from "../entities/oauth/OAuthProvider";
+import { type IAuthService } from "../services/IAuthService";
+import { type IOAuthRepository } from "../services/IOAuthRepository";
 import { LoadUserUseCase } from "./load-user-use-case";
 
 export class OAuthLoginUseCase {

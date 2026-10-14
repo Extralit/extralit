@@ -90,7 +90,9 @@ $bullet-size: 8px;
   animation: 2s rotate linear infinite;
   filter: blur(1px);
   z-index: -1;
-  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
   mask-composite: exclude;
 }
 

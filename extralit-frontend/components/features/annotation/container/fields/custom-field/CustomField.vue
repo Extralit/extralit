@@ -64,9 +64,7 @@ export default {
 
       const templateToUse = this.isAdvanced ? ADVANCE_TEMPLATE : BASIC_TEMPLATE;
 
-      return templateToUse
-        .replace("#RECORD_OBJECT#", recordObject)
-        .replace("#TEMPLATE#", this.content);
+      return templateToUse.replace("#RECORD_OBJECT#", recordObject).replace("#TEMPLATE#", this.content);
     },
   },
 };

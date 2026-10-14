@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { ref, watch } from "vue-demi";
+import { ref, watch } from "vue";
 import { Record } from "~/v1/domain/entities/record/Record";
 import { Question } from "~/v1/domain/entities/question/Question";
 import { DiscardRecordUseCase } from "~/v1/domain/usecases/discard-record-use-case";

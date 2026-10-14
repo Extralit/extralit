@@ -1,5 +1,5 @@
 import { Field } from "../entities/field/Field";
-import { IFieldRepository } from "../services/IFieldRepository";
+import { type IFieldRepository } from "../services/IFieldRepository";
 
 export class GetDatasetFieldsGroupedUseCase {
   constructor(private readonly fieldRepository: IFieldRepository) {}

@@ -14,7 +14,6 @@
 
 """Tests for the chonkie-based text chunker."""
 
-import pytest
 
 from extralit_server.contexts.document.chunker import chunk_text
 

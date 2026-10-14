@@ -1,0 +1,23 @@
+Extralit release {{ .Release.Name }} is installed.
+
+{{- if .Values.extralit.ingress.enabled }}
+
+Open: http{{ if .Values.extralit.ingress.tls }}s{{ end }}://{{ .Values.extralit.ingress.host }}{{ include "extralit.basePath" . }}
+{{- else }}
+
+Port-forward and open http://localhost:6900{{ include "extralit.basePath" . }}:
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "extralit.fullname" . }} 6900:{{ .Values.extralit.service.port }}
+{{- end }}
+
+Log in as `{{ .Values.extralit.auth.username }}`. Get the password and API key with:
+  kubectl --namespace {{ .Release.Namespace }} get secret {{ include "extralit.fullname" . }}-secrets -o jsonpath='{.data.password}' | base64 -d
+  kubectl --namespace {{ .Release.Namespace }} get secret {{ include "extralit.fullname" . }}-secrets -o jsonpath='{.data.api-key}' | base64 -d
+
+Backends:
+  Elasticsearch: {{ if .Values.elasticsearch.useOperator }}ECK cluster {{ include "extralit.elasticsearchName" . }} (requires the ECK operator){{ else }}external{{ end }}
+  PostgreSQL:    {{ if .Values.postgresql.enabled }}{{ include "extralit.postgresqlName" . }}{{ else }}external{{ end }}
+  Redis:         {{ include "extralit.redisUrl" . }}
+{{- if not .Values.extralit.persistence.enabled }}
+
+WARNING: extralit.persistence is disabled; files and LanceDB indexes are lost on pod restart.
+{{- end }}

@@ -83,13 +83,38 @@ client = ex.Extralit(
 
 ### Create an extraction schema
 
-Define what data you want to extract:
+Define the fields the dataset will display and the questions annotators answer:
 
-TBD
+```python
+settings = ex.Settings(
+    fields=[
+        ex.TextField(name="text", title="Document Text"),
+        ex.ImageField(name="image", required=False),
+    ],
+    questions=[
+        ex.LabelQuestion(name="label", labels=["positive", "negative"]),
+        ex.TextQuestion(name="comment", use_markdown=False),
+    ],
+    guidelines="Classify the sentiment and provide a comment.",
+)
+```
 
 ### Add documents and start extraction
 
-TBD
+Create a dataset with the schema, then log records. Pre-filled values (e.g. from an LLM) become suggestions that annotators can accept or override.
+
+```python
+dataset = ex.Dataset(name="my_extraction_dataset", settings=settings).create()
+
+records = [
+    {"text": "This product is amazing!", "label": "positive"},
+    {"text": "Terrible experience.", "label": "negative"},
+]
+dataset.records.log(records)
+
+for record in dataset.records(with_suggestions=True):
+    print(record.id, record.fields)
+```
 
 Need more help? Check out our [detailed tutorials](https://docs.extralit.ai/latest/tutorials).
 

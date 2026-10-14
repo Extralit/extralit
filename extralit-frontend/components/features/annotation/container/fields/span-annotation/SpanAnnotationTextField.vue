@@ -47,46 +47,7 @@
         :entity-name="selectedEntity.text"
         :message="$t('spanAnnotation.shortcutHelper')"
       />
-      <template>
-        <template v-for="{ id, color } in spanQuestion.answer.options">
-          <style :key="id" scoped>
-            .span-annotation__field::highlight(hl-{{id}}), .span-annotation__field::highlight(hl-{{id}}-selection) {
-              background-color: {{color}};
-            }
-            [data-theme="dark"] .span-annotation__field::highlight(hl-{{id}}), [data-theme="dark"] .span-annotation__field::highlight(hl-{{id}}-selection) {
-              background-color: {{color.palette.veryDark}};
-            }
-            .span-annotation__field::highlight(hl-{{id}}-pre-selection) {
-              background: {{color.palette.light}};
-            }
-            [data-theme="dark"] .span-annotation__field::highlight(hl-{{id}}-pre-selection) {
-              background: {{color.palette.dark}};
-            }
-            .span-annotation__field--overlapped::highlight(hl-{{id}}-selection) {
-              background: {{color}};
-            }
-            [data-theme="dark"] .span-annotation__field--overlapped::highlight(hl-{{id}}-selection) {
-              background: {{color.palette.veryDark}};
-            }
-            .span-annotation__field--overlapped::highlight(hl-{{id}}-pre-selection) {
-              background: {{color.palette.light}};
-              color: inherit;
-            }
-            [data-theme="dark"] .span-annotation__field--overlapped::highlight(hl-{{id}}-pre-selection) {
-              background: {{color.palette.dark}};
-            }
-            .span-annotation__field--overlapped::highlight(hl-{{id}}-hover) {
-              background: {{color}};
-            }
-            [data-theme="dark"] .span-annotation__field--overlapped::highlight(hl-{{id}}-hover) {
-              background: {{color.palette.veryDark}};
-            }
-            ::highlight(search-text-highlight-{{id}}) {
-              color: #ff675f;
-            }
-          </style>
-        </template>
-      </template>
+      <component :is="'style'">{{ highlightStyles }}</component>
     </div>
   </div>
 </template>
@@ -142,6 +103,50 @@ export default {
     },
     allowOverlapping() {
       return this.highlighting.config.allowOverlap;
+    },
+    highlightStyles() {
+      return (this.spanQuestion.answer.options || [])
+        .map(({ id, color }) => {
+          const veryDark = color?.palette?.veryDark;
+          const light = color?.palette?.light;
+          const dark = color?.palette?.dark;
+          return `
+            .span-annotation__field::highlight(hl-${id}), .span-annotation__field::highlight(hl-${id}-selection) {
+              background-color: ${color};
+            }
+            [data-theme="dark"] .span-annotation__field::highlight(hl-${id}), [data-theme="dark"] .span-annotation__field::highlight(hl-${id}-selection) {
+              background-color: ${veryDark};
+            }
+            .span-annotation__field::highlight(hl-${id}-pre-selection) {
+              background: ${light};
+            }
+            [data-theme="dark"] .span-annotation__field::highlight(hl-${id}-pre-selection) {
+              background: ${dark};
+            }
+            .span-annotation__field--overlapped::highlight(hl-${id}-selection) {
+              background: ${color};
+            }
+            [data-theme="dark"] .span-annotation__field--overlapped::highlight(hl-${id}-selection) {
+              background: ${veryDark};
+            }
+            .span-annotation__field--overlapped::highlight(hl-${id}-pre-selection) {
+              background: ${light};
+              color: inherit;
+            }
+            [data-theme="dark"] .span-annotation__field--overlapped::highlight(hl-${id}-pre-selection) {
+              background: ${dark};
+            }
+            .span-annotation__field--overlapped::highlight(hl-${id}-hover) {
+              background: ${color};
+            }
+            [data-theme="dark"] .span-annotation__field--overlapped::highlight(hl-${id}-hover) {
+              background: ${veryDark};
+            }
+            ::highlight(search-text-highlight-${id}) {
+              color: #ff675f;
+            }`;
+        })
+        .join("\n");
     },
   },
   watch: {
@@ -203,7 +208,7 @@ export default {
     document.addEventListener("keydown", this.onKeyDown);
     document.addEventListener("keyup", this.onKeyUp);
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (!this.spanQuestion.settings.allow_character_annotation) return;
 
     document.removeEventListener("keydown", this.onKeyDown);

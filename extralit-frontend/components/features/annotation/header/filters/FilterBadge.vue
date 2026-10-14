@@ -11,7 +11,6 @@
 </template>
 
 <script>
-import "assets/icons/close";
 export default {
   props: {
     text: {
@@ -31,11 +30,11 @@ export default {
     };
   },
   mounted() {
-    if (this.$listeners["on-click"]) {
+    if (this.$attrs.onOnClick) {
       this.clickable = true;
       this.renderComponent = "baseButton";
     }
-    if (this.$listeners["on-clear"]) {
+    if (this.$attrs.onOnClear) {
       this.clearable = true;
     }
   },

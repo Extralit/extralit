@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "extralit.fullname" . }}-worker
+  labels:
+    {{- include "extralit.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  {{- if include "extralit.rwoPersistence" . }}
+  strategy:
+    type: Recreate
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "extralit.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "extralit.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "extralit.serviceAccountName" . }}
+      {{- include "extralit.scheduling" . | nindent 6 }}
+      {{- include "extralit.rwoAffinity" . | nindent 6 }}
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: worker
+          image: {{ include "extralit.image" . | quote }}
+          imagePullPolicy: {{ .Values.extralit.image.pullPolicy }}
+          command:
+            - python
+            - -m
+            - extralit_server
+            - worker
+            - --num-workers
+            - {{ .Values.worker.numWorkers | quote }}
+            {{- range .Values.worker.queues }}
+            - --queues
+            - {{ . | quote }}
+            {{- end }}
+          env:
+            {{- include "extralit.env" . | trim | nindent 12 }}
+          {{- if .Values.extralit.persistence.enabled }}
+          volumeMounts:
+            - name: extralit-data
+              mountPath: {{ .Values.extralit.persistence.mountPath }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+      {{- if .Values.extralit.persistence.enabled }}
+      volumes:
+        - name: extralit-data
+          persistentVolumeClaim:
+            claimName: {{ include "extralit.fullname" . }}-pvc
+      {{- end }}

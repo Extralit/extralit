@@ -15,7 +15,7 @@
       </BaseButton>
     </div>
     <BaseButton @click="addOption" class="secondary small dataset-config-ranking__add-button"
-      ><svgicon name="plus" width="12" color="var(--fg-secondary)" /> {{$t("question.addLabel")}}</BaseButton
+      ><svgicon name="plus" width="12" color="var(--fg-secondary)" /> {{ $t("question.addLabel") }}</BaseButton
     >
   </div>
 </template>
@@ -31,10 +31,6 @@ export default {
       type: String,
       default: "",
     },
-  },
-  model: {
-    prop: "value",
-    event: "on-value-change",
   },
   methods: {
     removeOption(item) {

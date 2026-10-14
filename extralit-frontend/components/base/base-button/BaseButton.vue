@@ -65,8 +65,9 @@ export default {
     },
     disabled: Boolean,
     centered: Boolean,
-    to: { type: String | Object },
+    to: { type: [String, Object] },
   },
+  emits: ["click", "on-click", "mouseover", "mouseleave"],
   computed: {
     newRel() {
       if (this.target === "_blank") {
@@ -243,7 +244,7 @@ export default {
   &:hover,
   &:active,
   &.active {
-    background-color: hsl(from var(--color-danger) h s calc(l - 4));
+    background-color: color-mix(in srgb, var(--color-danger), black 6%);
   }
   &.outline {
     background: none;
@@ -255,8 +256,8 @@ export default {
     &:hover,
     &:active,
     &.active {
-      color: hsl(from var(--color-danger) h s calc(l - 4));
-      border-color: hsl(var(--color-danger) calc(l - 4));
+      color: color-mix(in srgb, var(--color-danger), black 6%);
+      border-color: color-mix(in srgb, var(--color-danger), black 6%);
     }
   }
   &.light {

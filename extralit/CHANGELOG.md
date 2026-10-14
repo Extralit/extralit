@@ -312,7 +312,6 @@ These are the section headers that we use:
 ### Added
 - Added singleton schema support in SchemaStructure
 - Added .devcontainer for "Docker, Tilt, and K8s" local development on GH Codespaces
-- Added examples/deployments/k8s/extralit-configs.yaml for configuring the extralit service and secrets in a K8s cluster
 - Added [docs site for the extralit project](https://docs.extralit.ai) at `argilla/docs/`
 - Added pytest-xdist for parallel testing
 - Added docker-compose devcontainer
@@ -326,7 +325,6 @@ These are the section headers that we use:
 
 ### Fixed
 
-- Fixed Tiltfile and [k8s manifests](examples/deployments/k8s/) for mono-repo setup
 - Fixed creating a new Weaviate collection with Weaviate client v4
 - Fixed an error with checking Weaviate collection existence when one doesn't exists
 - Fixed `extralit[pdf]` installation error by changing deepdoctection requirement
@@ -1228,7 +1226,7 @@ These are the section headers that we use:
 ### Fixes
 
 - Copying datasets between workspaces with proper owner/workspace info. Closes [#2562](https://github.com/argilla-io/argilla/issues/2562)
-- Copy dataset with empty workspace to the default user workspace [905d4de](https://github.com/recognai/argilla/commit/905d4deaa769bfc9bbc022cd2dc75c7435cfe865)
+- Copy dataset with empty workspace to the default user workspace [905d4de](https://github.com/argilla-io/argilla/commit/905d4deaa769bfc9bbc022cd2dc75c7435cfe865)
 - Using elasticsearch config to request backend version. Closes [#2311](https://github.com/argilla-io/argilla/issues/2311)
 - Remove sorting by score in labels. Closes [#2622](https://github.com/argilla-io/argilla/issues/2622)
 

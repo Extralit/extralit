@@ -40,7 +40,6 @@
 </template>
 
 <script>
-import "assets/icons/filter";
 export default {
   props: {
     name: {

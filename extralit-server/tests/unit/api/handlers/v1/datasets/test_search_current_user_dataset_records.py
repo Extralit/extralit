@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from uuid import UUID
 
 import pytest
@@ -75,6 +61,7 @@ class TestSearchCurrentUserDatasetRecords:
                         "fields": record.fields,
                         "metadata": record.metadata_,
                         "external_id": record.external_id,
+                        "reference": record.reference,
                         "dataset_id": str(dataset.id),
                         "inserted_at": record.inserted_at.isoformat(),
                         "updated_at": record.updated_at.isoformat(),
@@ -127,6 +114,7 @@ class TestSearchCurrentUserDatasetRecords:
                         "fields": record.fields,
                         "metadata": {"annotator_meta": "value"},
                         "external_id": record.external_id,
+                        "reference": record.reference,
                         "dataset_id": str(dataset.id),
                         "inserted_at": record.inserted_at.isoformat(),
                         "updated_at": record.updated_at.isoformat(),
@@ -179,6 +167,7 @@ class TestSearchCurrentUserDatasetRecords:
                         "fields": record.fields,
                         "metadata": {"admin_meta": "value", "annotator_meta": "value", "extra": "value"},
                         "external_id": record.external_id,
+                        "reference": record.reference,
                         "dataset_id": str(dataset.id),
                         "inserted_at": record.inserted_at.isoformat(),
                         "updated_at": record.updated_at.isoformat(),

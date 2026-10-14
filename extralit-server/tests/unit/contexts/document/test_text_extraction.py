@@ -14,7 +14,6 @@
 
 """Tests for TextExtractionMetadata with chunks and the RQ job helper."""
 
-import pytest
 
 from extralit_server.api.schemas.v1.document.metadata import (
     ChunkMetadata,
@@ -22,7 +21,6 @@ from extralit_server.api.schemas.v1.document.metadata import (
     TextExtractionMetadata,
 )
 from extralit_server.jobs.document_jobs import _extract_text_from_result
-
 
 # ---------------------------------------------------------------------------
 # ChunkMetadata / TextExtractionMetadata schema tests

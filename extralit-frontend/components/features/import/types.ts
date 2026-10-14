@@ -3,10 +3,7 @@
  * Backend API types are imported from ~/v1/domain/entities/import/ImportAnalysis.ts
  */
 
-import type {
-  ImportStatus,
-  DocumentMetadata,
-} from "~/v1/domain/entities/import/ImportAnalysis";
+import type { ImportStatus, DocumentMetadata } from "~/v1/domain/entities/import/ImportAnalysis";
 import { TableData } from "~/v1/domain/entities/table/TableData";
 
 // Re-export commonly used backend types for convenience

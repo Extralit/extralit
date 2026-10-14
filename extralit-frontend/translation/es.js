@@ -273,7 +273,7 @@ export default {
     },
   },
   home: {
-    argillaDatasets: "Tus datasets",
+    extralitDatasets: "Tus datasets",
     none: "Ninguno",
     importTitle: "Importar un dataset desde Hugging Face Hub",
     importText: "Comienza con un conjunto de datos del Hub simplemente pegando el nombre del repositorio",

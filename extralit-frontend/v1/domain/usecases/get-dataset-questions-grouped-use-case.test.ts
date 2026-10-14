@@ -1,3 +1,7 @@
+// jest-mock-extended (used by @codescouts/test/jest) lazily calls jest.fn();
+// alias the jest global to vitest's vi so the mock factory works under Vitest.
+(globalThis as any).jest ??= vi;
+
 import { mock } from "@codescouts/test/jest";
 import { IQuestionRepository } from "../services/IQuestionRepository";
 import { GetDatasetQuestionsGroupedUseCase } from "./get-dataset-questions-grouped-use-case";
@@ -32,7 +36,7 @@ describe("GetDatasetQuestionsGroupedUseCase should", () => {
     ];
 
     const questionRepository = mock<IQuestionRepository>();
-    questionRepository.getQuestions.mockResolvedValue(backendQuestions);
+    (questionRepository.getQuestions as any).mockResolvedValue(backendQuestions);
 
     const getDatasetQuestionsGroupedUseCase = new GetDatasetQuestionsGroupedUseCase(questionRepository);
 
@@ -46,7 +50,7 @@ describe("GetDatasetQuestionsGroupedUseCase should", () => {
     const backendQuestions = [];
 
     const questionRepository = mock<IQuestionRepository>();
-    questionRepository.getQuestions.mockResolvedValue(backendQuestions);
+    (questionRepository.getQuestions as any).mockResolvedValue(backendQuestions);
 
     const getDatasetQuestionsGroupedUseCase = new GetDatasetQuestionsGroupedUseCase(questionRepository);
 

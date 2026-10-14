@@ -1,4 +1,4 @@
-import { Dictionary } from "../common/Params";
+import { type Dictionary } from "../common/Params";
 
 export type ProviderType = "huggingface";
 export type OAuthParams = Dictionary<string | (string | null)[]>;

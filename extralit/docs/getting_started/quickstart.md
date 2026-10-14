@@ -27,7 +27,7 @@ Extralit is a free, open-source, self-hosted tool. This means you need to deploy
     - You must fill out the following Space secrets fields:
       - `USERNAME` and `PASSWORD` that you'll sign in with your HF user with "owner" permissions. Leaving `USERNAME` blank will use your Hugging Face username.
       - `EXTRALIT_DATABASE_URL`: The URL of the PostgreSQL database where the data will be stored. If you leave it blank, the data will be lost when the Space restarts.
-      - `EXTRALIT_S3_ENDPOINT`, `EXTRALIT_S3_ACCESS_KEY`, `EXTRALIT_S3_SECRET_KEY`: The name of the S3 bucket where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.
+      - `EXTRALIT_STORAGE_URL`, `EXTRALIT_S3_ACCESS_KEY`, `EXTRALIT_S3_SECRET_KEY`: The S3 root (`https://<endpoint>/<bucket>[/prefix]`) where papers and data extraction artifacts will be stored. If you leave it blank, the data will be lost when the Space restarts.
 
     - These fields for Hugging Face Single-Sign-on are optional to set up, but
       - `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET`: The Oauth.

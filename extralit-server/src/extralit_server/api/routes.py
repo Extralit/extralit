@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """
 This module configures the api routes under /api prefix, and
 set the required security dependencies if api security is enabled
@@ -23,6 +9,9 @@ from extralit_server._version import __version__ as extralit_version
 from extralit_server.api.errors.v1.exception_handlers import add_exception_handlers as add_exception_handlers_v1
 from extralit_server.api.handlers.v1 import authentication as authentication_v1
 from extralit_server.api.handlers.v1 import (
+    chat as chat_v1,
+)
+from extralit_server.api.handlers.v1 import (
     datasets as datasets_v1,
 )
 from extralit_server.api.handlers.v1 import (
@@ -33,6 +22,9 @@ from extralit_server.api.handlers.v1 import (
 )
 from extralit_server.api.handlers.v1 import (
     files as files_v1,
+)
+from extralit_server.api.handlers.v1 import (
+    github_auth as github_auth_v1,
 )
 from extralit_server.api.handlers.v1 import (
     imports as imports_v1,
@@ -49,6 +41,9 @@ from extralit_server.api.handlers.v1 import (
 )
 from extralit_server.api.handlers.v1 import (
     oauth2 as oauth2_v1,
+)
+from extralit_server.api.handlers.v1 import (
+    projection as projection_v1,
 )
 from extralit_server.api.handlers.v1 import (
     questions as questions_v1,
@@ -98,6 +93,9 @@ def create_api_v1():
     for router in [
         info_v1.router,
         authentication_v1.router,
+        # Registered before datasets_v1: /me/datasets/projection is a static path that must
+        # not be swallowed by any /me/datasets/{dataset_id}-style route declared later.
+        projection_v1.router,
         datasets_v1.router,
         fields_v1.router,
         questions_v1.router,
@@ -117,6 +115,8 @@ def create_api_v1():
         files_v1.router,
         models_v1.router,
         imports_v1.router,
+        github_auth_v1.router,
+        chat_v1.router,
     ]:
         api_v1.include_router(router)
 

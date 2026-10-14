@@ -1,8 +1,8 @@
-import { computed, useContext } from "@nuxtjs/composition-api";
+import { computed } from "vue";
 import { User } from "~/v1/domain/entities/user/User";
 
 export const useUser = () => {
-  const { $auth } = useContext();
+  const { $auth } = useNuxtApp();
 
   const getUser = () => {
     // eslint-disable-next-line camelcase

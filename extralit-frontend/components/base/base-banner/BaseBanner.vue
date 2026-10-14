@@ -12,8 +12,6 @@
 </template>
 
 <script>
-import "assets/icons/danger";
-import "assets/icons/close";
 export default {
   props: {
     message: {

@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from typing import Optional
 
 import typer
@@ -59,16 +45,39 @@ def create_user(
             first_name=first_name,
             last_name=last_name,
             role=role,
-            workspaces=workspaces,
             client=client,
         )
 
         user.create()
 
+        linked_workspaces: list[str] = []
+        unknown_workspaces: list[str] = []
+        for workspace_name in workspaces or []:
+            workspace = client.workspaces(name=workspace_name)
+            if workspace is None:
+                unknown_workspaces.append(workspace_name)
+                continue
+            user.add_to_workspace(workspace)
+            linked_workspaces.append(workspace_name)
+
+        title = "User created"
+        if linked_workspaces:
+            title += f" (linked to workspaces: {', '.join(linked_workspaces)})"
+
         print_rich_table(
             [user],
-            title="User created",
+            title=title,
         )
+
+        if unknown_workspaces:
+            panel = get_themed_panel(
+                "User was created, but the following workspaces were not found and "
+                f"could not be linked: {', '.join(unknown_workspaces)}.",
+                title="Some workspaces not linked",
+                title_align="left",
+                success=False,
+            )
+            Console().print(panel)
     except KeyError:
         panel = get_themed_panel(
             f"User with name={username} already exists.",

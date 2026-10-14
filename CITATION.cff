@@ -1,9 +1,21 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
+type: software
 authors:
-- family-names: "Labs"
-  given-names: "Extralit"
-title: "Extralit - Fast and accurate systemic literature data extraction with LLM assistance"
-version: 1.2.0
-date-released: 2023-11-15
-url: "https://github.com/extralit/extralit"
+  - name: "Extralit Labs"
+    website: "https://extralit.ai"
+  - family-names: "Tran"
+    given-names: "Nhat"
+    alias: "JonnyTran"
+title: "Extralit: systematic literature data extraction with LLM assistance"
+version: 0.6.1
+date-released: 2025-08-29
+url: "https://github.com/Extralit/extralit"
+repository-code: "https://github.com/Extralit/extralit"
+license: Apache-2.0
+keywords:
+  - systematic review
+  - data extraction
+  - document intelligence
+  - human-in-the-loop
+  - large language models

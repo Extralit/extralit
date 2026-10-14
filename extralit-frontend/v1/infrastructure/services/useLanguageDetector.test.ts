@@ -1,21 +1,21 @@
 import { useLanguageDetector } from "./useLanguageDetector";
 import { useLocalStorage } from "./useLocalStorage";
 
-jest.mock("./useLocalStorage");
-const useLocalStorageMock = jest.mocked(useLocalStorage);
+vi.mock("./useLocalStorage");
+const useLocalStorageMock = vi.mocked(useLocalStorage);
 
 describe("useLanguageDetector", () => {
   const context = {
     app: {
       i18n: {
         locales: [{ code: "en" }, { code: "es" }, { code: "fr" }],
-        setLocale: jest.fn(),
+        setLocale: vi.fn(),
       },
     },
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("initialize should", () => {
@@ -25,9 +25,9 @@ describe("useLanguageDetector", () => {
         configurable: true,
       });
       useLocalStorageMock.mockReturnValue({
-        get: jest.fn().mockReturnValue(null),
-        pop: jest.fn(),
-        set: jest.fn(),
+        get: vi.fn().mockReturnValue(null),
+        pop: vi.fn(),
+        set: vi.fn(),
       });
 
       const { initialize } = useLanguageDetector(context);
@@ -43,9 +43,9 @@ describe("useLanguageDetector", () => {
         configurable: true,
       });
       useLocalStorageMock.mockReturnValue({
-        get: jest.fn().mockReturnValue(null),
-        pop: jest.fn(),
-        set: jest.fn(),
+        get: vi.fn().mockReturnValue(null),
+        pop: vi.fn(),
+        set: vi.fn(),
       });
 
       const { initialize } = useLanguageDetector(context);
@@ -61,9 +61,9 @@ describe("useLanguageDetector", () => {
         configurable: true,
       });
       useLocalStorageMock.mockReturnValue({
-        get: jest.fn().mockReturnValue(null),
-        pop: jest.fn(),
-        set: jest.fn(),
+        get: vi.fn().mockReturnValue(null),
+        pop: vi.fn(),
+        set: vi.fn(),
       });
 
       const { initialize } = useLanguageDetector(context);
@@ -75,9 +75,9 @@ describe("useLanguageDetector", () => {
 
     test("set the language saved by the user", () => {
       useLocalStorageMock.mockReturnValue({
-        get: jest.fn().mockReturnValue("fr"),
-        pop: jest.fn(),
-        set: jest.fn(),
+        get: vi.fn().mockReturnValue("fr"),
+        pop: vi.fn(),
+        set: vi.fn(),
       });
 
       const { initialize } = useLanguageDetector(context);

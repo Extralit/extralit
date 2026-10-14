@@ -3,10 +3,10 @@ import { Question } from "../entities/question/Question";
 import { Suggestion } from "../entities/question/Suggestion";
 import { RecordAnswer } from "../entities/record/RecordAnswer";
 import { RecordCriteria } from "../entities/record/RecordCriteria";
-import { IRecordStorage } from "../services/IRecordStorage";
+import { type IRecordStorage } from "../services/IRecordStorage";
 import { EmptyQueueRecords, Records, RecordsWithReference } from "../entities/record/Records";
 import { Record } from "../entities/record/Record";
-import { IQuestionRepository } from "../services/IQuestionRepository";
+import { type IQuestionRepository } from "../services/IQuestionRepository";
 import { FieldRepository, RecordRepository } from "~/v1/infrastructure/repositories";
 
 export class GetRecordsByCriteriaUseCase {

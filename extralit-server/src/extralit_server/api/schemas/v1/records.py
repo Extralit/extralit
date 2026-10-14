@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from datetime import datetime
 from typing import Annotated, Any, Literal, Union
 from uuid import UUID
@@ -22,6 +8,7 @@ from pydantic import (
     Field,
     StrictStr,
     ValidationError,
+    constr,
     field_validator,
     model_validator,
 )
@@ -54,6 +41,14 @@ SEARCH_MAX_SIMILARITY_SEARCH_RESULT = 1000
 
 CHAT_FIELDS_MAX_MESSAGES = 500
 
+RECORD_REFERENCE_MIN_LENGTH = 1
+RECORD_REFERENCE_MAX_LENGTH = 500
+
+Reference = Annotated[
+    constr(min_length=RECORD_REFERENCE_MIN_LENGTH, max_length=RECORD_REFERENCE_MAX_LENGTH),
+    Field(description="An external reference (e.g. a DOI) for the record's source document"),
+]
+
 
 class RecordGetterDict(GetterDict):
     def get(self, key: Any, default: Any = None) -> Any:
@@ -81,6 +76,7 @@ class Record(BaseModel):
     fields: dict[str, Any]
     metadata: dict[str, Any] | None = None
     external_id: str | None = None
+    reference: str | None = None
     # TODO: move `responses` to `response` since contextualized endpoint will contains only the user response
     # response: Optional[Response]
     responses: list[Response] | None = None
@@ -121,6 +117,7 @@ class RecordCreate(BaseModel):
     fields: dict[str, FieldValueCreate]
     metadata: dict[str, Any] | None = None
     external_id: str | None = None
+    reference: Reference | None = None
     responses: list[UserResponseCreate] | None = None
     suggestions: list[SuggestionCreate] | None = None
     vectors: dict[str, list[float]] | None = None
@@ -183,6 +180,7 @@ class RecordCreate(BaseModel):
 class RecordUpdate(UpdateSchema):
     fields: dict[str, FieldValueCreate] | None = None
     metadata: dict[str, Any] | None = None
+    reference: Reference | None = None
     suggestions: list[SuggestionCreate] | None = None
     vectors: dict[str, list[float]] | None = None
 

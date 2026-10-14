@@ -1,7 +1,7 @@
 import { PageCriteria } from "../page/PageCriteria";
 import { Question } from "../question/Question";
 import { Record } from "./Record";
-import { RecordStatus } from "./RecordAnswer";
+import { type RecordStatus } from "./RecordAnswer";
 import { RecordCriteria } from "./RecordCriteria";
 
 export class Records {
@@ -116,7 +116,11 @@ export class Records {
 }
 
 export class RecordsWithReference extends Records {
-  constructor(records: Record[], total, public readonly reference: Record) {
+  constructor(
+    records: Record[],
+    total,
+    public readonly reference: Record
+  ) {
     super(records, total);
   }
 }

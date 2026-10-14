@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import dataclasses
 import logging
 from abc import abstractmethod
@@ -163,6 +149,50 @@ def es_field_for_response_property(property: str) -> str:
     return f"responses.{property}"
 
 
+# Pandera dtype -> Elasticsearch field type for FieldType.column. Keys are NORMALIZED
+# spellings: look them up through `normalize_column_dtype`, never with a raw dtype string.
+# Anything unlisted indexes as text -- a column's dtype is advisory for the index, and an
+# unknown dtype must not make the dataset unindexable.
+_ES_TYPE_BY_COLUMN_DTYPE = {
+    "int8": "long",
+    "int16": "long",
+    "int32": "long",
+    "int64": "long",
+    "float32": "double",
+    "float64": "double",
+    # pandas emits "bool" for a numpy bool column and "boolean" for the nullable extension
+    # dtype; both are the same logical type and must map identically, or a term filter on
+    # the column behaves differently depending on which spelling the Pandera body used.
+    "bool": "boolean",
+    "boolean": "boolean",
+    "datetime64[ns]": "date_nanos",
+}
+
+
+def normalize_column_dtype(dtype: str) -> str:
+    """Normalize a Pandera dtype spelling to an `_ES_TYPE_BY_COLUMN_DTYPE` lookup key.
+
+    Two spellings of one logical type must produce one mapping, or a range filter or a
+    sort on the column behaves differently depending on how the Pandera body happened to
+    declare it:
+
+    * pandas spells its extension dtypes with a leading capital (`Int64`, `Float64`,
+      `Int32`) and the numpy ones lowercase (`int64`, `float64`). A column declared
+      `pd.Int64Dtype()` -- the ordinary way to get a nullable integer column -- therefore
+      arrives as `"Int64"`, and that spelling survives `to_json`/`from_json`, so it is
+      exactly what the server stores. Case-folding collapses the pair; without it such a
+      column fell through to the text fallback and lost numeric range queries and numeric
+      sort order.
+    * a timezone-aware datetime spells its zone into the dtype (`datetime64[ns, UTC]`),
+      which would otherwise miss the lookup once per zone. `date_nanos` stores an instant,
+      so the zone does not change the mapping.
+    """
+    normalized = dtype.lower()
+    if normalized.startswith("datetime64[ns,"):
+        return "datetime64[ns]"
+    return normalized
+
+
 def es_mapping_for_field(field: Field) -> dict:
     field_type = field.settings["type"]
 
@@ -210,21 +240,28 @@ def es_mapping_for_field(field: Field) -> dict:
                                 "properties": {
                                     "schemaName": {"type": "keyword"},
                                     "etag": {"type": "keyword"},
-                                    "version_id": {"type": "keyword"},
                                     "last_modified": {"type": "date"},
-                                    "version_tag": {"type": "keyword"},
-                                    "is_latest": {"type": "boolean"},
                                 },
                             },
                             "schemaName": {"type": "keyword"},
-                            "version_id": {"type": "keyword"},
-                            "is_latest": {"type": "boolean"},
                         },
                     },
                     "reference": {"type": "keyword"},
                 },
             }
         }
+    elif field.is_column:
+        dtype = field.settings.get("dtype", "")
+        es_type = _ES_TYPE_BY_COLUMN_DTYPE.get(normalize_column_dtype(dtype))
+        if es_type is None:
+            # Keyword sub-field so terms filters and sorting work on the column.
+            return {
+                es_field_for_record_field(field.name): {
+                    "type": "text",
+                    "fields": {"keyword": {"type": "keyword", "ignore_above": 256}},
+                }
+            }
+        return {es_field_for_record_field(field.name): {"type": es_type}}
     elif field.is_image:
         return {
             es_field_for_record_field(field.name): {
@@ -325,6 +362,10 @@ class BaseElasticAndOpenSearchEngine(SearchEngine):
 
         index_name = es_index_name_for_dataset(dataset)
         await self._create_index_request(index_name, mappings, settings)
+
+    async def index_exists(self, dataset: Dataset) -> bool:
+        index_name = es_index_name_for_dataset(dataset)
+        return await self._index_exists_request(index_name)
 
     async def delete_index(self, dataset: Dataset):
         index_name = es_index_name_for_dataset(dataset)

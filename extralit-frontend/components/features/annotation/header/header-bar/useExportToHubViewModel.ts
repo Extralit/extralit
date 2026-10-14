@@ -107,7 +107,9 @@ export const useExportToHubViewModel = (props: ExportToHubProps) => {
           : undefined,
         permanent: true,
       });
-    } catch {}
+    } catch {
+      /* best-effort status notification; ignore failures */
+    }
   };
 
   const watchExportStatus = async () => {

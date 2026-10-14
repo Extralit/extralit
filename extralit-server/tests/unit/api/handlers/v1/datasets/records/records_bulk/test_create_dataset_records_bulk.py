@@ -1,22 +1,10 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 from typing import Any
 from uuid import UUID
 
 import pytest
 from fastapi.encoders import jsonable_encoder
 from httpx import AsyncClient
+from pydantic.version import version_short
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -47,6 +35,8 @@ from tests.factories import (
     TextQuestionFactory,
     WebhookFactory,
 )
+
+PYDANTIC_ERRORS_URL = f"https://errors.pydantic.dev/{version_short()}/v"
 
 
 @pytest.mark.asyncio
@@ -558,13 +548,13 @@ class TestCreateDatasetRecordsBulk:
                             "have at least 1 character', "
                             "'input': '', 'ctx': {'min_length': "
                             "1}, 'url': "
-                            "'https://errors.pydantic.dev/2.9/v/string_too_short'}, "
+                            f"'{PYDANTIC_ERRORS_URL}/string_too_short'}}, "
                             "{'type': 'string_too_short', 'loc': "
                             "('content',), 'msg': 'String should "
                             "have at least 1 character', "
                             "'input': '', 'ctx': {'min_length': "
                             "1}, 'url': "
-                            "'https://errors.pydantic.dev/2.9/v/string_too_short'}]",
+                            f"'{PYDANTIC_ERRORS_URL}/string_too_short'}}]",
                             "type": "value_error",
                         }
                     ]
@@ -662,7 +652,7 @@ class TestCreateDatasetRecordsBulk:
                     "errors": [
                         {
                             "loc": ["body", "items", 0, "fields"],
-                            "msg": "Value error, Error parsing chat field 'chat': [{'type': 'missing', 'loc': ('content',), 'msg': 'Field required', 'input': {'role': 'user'}, 'url': 'https://errors.pydantic.dev/2.9/v/missing'}]",
+                            "msg": f"Value error, Error parsing chat field 'chat': [{{'type': 'missing', 'loc': ('content',), 'msg': 'Field required', 'input': {{'role': 'user'}}, 'url': '{PYDANTIC_ERRORS_URL}/missing'}}]",
                             "type": "value_error",
                         }
                     ]
@@ -746,7 +736,7 @@ class TestCreateDatasetRecordsBulk:
                         "params": {
                             "errors": [
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "constrained-str"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "str"],
                                     "msg": "Input should be a valid string",
                                     "type": "string_type",
                                 },
@@ -756,7 +746,7 @@ class TestCreateDatasetRecordsBulk:
                                     "type": "list_type",
                                 },
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[constrained-str,any]"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[str,any]"],
                                     "msg": "Input should be a valid dictionary",
                                     "type": "dict_type",
                                 },
@@ -773,7 +763,7 @@ class TestCreateDatasetRecordsBulk:
                         "params": {
                             "errors": [
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "constrained-str"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "str"],
                                     "msg": "Input should be a valid string",
                                     "type": "string_type",
                                 },
@@ -783,7 +773,7 @@ class TestCreateDatasetRecordsBulk:
                                     "type": "list_type",
                                 },
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[constrained-str,any]"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[str,any]"],
                                     "msg": "Input should be a valid dictionary",
                                     "type": "dict_type",
                                 },
@@ -800,7 +790,7 @@ class TestCreateDatasetRecordsBulk:
                         "params": {
                             "errors": [
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "constrained-str"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "str"],
                                     "msg": "Input should be a valid string",
                                     "type": "string_type",
                                 },
@@ -810,7 +800,7 @@ class TestCreateDatasetRecordsBulk:
                                     "type": "list_type",
                                 },
                                 {
-                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[constrained-str,any]"],
+                                    "loc": ["body", "items", 0, "fields", "text-field", "dict[str,any]"],
                                     "msg": "Input should be a valid dictionary",
                                     "type": "dict_type",
                                 },

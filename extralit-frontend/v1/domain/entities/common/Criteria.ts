@@ -1,4 +1,4 @@
-import { RangeValue } from "./Filter";
+import { type RangeValue } from "./Filter";
 
 export abstract class Criteria {
   constructor() {

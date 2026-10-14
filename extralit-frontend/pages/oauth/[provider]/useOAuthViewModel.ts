@@ -1,0 +1,41 @@
+import { onMounted } from "vue";
+import { useResolve } from "ts-injecty";
+import { type ProviderType } from "~/v1/domain/entities/oauth/OAuthProvider";
+import { OAuthLoginUseCase } from "~/v1/domain/usecases/oauth-login-use-case";
+import { useRoutes, useTranslate, useLocalStorage } from "~/v1/infrastructure/services";
+import { useNotifications } from "~/v1/infrastructure/services/useNotifications";
+
+export const useOAuthViewModel = () => {
+  const { t } = useTranslate();
+  const notification = useNotifications();
+  const routes = useRoute();
+  const router = useRoutes();
+  const oauthLoginUseCase = useResolve(OAuthLoginUseCase);
+  const { pop } = useLocalStorage();
+
+  onMounted(async () => {
+    await tryLogin();
+  });
+
+  const redirect = () => {
+    const redirect = pop<string | null>("redirectTo");
+    router.go(redirect || "/");
+  };
+
+  const tryLogin = async () => {
+    const { params, query } = routes;
+
+    const provider = params.provider as ProviderType;
+
+    try {
+      await oauthLoginUseCase.login(provider, query);
+      redirect();
+    } catch {
+      notification.notify({
+        message: t("extralit.api.errors::UnauthorizedError"),
+        type: "danger",
+      });
+      router.go("/");
+    }
+  };
+};

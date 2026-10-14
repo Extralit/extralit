@@ -1,0 +1,29 @@
+name: Download prebuilt frontend statics
+description: >-
+  Download the latest successful extralit-frontend.yml SPA build into
+  extralit-frontend/.output/public, so a server build can bake it into the wheel
+  (and the HF Space built FROM it) as the bundled fallback UI instead of running
+  npm. The SPA is env-agnostic (relative /api), so the same artifact works
+  regardless of where the server is deployed.
+
+inputs:
+  branch:
+    # Always `main`, including for release builds: this action needs a *previously successful*
+    # run on the branch, and `release` only ever gets the commit that is already on `main`.
+    # Sourcing from `release` would fetch the previous release's SPA, or nothing at all on the
+    # first one.
+    description: Branch whose latest successful frontend build to fetch.
+    required: false
+    default: main
+
+runs:
+  using: composite
+  steps:
+    - uses: dawidd6/action-download-artifact@v21
+      with:
+        workflow: extralit-frontend.yml
+        branch: ${{ inputs.branch }}
+        name: extralit-frontend
+        path: extralit-frontend/.output/public
+        workflow_conclusion: success
+        if_no_artifact_found: fail

@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from collections.abc import Sequence
 from datetime import datetime
 from uuid import UUID
@@ -57,6 +43,7 @@ class CreateRecordsBulk:
                 fields=jsonable_encoder(record_create.fields),
                 metadata_=record_create.metadata,
                 external_id=record_create.external_id,
+                reference=record_create.reference,
                 dataset_id=dataset.id,
             )
             for record_create in bulk_create.items
@@ -179,6 +166,7 @@ class UpsertRecordsBulk(CreateRecordsBulk):
                     fields=jsonable_encoder(record_upsert.fields),
                     metadata_=record_upsert.metadata,
                     external_id=record_upsert.external_id,
+                    reference=record_upsert.reference,
                     dataset_id=dataset.id,
                 )
             else:
@@ -186,6 +174,8 @@ class UpsertRecordsBulk(CreateRecordsBulk):
                     record.metadata_ = record_upsert.metadata
                 if record_upsert.is_set("fields"):
                     record.fields = jsonable_encoder(record_upsert.fields)
+                if record_upsert.is_set("reference"):
+                    record.reference = record_upsert.reference
 
                 if self._db.is_modified(record):
                     record.updated_at = datetime.utcnow()

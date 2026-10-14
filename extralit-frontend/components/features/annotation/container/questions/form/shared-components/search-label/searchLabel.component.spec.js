@@ -3,32 +3,34 @@ import SearchLabelComponent from "./SearchLabel.component";
 
 let wrapper = null;
 const options = {
-  stubs: ["BaseIconWithBadge"],
-  propsData: {
+  global: {
+    stubs: ["BaseIconWithBadge"],
+  },
+  props: {
     searchRef: "searchRef",
     placeholder: "placeholder",
     value: "",
   },
 };
-const spyResetValueMethod = jest.spyOn(SearchLabelComponent.methods, "resetValue");
+const spyResetValueMethod = vi.spyOn(SearchLabelComponent.methods, "resetValue");
 
-const spyFocusInSearchMethod = jest.spyOn(SearchLabelComponent.methods, "focusInSearch");
+const spyFocusInSearchMethod = vi.spyOn(SearchLabelComponent.methods, "focusInSearch");
 
-const spyLooseFocusMethod = jest.spyOn(SearchLabelComponent.methods, "looseFocus");
+const spyLooseFocusMethod = vi.spyOn(SearchLabelComponent.methods, "looseFocus");
 
 beforeEach(() => {
   wrapper = shallowMount(SearchLabelComponent, options);
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("LabelSelectionComponent", () => {
   it("render the component", () => {
-    expect(wrapper.is(SearchLabelComponent)).toBe(true);
+    expect(wrapper.findComponent(SearchLabelComponent).exists()).toBe(true);
 
-    const textInput = wrapper.findComponent({ ref: "searchRef" });
+    const textInput = wrapper.find('input[type="text"]');
     expect(textInput.exists()).toBe(true);
 
     expect(textInput.attributes("type")).toBe("text");

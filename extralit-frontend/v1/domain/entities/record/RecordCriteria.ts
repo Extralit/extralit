@@ -5,7 +5,7 @@ import { ResponseCriteria } from "../response/ResponseCriteria";
 import { SuggestionCriteria } from "../suggestion/SuggestionCriteria";
 import { PageCriteria } from "../page/PageCriteria";
 import { SearchTextCriteria } from "../search/SearchTextCriteria";
-import { RecordStatus } from "./RecordAnswer";
+import { type RecordStatus } from "./RecordAnswer";
 
 interface IRecordCriteria {
   readonly page: PageCriteria;

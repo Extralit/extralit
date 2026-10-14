@@ -1,5 +1,7 @@
+type Executable = () => unknown;
+
 class Routine {
-  constructor(private readonly executable: Function) {}
+  constructor(private readonly executable: Executable) {}
 
   execute() {
     return this.executable();
@@ -9,7 +11,7 @@ class Routine {
 class Queue {
   private readonly queue: Routine[] = [];
 
-  async enqueue(element: Function) {
+  async enqueue(element: Executable) {
     const routine = new Routine(element);
     this.queue.push(routine);
 

@@ -45,12 +45,7 @@ $tooltip-border-radius: $border-radius-s;
   &:before {
     right: calc(50% - $tooltip-triangle-size);
     top: 100%;
-    @include triangle(
-      top,
-      $tooltip-triangle-size,
-      $tooltip-triangle-size,
-      $tooltip-bg
-    );
+    @include triangle(top, $tooltip-triangle-size, $tooltip-triangle-size, $tooltip-bg);
   }
 }
 %has-tooltip--top {
@@ -63,12 +58,7 @@ $tooltip-border-radius: $border-radius-s;
   &:before {
     right: calc(50% - $tooltip-triangle-size);
     top: -10px;
-    @include triangle(
-      bottom,
-      $tooltip-triangle-size,
-      $tooltip-triangle-size,
-      $tooltip-bg
-    );
+    @include triangle(bottom, $tooltip-triangle-size, $tooltip-triangle-size, $tooltip-bg);
   }
 }
 %has-tooltip--right {
@@ -128,24 +118,14 @@ $tooltip-border-radius: $border-radius-s;
   left: calc(100% + $tooltip-triangle-size/2);
   top: 50%;
   transform: translateY(-50%);
-  @include triangle(
-    left,
-    $tooltip-triangle-size,
-    $tooltip-triangle-size,
-    $tooltip-bg
-  );
+  @include triangle(left, $tooltip-triangle-size, $tooltip-triangle-size, $tooltip-bg);
 }
 
 %triangle-right {
   right: calc(100% + $tooltip-triangle-size/2);
   top: 50%;
   transform: translateY(-50%);
-  @include triangle(
-    right,
-    $tooltip-triangle-size,
-    $tooltip-triangle-size,
-    $tooltip-bg
-  );
+  @include triangle(right, $tooltip-triangle-size, $tooltip-triangle-size, $tooltip-bg);
 }
 
 @mixin tooltip-mini($position, $offset: 4px) {

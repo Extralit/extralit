@@ -38,10 +38,6 @@ export default {
       required: true,
     },
   },
-  model: {
-    prop: "value",
-    event: "onValueChange",
-  },
   methods: {
     selectOption(option) {
       this.$emit("onValueChange", option);

@@ -1,17 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import os
 from pathlib import Path
 from typing import Optional
@@ -30,7 +16,6 @@ def download_file(
     output_path: Optional[Path] = typer.Option(
         None, "--output", "-o", help="Local path to save the file (default: same as remote filename)"
     ),
-    version_id: Optional[str] = typer.Option(None, "--version-id", "-v", help="Version ID of the file to download"),
     overwrite: bool = typer.Option(False, "--overwrite", help="Overwrite existing file"),
 ) -> None:
     """Download a file from a workspace."""
@@ -76,7 +61,7 @@ def download_file(
             task = progress.add_task(f"Downloading {remote_path} from {workspace}...", total=None)
 
             # Download the file
-            file_response = workspace_obj.get_file(remote_path, version_id=version_id)
+            file_response = workspace_obj.get_file(remote_path)
 
             # Save the file
             with open(output_path, "wb") as f:

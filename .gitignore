@@ -4,8 +4,6 @@ dist/
 *.egg-info/
 .pytest_cache/
 .pyre/
-# pyenv
-.python-version
 .pdm-build/
 .pdm-python
 
@@ -22,7 +20,9 @@ dmypy.json
 .idea/
 
 # Visual Studio Code
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .cursor/
 
 /coverage.xml
@@ -142,7 +142,6 @@ sw.*
 yarn.lock
 
 # pdm and uv
-uv.lock
 pyproject.toml.*
 
 # App generated files
@@ -164,5 +163,15 @@ extralit/site
 # Development files
 **/*.db
 **/*.pdf
-.claude/
+# Layout parser test fixtures are committed; regenerate with extralit-server/tests/fixtures/pdf/generate.py
+!extralit-server/tests/fixtures/pdf/*.pdf
 output/
+.output/
+.nuxtrc
+.specstory/
+
+**/.playwright-mcp/
+**/.nuxt-stale-root/
+.worktree/
+.vercel
+.env*

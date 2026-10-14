@@ -1,17 +1,4 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import pytest
@@ -81,7 +68,6 @@ class TestSuiteWorkspaces:
         assert response.status_code == 404
         assert response.json() == {"detail": f"Workspace with id `{workspace_id}` not found"}
 
-    @pytest.mark.skip(reason="Failing with 500 instead of 200 status code")
     async def test_delete_workspace(self, async_client: AsyncClient, owner_auth_header: dict):
         workspace = await WorkspaceFactory.create(name="workspace_delete")
         other_workspace = await WorkspaceFactory.create()
@@ -92,7 +78,28 @@ class TestSuiteWorkspaces:
 
         assert response.status_code == 200
 
-    @pytest.mark.skip(reason="Failing with 500 instead of 409 status code")
+    async def test_delete_workspace_is_aborted_when_its_files_cannot_be_deleted(
+        self, async_client: AsyncClient, owner_auth_header: dict
+    ):
+        workspace = await WorkspaceFactory.create(name="workspace_storage_fails")
+
+        with (
+            patch(
+                "extralit_server.contexts.files.delete_workspace_objects",
+                AsyncMock(side_effect=Exception("storage down")),
+            ),
+            patch(
+                "extralit_server.contexts.accounts.delete_workspace",
+                AsyncMock(return_value=workspace),
+            ) as delete_workspace,
+        ):
+            response = await async_client.delete(f"/api/v1/workspaces/{workspace.id}", headers=owner_auth_header)
+
+        assert response.status_code == 500
+        # The row's survival is not observable here: the test session shares one savepoint with
+        # the request, so the handler's rollback also undoes the factory insert.
+        assert delete_workspace.await_args.kwargs["autocommit"] is False
+
     async def test_delete_workspace_with_feedback_datasets(self, async_client: AsyncClient, owner_auth_header: dict):
         workspace = await WorkspaceFactory.create(name="workspace_delete")
 
@@ -105,7 +112,6 @@ class TestSuiteWorkspaces:
             "detail": f"Cannot delete the workspace {workspace.id}. This workspace has some datasets linked"
         }
 
-    @pytest.mark.skip(reason="Failing with 500 instead of 404 status code")
     async def test_delete_missing_workspace(self, async_client: "AsyncClient", owner_auth_header: dict):
         workspace_id = uuid4()
 

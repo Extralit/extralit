@@ -3,7 +3,7 @@ import { Field } from "../field/Field";
 import { Question } from "../question/Question";
 import { Suggestion } from "../question/Suggestion";
 import { Score } from "../similarity/Score";
-import { MetadataRecord } from "../metadata/MetadataRecord";
+import { type MetadataRecord } from "../metadata/MetadataRecord";
 import { TaskDistribution } from "../distribution/TaskDistribution";
 import { RecordAnswer } from "./RecordAnswer";
 
@@ -161,7 +161,7 @@ export class Record {
       if (
         this.isPending &&
         !!question.suggestion &&
-        // @ts-ignore
+        // @ts-expect-error -- use_table is present only on some question settings variants
         !question.settings?.settings?.use_table
       ) {
         question.response(question.suggestion);

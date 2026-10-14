@@ -5,12 +5,12 @@
     @visibility="onVisibility"
     v-if="options.length"
   >
-    <template slot="dropdown-header">
+    <template #dropdown-header>
       <BaseButton class="add-question-selector__button"
         ><span class="add-question-selector__button-icon"><svgicon name="plus" /></span
       ></BaseButton>
     </template>
-    <template slot="dropdown-content">
+    <template #dropdown-content>
       <ul class="add-question-selector__options">
         <li class="add-question-selector__option" v-for="option in options" :key="option" @click="selectOption(option)">
           {{ $t(`config.question.${option}`) }}
@@ -21,7 +21,6 @@
 </template>
 
 <script>
-import "assets/icons/plus";
 export default {
   props: {
     options: {

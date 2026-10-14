@@ -1,6 +1,6 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { PublicNuxtAxiosInstance } from "../services/useAxiosExtension";
-import { IAuthRepository } from "~/v1/domain/services/IAuthRepository";
+import type { AxiosInstance } from "axios";
+import { type PublicAxiosInstance } from "../services/useAxiosExtension";
+import { type IAuthRepository } from "~/v1/domain/services/IAuthRepository";
 
 interface TokenResponse {
   access_token: string;
@@ -9,10 +9,10 @@ interface TokenResponse {
 }
 
 export class AuthRepository implements IAuthRepository {
-  private readonly axios: NuxtAxiosInstance;
+  private readonly axios: AxiosInstance;
   private refreshToken: string | null = null;
 
-  constructor(axios: PublicNuxtAxiosInstance) {
+  constructor(axios: PublicAxiosInstance) {
     this.axios = axios.makePublic();
   }
 
@@ -31,7 +31,7 @@ export class AuthRepository implements IAuthRepository {
       this.refreshToken = data.refresh_token;
       // Store in localStorage for persistence across sessions
       if (process.client) {
-        localStorage.setItem('refresh_token', data.refresh_token);
+        localStorage.setItem("refresh_token", data.refresh_token);
       }
     }
 
@@ -42,7 +42,7 @@ export class AuthRepository implements IAuthRepository {
     if (!this.refreshToken) {
       // Try to load from localStorage if not in memory
       if (process.client) {
-        this.refreshToken = localStorage.getItem('refresh_token');
+        this.refreshToken = localStorage.getItem("refresh_token");
       }
       if (!this.refreshToken) {
         return null;
@@ -59,7 +59,7 @@ export class AuthRepository implements IAuthRepository {
       // If refresh fails, clear stored refresh token
       this.refreshToken = null;
       if (process.client) {
-        localStorage.removeItem('refresh_token');
+        localStorage.removeItem("refresh_token");
       }
       throw error;
     }
@@ -68,7 +68,7 @@ export class AuthRepository implements IAuthRepository {
   logout() {
     this.refreshToken = null;
     if (process.client) {
-      localStorage.removeItem('refresh_token');
+      localStorage.removeItem("refresh_token");
     }
   }
 

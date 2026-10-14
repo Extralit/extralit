@@ -11,7 +11,10 @@ export interface Feature {
 export class DatasetCreationBuilder {
   private readonly subsets: Subset[] = [];
   private readonly datasetName: string;
-  constructor(private readonly repoId: string, datasetInfo: any) {
+  constructor(
+    private readonly repoId: string,
+    datasetInfo: any
+  ) {
     const firstKey = Object.keys(datasetInfo)[0];
     const defaultSubset = datasetInfo[firstKey];
 

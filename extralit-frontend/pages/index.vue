@@ -1,19 +1,17 @@
-
-
 <template>
   <div>
     <Home>
-      <template v-slot:header>
+      <template #header>
         <AppHeader
           class="home__header"
-          :breadcrumbs="breadcrumbs.map(b => ({ ...b, name: b.name === 'Home' ? $t('breadcrumbs.home') : b.name }))"
+          :breadcrumbs="breadcrumbs.map((b) => ({ ...b, name: b.name === 'Home' ? $t('breadcrumbs.home') : b.name }))"
           @breadcrumb-action="onBreadcrumbAction"
         />
         <PersistentStorageBanner class="home__banner" />
       </template>
-      <template v-slot:page-content>
+      <template #page-content>
         <div class="home__tabs">
-          <BaseTabs :active-tab="activeTab" :tabs="tabs" tabSize="medium" @change-tab="onTabChange" />
+          <BaseTabs :active-tab="activeTab" :tabs="tabs" tab-size="medium" @change-tab="onTabChange" />
         </div>
 
         <div class="home__tab-content">
@@ -31,24 +29,20 @@
             <div v-if="!selectedWorkspace" class="home__no-workspace">
               <p>Please select a workspace to view documents.</p>
             </div>
-            <DocumentsList
-              v-else
-              :workspace-id="selectedWorkspace.id"
-              :key="selectedWorkspace.id"
-            />
+            <DocumentsList v-else :key="selectedWorkspace.id" :workspace-id="selectedWorkspace.id" />
           </template>
         </div>
       </template>
-      <template v-slot:page-sidebar>
+      <template #page-sidebar>
         <template v-if="true || isAdminOrOwnerRole">
           <div class="home__sidebar__buttons">
             <ImportDocuments @on-click="openImportFlow" />
             <ImportFromHub
               :is-expanded="showImportDatasetInput"
+              :error="error"
               @on-expand="showImportDatasetInput = true"
               @on-close="showImportDatasetInput = false"
               @on-import-dataset="importHfDataset"
-              :error="error"
             />
           </div>
           <BaseSeparator class="home__sidebar__separator" />
@@ -94,9 +88,9 @@
     <!-- Import History Modal -->
     <BaseModal
       :modal-visible="isImportHistoryModalVisible"
-      @close-modal="closeImportHistoryModal"
       :modal-title="$t('import.historyTitle')"
       modal-class="modal-auto"
+      @close-modal="closeImportHistoryModal"
     >
       <ImportHistoryList
         :workspace="selectedWorkspace"
@@ -108,9 +102,9 @@
     <!-- Import History Details Modal -->
     <BaseModal
       :modal-visible="isImportDetailsModalVisible"
-      @close-modal="closeImportDetailsModal"
       :modal-title="`Import Details - ${selectedImportDetails?.filename || 'Unknown'}`"
       modal-class="modal-large"
+      @close-modal="closeImportDetailsModal"
     >
       <ImportHistoryDetailsModal
         v-if="selectedImportDetails"
@@ -130,23 +124,44 @@ import { useHomeViewModel } from "./useHomeViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 
 export default {
+  components: {
+    Home,
+  },
+
+  setup() {
+    return useHomeViewModel();
+  },
   data() {
     return {
       showImportDatasetInput: false,
-      activeTab: { id: 'datasets', name: this.$t('home.datasets') },
+      activeTab: { id: "datasets", name: this.$t("home.datasets") },
       tabs: [
-        { id: 'datasets', name: this.$t('home.datasets') },
-        { id: 'documents', name: this.$t('home.documents') },
+        { id: "datasets", name: this.$t("home.datasets") },
+        { id: "documents", name: this.$t("home.documents") },
+        { id: "schemas", name: this.$t("schemas.title"), route: "/schemas" },
+        { id: "extractions", name: this.$t("extractions.title"), route: "/extractions" },
       ],
       // Import details modal state
       isImportDetailsModalVisible: false,
       selectedImportDetails: null,
     };
   },
+
+  watch: {
+    workspaces: {
+      immediate: true,
+      handler(newWorkspaces) {
+        // Auto-assign the first workspace if none is selected and workspaces exist
+        if (!this.selectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
+          this.setSelectedWorkspace(newWorkspaces[0]);
+        }
+      },
+    },
+  },
   methods: {
     onBreadcrumbAction(e) {
       if (e === "clearFilters") {
-        this.$refs.datasetList?.clearFilters();
+        (this.$refs.datasetList as { clearFilters?: () => void })?.clearFilters();
       }
     },
     cardAction(action) {
@@ -159,10 +174,13 @@ export default {
     },
 
     onTabChange(tabId) {
-      const selectedTab = this.tabs.find(tab => tab.id === tabId);
-      if (selectedTab) {
-        this.activeTab = selectedTab;
+      const selectedTab = this.tabs.find((tab) => tab.id === tabId);
+      if (!selectedTab) return;
+      if (selectedTab.route) {
+        this.$router.push(selectedTab.route);
+        return;
       }
+      this.activeTab = selectedTab;
     },
     handleImportSelected(importRecord) {
       this.goToImportConfiguration(importRecord.id);
@@ -177,27 +195,8 @@ export default {
     },
     handleRetryItem(item) {
       // Handle retry item functionality if needed
-      console.log('Retry item:', item);
+      console.log("Retry item:", item);
     },
-  },
-  components: {
-    Home,
-  },
-
-  watch: {
-    workspaces: {
-      immediate: true,
-      handler(newWorkspaces) {
-        // Auto-assign the first workspace if none is selected and workspaces exist
-        if (!this.selectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
-          this.setSelectedWorkspace(newWorkspaces[0]);
-        }
-      }
-    }
-  },
-
-  setup() {
-    return useHomeViewModel();
   },
 };
 </script>

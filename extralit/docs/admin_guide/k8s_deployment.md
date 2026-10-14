@@ -1,151 +1,149 @@
-# Kubernetes Development Setup
+# Deploy with Kubernetes
 
-## Overview
+The Helm chart in [`deploy/k8s`](https://github.com/extralit/extralit/tree/main/deploy/k8s) deploys:
 
-The Extralit system consists of multiple microservices:
+- `extralit` server: web UI and API on port 6900
+- `extralit-worker`: RQ workers for background jobs. Every worker pod pulls from the same Redis queues, so raising `worker.replicaCount` spreads jobs across pods
+- PostgreSQL: main database (in-chart StatefulSet, or external)
+- Redis: job queue, persisted with AOF (in-chart Deployment, or external)
+- Elasticsearch: search engine for records (managed by the ECK operator, or external)
 
-- extralit-server: Web server for data annotation, dataset management, and extraction services
-- extralit-server: API server for data extraction, PDF parsing, and schema generation
-- Postgres database: Main database for extracted data and user accounts
-- Elasticsearch: Search engine for data records
-- Minio/S3: File storage for schemas, PDFs, and intermediate outputs
-- Weaviate: Vector database for text and table sections
-- Langfuse: LLM instrumentation service for query tracing and logging
+Uploaded files and LanceDB indexes live under `EXTRALIT_HOME_PATH` on a PersistentVolumeClaim shared by the server and worker, unless you point `storage.url` at S3-compatible storage.
 
-## Setup and Configuration
+## Prerequisites
 
-1. Install required tools:
+- Kubernetes 1.23+ with a default StorageClass
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) and [Helm](https://helm.sh/docs/intro/install/) 3.8+
+- The [ECK operator](https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-install-helm.html), unless you use an external Elasticsearch
 
-    - [kubectl](https://kubernetes.io/docs/tasks/tools/)
-    - [Tilt](https://docs.tilt.dev/install.html)
-    - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) (for local clusters)
+For a local cluster, [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) or [minikube](https://minikube.sigs.k8s.io/docs/start/) both work; give it at least 4 GB of memory.
 
-2. Create a local Kubernetes cluster:
+## Install
+
+1. Install the ECK operator:
+
     ```bash
-    kind create cluster --name {cluster_name}
+    helm repo add elastic https://helm.elastic.co
+    helm install elastic-operator elastic/eck-operator -n elastic-system --create-namespace
     ```
 
-3. Clone the repository:
+2. Clone the repository and install the chart:
+
     ```bash
     git clone https://github.com/extralit/extralit.git
     cd extralit
+    helm install extralit deploy/k8s -n extralit --create-namespace
     ```
 
-4. Set up the Kubernetes cluster:
-    <details>
-    <summary>Local `kind` Cluster Setup</summary>
+    The owner password, API key and PostgreSQL password are generated unless you set `extralit.auth.password`, `extralit.auth.apiKey` and `postgresql.auth.password`. Set all three when rendering without cluster access (`helm template`, Argo CD, Flux): the chart can't read back the previous values there, so it would generate new ones on every sync and the server would lose access to PostgreSQL.
 
-    Install additional tools:
-    - [ctlptl](https://github.com/tilt-dev/ctlptl/tree/main#how-do-i-install-it)
-
-    Create cluster and local registry:
-    ```bash
-    ctlptl create registry ctlptl-registry --port=5005
-    ctlptl create cluster {cluster_name} --registry=ctlptl-registry
-    ```
-
-    Apply storage configurations:
-    ```bash
-    ctlptl apply -f k8s/kind/kind-config.yaml
-    kubectl --context kind-kind taint node kind-control-plane node-role.kubernetes.io/control-plane:NoSchedule-
-    ```
-
-    > **Note:** Tilt will apply `k8s/kind/tilt-local-dev-kind-storage-policy.yaml` for local storage class.
-
-    </details>
-
-5. Configure cluster context:
-    ```bash
-    kubectl config set-cluster {cluster_name}
-    kubectl config use-context {cluster_context}
-    ```
-
-### Deploying Services
-
-Set environment variables:
-- `ENV`: `dev` for development, `prod` for production
-- `NAMESPACE`: Kubernetes namespace for services
-- `DOCKER_REPO`: Docker repository URL
-- `CLUSTER_CONTEXT`: Kubernetes cluster context
-
-1. Create namespace:
-    ```bash
-    kubectl create ns {NAMESPACE}
-    ```
-
-2. Set up secrets:
-    ```bash
-    kubectl apply -f extralit-secrets.yaml -n {NAMESPACE}
-    kubectl apply -f langfuse-secrets.yaml -n {NAMESPACE}
-    kubectl apply -f weaviate-api-keys.yaml -n {NAMESPACE}
-    ```
-
-3. Deploy services:
-
-    We use Tilt to manage the development environment and deploys services to Kubernetes by providing a single command to build, deploy, and monitor services.
+3. Wait for the pods to become ready. The server pod runs database migrations and creates the owner user on startup, so it takes a minute or two:
 
     ```bash
-    ENV={ENV} DOCKER_REPO={DOCKER_REPO} tilt up --namespace {NAMESPACE} --context {CLUSTER_CONTEXT}
+    kubectl -n extralit get pods -w
     ```
 
-    If you set `DOCKER_REPO`, Tilt will automatically handles building, tagging, pushing, and pulling Docker images.
+4. Open Extralit:
 
-    <details>
-    <summary>Troubleshooting PV issues on local clusters</summary>
-
-    Deploy services iteratively:
     ```bash
-    ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace {NAMESPACE} --context {CLUSTER_CONTEXT} elasticsearch
-    ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace {NAMESPACE} --context {CLUSTER_CONTEXT} main-db
-    ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace {NAMESPACE} --context {CLUSTER_CONTEXT} minio
-    ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace {NAMESPACE} --context {CLUSTER_CONTEXT} weaviate
-    ENV=dev DOCKER_REPO=localhost:5005 tilt up --namespace {NAMESPACE} --context {CLUSTER_CONTEXT}
+    kubectl -n extralit port-forward svc/extralit 6900
     ```
-    </details>
 
-4. Monitor deployment in Tilt UI: `http://localhost:10350`
+    Then go to http://localhost:6900 and log in as `extralit`. Get the password with:
 
-### User Account Setup
+    ```bash
+    kubectl -n extralit get secret extralit-secrets -o jsonpath='{.data.password}' | base64 -d
+    ```
 
-Run the `start_extralit_server.sh` script for initial setup. Manage users with `extralit_server` CLI:
+5. Optionally, check the release with the bundled Helm test:
+
+    ```bash
+    helm test extralit -n extralit
+    ```
+
+## Limitations
+
+- **Text extraction jobs fail.** The `ocr` queue's text-extraction job imports `extralit_ocr`, which is installed in the HF Space image but not in `extralit-server`. Layout extraction and the other `ocr` jobs run.
+- **Redis is a single pod.** It keeps queued jobs across restarts but has no failover; use `externalRedis` with a managed Redis for high availability.
+- **Workers share one node by default.** With a `ReadWriteOnce` volume and file storage, every worker runs on the server's node. To spread workers across nodes, use S3 storage (`storage.url`) and `extralit.persistence.accessMode=ReadWriteMany`.
+
+## Configuration
+
+Set values with `--set` or a values file (`helm install ... -f my-values.yaml`). See [`values.yaml`](https://github.com/extralit/extralit/blob/main/deploy/k8s/values.yaml) for all options.
+
+| Value | Default | Notes |
+|---|---|---|
+| `extralit.image.repository` / `tag` | `extralit/extralit-server` / chart `appVersion` | Use `extralitdev/extralit-server` for builds from `main` |
+| `extralit.auth.username` / `password` / `apiKey` / `workspace` | `extralit` / generated / generated / `default` | Owner user created on first install only |
+| `extralit.authSecretKey` | generated | Kept across upgrades |
+| `extralit.baseUrl` | `""` | Serve under a path prefix, e.g. `/extralit` |
+| `extralit.persistence.*` | 2Gi `ReadWriteOnce` at `/var/lib/extralit` | With `ReadWriteOnce` the worker runs on the server's node and rollouts use `Recreate`; use `ReadWriteMany` to spread pods |
+| `extralit.ingress.*` | disabled | `className`, `host`, `annotations`, `tls` |
+| `extralit.hpa.*` | disabled | Needs `ReadWriteMany` persistence; the chart refuses to render it with `ReadWriteOnce` |
+| `nodeSelector`, `tolerations` | none | Applied to server and worker pods |
+| `worker.replicaCount` / `numWorkers` / `queues` | `1` / `2` / `[high, default, ocr]` | Pods × processes per pod; queues in priority order |
+| `extralit.extraEnv` | `[]` | Any other `EXTRALIT_*` [server setting](../reference/extralit-server/configuration.md) |
+| `storage.url`, `storage.s3.*` | files on the PVC | `s3://bucket[/prefix]`, or `http(s)://host[:port]/bucket` for MinIO and R2 |
+| `postgresql.enabled` / `externalDatabase.url` | `true` / `""` | External format: `postgresql+asyncpg://user:pass@host:5432/db` |
+| `elasticsearch.useOperator` / `externalElasticsearch.url` | `true` / `""` | External format: `http://user:pass@host:9200` |
+| `redis.enabled` / `externalRedis.url` | `true` / `redis://localhost:6379/0` | `redis.persistence.*` keeps queued jobs across restarts |
+
+### Ingress
+
+To expose Extralit through an ingress controller, e.g. on minikube:
 
 ```bash
-EXTRALIT_DATABASE_URL=postgresql+asyncpg://postgres:$POSTGRES_PASSWORD@$POSTGRES_HOST/postgres \
-EXTRALIT_LOCAL_AUTH_USERS_DB_FILE=path/to/users.yaml \
-extralit_server database users migrate
+minikube addons enable ingress
+helm upgrade extralit deploy/k8s -n extralit --reuse-values \
+  --set extralit.ingress.enabled=true \
+  --set extralit.ingress.host=extralit.local
+echo "$(minikube ip) extralit.local" | sudo tee -a /etc/hosts
 ```
 
-### Frontend Development
+### External services
 
-Set up and run frontend:
-   ```bash
-   cd extralit-frontend
-   npm install
-   API_BASE_URL=http://path.to.server npm run dev
-   ```
+To use managed services instead of the in-chart ones:
 
-### Backend Development
+```yaml
+postgresql:
+  enabled: false
+externalDatabase:
+  url: postgresql+asyncpg://extralit:<password>@db.example.com:5432/extralit
 
-Changes to `src/extralit_server/` or `src/extralit/` are automatically updated while running Tilt with `ENV=dev`. Manually rebuild if needed.
+elasticsearch:
+  useOperator: false
+externalElasticsearch:
+  url: https://elastic:<password>@es.example.com:9200
+
+redis:
+  enabled: false
+externalRedis:
+  url: redis://redis.example.com:6379/0
+
+storage:
+  url: s3://my-bucket/extralit
+  s3:
+    accessKey: <access-key>
+    secretKey: <secret-key>
+    region: us-east-1
+```
+
+## Upgrade and uninstall
+
+```bash
+helm upgrade extralit deploy/k8s -n extralit --reuse-values
+helm uninstall extralit -n extralit
+```
+
+`helm uninstall` keeps the PostgreSQL and Elasticsearch PVCs. Delete them with `kubectl -n extralit delete pvc -l app.kubernetes.io/instance=extralit` and `kubectl -n extralit delete pvc -l elasticsearch.k8s.elastic.co/cluster-name=extralit` if you no longer need the data.
 
 ## Troubleshooting
 
-### Persistent Volume & storage clases
-The services are configured to use persistent volumes (PVs) to store data, such as the Postgres database, Elasticsearch data, Minio files, and Weaviate vector embeddings. The PVs are created with a storage class, which currently is hard-coded to `k8s-storage-policy`. The storage class is defined in the K8s yaml files for each service, such as `main-db`, `elasticsearch`, `minio`, and `weaviate`.
-
-However these issues can arise:
-- The PVs are not available when the services are deployed, causing the services to fail to start. This especially happens on the `kind` cluster, the PV were not created automatically before the service is deployed, so the `k8s/kind/tilt-local-dev-kind-storage-policy.yaml` file has to manually create the PV.
-- Some Persistent Volume Claim (PVC) may bound to the incorrect PV, depending on the order they were created, causing issues where the expected storage path doesn't match requirements of the . You may check the `uncategorized` resource under `unlabeled` in the Tilt web interface to see if the PVs were created, or restart this resource to recreate the PVs, but it doesn't always fix it. Sometimes `rm -rf /tmp/kind-volumes/` and restarting the `kind` cluster is needed for redeployment of elasticsearch and postgres.
-- Many of the Persistent Volume definitions were initially setup with a modest size, 4Gi to 9Gi. This will need to be resized to support higher data storage requirements.
-
-### Deployment
-Check the Tilt web interface for services that are not green in deployment status. Services that often fail to deploy when the cluster restarts or the pods are restarted are:
-- `elasticsearch`: This helm chart often fails to redeploy due to the `elasticsearch-master-0` worker pod not being able reach green status due to issues with the data-shards in the persistent volume when the deployment restart. This can be fixed by deleting the `elasticsearch-master-0` pod, the `elasticsearch-master-elasticsearch-master-0` PVC and PV and allowing it to recreate a new database.
-- `main-db` Postgres: This service can fail to redeploy due to the `main-db-0` pod not being able to mount the original persistent volume when the helm chart is redeployed, because it generated a new random password that was different from the original password. Fix it by changing the `posgres-password` to original password in the `main-db` K8s secret.
-
-### Data persistence
-- `elasticsearch`: Same issue described above causes the data index to be lost when the `elasticsearch-master-0` pod is recreated. The data index can be restored with persistent data in the `main-db` Postgres database by reindexing the data with the `extralit_server` CLI tool, see [check_search_engine.sh](https://github.com/extralit/extralit-server/blob/main/docker/server/scripts/check_search_engine.sh).
-- `minio`: As a standalone pod in the K8s cluster for file blob storage, the Minio service is not automatically backed up. The data in the Minio bucket can be lost if the pod is deleted or the cluster fails in anyway. The data can be restored by re-uploading the data to the Minio bucket.
-
+- **Server pod restarts during startup:** check `kubectl -n extralit logs deploy/extralit`. Migrations and user creation need PostgreSQL and Elasticsearch to be ready; the server retries until its startup probe gives up after 10 minutes.
+- **Pods stuck in `Pending`:** usually a PVC that can't bind. Check `kubectl -n extralit get pvc` and set the `*.persistence.storageClass` values if the cluster has no default StorageClass. With a `ReadWriteOnce` volume the worker is placed on the server's node, so it stays `Pending` until the server is scheduled.
+- **Elasticsearch never becomes healthy:** check `kubectl -n extralit get elasticsearch` and the operator logs with `kubectl -n elastic-system logs statefulset/elastic-operator`. A single-node cluster needs about 2 GB of memory.
+- **Search index lost:** records are stored in PostgreSQL, so you can rebuild the index with `kubectl -n extralit exec deploy/extralit -- python -m extralit_server search-engine reindex`.
+- **Changed `extralit.auth.*` after install:** the owner user is only created on first install, so changing these values afterwards updates the Secret but not the user's real credentials.
+- **Changed `postgresql.auth.password` after install:** PostgreSQL only reads it when initializing an empty volume. Change the password inside the database as well, or delete the PostgreSQL PVC to start over.
 
 For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).

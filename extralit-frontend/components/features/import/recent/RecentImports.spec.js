@@ -14,18 +14,18 @@ const mockViewModel = {
   isLoading: false,
   error: null,
   hasWorkspace: true,
-  loadRecentImports: jest.fn(),
-  retryLoad: jest.fn(),
+  loadRecentImports: vi.fn(),
+  retryLoad: vi.fn(),
 };
 
-jest.mock("./useRecentImportsViewModel", () => ({
-  useRecentImportsViewModel: jest.fn(() => mockViewModel),
+vi.mock("./useRecentImportsViewModel", () => ({
+  useRecentImportsViewModel: vi.fn(() => mockViewModel),
 }));
 
 // Mock assets
-jest.mock("assets/icons/danger", () => ({}));
-jest.mock("assets/icons/document", () => ({}));
-jest.mock("assets/icons/import", () => ({}));
+vi.mock("assets/icons/danger", () => ({}));
+vi.mock("assets/icons/document", () => ({}));
+vi.mock("assets/icons/import", () => ({}));
 
 describe("RecentImports Component", () => {
   let wrapper;
@@ -66,23 +66,25 @@ describe("RecentImports Component", () => {
 
   afterEach(() => {
     if (wrapper) {
-      wrapper.destroy();
+      wrapper.unmount();
     }
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe("Component Structure and Display", () => {
     it("should render the component with correct header", () => {
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -94,17 +96,19 @@ describe("RecentImports Component", () => {
       mockViewModel.recentImports = mockImportRecords;
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
-          },
-          RecentImportCard: {
-            template: '<div class="mock-recent-import-card" @click="$emit(\'click\')"></div>',
-            props: ["importRecord"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: {
+              template: '<div class="mock-recent-import-card" @click="$emit(\'click\')"></div>',
+              props: ["importRecord"],
+            },
           },
         },
       });
@@ -115,15 +119,17 @@ describe("RecentImports Component", () => {
 
     it("should display action buttons", () => {
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -138,17 +144,19 @@ describe("RecentImports Component", () => {
       mockViewModel.isLoading = true;
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: {
-            template: '<div class="mock-spinner">Loading...</div>',
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinnerComponent: {
+              template: '<div class="mock-spinner">Loading...</div>',
+            },
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
-          },
-          RecentImportCard: true,
         },
       });
 
@@ -161,15 +169,17 @@ describe("RecentImports Component", () => {
       mockViewModel.isLoading = false;
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -182,18 +192,20 @@ describe("RecentImports Component", () => {
       mockViewModel.error = "Failed to load recent imports. Please try again.";
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: {
-            template: '<div class="mock-icon"></div>',
-            props: ["iconName"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: {
+              template: '<div class="mock-icon"></div>',
+              props: ["iconName"],
+            },
+            BaseButton: {
+              template: '<button class="mock-base-button" @click="$emit(\'click\')"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          BaseButton: {
-            template: '<button class="mock-base-button" @click="$emit(\'click\')"><slot /></button>',
-            props: ["variant"],
-          },
-          RecentImportCard: true,
         },
       });
 
@@ -207,15 +219,17 @@ describe("RecentImports Component", () => {
       mockViewModel.error = "Network error";
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button" @click="$emit(\'click\')"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button" @click="$emit(\'click\')"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -231,15 +245,17 @@ describe("RecentImports Component", () => {
       mockViewModel.hasWorkspace = false;
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: null },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: null },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -253,15 +269,17 @@ describe("RecentImports Component", () => {
       mockViewModel.hasWorkspace = true;
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -276,15 +294,17 @@ describe("RecentImports Component", () => {
       mockViewModel.hasWorkspace = true;
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -302,17 +322,19 @@ describe("RecentImports Component", () => {
       mockViewModel.recentImports = mockImportRecords;
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
-          },
-          RecentImportCard: {
-            template: '<div class="mock-recent-import-card" @click="$emit(\'click\')"></div>',
-            props: ["importRecord"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: {
+              template: '<div class="mock-recent-import-card" @click="$emit(\'click\')"></div>',
+              props: ["importRecord"],
+            },
           },
         },
       });
@@ -326,15 +348,17 @@ describe("RecentImports Component", () => {
 
     it("should emit view-all-imports when View All Imports button is clicked", async () => {
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button" @click="$emit(\'click\')"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button" @click="$emit(\'click\')"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -348,15 +372,17 @@ describe("RecentImports Component", () => {
   describe("View Model Integration", () => {
     it("should call useRecentImportsViewModel with correct props", () => {
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -365,15 +391,17 @@ describe("RecentImports Component", () => {
 
     it("should handle workspace prop changes", async () => {
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -388,15 +416,17 @@ describe("RecentImports Component", () => {
   describe("Responsive Design", () => {
     it("should apply responsive classes correctly", () => {
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -409,15 +439,17 @@ describe("RecentImports Component", () => {
     it("should render correctly on different screen sizes", () => {
       // This test verifies the component structure that supports responsive design
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -437,15 +469,17 @@ describe("RecentImports Component", () => {
   describe("Accessibility", () => {
     it("should have proper heading structure", () => {
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 
@@ -457,15 +491,17 @@ describe("RecentImports Component", () => {
       mockViewModel.error = "Network connection failed";
 
       wrapper = mount(RecentImports, {
-        propsData: { workspace: mockWorkspace },
-        stubs: {
-          BaseSpinner: true,
-          BaseIcon: true,
-          BaseButton: {
-            template: '<button class="mock-base-button"><slot /></button>',
-            props: ["variant"],
+        props: { workspace: mockWorkspace },
+        global: {
+          stubs: {
+            BaseSpinner: true,
+            BaseIcon: true,
+            BaseButton: {
+              template: '<button class="mock-base-button"><slot /></button>',
+              props: ["variant"],
+            },
+            RecentImportCard: true,
           },
-          RecentImportCard: true,
         },
       });
 

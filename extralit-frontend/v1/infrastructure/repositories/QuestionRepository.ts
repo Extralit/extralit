@@ -1,10 +1,10 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
-import { Response, BackendQuestion } from "../types";
+import type { AxiosInstance } from "axios";
+import { type Response, type BackendQuestion } from "../types";
 import { mediumCache, revalidateCache } from "./AxiosCache";
 import { Question } from "~/v1/domain/entities/question/Question";
-import { IQuestionRepository } from "~/v1/domain/services/IQuestionRepository";
+import { type IQuestionRepository } from "~/v1/domain/services/IQuestionRepository";
 import { QuestionCreation } from "~/v1/domain/entities/hub/QuestionCreation";
-import { DatasetId } from "~/v1/domain/services/IDatasetRepository";
+import { type DatasetId } from "~/v1/domain/services/IDatasetRepository";
 
 export const enum QUESTION_API_ERRORS {
   GET_QUESTIONS = "ERROR_FETCHING_QUESTIONS",
@@ -12,7 +12,7 @@ export const enum QUESTION_API_ERRORS {
 }
 
 export class QuestionRepository implements IQuestionRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async create(datasetId: DatasetId, question: QuestionCreation): Promise<BackendQuestion> {
     try {

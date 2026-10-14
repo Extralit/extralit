@@ -1,5 +1,5 @@
-import { IAuthRepository } from "../services/IAuthRepository";
-import { IAuthService } from "../services/IAuthService";
+import { type IAuthRepository } from "../services/IAuthRepository";
+import { type IAuthService } from "../services/IAuthService";
 import { LoadUserUseCase } from "./load-user-use-case";
 
 export class AuthLoginUseCase {

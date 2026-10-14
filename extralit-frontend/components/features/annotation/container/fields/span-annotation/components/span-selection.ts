@@ -41,7 +41,9 @@ export type Configuration = {
 export class SpanSelection {
   private selections: OverlappedSpan[] = [];
 
-  protected constructor() {}
+  protected constructor() {
+    /* singleton: use SpanSelection.getInstance() */
+  }
 
   // eslint-disable-next-line no-use-before-define
   private static instance: SpanSelection;
@@ -188,7 +190,7 @@ export class SpanSelection {
   }
 
   private completeLeftSide(selection: TextSelection) {
-    while (true) {
+    for (;;) {
       const prevChar = selection.node.text.charAt(selection.from - 1);
 
       if (this.isEmpty(prevChar) || this.isSymbol(prevChar) || selection.to === 0) {
@@ -209,7 +211,7 @@ export class SpanSelection {
   }
 
   private completeRightSide(selection: TextSelection) {
-    while (true) {
+    for (;;) {
       const nextCharacter = selection.node.text.charAt(selection.to);
 
       if (this.isEmpty(nextCharacter) || this.isSymbol(nextCharacter) || selection.to === selection.node.text.length) {

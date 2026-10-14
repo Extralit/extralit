@@ -1,4 +1,4 @@
-import { computed } from "vue-demi";
+import { computed } from "vue";
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
 
 export const useAnnotationGuidelinesViewModel = () => {

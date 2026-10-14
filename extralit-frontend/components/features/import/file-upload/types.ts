@@ -24,7 +24,7 @@ export interface BibliographyData {
   rawContent: string;
 }
 
-// PDF specific data  
+// PDF specific data
 export interface PdfData {
   matchedFiles: any[];
   unmatchedFiles: any[];
@@ -44,7 +44,7 @@ export interface BibliographyPayload {
   fileName: string;
   dataframeData: TableData | null;
   rawContent: string;
-  type: 'bibliography';
+  type: "bibliography";
 }
 
 export interface PdfPayload {
@@ -52,7 +52,7 @@ export interface PdfPayload {
   matchedFiles: any[];
   unmatchedFiles: any[];
   totalFiles: number;
-  type: 'pdf';
+  type: "pdf";
 }
 
 export type FileUploadPayload = BibliographyPayload | PdfPayload;

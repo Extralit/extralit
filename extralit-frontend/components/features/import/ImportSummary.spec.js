@@ -1,23 +1,29 @@
 import { mount } from "@vue/test-utils";
 import ImportSummary from "./ImportSummary.vue";
 
-// Mock base components
-jest.mock("~/components/base/base-icon/BaseIcon.vue", () => ({
-  name: "BaseIcon",
-  template: "<span>{{ iconName }}</span>",
-  props: ["iconName"],
+// Mock base components (.vue modules expose the component as the default export)
+vi.mock("~/components/base/base-icon/BaseIcon.vue", () => ({
+  default: {
+    name: "BaseIcon",
+    template: "<span>{{ iconName }}</span>",
+    props: ["iconName"],
+  },
 }));
 
-jest.mock("~/components/base/base-button/BaseButton.vue", () => ({
-  name: "BaseButton",
-  template: "<button><slot></slot></button>",
-  props: ["variant", "disabled"],
+vi.mock("~/components/base/base-button/BaseButton.vue", () => ({
+  default: {
+    name: "BaseButton",
+    template: "<button><slot></slot></button>",
+    props: ["variant", "disabled"],
+  },
 }));
 
-jest.mock("~/components/base/base-simple-table/BaseSimpleTable.vue", () => ({
-  name: "BaseSimpleTable",
-  template: "<div>Table</div>",
-  props: ["data", "columns", "options"],
+vi.mock("~/components/base/base-simple-table/BaseSimpleTable.vue", () => ({
+  default: {
+    name: "BaseSimpleTable",
+    template: "<div>Table</div>",
+    props: ["data", "columns", "options"],
+  },
 }));
 
 describe("ImportSummary", () => {
@@ -41,7 +47,7 @@ describe("ImportSummary", () => {
     };
 
     return mount(ImportSummary, {
-      propsData: {
+      props: {
         importSummary: defaultImportSummary,
         workspace: mockWorkspace,
         bibFileName: "test.bib",
@@ -53,7 +59,7 @@ describe("ImportSummary", () => {
 
   afterEach(() => {
     if (wrapper) {
-      wrapper.destroy();
+      wrapper.unmount();
     }
   });
 

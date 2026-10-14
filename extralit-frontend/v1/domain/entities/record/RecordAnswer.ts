@@ -1,4 +1,4 @@
-import { Answer, AnswerCombinations } from "../IAnswer";
+import { type Answer, type AnswerCombinations } from "../IAnswer";
 
 export type RecordStatus = "valid" | "pending" | "submitted" | "discarded" | "draft";
 

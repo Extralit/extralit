@@ -13,6 +13,7 @@ export default {
   components: {
     KeycloakLogo,
   },
+  emits: ["click"],
   props: {
     provider: {
       type: String,

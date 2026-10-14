@@ -1,18 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
@@ -54,55 +39,45 @@ class TestCreateWorkspace:
     async def test_create_workspace_with_predefined_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
-        # Mock the create_bucket function directly
-        with patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket:
-            # Mock create_bucket as async coroutine
-            mock_create_bucket.return_value = None
+        workspace_id = uuid4()
+        response = await async_client.post(
+            self.url(),
+            headers=owner_auth_header,
+            json={"id": str(workspace_id), "name": "workspace"},
+        )
 
-            workspace_id = uuid4()
-            response = await async_client.post(
-                self.url(),
-                headers=owner_auth_header,
-                json={"id": str(workspace_id), "name": "workspace"},
-            )
+        assert response.status_code == 201
 
-            assert response.status_code == 201
+        assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
+        workspace = (await db.execute(select(Workspace).filter_by(name="workspace"))).scalar_one()
 
-            assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
-            workspace = (await db.execute(select(Workspace).filter_by(name="workspace"))).scalar_one()
-
-            assert response.json() == {
-                "id": str(workspace_id),
-                "name": "workspace",
-                "inserted_at": workspace.inserted_at.isoformat(),
-                "updated_at": workspace.updated_at.isoformat(),
-            }
+        assert response.json() == {
+            "id": str(workspace_id),
+            "name": "workspace",
+            "inserted_at": workspace.inserted_at.isoformat(),
+            "updated_at": workspace.updated_at.isoformat(),
+        }
 
     async def test_create_workspace_with_none_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
-        # Mock the create_bucket function directly
-        with patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket:
-            # Mock create_bucket as async coroutine
-            mock_create_bucket.return_value = None
+        response = await async_client.post(
+            self.url(),
+            headers=owner_auth_header,
+            json={"id": None, "name": "workspace"},
+        )
 
-            response = await async_client.post(
-                self.url(),
-                headers=owner_auth_header,
-                json={"id": None, "name": "workspace"},
-            )
+        assert response.status_code == 201
 
-            assert response.status_code == 201
+        assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
+        workspace = (await db.execute(select(Workspace).filter_by(name="workspace"))).scalar_one()
 
-            assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
-            workspace = (await db.execute(select(Workspace).filter_by(name="workspace"))).scalar_one()
-
-            assert response.json() == {
-                "id": str(workspace.id),
-                "name": "workspace",
-                "inserted_at": workspace.inserted_at.isoformat(),
-                "updated_at": workspace.updated_at.isoformat(),
-            }
+        assert response.json() == {
+            "id": str(workspace.id),
+            "name": "workspace",
+            "inserted_at": workspace.inserted_at.isoformat(),
+            "updated_at": workspace.updated_at.isoformat(),
+        }
 
     async def test_create_workspace_with_wrong_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
@@ -120,22 +95,17 @@ class TestCreateWorkspace:
     async def test_create_workspace_with_existing_id(
         self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
     ):
-        # Mock the create_bucket function directly
-        with patch("extralit_server.contexts.files.create_bucket") as mock_create_bucket:
-            # Mock create_bucket as async coroutine
-            mock_create_bucket.return_value = None
+        workspace_id = uuid4()
+        await WorkspaceFactory.create(id=workspace_id)
 
-            workspace_id = uuid4()
-            await WorkspaceFactory.create(id=workspace_id)
+        response = await async_client.post(
+            self.url(),
+            headers=owner_auth_header,
+            json={"id": str(workspace_id), "name": "workspace"},
+        )
 
-            response = await async_client.post(
-                self.url(),
-                headers=owner_auth_header,
-                json={"id": str(workspace_id), "name": "workspace"},
-            )
-
-            assert response.status_code == 409
-            assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
+        assert response.status_code == 409
+        assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 1
 
     async def test_create_workspace_without_authentication(self, db: AsyncSession, async_client: AsyncClient):
         response = await async_client.post(
@@ -188,6 +158,14 @@ class TestCreateWorkspace:
             headers=owner_auth_header,
             json={"name": ""},
         )
+
+        assert response.status_code == 422
+        assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 0
+
+    async def test_create_workspace_with_invalid_name(
+        self, db: AsyncSession, async_client: AsyncClient, owner_auth_header: dict
+    ):
+        response = await async_client.post(self.url(), headers=owner_auth_header, json={"name": "My Workspace/.."})
 
         assert response.status_code == 422
         assert (await db.execute(select(func.count(Workspace.id)))).scalar() == 0

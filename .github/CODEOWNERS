@@ -7,6 +7,7 @@
 
 # SDK and Core Extraction
 /extralit/* @extralit/sdk
+/extralit/docs/**/* @extralit/sdk
 
 # Backend Server
 /extralit-server/**/* @extralit/backend
@@ -19,14 +20,5 @@
 /docker/** @extralit/infra
 *.Dockerfile @extralit/infra
 Tiltfile @extralit/infra
-codecov.yml @extralit/infra
-/examples/**/* @extralit/infra
+/cookbook/**/* @extralit/infra
 
-# Documentation
-/extralit/docs/**/* @extralit/docs
-
-# Security and legal
-/.github/CODEOWNERS @extralit/core-team
-/SECURITY.md @extralit/core-team
-/LICENSE @extralit/core-team
-/CODE_OF_CONDUCT.md @extralit/core-team

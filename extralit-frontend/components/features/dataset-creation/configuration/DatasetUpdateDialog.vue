@@ -20,7 +20,7 @@
             v-else
             v-model="selectedWorkspace"
             :options="workspaces"
-            @onValueChange="onWorkspaceChange"
+            @update:model-value="onWorkspaceChange"
           />
         </div>
 
@@ -123,7 +123,7 @@ export default {
     },
     totalRecords() {
       // This would come from the dataset or import metadata
-      return this.dataset?.selectedSubset?.totalRecords || 0;
+      return (this.dataset?.selectedSubset as { totalRecords?: number })?.totalRecords || 0;
     },
     compatibleDatasetOptions() {
       return this.compatibleDatasets.map((dataset) => ({
@@ -365,7 +365,7 @@ export default {
 .fade-leave-active {
   transition: opacity 0.3s;
 }
-.fade-enter,
+.fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }

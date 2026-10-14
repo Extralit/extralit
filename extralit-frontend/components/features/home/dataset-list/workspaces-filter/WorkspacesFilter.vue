@@ -1,26 +1,23 @@
 <template>
   <div class="datasets-filter" v-if="workspaces.length">
     <BaseDropdown :visible="visibleDropdown" @visibility="onToggleVisibility">
-      <span slot="dropdown-header"
-        ><WorkspacesFilterButton
-          :is-active="visibleDropdown || !!localSelectedWorkspace"
-          :selected-workspace="localSelectedWorkspace"
-        /></span>
-      <span slot="dropdown-content" class="datasets-filter__container">
-        <div class="datasets-filter__content">
-          <WorkspaceSelector
-            :workspaces="workspaces"
-            v-model="localSelectedWorkspace"
-          />
-        </div>
-      </span>
+      <template #dropdown-header
+        ><span
+          ><WorkspacesFilterButton
+            :is-active="visibleDropdown || !!localSelectedWorkspace"
+            :selected-workspace="localSelectedWorkspace" /></span
+      ></template>
+      <template #dropdown-content
+        ><span class="datasets-filter__container">
+          <div class="datasets-filter__content">
+            <WorkspaceSelector :workspaces="workspaces" v-model="localSelectedWorkspace" />
+          </div> </span
+      ></template>
     </BaseDropdown>
   </div>
 </template>
 
 <script lang="ts">
-import "assets/icons/chevron-left";
-
 export default {
   props: {
     workspaces: {
@@ -31,10 +28,6 @@ export default {
       type: String,
       default: null,
     },
-  },
-  model: {
-    prop: "selectedWorkspace",
-    event: "on-change-workspace-filter",
   },
   data() {
     return {
@@ -56,8 +49,8 @@ export default {
         if (!this.localSelectedWorkspace && newWorkspaces && newWorkspaces.length > 0) {
           this.localSelectedWorkspace = newWorkspaces[0].name;
         }
-      }
-    }
+      },
+    },
   },
   methods: {
     onToggleVisibility(value) {

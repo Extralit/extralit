@@ -1,11 +1,11 @@
 import { isEqual } from "lodash";
-import { ref, Ref } from "vue-demi";
+import { ref, type Ref } from "vue";
 import { useResolve } from "ts-injecty";
 
 import { Question } from "@/v1/domain/entities/question/Question";
 import { GetExtractionSchemaUseCase } from "@/v1/domain/usecases/get-extraction-schema-use-case";
 import { TableData } from "@/v1/domain/entities/table/TableData";
-import { ValidationSchema } from "@/v1/domain/entities/table/Validation";
+import { type ValidationSchema } from "@/v1/domain/entities/table/Validation";
 import { DataFrameSchema } from "@/v1/domain/entities/table/Schema";
 
 import { useDataset } from "@/v1/infrastructure/storage/DatasetStorage";
@@ -19,14 +19,12 @@ export interface SchemaTableViewModel {
   groupbyColumns: Ref<string[] | null>;
 }
 
-export const useSchemaTableViewModel = (
-  props: {
-    tableJSON: TableData,
-    editable: boolean,
-    hasValidValues: boolean,
-    questions: Question[],
-  },
-) => {
+export const useSchemaTableViewModel = (props: {
+  tableJSON: TableData;
+  editable: boolean;
+  hasValidValues: boolean;
+  questions: Question[];
+}) => {
   const getSchema = useResolve(GetExtractionSchemaUseCase);
   const { state: dataset } = useDataset();
 
@@ -34,20 +32,25 @@ export const useSchemaTableViewModel = (
   const indexColumns = ref(props.tableJSON?.schema?.primaryKey || []);
   const refColumns = ref(
     props.tableJSON?.schema?.fields
-      .map(field => field.name)
-      .filter(name => typeof name === 'string' && (name.endsWith('_ref') || (name.endsWith('_ID') && !name.toLowerCase().startsWith(props.tableJSON?.schema?.schemaName?.toLowerCase())))) || []
+      .map((field) => field.name)
+      .filter(
+        (name) =>
+          typeof name === "string" &&
+          (name.endsWith("_ref") ||
+            (name.endsWith("_ID") &&
+              !name.toLowerCase().startsWith(props.tableJSON?.schema?.schemaName?.toLowerCase())))
+      ) || []
   );
   const groupbyColumns = ref(refColumns.value || null);
 
-  const fetchValidation = async ({ latest = false }: { latest?: boolean } = {}) => {
+  const fetchValidation = async () => {
     var schemaName: string = props.tableJSON?.schema?.schemaName || props.tableJSON?.validation?.name;
     if (!schemaName) {
       return;
     }
-    var version_id: string = latest ? null : props.tableJSON.schema?.version_id;
     await waitForAsyncValue(() => dataset.workspaceName);
 
-    const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName, version_id);
+    const [schema, fileMetadata] = await getSchema.fetch(dataset.workspaceName, schemaName);
 
     // const schemaMetadataUpdate = {
     //   ...props.tableJSON.schema,
@@ -57,8 +60,7 @@ export const useSchemaTableViewModel = (
       props.tableJSON?.schema?.fields || [],
       props.tableJSON?.schema?.primaryKey || [],
       fileMetadata,
-      schemaName,
-      version_id
+      schemaName
     );
 
     if (!isEqual(props.tableJSON?.schema, schemaMetadataUpdate)) {
@@ -73,5 +75,5 @@ export const useSchemaTableViewModel = (
     refColumns,
     groupbyColumns,
     fetchValidation,
-  }
-}
+  };
+};

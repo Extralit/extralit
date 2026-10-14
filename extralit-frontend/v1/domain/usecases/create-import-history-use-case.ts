@@ -2,7 +2,7 @@
  * Use case for creating import history records
  */
 
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import type { ImportHistoryCreate } from "~/v1/domain/entities/import/ImportAnalysis";
 
 export interface CreateImportHistoryResponse {
@@ -13,7 +13,7 @@ export interface CreateImportHistoryResponse {
 }
 
 export class CreateImportHistoryUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async execute(importHistoryData: ImportHistoryCreate): Promise<CreateImportHistoryResponse> {
     const response = await this.axios.post<CreateImportHistoryResponse>("/v1/imports/history", importHistoryData);

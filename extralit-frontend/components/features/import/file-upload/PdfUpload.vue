@@ -7,14 +7,27 @@
       </p>
     </div>
 
-    <div class="pdf-upload__dropzone" :class="{
-      'pdf-upload__dropzone--dragover': dragOver,
-      'pdf-upload__dropzone--error': hasError,
-      'pdf-upload__dropzone--success': uploaded,
-    }" @drop="handleDrop" @dragover="handleDragOver" @dragleave="handleDragLeave"
-      @click="triggerFolderInput">
-      <input ref="folderInput" type="file" accept=".pdf" multiple webkitdirectory style="display: none"
-        @change="handleFolderSelect" />
+    <div
+      class="pdf-upload__dropzone"
+      :class="{
+        'pdf-upload__dropzone--dragover': dragOver,
+        'pdf-upload__dropzone--error': hasError,
+        'pdf-upload__dropzone--success': uploaded,
+      }"
+      @drop="handleDrop"
+      @dragover="handleDragOver"
+      @dragleave="handleDragLeave"
+      @click="triggerFolderInput"
+    >
+      <input
+        ref="folderInput"
+        type="file"
+        accept=".pdf"
+        multiple
+        webkitdirectory
+        style="display: none"
+        @change="handleFolderSelect"
+      />
 
       <div class="pdf-upload__dropzone-content">
         <BaseIcon :icon-name="getDropzoneIcon" class="pdf-upload__dropzone-icon" />
@@ -58,9 +71,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/import";
 import { usePdfUploadLogic } from "./usePdfUploadLogic";
 import type { PdfData } from "./types";
 

@@ -80,6 +80,8 @@
 </template>
 
 <script lang="ts">
+import { type PropType } from "vue";
+import { Record as AnnotationRecord } from "~/v1/domain/entities/record/Record";
 import { useFocusAnnotationViewModel } from "./useFocusAnnotationViewModel";
 import { useDocumentViewModel } from "./useDocumentViewModel";
 
@@ -98,7 +100,7 @@ export default {
       required: true,
     },
     record: {
-      type: Object,
+      type: Object as PropType<AnnotationRecord>,
     },
     recordsMessage: {
       type: String,
@@ -132,9 +134,8 @@ export default {
         const message = this.$t("errors.saving", { error: error?.response || error.toString() });
         this.$notification.notify({
           message: message,
-          numberOfChars: message.length,
-          type: "error",
-          onClick() {
+          type: "danger",
+          onClick: () => {
             this.$notification.clear();
           },
         });
@@ -146,7 +147,7 @@ export default {
   setup(props) {
     return {
       ...useDocumentViewModel(props),
-      ...useFocusAnnotationViewModel(props),
+      ...useFocusAnnotationViewModel(props as unknown as { datasetId: string; record: AnnotationRecord }),
     };
   },
 };

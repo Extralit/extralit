@@ -1,4 +1,4 @@
-import { OptionForFilter, RangeValue } from "../common/Filter";
+import { type OptionForFilter, type RangeValue } from "../common/Filter";
 import { Metadata } from "./Metadata";
 
 export interface MetadataSearch {

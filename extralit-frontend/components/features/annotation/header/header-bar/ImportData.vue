@@ -18,7 +18,6 @@
 </template>
 
 <script>
-import "assets/icons/plus";
 export default {
   props: {
     snippet: {

@@ -3,7 +3,7 @@ import BaseSlider from "@/components/base/base-slider/BaseSlider";
 
 function mountBaseSlider() {
   return mount(BaseSlider, {
-    propsData: {
+    props: {
       slidesName: "sentences",
       slidesOrigin: ["first sentence", "second sentence"],
       itemNumber: 0,
@@ -12,7 +12,7 @@ function mountBaseSlider() {
 }
 
 describe("BaseSlider", () => {
-  const spy = jest.spyOn(console, "error");
+  const spy = vi.spyOn(console, "error");
   afterEach(() => spy.mockReset());
 
   test("renders properly", () => {

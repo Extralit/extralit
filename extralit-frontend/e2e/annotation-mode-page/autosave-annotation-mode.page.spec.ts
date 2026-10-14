@@ -33,9 +33,7 @@ test.use({
 });
 
 test.describe("pending record", () => {
-  test("form have been modified without submit and user try to go to home page => NO alert", async ({
-    page,
-  }) => {
+  test("form have been modified without submit and user try to go to home page => NO alert", async ({ page }) => {
     await goToAnnotationPageWithTwoRecords(page);
     await expect(page).toHaveScreenshot();
 
@@ -47,9 +45,7 @@ test.describe("pending record", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("form have been modified without submit and user try to go to settings page => NO alert", async ({
-    page,
-  }) => {
+  test("form have been modified without submit and user try to go to settings page => NO alert", async ({ page }) => {
     await goToAnnotationPageWithTwoRecords(page);
 
     await expect(page).toHaveScreenshot();
@@ -62,9 +58,7 @@ test.describe("pending record", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("form have been modified without submit and user try to refresh from sidebar => NO alert", async ({
-    page,
-  }) => {
+  test("form have been modified without submit and user try to refresh from sidebar => NO alert", async ({ page }) => {
     await goToAnnotationPageWithTwoRecords(page);
 
     await expect(page).toHaveScreenshot();
@@ -78,9 +72,7 @@ test.describe("pending record", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("form have been modified without submit and user try to go to next record => NO alert", async ({
-    page,
-  }) => {
+  test("form have been modified without submit and user try to go to next record => NO alert", async ({ page }) => {
     await goToAnnotationPageWithTwoRecords(page);
 
     await expect(page).toHaveScreenshot();
@@ -94,9 +86,7 @@ test.describe("pending record", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("when the user modifies something after 3 seconds we can see the saved label", async ({
-    page,
-  }) => {
+  test("when the user modifies something after 3 seconds we can see the saved label", async ({ page }) => {
     const record = await goToAnnotationPageWithTwoRecords(page);
     await mockDraftRecord(page, record.id);
     await expect(page).toHaveScreenshot();
@@ -111,9 +101,7 @@ test.describe("pending record", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("when the record is saving as a draft the user can not close the page", async ({
-    page,
-  }) => {
+  test("when the record is saving as a draft the user can not close the page", async ({ page }) => {
     const record = await goToAnnotationPageWithTwoRecords(page);
     await mockDraftRecord(page, record.id);
 
@@ -128,13 +116,11 @@ test.describe("pending record", () => {
     await page.close({ runBeforeUnload: true });
   });
 
-  test("user submit and then goes back to previous record, show updated answers", async ({
-    page,
-  }) => {
+  test("user submit and then goes back to previous record, show updated answers", async ({ page }) => {
     const record = await goToAnnotationPageWithTwoRecords(page);
     await mockRecordResponses(page, record.id, "submitted");
     await page.getByText("Very Positive").first().click();
-    await page.getByText('Positive').nth(3).click();
+    await page.getByText("Positive").nth(3).click();
     await expect(page).toHaveScreenshot();
 
     await page.getByRole("button", { name: "Submit" }).click();
@@ -145,9 +131,7 @@ test.describe("pending record", () => {
   });
 });
 test.describe("discarded record", () => {
-  test("when the user modifies a discarded record after 2 seconds should be pending", async ({
-    page,
-  }) => {
+  test("when the user modifies a discarded record after 2 seconds should be pending", async ({ page }) => {
     const record = await goToAnnotationPageWithTwoRecords(page);
     await mockRecordResponses(page, record.id, "discarded");
     await page.getByRole("button", { name: "Discard" }).click();
@@ -166,9 +150,7 @@ test.describe("discarded record", () => {
   });
 });
 test.describe("submitted record", () => {
-  test("the user can not see the toaster if he modified a submitted record and go to home", async ({
-    page,
-  }) => {
+  test("the user can not see the toaster if he modified a submitted record and go to home", async ({ page }) => {
     const record = await goToAnnotationPageWithTwoRecords(page);
     await mockRecordResponses(page, record.id, "submitted");
     await page.getByRole("button", { name: "Submit" }).click();
@@ -199,9 +181,7 @@ test.describe("submitted record", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("the user can not see the toaster if he modified a submitted record and refresh the page", async ({
-    page,
-  }) => {
+  test("the user can not see the toaster if he modified a submitted record and refresh the page", async ({ page }) => {
     const record = await goToAnnotationPageWithTwoRecords(page);
     await mockRecordResponses(page, record.id, "submitted");
     await page.getByRole("button", { name: "Submit" }).click();
@@ -216,9 +196,7 @@ test.describe("submitted record", () => {
     await expect(page).toHaveScreenshot();
   });
 
-  test("the user can see the toaster if he modified a submitted record and go to next record", async ({
-    page,
-  }) => {
+  test("the user can see the toaster if he modified a submitted record and go to next record", async ({ page }) => {
     const record = await goToAnnotationPageWithTwoRecords(page);
     await mockRecordResponses(page, record.id, "submitted");
     await page.getByRole("button", { name: "Submit" }).click();
@@ -252,16 +230,12 @@ test.describe("submitted record", () => {
 
     await page.getByText("Very Positive").first().click();
 
-    await page
-      .getByPlaceholder("Introduce a query")
-      .fill("Try to find other record");
+    await page.getByPlaceholder("Introduce a query").fill("Try to find other record");
     await expect(page).toHaveScreenshot();
 
     await page.keyboard.press("Enter");
 
-    await page
-      .getByText("You didn't submit your changes")
-      .waitFor({ state: "visible" });
+    await page.getByText("You didn't submit your changes").waitFor({ state: "visible" });
     await expect(page).toHaveScreenshot();
   });
 
@@ -280,9 +254,7 @@ test.describe("submitted record", () => {
     await page.waitForTimeout(100);
     await page.getByText("Discarded").click();
 
-    await page
-      .getByText("You didn't submit your changes")
-      .waitFor({ state: "visible" });
+    await page.getByText("You didn't submit your changes").waitFor({ state: "visible" });
     await expect(page).toHaveScreenshot();
   });
 
@@ -292,14 +264,13 @@ test.describe("submitted record", () => {
     const record = await goToAnnotationPageWithTwoRecords(page);
     await mockRecordResponses(page, record.id, "submitted");
     await page.getByText("Very Positive").first().click();
-    await page.getByText('Positive').nth(3).click();
+    await page.getByText("Positive").nth(3).click();
     await page.getByRole("button", { name: "Submit" }).click();
     await page.getByRole("button", { name: "Prev" }).click();
     await expect(page).toHaveScreenshot();
 
-
-    await page.getByText('Negative').nth(1).click();
-    await page.getByText('Disappointed').nth(1).click();
+    await page.getByText("Negative").nth(1).click();
+    await page.getByText("Disappointed").nth(1).click();
     await expect(page).toHaveScreenshot();
 
     await page.getByRole("button", { name: "Next" }).click();

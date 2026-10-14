@@ -41,7 +41,11 @@ export type MetadataTypes =
 
 export class MetadataCreation {
   public readonly type: MetadataType;
-  private constructor(public readonly name: string, type: string, public title?: string) {
+  private constructor(
+    public readonly name: string,
+    type: string,
+    public title?: string
+  ) {
     this.title ??= this.name;
     this.type = MetadataType.from(type);
   }

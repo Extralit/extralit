@@ -10,18 +10,21 @@
       @replace-sort-category="onReplaceSortCategory(category, ...arguments)"
     />
     <BaseDropdown v-if="nonSelectedSortingItems.length" :visible="visibleDropdown">
-      <span slot="dropdown-header">
-        <BaseButton class="secondary small light" @click="onToggleVisibility">
-          {{ $t("sorting.addOtherField") }}</BaseButton
-        >
-      </span>
-      <span slot="dropdown-content">
-        <SortCategoriesList
-          v-click-outside="onToggleVisibility"
-          :categories="nonSelectedSortingItems"
-          @include-category="includeSortCategory"
-        />
-      </span>
+      <template #dropdown-header
+        ><span>
+          <BaseButton class="secondary small light" @click="onToggleVisibility">
+            {{ $t("sorting.addOtherField") }}</BaseButton
+          >
+        </span></template
+      >
+      <template #dropdown-content
+        ><span>
+          <SortCategoriesList
+            v-click-outside="onToggleVisibility"
+            :categories="nonSelectedSortingItems"
+            @include-category="includeSortCategory"
+          /> </span
+      ></template>
     </BaseDropdown>
   </div>
 </template>

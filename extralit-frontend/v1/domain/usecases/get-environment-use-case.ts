@@ -1,4 +1,4 @@
-import { IEnvironmentRepository } from "../services/IEnvironmentRepository";
+import { type IEnvironmentRepository } from "../services/IEnvironmentRepository";
 
 export class GetEnvironmentUseCase {
   constructor(private readonly environmentRepository: IEnvironmentRepository) {}

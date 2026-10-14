@@ -1,18 +1,3 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 from extralit_server.api.schemas.v1.questions import (
     LabelSelectionQuestionSettings,
     MultiLabelSelectionQuestionSettings,
@@ -25,9 +10,11 @@ from extralit_server.api.schemas.v1.questions import (
 from extralit_server.api.schemas.v1.responses import (
     MultiLabelSelectionQuestionResponseValue,
     RankingQuestionResponseValue,
+    RankingQuestionResponseValueItem,
     RatingQuestionResponseValue,
     ResponseValueTypes,
     SpanQuestionResponseValue,
+    SpanQuestionResponseValueItem,
     TableQuestionResponseValue,
     TextAndLabelSelectionQuestionResponseValue,
 )
@@ -87,10 +74,7 @@ class LabelSelectionQuestionResponseValueValidator:
     ) -> None:
         available_labels = [option.value for option in label_selection_question_settings.options]
 
-        if (
-            self._response_value not in available_labels
-            and label_selection_question_settings.strict
-        ):
+        if self._response_value not in available_labels and label_selection_question_settings.strict:
             raise UnprocessableEntityError(
                 f"{self._response_value!r} is not a valid label for label selection question.\nValid labels are: {available_labels!r}"
             )
@@ -128,10 +112,7 @@ class MultiLabelSelectionQuestionResponseValueValidator:
         available_labels = [option.value for option in multi_label_selection_question_settings.options]
         invalid_labels = sorted(set(self._response_value) - set(available_labels))
 
-        if (
-            invalid_labels
-            and multi_label_selection_question_settings.strict
-        ):
+        if invalid_labels and multi_label_selection_question_settings.strict:
             raise UnprocessableEntityError(
                 f"{invalid_labels!r} are not valid labels for multi label selection question.\nValid labels are: {available_labels!r}"
             )
@@ -173,6 +154,13 @@ class RankingQuestionResponseValueValidator:
             raise UnprocessableEntityError(
                 f"ranking question expects a list of values, found {type(self._response_value)}"
             )
+        # Same blind-union fallthrough as the span validator above: a malformed ranking item
+        # parses as a table row and would otherwise reach `.rank`/`.value` as a plain dict.
+        for value_item in self._response_value:
+            if not isinstance(value_item, RankingQuestionResponseValueItem):
+                raise UnprocessableEntityError(
+                    f"ranking question expects a list of ranking items, found {type(value_item)}"
+                )
 
     def _validate_all_rankings_are_present_when_submitted(
         self, ranking_question_settings: RankingQuestionSettings, response_status: ResponseStatus | None = None
@@ -242,6 +230,15 @@ class SpanQuestionResponseValueValidator:
             raise UnprocessableEntityError(
                 f"span question expects a list of values, found {type(self._response_value)}"
             )
+        # `ResponseValueTypes` is a blind union — it is parsed before the question type is
+        # known — and its table member (`list[dict]`) matches any list of objects. So a span
+        # item that fails `SpanQuestionResponseValueItem` (bad start/end, missing keys) is no
+        # longer a parse error: it falls through to the table member and arrives here as a
+        # plain dict. Reject it explicitly rather than reaching for `.start`/`.label` on a
+        # dict further down, which would surface as a 500 instead of this 422.
+        for value_item in self._response_value:
+            if not isinstance(value_item, SpanQuestionResponseValueItem):
+                raise UnprocessableEntityError(f"span question expects a list of span items, found {type(value_item)}")
 
     def _validate_question_settings_field_is_present_at_record(
         self, span_question_settings: SpanQuestionSettings, record: Record
@@ -301,10 +298,14 @@ class TableQuestionResponseValueValidator:
         self._validate_columns_are_available_at_question_settings(table_question_settings)
 
     def _validate_value_type(self) -> None:
-        if not isinstance(self._response_value, dict):
-            raise UnprocessableEntityError(
-                f"table question expects a dictionary of values, found {type(self._response_value)}"
-            )
+        # Additive contract (spec §3.4): a bare dict is the 1-row case, a list is N rows.
+        # Restored from the deleted `validators/v2/values.py::_validate_table` (046a3069f);
+        # the fold kept only the read half of this contract (see the module docstring on
+        # tests/unit/validators/test_table_response_values.py).
+        rows = self._response_value if isinstance(self._response_value, list) else [self._response_value]
+        for row in rows:
+            if not isinstance(row, dict):
+                raise UnprocessableEntityError(f"table question expects a dict of values per row, found {type(row)}")
 
     def _validate_columns_are_available_at_question_settings(
         self, table_question_settings: TableQuestionSettings

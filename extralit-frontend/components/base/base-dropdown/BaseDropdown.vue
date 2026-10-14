@@ -31,11 +31,7 @@
   </div>
 </template>
 <script>
-import ClickOutside from "v-click-outside";
 export default {
-  directives: {
-    clickOutside: ClickOutside.directive,
-  },
   props: {
     visible: {
       type: Boolean,
@@ -144,7 +140,7 @@ export default {
       this.setViewportPosition();
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     if (this.isViewportBoundary) {
       window.removeEventListener("resize", this.setViewportPosition);
       this.getScrollableParent(this.$refs.dropdown).removeEventListener("scroll", this.setViewportPosition);

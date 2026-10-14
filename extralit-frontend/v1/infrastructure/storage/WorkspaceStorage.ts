@@ -1,5 +1,5 @@
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
-import { IWorkspaceStorage } from "@/v1/domain/services/IWorkspaceStorage";
+import { type IWorkspaceStorage } from "@/v1/domain/services/IWorkspaceStorage";
 import { useStoreFor } from "@/v1/store/create";
 
 class Workspaces {

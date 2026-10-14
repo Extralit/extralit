@@ -26,7 +26,7 @@
     <transition-group
       ref="inputsAreaRef"
       :key="searchInput"
-      :css="options.length < 50"
+      :css="modelValue.length < 50"
       name="shuffle"
       class="inputs-area"
       v-if="filteredOptions.length"
@@ -54,15 +54,16 @@
 
 <script>
 const OPTIONS_THRESHOLD_TO_ENABLE_SEARCH = 15;
-import "assets/icons/chevron-down";
-import "assets/icons/chevron-up";
 export default {
   name: "EntityLabelSelectionComponent",
+  // v-model consumer (span/SpanComponent.vue): same Vue 3 migration as
+  // LabelSelection — rename `options` → `modelValue` and emit `update:modelValue`.
+  emits: ["update:modelValue", "on-focus", "on-selected"],
   props: {
     maxOptionsToShowBeforeCollapse: {
       type: Number,
     },
-    options: {
+    modelValue: {
       type: Array,
       required: true,
     },
@@ -82,10 +83,6 @@ export default {
       type: Boolean,
       default: true,
     },
-  },
-  model: {
-    prop: "options",
-    event: "on-change",
   },
   data() {
     return {
@@ -134,13 +131,13 @@ export default {
   },
   computed: {
     keyboards() {
-      return this.options.reduce((acc, option, index) => {
+      return this.modelValue.reduce((acc, option, index) => {
         acc[option.id] = index + 1;
         return acc;
       }, {});
     },
     filteredOptions() {
-      return this.options.filter((option) =>
+      return this.modelValue.filter((option) =>
         String(option.text).toLowerCase().includes(this.searchInput.toLowerCase())
       );
     },
@@ -153,7 +150,7 @@ export default {
       return this.filteredOptions.slice(0, this.maxVisibleOptions).concat(this.remainingVisibleOptions);
     },
     maxVisibleOptions() {
-      return this.maxOptionsToShowBeforeCollapse ?? this.options.length + 1;
+      return this.maxOptionsToShowBeforeCollapse ?? this.modelValue.length + 1;
     },
     numberToShowInTheCollapseButton() {
       return this.filteredOptions.length - this.visibleOptions.length;
@@ -162,7 +159,7 @@ export default {
       return this.filteredOptions.length > this.maxVisibleOptions;
     },
     showSearch() {
-      return this.options.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH || this.showCollapseButton;
+      return this.modelValue.length >= OPTIONS_THRESHOLD_TO_ENABLE_SEARCH || this.showCollapseButton;
     },
     textToShowInTheCollapseButton() {
       if (this.isExpanded) {
@@ -237,7 +234,7 @@ export default {
       this.reset();
     },
     onSelect({ id, isSelected }) {
-      this.options.forEach((option) => {
+      this.modelValue.forEach((option) => {
         option.isSelected = option.id === id ? isSelected : false;
       });
 
@@ -326,7 +323,7 @@ export default {
   transition: opacity 0.5s;
 }
 
-.fade-enter,
+.fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }

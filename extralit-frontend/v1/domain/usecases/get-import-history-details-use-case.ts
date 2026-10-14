@@ -2,7 +2,7 @@
  * Use case for fetching detailed import history data
  */
 
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import { TableData } from "../entities/table/TableData";
 import type {
   ImportHistoryResponse,
@@ -30,7 +30,7 @@ export interface ImportHistoryDetailsResponse extends ImportHistoryResponse {
 }
 
 export class GetImportHistoryDetailsUseCase {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async execute(importId: string): Promise<ImportHistoryDetailsResponse> {
     const response = await this.axios.get<ImportHistoryDetailsResponse>(`/v1/imports/history/${importId}`);

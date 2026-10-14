@@ -1,4 +1,4 @@
-import { ref, useFetch } from "@nuxtjs/composition-api";
+import { ref, onMounted } from "vue";
 import { useResolve } from "ts-injecty";
 import { Dataset } from "~/v1/domain/entities/dataset/Dataset";
 import { Question } from "~/v1/domain/entities/question/Question";
@@ -9,12 +9,13 @@ export const useDatasetQuestions = ({ dataset }: { dataset: Dataset }) => {
   const questions = ref<Question[]>([]);
   const isQuestionsLoading = ref(false);
 
-  useFetch(async () => {
+  onMounted(async () => {
     try {
       isQuestionsLoading.value = true;
 
       questions.value = await getQuestionsUseCase.execute(dataset.id);
     } catch {
+      /* best-effort: leave questions empty if loading fails */
     } finally {
       isQuestionsLoading.value = false;
     }

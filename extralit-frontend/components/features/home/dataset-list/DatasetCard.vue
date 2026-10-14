@@ -40,11 +40,6 @@
 </template>
 
 <script>
-import "assets/icons/copy";
-import "assets/icons/link";
-import "assets/icons/settings";
-import "assets/icons/update";
-
 import { useDatasetCardViewModel } from "./useDatasetCardViewModel";
 
 export default {
@@ -66,8 +61,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
-$shadow-default: rgba(0, 0, 0, 0.1) 0px 3px 12px 0px, var(--bg-opacity-4) 0px 0px 0px 1px inset;
-$shadow-hover: rgba(0, 0, 0, 0.05) 0px 1px 4px 0px, var(--bg-opacity-4) 0px 0px 0px 1px inset;
+$shadow-default:
+  rgba(0, 0, 0, 0.1) 0px 3px 12px 0px,
+  var(--bg-opacity-4) 0px 0px 0px 1px inset;
+$shadow-hover:
+  rgba(0, 0, 0, 0.05) 0px 1px 4px 0px,
+  var(--bg-opacity-4) 0px 0px 0px 1px inset;
 .dataset-card {
   text-decoration: none;
   display: flex;

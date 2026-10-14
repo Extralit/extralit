@@ -1,4 +1,4 @@
-import { IMetricsStorage } from "../services/IMetricsStorage";
+import { type IMetricsStorage } from "../services/IMetricsStorage";
 import { MetricsRepository } from "@/v1/infrastructure/repositories/MetricsRepository";
 
 export class GetUserMetricsUseCase {

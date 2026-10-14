@@ -7,8 +7,8 @@
       searchRef="sortFilter"
     />
     <ul class="sort-categories__list">
-      <template v-for="group in filteredGroups">
-        <span class="sort-categories__group" :key="group" v-text="$t(`sorting.${group}`)" />
+      <template v-for="group in filteredGroups" :key="group">
+        <span class="sort-categories__group" v-text="$t(`sorting.${group}`)" />
         <li v-for="category in getCategoriesByGroup(group)" :key="category.id" :title="category.tooltip">
           <BaseButton :disabled="!category.canSort" @on-click="includeCategory(category)" class="sort-categories__item"
             ><span>{{ category.title }}</span></BaseButton

@@ -1,63 +1,65 @@
 <template>
   <div class="suggestion-filter" v-if="suggestionFilters.hasFilters">
     <BaseDropdown boundary="viewport" :visible="visibleDropdown" @visibility="onToggleVisibility">
-      <span slot="dropdown-header">
-        <FilterButtonWithBadges
-          :is-active="visibleDropdown"
-          :badges="appliedCategoriesFilters"
-          :active-badge="selectedSuggestion"
-          @click-on-badge="openSuggestionFilter"
-          @click-on-clear="clearSuggestionFilter"
-          @click-on-clear-all="clearAllSuggestionFilter"
-          :name="$t('suggestion.plural')"
-        />
-      </span>
-      <span slot="dropdown-content" class="suggestion-filter__container">
-        <CategoriesSelector
-          v-if="!selectedSuggestion"
-          name="suggestions"
-          class="suggestion-filter__categories"
-          :categories="suggestionFilters.questions"
-          @select-category="selectSuggestion"
-        />
-        <template v-else>
-          <div v-if="!selectedConfiguration" class="suggestion-filter__header" @click="selectSuggestion(null)">
-            <span v-text="selectedSuggestion.name" />
-            <svgicon name="chevron-left" width="12" height="12" aria-hidden="true" />
-          </div>
-          <div>
-            <CategoriesSelector
-              v-if="!selectedConfiguration"
-              name="suggestionsConfiguration"
-              class="suggestion-filter__categories"
-              prefix-translation="suggestion.filter."
-              :categories="selectedSuggestion.configurations"
-              @select-category="selectConfiguration"
-            />
-            <template v-else>
-              <div class="suggestion-filter__header" @click="selectConfiguration(null)">
-                <span
-                  >{{ $t(`suggestion.filter.${selectedConfiguration.name}`) }} /
-                  <strong>{{ selectedSuggestion.name }}</strong></span
-                >
-                <svgicon name="chevron-left" width="12" height="12" />
-              </div>
-              <div class="suggestion-filter__content">
-                <div v-if="selectedConfiguration.name === 'value'">
-                  <LabelsSelector v-if="selectedConfiguration.isTerms" :filter="selectedConfiguration" />
-                  <RangeSelector v-else :filter="selectedConfiguration.rangeValue" />
+      <template #dropdown-header
+        ><span>
+          <FilterButtonWithBadges
+            :is-active="visibleDropdown"
+            :badges="appliedCategoriesFilters"
+            :active-badge="selectedSuggestion"
+            @click-on-badge="openSuggestionFilter"
+            @click-on-clear="clearSuggestionFilter"
+            @click-on-clear-all="clearAllSuggestionFilter"
+            :name="$t('suggestion.plural')"
+          /> </span
+      ></template>
+      <template #dropdown-content
+        ><span class="suggestion-filter__container">
+          <CategoriesSelector
+            v-if="!selectedSuggestion"
+            name="suggestions"
+            class="suggestion-filter__categories"
+            :categories="suggestionFilters.questions"
+            @select-category="selectSuggestion"
+          />
+          <template v-else>
+            <div v-if="!selectedConfiguration" class="suggestion-filter__header" @click="selectSuggestion(null)">
+              <span v-text="selectedSuggestion.name" />
+              <svgicon name="chevron-left" width="12" height="12" aria-hidden="true" />
+            </div>
+            <div>
+              <CategoriesSelector
+                v-if="!selectedConfiguration"
+                name="suggestionsConfiguration"
+                class="suggestion-filter__categories"
+                prefix-translation="suggestion.filter."
+                :categories="selectedSuggestion.configurations"
+                @select-category="selectConfiguration"
+              />
+              <template v-else>
+                <div class="suggestion-filter__header" @click="selectConfiguration(null)">
+                  <span
+                    >{{ $t(`suggestion.filter.${selectedConfiguration.name}`) }} /
+                    <strong>{{ selectedSuggestion.name }}</strong></span
+                  >
+                  <svgicon name="chevron-left" width="12" height="12" />
                 </div>
-                <div v-if="selectedConfiguration.name === 'score'">
-                  <RangeSelector :filter="selectedConfiguration" />
+                <div class="suggestion-filter__content">
+                  <div v-if="selectedConfiguration.name === 'value'">
+                    <LabelsSelector v-if="selectedConfiguration.isTerms" :filter="selectedConfiguration" />
+                    <RangeSelector v-else :filter="selectedConfiguration.rangeValue" />
+                  </div>
+                  <div v-if="selectedConfiguration.name === 'score'">
+                    <RangeSelector :filter="selectedConfiguration" />
+                  </div>
+                  <div v-if="selectedConfiguration.name === 'agent'">
+                    <LabelsSelector :filter="selectedConfiguration" />
+                  </div>
                 </div>
-                <div v-if="selectedConfiguration.name === 'agent'">
-                  <LabelsSelector :filter="selectedConfiguration" />
-                </div>
-              </div>
-            </template>
-          </div>
-        </template>
-      </span>
+              </template>
+            </div>
+          </template> </span
+      ></template>
     </BaseDropdown>
   </div>
 </template>
@@ -74,15 +76,12 @@ export default {
       type: Array,
       required: true,
     },
-    suggestionFiltered: {
+    modelValue: {
       type: Array,
       required: true,
     },
   },
-  model: {
-    prop: "suggestionFiltered",
-    event: "onSuggestionFilteredChanged",
-  },
+  emits: ["update:modelValue"],
   data() {
     return {
       visibleDropdown: false,
@@ -119,7 +118,7 @@ export default {
 
       const newFilter = this.suggestionFilters.commit();
 
-      this.$emit("onSuggestionFilteredChanged", newFilter);
+      this.$emit("update:modelValue", newFilter);
 
       this.appliedCategoriesFilters = this.suggestionFilters.filteredCategories;
     },
@@ -143,7 +142,7 @@ export default {
     updateAppliedCategoriesFromMetadataFilter() {
       if (!this.suggestionFilters) return;
 
-      this.suggestionFilters.complete(this.suggestionFiltered);
+      this.suggestionFilters.complete(this.modelValue);
 
       this.appliedCategoriesFilters = this.suggestionFilters.filteredCategories;
     },
@@ -166,7 +165,7 @@ export default {
         this.filter();
       },
     },
-    suggestionFiltered() {
+    modelValue() {
       this.updateAppliedCategoriesFromMetadataFilter();
     },
   },

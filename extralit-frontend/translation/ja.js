@@ -69,7 +69,7 @@ export default {
   noRecordsMessages: {
     datasetEmptyForAnnotator: "データセットは空です。管理者にレコードのアップロードを依頼してください。",
     datasetEmptyForAdmin:
-      "データセットは空です。Python SDKを使用してレコードを追加できます。詳細は<a href='https://docs.argilla.io/latest/admin_guide/record/'>ドキュメント</a>を参照してください。",
+      "データセットは空です。Python SDKを使用してレコードを追加できます。詳細は<a href='https://docs.extralit.ai/latest/admin_guide/record/'>ドキュメント</a>を参照してください。",
     taskDistributionCompleted: "🎉 タスクは完了しています！",
     noSubmittedRecords: "まだ提出されたレコードはありません",
     noRecordsFound: "条件に一致する{status}レコードはありません",
@@ -278,7 +278,7 @@ export default {
   },
   home: {
     zeroDatasetsFound: "データセットが見つかりません",
-    argillaDatasets: "データセット一覧",
+    extralitDatasets: "データセット一覧",
     none: "データセットはありません",
     importTitle: "Hugging Face Hubからデータセットをインポート",
     importText: "リポジトリ名を貼り付けるだけで、Hubからデータセットをインポートできます",
@@ -287,7 +287,7 @@ export default {
     importFromPython: "Pythonからインポート",
     importDocuments: "ドキュメントをインポート",
     importFromPythonHFWarning:
-      "プライベートスペースを使用している場合は<a target='_blank' href='https://docs.argilla.io/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>ドキュメント</a>を参照してください。",
+      "プライベートスペースを使用している場合は<a target='_blank' href='https://docs.extralit.ai/latest/getting_started/how-to-configure-argilla-on-huggingface/#how-to-use-private-spaces'>ドキュメント</a>を参照してください。",
     exampleDatasetsTitle: "どこから始めればいいかわかりませんか？",
     exampleDatasetsText: "これらの例のデータセットを探索してみましょう",
     guidesTitle: "Extralitは初めてですか？",
@@ -339,7 +339,7 @@ export default {
     cantLoadRepository: "Hugging Faceにデータセットが見つかりません",
     none: "該当なし",
     noWorkspaces:
-      "こちらの<a target='_blank' href='https://docs.argilla.io/latest/admin_guide/workspace/#create-a-new-workspace'>ガイド</a>にしたがってワークスペースを作成してください",
+      "こちらの<a target='_blank' href='https://docs.extralit.ai/latest/admin_guide/workspace/#create-a-new-workspace'>ガイド</a>にしたがってワークスペースを作成してください",
   },
   exportToHub: {
     dialogTitle: "Hugging Face Hubにプッシュ",

@@ -22,7 +22,6 @@
 </template>
 
 <script>
-import "assets/icons/copy";
 import { isValidJSON } from "@/components/base/base-render-table/tableUtils";
 
 export default {

@@ -22,7 +22,10 @@ export interface SortSearch {
 abstract class Sort {
   public sort: SortOrderOptions = SORT_ASC;
 
-  constructor(public readonly key: SortOptions, public readonly property?: SortProperty) {}
+  constructor(
+    public readonly key: SortOptions,
+    public readonly property?: SortProperty
+  ) {}
 
   toggleSort() {
     this.sort = this.sort === SORT_ASC ? SORT_DESC : SORT_ASC;
@@ -123,7 +126,10 @@ class ResponseValueSort extends Sort {
 }
 
 class RecordSort extends Sort {
-  constructor(public readonly name: string, public readonly title = name) {
+  constructor(
+    public readonly name: string,
+    public readonly title = name
+  ) {
     super("record");
   }
 }

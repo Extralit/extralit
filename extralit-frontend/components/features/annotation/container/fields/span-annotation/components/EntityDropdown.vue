@@ -30,7 +30,7 @@
           class="span-entity__dropdown__item"
           :class="{ '--preselected': preSelectionIndex === index }"
           @click="selectOption(option)"
-          @mouseover.native="preSelectionIndex = index"
+          @mouseover="preSelectionIndex = index"
         >
           <EntityBadge class="span-entity__badge" :color="option.color" :text="option.text"></EntityBadge>
         </BaseButton>

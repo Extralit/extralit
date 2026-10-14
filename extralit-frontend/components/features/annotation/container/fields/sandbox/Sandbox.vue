@@ -38,9 +38,7 @@ export default {
       this.resize();
     },
     resize() {
-      this.$refs.iframe.style.height =
-        this.$refs.iframe.contentWindow.document.documentElement.scrollHeight +
-        "px";
+      this.$refs.iframe.style.height = this.$refs.iframe.contentWindow.document.documentElement.scrollHeight + "px";
     },
   },
   computed: {

@@ -1,45 +1,47 @@
 <template>
   <div v-if="options.length">
     <BaseDropdown :visible="dropdownIsVisible" @visibility="onVisibility">
-      <span slot="dropdown-header">
-        <BaseButton class="selected-option" :class="currentOptionId" :data-title="$t('status')">
-          {{ currentOptionName }}
-          <svgicon name="chevron-down" width="8" height="8" aria-hidden="true" />
-        </BaseButton>
-      </span>
-      <span slot="dropdown-content">
-        <ul class="options" role="radiogroup">
-          <li
-            v-for="{ id, name, color } in options"
-            :key="id"
-            class="option"
-            :class="id"
-            tabindex="0"
-            :aria-checked="id"
-            role="radio"
-            @keydown.space="changeOption(id)"
-            @keydown.enter="changeOption(id)"
-          >
-            <BaseRadioButton
-              :id="id"
-              class="option__radio"
-              :color="color"
-              :model="id"
-              :value="selectedOption"
-              tabindex="-1"
-              aria-hidden="true"
-              @change="changeOption(id)"
-              >{{ name }}</BaseRadioButton
+      <template #dropdown-header
+        ><span>
+          <BaseButton class="selected-option" :class="currentOptionId" :data-title="$t('status')">
+            {{ currentOptionName }}
+            <svgicon name="chevron-down" width="8" height="8" aria-hidden="true" />
+          </BaseButton> </span
+      ></template>
+      <template #dropdown-content
+        ><span>
+          <ul class="options" role="radiogroup">
+            <li
+              v-for="{ id, name, color } in options"
+              :key="id"
+              class="option"
+              :class="id"
+              tabindex="0"
+              :aria-checked="id"
+              role="radio"
+              @keydown.space="changeOption(id)"
+              @keydown.enter="changeOption(id)"
             >
-          </li>
-        </ul>
-      </span>
+              <BaseRadioButton
+                :id="id"
+                class="option__radio"
+                :color="color"
+                :model-value="id"
+                :value="selectedOption"
+                tabindex="-1"
+                aria-hidden="true"
+                @change="changeOption(id)"
+                >{{ name }}</BaseRadioButton
+              >
+            </li>
+          </ul>
+        </span></template
+      >
     </BaseDropdown>
   </div>
 </template>
 
 <script>
-import "assets/icons/chevron-down";
 export default {
   props: {
     options: {
@@ -55,10 +57,7 @@ export default {
       dropdownIsVisible: false,
     };
   },
-  model: {
-    prop: "selectedOption",
-    event: "change",
-  },
+  emits: ["change"],
   computed: {
     currentOption() {
       return this.options.find((opt) => opt.id === this.selectedOption);

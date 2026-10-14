@@ -1,4 +1,4 @@
-import { type NuxtAxiosInstance } from "@nuxtjs/axios";
+import type { AxiosInstance } from "axios";
 import { largeCache } from "./AxiosCache";
 import { Metrics } from "~/v1/domain/entities/dataset/Metrics";
 
@@ -13,7 +13,7 @@ interface BackendMetrics {
 }
 
 export class MetricsRepository {
-  constructor(private readonly axios: NuxtAxiosInstance) {}
+  constructor(private readonly axios: AxiosInstance) {}
 
   async getMetrics(datasetId: string): Promise<Metrics> {
     try {

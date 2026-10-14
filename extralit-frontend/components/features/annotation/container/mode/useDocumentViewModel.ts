@@ -1,4 +1,4 @@
-import { ref, watch, computed } from "vue-demi";
+import { ref, watch, computed } from "vue";
 import { useResolve } from "ts-injecty";
 import { GetDocumentByRecordMetadataUseCase } from "~/v1/domain/usecases/get-document-by-record-metadata-use-case";
 import { useDocument } from "@/v1/infrastructure/storage/DocumentStorage";
@@ -60,7 +60,7 @@ export const useDocumentViewModel = (props: { record: any }) => {
   };
 
   const focusDocumentPageNumber = (pageNumber: number | string) => {
-    // @ts-ignore
+    // @ts-expect-error -- Document type lacks page_number; tolerated here
     setDocument({ ...document, page_number: pageNumber });
   };
 

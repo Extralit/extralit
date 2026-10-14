@@ -1,7 +1,7 @@
 <template>
   <div class="record-menu">
     <BaseDropdown :freezing-page="visibleMetadataInfo" :visible="dropdownIsVisible" @visibility="onVisibility">
-      <template slot="dropdown-header">
+      <template #dropdown-header>
         <BaseButton
           class="record-menu__header"
           :aria-label="(dropdownIsVisible ? 'Collapse' : 'Expand') + ' Record Dropdown for Extra Information'"
@@ -9,7 +9,7 @@
           <svgicon name="kebab" width="20" height="20" aria-hidden="true" />
         </BaseButton>
       </template>
-      <template slot="dropdown-content">
+      <template #dropdown-content>
         <RecordMetadataInfo v-if="visibleMetadataInfo" :record="record" />
         <ul v-else class="record-menu__content">
           <li>
@@ -29,7 +29,6 @@
 </template>
 
 <script>
-import "assets/icons/kebab";
 export default {
   props: {
     record: {

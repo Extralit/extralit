@@ -18,26 +18,20 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-
 export default {
   props: {
     availableFields: {
-      type: Array,
+      type: Array as () => string[],
       required: true,
     },
     selectedFields: {
-      type: Array,
+      type: Array as () => string[],
       default: () => [],
     },
     defaultMetadataFields: {
       type: Array,
       default: () => ["reference", "doi", "pmid"],
     },
-  },
-  model: {
-    prop: "selectedFields",
-    event: "onSelectionChange",
   },
   computed: {
     currentSelection() {

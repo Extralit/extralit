@@ -1,5 +1,13 @@
-import { Context } from "@nuxt/types";
+import type { AxiosInstance } from "axios";
 import Container, { register } from "ts-injecty";
+
+import type { IAuthService } from "~/v1/domain/services/IAuthService";
+
+type NuxtAppLike = {
+  $axios: AxiosInstance;
+  $auth: IAuthService;
+  $i18n?: { t: (key: string) => unknown };
+};
 
 import { useEventDispatcher } from "@codescouts/events";
 
@@ -84,9 +92,21 @@ import { AuthLoginUseCase } from "@/v1/domain/usecases/auth-login-use-case";
 import { FileParsingService } from "~/v1/domain/services/FileParsingService";
 import { PdfMatchingService } from "@/v1/domain/services/FileMatchingService";
 
-export const loadDependencyContainer = (context: Context) => {
-  const useAxios = useAxiosExtension(context);
-  const useAuth = () => context.$auth;
+import { SchemaRepository } from "~/v1/infrastructure/repositories/SchemaRepository";
+import { SchemaRecordRepository } from "~/v1/infrastructure/repositories/SchemaRecordRepository";
+import { ProjectionRepository } from "~/v1/infrastructure/repositories/ProjectionRepository";
+import { GetWorkspaceProjectionUseCase } from "~/v1/domain/usecases/get-workspace-projection-use-case";
+import { useExtractions } from "~/v1/infrastructure/storage/ExtractionsStorage";
+import { useSchemas } from "~/v1/infrastructure/storage/SchemasStorage";
+import { GetSchemasUseCase } from "~/v1/domain/usecases/get-schemas-use-case";
+import { GetSchemaSettingsUseCase } from "~/v1/domain/usecases/get-schema-settings-use-case";
+import { GetSchemaRecordsUseCase } from "~/v1/domain/usecases/get-schema-records-use-case";
+import { SearchRecordsUseCase } from "~/v1/domain/usecases/search-records-use-case";
+
+export const loadDependencyContainer = (nuxtApp: NuxtAppLike) => {
+  const t = (key: string) => String(nuxtApp.$i18n?.t(key) ?? key);
+  const useAxios = useAxiosExtension(nuxtApp.$axios, t);
+  const useAuth = () => nuxtApp.$auth;
 
   const dependencies = [
     register(UpdateMetricsEventHandler).build(),
@@ -219,6 +239,17 @@ export const loadDependencyContainer = (context: Context) => {
 
     register(FileParsingService).build(),
     register(PdfMatchingService).build(),
+
+    register(SchemaRepository).withDependency(useAxios).build(),
+    register(GetSchemasUseCase).withDependencies(SchemaRepository, useSchemas).build(),
+    register(GetSchemaSettingsUseCase).withDependency(SchemaRepository).build(),
+
+    register(SchemaRecordRepository).withDependency(useAxios).build(),
+    register(GetSchemaRecordsUseCase).withDependency(SchemaRecordRepository).build(),
+    register(SearchRecordsUseCase).withDependency(SchemaRecordRepository).build(),
+
+    register(ProjectionRepository).withDependency(useAxios).build(),
+    register(GetWorkspaceProjectionUseCase).withDependencies(ProjectionRepository, useExtractions).build(),
   ];
 
   Container.register(dependencies);

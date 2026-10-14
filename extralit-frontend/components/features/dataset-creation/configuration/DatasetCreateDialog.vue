@@ -7,7 +7,8 @@
           <label class="dataset-config-dialog__label" for="datasetName" v-text="$t('datasetCreation.datasetName')" />
           <DatasetConfigurationInput
             id="datasetName"
-            v-model="dataset.name"
+            :value="dataset.name"
+            @on-value-change="dataset.name = $event"
             :placeholder="$t('datasetCreation.datasetName')"
           />
         </div>
@@ -71,7 +72,7 @@ export default {
     firstWorkspace: {
       handler(value) {
         if (value) {
-          this.$set(this.dataset, "workspace", this.firstWorkspace);
+          this.dataset["workspace"] = this.firstWorkspace;
         }
       },
       deep: true,
@@ -102,7 +103,7 @@ export default {
       }
     },
     selectWorkspace(workspace) {
-      this.$set(this.dataset, "workspace", workspace);
+      this.dataset["workspace"] = workspace;
     },
   },
   setup() {

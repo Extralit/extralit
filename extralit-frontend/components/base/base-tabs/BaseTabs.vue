@@ -11,7 +11,7 @@
 export default {
   props: {
     tabs: {
-      type: Array,
+      type: Array as () => { id: string; name: string }[],
       required: true,
     },
     activeTab: {
@@ -19,7 +19,7 @@ export default {
       required: true,
     },
     tabSize: {
-      type: String as () => 'small' | 'medium' | 'large',
+      type: String as () => "small" | "medium" | "large",
       default: "small",
     },
   },

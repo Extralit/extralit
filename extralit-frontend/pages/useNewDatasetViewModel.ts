@@ -1,9 +1,8 @@
 import { useResolve } from "ts-injecty";
-import { ref, useRoute, useContext } from "@nuxtjs/composition-api";
+import { ref } from "vue";
 import { GetHfDatasetCreationUseCase } from "~/v1/domain/usecases/get-hf-dataset-creation-use-case";
 
 export const useNewDatasetViewModel = () => {
-  const { error } = useContext();
   const datasetConfig = ref();
   const getDatasetCreationUseCase = useResolve(GetHfDatasetCreationUseCase);
 
@@ -11,12 +10,12 @@ export const useNewDatasetViewModel = () => {
     try {
       datasetConfig.value = await getDatasetCreationUseCase.execute(repositoryId);
     } catch (e) {
-      error({ statusCode: 404, message: "Cannot fetch the dataset" });
+      showError(createError({ statusCode: 404, message: "Cannot fetch the dataset" }));
     }
   };
 
   const getNewHfDatasetByRepoIdFromUrl = async () => {
-    const repositoryId = useRoute().value.params.id;
+    const repositoryId = useRoute().params.id as string;
     await getNewHfDatasetByRepoId(decodeURI(repositoryId));
   };
 

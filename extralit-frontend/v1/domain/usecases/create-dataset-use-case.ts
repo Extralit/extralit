@@ -1,6 +1,6 @@
 import { DatasetCreation } from "../entities/hub/DatasetCreation";
 import { Workspace } from "../entities/workspace/Workspace";
-import { DatasetId, IDatasetRepository } from "../services/IDatasetRepository";
+import { type DatasetId, type IDatasetRepository } from "../services/IDatasetRepository";
 import { Debounce } from "~/v1/infrastructure/services";
 import {
   FieldRepository,
@@ -45,7 +45,7 @@ export class CreateDatasetUseCase {
 
       await this.datasetRepository.publish(datasetCreated);
 
-      await this.datasetRepository.import(datasetCreated, dataset);
+      await this.datasetRepository.importDataset(datasetCreated, dataset);
 
       let retries = 0;
       const debounce = Debounce.from(3000);

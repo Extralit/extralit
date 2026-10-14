@@ -1,7 +1,7 @@
 <template>
   <div class="dataset-list__wrapper">
     <div class="dataset-list__header">
-      <h1 class="dataset-list__title" v-text="$t('home.argillaDatasets')" />
+      <h1 class="dataset-list__title" v-text="$t('home.extralitDatasets')" />
       <div class="dataset-list__filters">
         <DatasetsSort
           @on-change-direction="onChangeDirection"

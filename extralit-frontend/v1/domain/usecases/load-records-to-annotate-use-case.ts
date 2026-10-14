@@ -1,5 +1,5 @@
 import { RecordCriteria } from "../entities/record/RecordCriteria";
-import { IRecordStorage } from "../services/IRecordStorage";
+import { type IRecordStorage } from "../services/IRecordStorage";
 import { GetDatasetProgressUseCase } from "./get-dataset-progress-use-case";
 import { GetRecordsByCriteriaUseCase } from "./get-records-by-criteria-use-case";
 import { GetUserMetricsUseCase } from "./get-user-metrics-use-case";
@@ -108,6 +108,7 @@ export class LoadRecordsToAnnotateUseCase {
 
       this.recordsStorage.save(records);
     } catch {
+      /* best-effort prefetch; ignore failures and clear the buffering flag */
     } finally {
       this.isBuffering = false;
     }

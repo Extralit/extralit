@@ -1,5 +1,5 @@
 import { useResolve } from "ts-injecty";
-import { onBeforeMount, ref } from "vue-demi";
+import { onBeforeMount, ref } from "vue";
 import { Question } from "~/v1/domain/entities/question/Question";
 import { SuggestionFilterList } from "~/v1/domain/entities/suggestion/SuggestionFilter";
 import { GetDatasetSuggestionsAgentsUseCase } from "~/v1/domain/usecases/get-dataset-suggestions-agents-use-case";

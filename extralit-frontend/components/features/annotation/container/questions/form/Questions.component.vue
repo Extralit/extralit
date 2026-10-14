@@ -115,7 +115,7 @@ export default {
       parent.addEventListener("keydown", this.handleKeyboardToMoveLoop(parent));
     });
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.questionsWithLoopMovement.forEach((parent) => {
       parent.removeEventListener("keydown", this.handleKeyboardToMoveLoop(parent));
     });

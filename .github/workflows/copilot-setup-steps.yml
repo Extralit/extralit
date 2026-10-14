@@ -11,6 +11,9 @@ on:
     paths:
       - .github/workflows/copilot-setup-steps.yml
 
+permissions:
+  contents: read
+
 jobs:
   copilot-setup-steps:
     runs-on: ubuntu-latest
@@ -54,35 +57,27 @@ jobs:
     # Define steps that will run before the Copilot agent starts
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           pyproject-file: "extralit-server/pyproject.toml"
           python-version: "3.11"
           enable-cache: true
           cache-local-path: ~/.cache/uv
-          cache-dependency-glob: "extralit-server/pdm.lock"
+          cache-dependency-glob: "extralit-server/uv.lock"
 
-      - name: Setup Python env and Install extralit-server editable package
-        env:
-          PDM_IGNORE_ACTIVE_VENV: 1
-        run: |
-          uv tool install pdm
-          pdm config use_uv true
-          pdm config python.install_root "$(uv python dir)"
-
-          cd extralit-server/
-          pdm install -G test
+      - name: Setup Python env and Install extralit-server
+        working-directory: extralit-server
+        run: uv sync --dev --extra postgresql
 
       - name: Install extralit editable package with dependencies
         working-directory: extralit
-        run: |
-          uv pip install -e ".[dev]"
+        run: uv sync
 
       - name: Install Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: "npm"
@@ -101,8 +96,8 @@ jobs:
           HOME: /home/runner
         run: |
           mkdir -p /home/runner/.extralit
-          pdm run alembic -c src/extralit_server/alembic.ini upgrade head
+          uv run alembic -c src/extralit_server/alembic.ini upgrade head
 
     #   - name: Verify critical dependencies
     #     run: |
-    #       cd extralit-server && pdm run python -c "import pandera; print('✓ Pandera available')" || echo "⚠ Pandera not available"
+    #       cd extralit-server && uv run python -c "import pandera; print('✓ Pandera available')" || echo "⚠ Pandera not available"

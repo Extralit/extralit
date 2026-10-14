@@ -25,10 +25,6 @@ export default {
       return this.field.type.value === "no mapping";
     },
   },
-  model: {
-    prop: "type",
-    event: "change",
-  },
   methods: {},
 };
 </script>

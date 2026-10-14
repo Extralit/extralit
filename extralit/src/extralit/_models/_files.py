@@ -1,35 +1,21 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 
 class ObjectMetadata(BaseModel):
     """Metadata for an object in a workspace."""
 
-    bucket_name: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    # `bucket_name` is what servers older than the one-storage-root change send.
+    workspace: str = Field(validation_alias=AliasChoices("workspace", "bucket_name"))
     object_name: str
     last_modified: Optional[datetime] = None
-    is_latest: Optional[bool] = None
     etag: Optional[str] = None
     size: Optional[int] = None
     content_type: Optional[str] = None
-    version_id: Optional[str] = None
-    version_tag: Optional[str] = None
     metadata: Optional[dict[str, Any]] = None
 
 
@@ -53,4 +39,3 @@ class FileObjectResponse(BaseModel):
 
     content: bytes
     metadata: Optional[ObjectMetadata] = None
-    versions: Optional[ListObjectsResponse] = None

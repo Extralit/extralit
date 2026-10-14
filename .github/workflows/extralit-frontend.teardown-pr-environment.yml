@@ -5,6 +5,9 @@ on:
   # pull_request:
   #   types: [closed]
 
+permissions:
+  contents: read
+
 jobs:
   teardown_pr_environment:
     name: Teardown Cloud Run PR environment
@@ -17,16 +20,16 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GOOGLE_CLOUD_WIP }}
           service_account: ${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v3
         with:
           version: ">= 435.0.0"
 

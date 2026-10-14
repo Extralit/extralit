@@ -1,30 +1,18 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """Workflow job querying and management functions."""
 
 import logging
 from typing import Any, Optional
 from uuid import UUID
 
+from rq.command import send_stop_job_command
 from rq.exceptions import NoSuchJobError
 from rq.group import Group
-from rq.job import Job
+from rq.job import Job, JobStatus
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.jobs.queues import REDIS_CONNECTION
-from extralit_server.models.database import DocumentWorkflow
+from extralit_server.models.database import Document, DocumentWorkflow
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -522,6 +510,68 @@ def get_failed_jobs_in_group(group_id: str) -> list[dict[str, Any]]:
     except Exception as e:
         _LOGGER.error(f"Error getting failed jobs for group {group_id}: {e}")
         return []
+
+
+async def writer_skip_reason(db: AsyncSession, document_id: UUID, workflow_id: Optional[str]) -> Optional[str]:
+    """Why this job must not write its artifacts, or None when it may. Checked before every commit.
+
+    Two ways a job outlives what it was started for. The document can be deleted mid-run, and
+    writing then resurrects artifacts for a row that no longer exists. Or a forced restart can
+    supersede it — `send_stop_job_command` only *asks* a worker to stop, so the previous run can
+    stay alive long enough to overwrite the new one's PDF, layout or metadata. The workflow row is
+    the generation token; a job with no workflow in its meta (direct call, test, ad-hoc enqueue)
+    is always current.
+    """
+    if await db.scalar(select(Document.id).where(Document.id == document_id)) is None:
+        return "document deleted"
+
+    if not workflow_id:
+        return None
+
+    workflow = await DocumentWorkflow.get_by_document_id(db, document_id)
+    if workflow is not None and str(workflow.id) != str(workflow_id):
+        return "workflow superseded"
+    return None
+
+
+def stop_workflow_jobs(group_id: str) -> list[str]:
+    """
+    Stop running jobs and cancel pending ones for a workflow group.
+
+    Best effort: a job that has already finished, expired or vanished is skipped, and one
+    failure never aborts the sweep. Used before a forced re-run so the previous run cannot
+    keep writing artifacts underneath the new one.
+
+    Args:
+        group_id: RQ group name of the run to stop
+
+    Returns:
+        Ids of the jobs that were stopped or cancelled
+    """
+    try:
+        group = Group.fetch(name=group_id, connection=REDIS_CONNECTION)
+        jobs = group.get_jobs()
+    except Exception as e:
+        _LOGGER.warning(f"Group {group_id} not found or expired, nothing to stop: {e}")
+        return []
+
+    stopped: list[str] = []
+    for job in jobs:
+        try:
+            status = job.get_status(refresh=True)
+            if status == JobStatus.STARTED:
+                send_stop_job_command(connection=REDIS_CONNECTION, job_id=job.id)
+            elif status in (JobStatus.QUEUED, JobStatus.DEFERRED, JobStatus.SCHEDULED):
+                job.cancel()
+            else:
+                continue
+            stopped.append(job.id)
+        except Exception as e:
+            _LOGGER.warning(f"Failed to stop job {job.id} in group {group_id}: {e}")
+
+    if stopped:
+        _LOGGER.info(f"Stopped {len(stopped)} jobs from previous workflow group {group_id}")
+    return stopped
 
 
 async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWorkflow) -> dict[str, Any]:

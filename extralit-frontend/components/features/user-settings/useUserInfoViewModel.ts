@@ -1,6 +1,5 @@
-import { useFetch } from "@nuxtjs/composition-api";
 import { useResolve } from "ts-injecty";
-import { ref } from "vue-demi";
+import { ref, onMounted } from "vue";
 import { GetWorkspacesUseCase } from "~/v1/domain/usecases/get-workspaces-use-case";
 import { useUser } from "~/v1/infrastructure/services/useUser";
 
@@ -10,7 +9,7 @@ export const useUserInfoViewModel = () => {
   const { user } = useUser();
   const getWorkspacesUseCase = useResolve(GetWorkspacesUseCase);
 
-  useFetch(async () => {
+  onMounted(async () => {
     isLoadingWorkspaces.value = true;
     workspaces.value = await getWorkspacesUseCase.execute();
     isLoadingWorkspaces.value = false;

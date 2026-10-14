@@ -43,7 +43,7 @@ DEFAULT_TABLE_CHUNK_SIZE = 900
 
 _TABLE_HEADER_RE = re.compile(r"^\s*Table\s+\d+\b", re.IGNORECASE)
 _TABLE_TERM_RE = re.compile(r"\b(?:OR|CI|P|Genotypes|RR|RS|SS)\b")
-_TABLE_INTERVAL_RE = re.compile(r"\(D\d+\s*[-–]\s*D\d+\)|\(D\d+\)")
+_TABLE_INTERVAL_RE = re.compile(r"\(D\d+\s*[-–]\s*D\d+\)|\(D\d+\)")  # noqa: RUF001
 
 
 def _is_table_header(text: str) -> bool:
@@ -62,11 +62,11 @@ def _looks_like_table_continuation(text: str) -> bool:
         return False
 
     lines = [line.strip() for line in stripped.splitlines() if line.strip()]
-    if len(lines) < 4:
+    if len(lines) < 2:
         return False
 
     short_line_count = sum(1 for line in lines if len(line) <= 20)
-    numeric_like_count = sum(1 for line in lines if re.search(r"\d|%|±|×|<|>", line))
+    numeric_like_count = sum(1 for line in lines if re.search(r"\d|%|±|×|<|>", line))  # noqa: RUF001
     has_table_terms = _TABLE_TERM_RE.search(stripped) is not None
     has_intervals = _TABLE_INTERVAL_RE.search(stripped) is not None
 

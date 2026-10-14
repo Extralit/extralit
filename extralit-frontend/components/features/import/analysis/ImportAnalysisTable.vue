@@ -3,7 +3,7 @@
     <!-- Loading state -->
     <div v-if="loading || isAnalyzing" class="loading-state">
       <BaseSpinner />
-      <p>{{ isAnalyzing ? 'Analyzing import status...' : 'Loading...' }}</p>
+      <p>{{ isAnalyzing ? "Analyzing import status..." : "Loading..." }}</p>
     </div>
 
     <!-- Error state -->
@@ -12,9 +12,30 @@
       <div class="error-content">
         <h4>Analysis Failed</h4>
         <p>{{ errorMessage }}</p>
-        <BaseButton variant="outline" @click="retryAnalysis">
-          Retry Analysis
-        </BaseButton>
+        <BaseButton variant="outline" @click="retryAnalysis"> Retry Analysis </BaseButton>
+      </div>
+    </div>
+
+    <!-- Editable table mode: PDFs without bibliography -->
+    <div v-else-if="shouldShowEditableTable" class="editable-table-section">
+      <div class="editable-table-header">
+        <h3>Document Metadata</h3>
+      </div>
+
+      <BaseSimpleTable
+        ref="editableTable"
+        :data="editableTableData"
+        :columns="editableTableColumns"
+        :editable="true"
+        @cell-edited="(cell) => handleTableCellEdit(cell)"
+        @table-built="() => handleTableBuilt()"
+      />
+
+      <div v-if="unmappedPdfFiles.length > 0" class="unmapped-pdfs-warning">
+        <h4>Unmapped PDF Files ({{ unmappedPdfFiles.length }})</h4>
+        <ul>
+          <li v-for="file in unmappedPdfFiles" :key="file">{{ file }}</li>
+        </ul>
       </div>
     </div>
 
@@ -56,20 +77,13 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/check";
-import "assets/icons/danger";
-import "assets/icons/chevron-down";
 import type {
   ImportAnalysisResponse,
   ImportStatus,
   DocumentImportAnalysis,
-} from '~/v1/domain/entities/import/ImportAnalysis';
-import {
-  AnalysisTableRow,
-  TableColumn,
-  CellComponent,
-} from '../types';
-import { useImportAnalysisTableViewModel } from './useImportAnalysisTableViewModel';
+} from "~/v1/domain/entities/import/ImportAnalysis";
+import { type AnalysisTableRow, type TableColumn, type CellComponent } from "../types";
+import { useImportAnalysisTableViewModel } from "./useImportAnalysisTableViewModel";
 import { Workspace } from "~/v1/domain/entities/workspace/Workspace";
 import { TableData } from "~/v1/domain/entities/table/TableData";
 
@@ -82,8 +96,8 @@ export default {
       default: null,
     },
     pdfData: {
-      type: Object as () => { matchedFiles: any[] } | null,
-      default: () => ({ matchedFiles: [] }),
+      type: Object as () => { matchedFiles: any[]; unmatchedFiles?: any[] } | null,
+      default: () => ({ matchedFiles: [], unmatchedFiles: [] }),
     },
     workspace: {
       type: Workspace,
@@ -93,13 +107,18 @@ export default {
       type: Boolean,
       default: false,
     },
+    initialDocumentActions: {
+      type: Object as () => Record<string, ImportStatus>,
+      default: () => ({}),
+    },
   },
 
   emits: ["update", "analysis-complete"],
 
   data() {
     return {
-      localDocumentActions: {} as Record<string, ImportStatus>,
+      localDocumentActions: { ...this.initialDocumentActions } as Record<string, ImportStatus>,
+      editableTableData: [] as any[],
     };
   },
 
@@ -131,8 +150,8 @@ export default {
 
         // Get analysis info if available
         const analysisInfo = this.analysisResult?.documents?.[reference];
-        const currentStatus = documentActions[reference] || analysisInfo?.status || 'add';
-        const originalStatus = analysisInfo?.status || 'add';
+        const currentStatus = documentActions[reference] || analysisInfo?.status || "add";
+        const originalStatus = analysisInfo?.status || "add";
         const validationErrors = analysisInfo?.validation_errors || [];
 
         // Use pre-processed file paths from ImportFileUpload.vue
@@ -152,8 +171,8 @@ export default {
           canToggle: this.canToggleStatus(originalStatus) && !this.isAnalyzing,
         };
 
-        Object.keys(row).forEach(key => {
-          if (!['reference', 'title', 'authors', 'author', 'year', 'filePaths'].includes(key)) {
+        Object.keys(row).forEach((key) => {
+          if (!["reference", "title", "authors", "author", "year", "filePaths"].includes(key)) {
             rowData[key] = row[key];
           }
         });
@@ -163,17 +182,17 @@ export default {
     },
 
     tableData(): AnalysisTableRow[] {
-      const filteredData = this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0);
+      const filteredData = this.allTableData.filter((row) => row.filePaths && row.filePaths.length > 0);
 
       return filteredData;
     },
 
     referencesWithoutPdfsCount(): number {
-      return this.allTableData.filter(row => !row.filePaths || row.filePaths.length === 0).length;
+      return this.allTableData.filter((row) => !row.filePaths || row.filePaths.length === 0).length;
     },
 
     referencesWithPdfsCount(): number {
-      return this.allTableData.filter(row => row.filePaths && row.filePaths.length > 0).length;
+      return this.allTableData.filter((row) => row.filePaths && row.filePaths.length > 0).length;
     },
 
     filteredDataframeData(): TableData | null {
@@ -190,7 +209,7 @@ export default {
       return {
         ...this.dataframeData,
         data: filteredData,
-      };
+      } as TableData;
     },
 
     tableColumns(): TableColumn[] {
@@ -223,9 +242,9 @@ export default {
 
       // Add dynamic columns from dataframe schema
       if (this.dataframeData?.schema?.fields) {
-        const excludedFields = ['reference', 'title', 'authors', 'author', 'year', 'filePaths', 'type'];
+        const excludedFields = ["reference", "title", "authors", "author", "year", "filePaths", "type"];
 
-        this.dataframeData.schema.fields.forEach(field => {
+        this.dataframeData.schema.fields.forEach((field) => {
           if (!excludedFields.includes(field.name)) {
             columns.push({
               field: field.name,
@@ -256,12 +275,12 @@ export default {
           headerFilterParams: {
             values: {
               "": "All",
-              "add": "Add",
-              "update": "Update",
-              "skip": "Skip",
-              "ignore": "Ignore",
-              "failed": "Failed"
-            }
+              add: "Add",
+              update: "Update",
+              skip: "Skip",
+              ignore: "Ignore",
+              failed: "Failed",
+            },
           },
         }
       );
@@ -303,7 +322,7 @@ export default {
         // Count from dataframe data - only include references with PDFs
         this.dataframeData.data.forEach((row: Record<string, any>) => {
           const reference = row.reference || row.key;
-          const finalAction = documentActions[reference] || 'add';
+          const finalAction = documentActions[reference] || "add";
           const filePaths = row.filePaths || [];
           const hasFiles = filePaths.length > 0;
 
@@ -324,16 +343,120 @@ export default {
     canConfirmImport() {
       return this.confirmedCount > 0;
     },
+
+    shouldShowEditableTable() {
+      return (!this.dataframeData || this.dataframeData.data.length === 0) && this.allPdfFileNames.length > 0;
+    },
+
+    allPdfFileNames() {
+      const matched = (this.pdfData?.matchedFiles || []).map((mf: any) => mf.file?.name ?? mf.filename);
+      const unmatched = (this.pdfData?.unmatchedFiles || []).map((f: any) => f.name ?? f);
+      return [...matched, ...unmatched];
+    },
+
+    unmappedPdfFiles() {
+      const assigned = new Set<string>();
+      this.editableTableData.forEach((row: any) => {
+        (Array.isArray(row.files) ? row.files : row.files ? [row.files] : []).forEach((f: string) => assigned.add(f));
+      });
+      return (this.allPdfFileNames as string[]).filter((n: string) => !assigned.has(n));
+    },
+
+    editableTableColumns() {
+      const vm = this as any;
+      return [
+        {
+          field: "reference",
+          title: "Reference",
+          frozen: true,
+          width: 200,
+          editor: "input",
+          validator: ["required", "unique"],
+        },
+        {
+          field: "title",
+          title: "Title",
+          width: 300,
+          editor: "input",
+        },
+        {
+          field: "files",
+          title: "Files",
+          frozen: true,
+          frozenRight: true,
+          width: 200,
+          editor: "list",
+          validator: ["required"],
+          editorParams: function (cell: any) {
+            const table = cell.getTable();
+            const row = cell.getRow();
+            const field = cell.getField();
+            const allFiles = new Set<string>(vm.allPdfFileNames);
+            const usedFiles = new Set<string>();
+            table.getRows().forEach((r: any) => {
+              if (r === row) return;
+              const v = r.getData()[field];
+              if (!v) return;
+              (Array.isArray(v) ? v : [v]).forEach((f: string) => usedFiles.add(f));
+            });
+            const current = cell.getValue() || [];
+            const currentSet = new Set(Array.isArray(current) ? current : [current]);
+            const values = [...allFiles]
+              .filter((f) => !usedFiles.has(f) || currentSet.has(f))
+              .map((f) => ({ label: f, value: f }));
+            return {
+              values,
+              multiselect: true,
+              autocomplete: false,
+              listOnEmpty: true,
+              clearable: true,
+            };
+          },
+          formatter: (cell: any) => {
+            const value = cell.getValue();
+            if (!value || (Array.isArray(value) && value.length === 0)) {
+              return '<span style="color: var(--fg-tertiary);">No files</span>';
+            }
+            const files = Array.isArray(value) ? value : [value];
+            const [first, ...rest] = files;
+            const suffix =
+              rest.length > 0
+                ? ` <span style="color:var(--fg-secondary);white-space:nowrap">+${rest.length}</span>`
+                : "";
+            return `<span title="${files.join(", ")}" style="display:flex;align-items:center;gap:4px;min-width:0"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${first}</span>${suffix}</span>`;
+          },
+        },
+      ];
+    },
   },
 
   watch: {
+    shouldShowEditableTable: {
+      handler(show: boolean) {
+        if (show && this.editableTableData.length === 0) {
+          this.initializeEditableTable();
+        }
+      },
+      immediate: true,
+    },
+
     analysisResult: {
       handler(newData: ImportAnalysisResponse) {
         if (newData) {
-          // Reset local document actions when new analysis data arrives
-          this.localDocumentActions = {};
+          // Filter persisted actions to only keys present in the new analysis,
+          // discarding stale entries from a previous Bib/PDF set
+          const validKeys = new Set(Object.keys(newData.documents ?? {}));
+          const filtered: Record<string, ImportStatus> = {};
+          if (this.initialDocumentActions) {
+            for (const [key, status] of Object.entries(this.initialDocumentActions)) {
+              if (validKeys.has(key)) {
+                filtered[key] = status as ImportStatus;
+              }
+            }
+          }
+          this.localDocumentActions = filtered;
           // Emit the analysis complete event
-          this.$emit('analysis-complete', newData);
+          this.$emit("analysis-complete", newData);
           // Emit initial update
           this.emitUpdate();
         }
@@ -365,7 +488,7 @@ export default {
         return `<span class="files-cell no-files">${files}</span>`;
       }
       const fileCount = files.split(", ").filter((f: string) => f.trim().length > 0).length;
-      return `<span class="files-cell" title="${files}">${fileCount} file${fileCount !== 1 ? 's' : ''}</span>`;
+      return `<span class="files-cell" title="${files}">${fileCount} file${fileCount !== 1 ? "s" : ""}</span>`;
     },
 
     statusFormatter(cell: CellComponent) {
@@ -375,10 +498,10 @@ export default {
 
       const statusClass = `status-${status}`;
       const statusText = this.getStatusText(status);
-      const toggleIcon = canToggle ? '<span class="status-toggle">▼</span>' : '';
+      const toggleIcon = canToggle ? '<span class="status-toggle">▼</span>' : "";
 
       return `
-        <div class="status-cell ${statusClass} ${canToggle ? 'clickable' : ''}">
+        <div class="status-cell ${statusClass} ${canToggle ? "clickable" : ""}">
           <span class="status-indicator"></span>
           <span class="status-text">${statusText}</span>
           ${toggleIcon}
@@ -407,7 +530,7 @@ export default {
         update: "Update",
         skip: "Skip",
         ignore: "Ignore",
-        failed: "Failed"
+        failed: "Failed",
       };
       return statusMap[status] || status;
     },
@@ -437,7 +560,7 @@ export default {
       const nextStatus = this.getNextStatus(currentStatus, originalStatus);
       if (nextStatus !== currentStatus) {
         // Update the local document action
-        this.$set(this.localDocumentActions, reference, nextStatus);
+        this.localDocumentActions[reference] = nextStatus;
 
         // Update the cell value
         cell.getRow().update({ status: nextStatus });
@@ -450,8 +573,8 @@ export default {
     formatColumnTitle(fieldName: string) {
       // Convert field names to readable titles
       return fieldName
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, str => str.toUpperCase())
+        .replace(/([A-Z])/g, " $1")
+        .replace(/^./, (str) => str.toUpperCase())
         .trim();
     },
 
@@ -459,39 +582,71 @@ export default {
       const confirmedDocuments: Record<string, any> = {};
       const documentActions = { ...this.documentActions, ...this.localDocumentActions };
 
-      // Handle analysis data case (preferred)
-      if (this.analysisResult && this.analysisResult.documents && Object.keys(this.analysisResult.documents).length > 0) {
-        Object.entries(this.analysisResult.documents).forEach(([reference, docInfo]: [string, DocumentImportAnalysis]) => {
-          const finalAction = documentActions[reference] || docInfo.status;
-          const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
-
-          // Only include references with PDFs
-          if (!hasFiles) {
-            return;
-          }
-
-          // Only include documents that will be processed (add or update)
-          if (finalAction === "add" || finalAction === "update") {
-            // Ensure metadata is included in document_create
-            const documentCreate = {
-              ...docInfo.document_create,
+      // Handle editable table case: PDFs uploaded without bibliography
+      if (this.shouldShowEditableTable) {
+        this.editableTableData.forEach((row: any) => {
+          const reference = row.reference?.trim();
+          const filesArray = Array.isArray(row.files) ? row.files : row.files ? [row.files] : [];
+          if (!reference || filesArray.length === 0) return;
+          confirmedDocuments[reference] = {
+            document_create: {
+              reference,
+              title: row.title || undefined,
+              authors: row.authors ? [row.authors] : undefined,
+              year: row.year ? String(row.year) : undefined,
+              journal: row.journal || undefined,
+              doi: row.doi || undefined,
+              workspace_id: this.workspace?.id,
               metadata: {
-                source: "bib_import",
+                source: "pdf_import",
                 collections: [this.workspace?.name || "default"],
-                ...docInfo.document_create.metadata,
               },
-            };
-
-            confirmedDocuments[reference] = {
-              document_create: documentCreate,
-              associated_files: docInfo.associated_files || [],
-            };
-          }
+            },
+            associated_files: filesArray.map((filename: string) => ({
+              filename,
+              size: this.getFileSize(filename) || 0,
+            })),
+          };
         });
+        // Handle analysis data case (preferred)
+      } else if (
+        this.analysisResult &&
+        this.analysisResult.documents &&
+        Object.keys(this.analysisResult.documents).length > 0
+      ) {
+        Object.entries(this.analysisResult.documents).forEach(
+          ([reference, docInfo]: [string, DocumentImportAnalysis]) => {
+            const finalAction = documentActions[reference] || docInfo.status;
+            const hasFiles = docInfo.associated_files && docInfo.associated_files.length > 0;
+
+            // Only include references with PDFs
+            if (!hasFiles) {
+              return;
+            }
+
+            // Only include documents that will be processed (add or update)
+            if (finalAction === "add" || finalAction === "update") {
+              // Ensure metadata is included in document_create
+              const documentCreate = {
+                ...docInfo.document_create,
+                metadata: {
+                  source: "bib_import",
+                  collections: [this.workspace?.name || "default"],
+                  ...docInfo.document_create.metadata,
+                },
+              };
+
+              confirmedDocuments[reference] = {
+                document_create: documentCreate,
+                associated_files: docInfo.associated_files || [],
+              };
+            }
+          }
+        );
       } else if (this.dataframeData && this.dataframeData.data.length > 0) {
         this.dataframeData.data.forEach((row: Record<string, any>) => {
           const reference = row.reference || row.key || `row_${Math.random()}`;
-          const finalAction = documentActions[reference] || 'add';
+          const finalAction = documentActions[reference] || "add";
           const filePaths = row.filePaths || [];
           const hasFiles = filePaths.length > 0;
 
@@ -506,7 +661,7 @@ export default {
               document_create: {
                 reference,
                 title: row.title,
-                authors: Array.isArray(row.authors) ? row.authors : (row.authors ? [row.authors] : undefined),
+                authors: Array.isArray(row.authors) ? row.authors : row.authors ? [row.authors] : undefined,
                 year: row.year ? String(row.year) : undefined,
                 journal: row.journal,
                 volume: row.volume,
@@ -514,7 +669,7 @@ export default {
                 doi: row.doi,
                 url: row.url,
                 abstract: row.abstract,
-                keywords: Array.isArray(row.keywords) ? row.keywords : (row.keywords ? [row.keywords] : undefined),
+                keywords: Array.isArray(row.keywords) ? row.keywords : row.keywords ? [row.keywords] : undefined,
                 pmid: row.pmid,
                 workspace_id: this.workspace?.id,
                 metadata: {
@@ -524,7 +679,7 @@ export default {
               },
               associated_files: filePaths.map((filename: string) => ({
                 filename,
-                size: this.getFileSize(filename) || 0
+                size: this.getFileSize(filename) || 0,
               })),
             };
           }
@@ -540,14 +695,45 @@ export default {
     },
 
     getFileSize(filename: string): number {
-      // Try to find the file size from matched files
       if (this.pdfData?.matchedFiles) {
-        const matchedFile = this.pdfData.matchedFiles.find((mf: any) => mf.file.name === filename);
+        const matchedFile = this.pdfData.matchedFiles.find((mf: any) => (mf.file?.name ?? mf.filename) === filename);
         if (matchedFile) {
-          return matchedFile.file.size || 0;
+          return matchedFile.file?.size || matchedFile.size || 0;
+        }
+      }
+      if (this.pdfData?.unmatchedFiles) {
+        const unmatchedFile = this.pdfData.unmatchedFiles.find((f: any) => (f.name ?? f) === filename);
+        if (unmatchedFile) {
+          return unmatchedFile.size || 0;
         }
       }
       return 0;
+    },
+
+    handleTableCellEdit(cell: any) {
+      this.editableTableData = cell.getTable().getData();
+      this.emitUpdate();
+    },
+
+    handleTableBuilt() {
+      // no-op: data is managed via cell-edited events
+    },
+
+    initializeEditableTable() {
+      const pdfFiles = this.allPdfFileNames as string[];
+      this.editableTableData =
+        pdfFiles.length > 0
+          ? pdfFiles.map((filename: string) => ({
+              reference: null,
+              title: null,
+              files: [filename],
+            }))
+          : Array.from({ length: 3 }, () => ({
+              reference: null,
+              title: null,
+              files: [],
+            }));
+      this.emitUpdate();
     },
 
     resetLocalState() {
@@ -556,15 +742,17 @@ export default {
 
     // Add missing methods
     retryAnalysis() {
-      if (this.$refs.viewModel && this.$refs.viewModel.retryAnalysis) {
-        this.$refs.viewModel.retryAnalysis();
+      const vm = this.$refs.viewModel as { retryAnalysis?: () => void } | undefined;
+      if (vm && vm.retryAnalysis) {
+        vm.retryAnalysis();
       }
     },
 
     reset() {
       this.resetLocalState();
-      if (this.$refs.viewModel && this.$refs.viewModel.reset) {
-        this.$refs.viewModel.reset();
+      const vm = this.$refs.viewModel as { reset?: () => void } | undefined;
+      if (vm && vm.reset) {
+        vm.reset();
       }
     },
 
@@ -607,9 +795,9 @@ export default {
               { name: "abstract", type: "string" },
               { name: "file", type: "string" },
             ],
-            primaryKey: ["reference"]
+            primaryKey: ["reference"],
           },
-          data: dataRows
+          data: dataRows,
         };
       }
 
@@ -870,6 +1058,70 @@ export default {
 
   .tabulator-row:hover .tabulator-cell.tabulator-frozen {
     background: var(--bg-solid-grey-2);
+  }
+}
+
+// Editable table section styles
+.editable-table-section {
+  display: flex;
+  flex-direction: column;
+  gap: $base-space * 2;
+  padding: $base-space * 3;
+  background: var(--bg-accent-grey-1);
+  border: 1px solid var(--border-field);
+  border-radius: $border-radius-m;
+  min-height: 300px;
+}
+
+.editable-table-header {
+  margin-bottom: $base-space;
+
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: $base-space;
+    color: var(--fg-primary);
+  }
+
+  p {
+    color: var(--fg-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0;
+    line-height: 1.4;
+
+    strong {
+      color: var(--fg-primary);
+      font-weight: 600;
+    }
+  }
+}
+
+.unmapped-pdfs-warning {
+  margin-top: $base-space * 2;
+  padding: $base-space * 2;
+  background: var(--bg-banner-warning);
+  border: 1px solid var(--color-warning);
+  border-radius: $border-radius;
+
+  h4 {
+    margin: 0 0 $base-space 0;
+    color: var(--fg-primary);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: $base-space * 3;
+    max-height: 200px;
+    overflow-y: auto;
+
+    li {
+      color: var(--fg-primary);
+      font-size: 0.9rem;
+      margin-bottom: calc($base-space / 2);
+      font-family: $quaternary-font-family;
+    }
   }
 }
 </style>

@@ -18,8 +18,8 @@
 </template>
 
 <script>
-import "assets/icons/close";
 export default {
+  emits: ["input"],
   props: {
     value: {
       type: String,

@@ -7,6 +7,7 @@
 <script>
 export default {
   name: "HuggingFaceButton",
+  emits: ["click"],
 };
 </script>
 

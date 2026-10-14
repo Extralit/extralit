@@ -4,7 +4,7 @@ import BaseTabs from "./BaseTabs";
 let wrapper = null;
 const options = {
   components: { BaseTabs },
-  propsData: {
+  props: {
     tabs: [
       { id: "tab1", name: "Tab 1" },
       { id: "tab2", name: "Tab 2" },
@@ -18,12 +18,12 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  wrapper.destroy();
+  wrapper.unmount();
 });
 
 describe("BaseTabs", () => {
   it("emit change-tab event with first tab id on click in the first tab", async () => {
-    const button = wrapper.findAll(".tab__button").at(0);
+    const button = wrapper.findAll(".tab__button")[0];
     button.trigger("click");
     await wrapper.vm.$nextTick();
     expect(wrapper.emitted("change-tab")).toEqual([[wrapper.vm.tabs[0].id]]);
@@ -43,6 +43,7 @@ describe("BaseTabs", () => {
 });
 
 const checkButtonActiveClass = async (tabPosition, value) => {
-  const button = wrapper.findAll(".tab__button").at(tabPosition);
-  expect(button.find(".--active").exists()).toBe(value);
+  const button = wrapper.findAll(".tab__button")[tabPosition];
+  expect(button.classes()).toContain("tab__button");
+  expect(button.classes().includes("--active")).toBe(value);
 };

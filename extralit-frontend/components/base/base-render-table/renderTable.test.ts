@@ -5,7 +5,7 @@ import { TableData } from "~/v1/domain/entities/table/TableData";
 import { TabulatorFull as Tabulator, ColumnComponent } from "tabulator-tables";
 
 // Mock Tabulator functionality
-jest.mock("tabulator-tables");
+vi.mock("tabulator-tables");
 
 interface RenderTableInstance extends Vue {
   tabulator: Tabulator;
@@ -19,87 +19,83 @@ interface RenderTableInstance extends Vue {
   addRow: (position: any, data: any) => Promise<any>;
 }
 
-
-jest.mock("./useSchemaTableViewModel", () => ({
+vi.mock("./useSchemaTableViewModel", () => ({
   useSchemaTableViewModel: () => ({
-    fetchValidation: jest.fn().mockResolvedValue(undefined)
-  })
+    fetchValidation: vi.fn().mockResolvedValue(undefined),
+  }),
 }));
 
-jest.mock("./useReferenceTablesViewModel", () => ({
+vi.mock("./useReferenceTablesViewModel", () => ({
   useReferenceTablesViewModel: () => ({
     referenceValues: { value: null },
-    getTableDataFromRecords: jest.fn()
-  })
+    getTableDataFromRecords: vi.fn(),
+  }),
 }));
 
-jest.mock("./useLLMExtractionViewModel", () => ({
+vi.mock("./useLLMExtractionViewModel", () => ({
   useLLMExtractionViewModel: () => ({
-    completeExtraction: jest.fn().mockResolvedValue(undefined)
-  })
+    completeExtraction: vi.fn().mockResolvedValue(undefined),
+  }),
 }));
 
-describe('RenderTable', () => {
+describe("RenderTable", () => {
   const createWrapper = (props = {}): Wrapper<RenderTableInstance> => {
     const mockTableData = new TableData({
-      data: [
-        { col1: "value1" },
-        { col1: "value2" }
-      ],
+      data: [{ col1: "value1" }, { col1: "value2" }],
       schema: {
         primaryKey: ["col1"],
-        fields: [{ name: "col1", type: "string" }]
-      }
+        fields: [{ name: "col1", type: "string" }],
+      },
     });
 
     return shallowMount<RenderTableInstance>(RenderTable, {
-      propsData: {
+      props: {
         tableJSON: mockTableData,
         editable: true,
         hasValidValues: true,
         questions: [],
-        ...props
+        ...props,
       },
-      stubs: ['BaseButton', 'BaseDropdown', 'svgicon'],
+      stubs: ["BaseButton", "BaseDropdown", "svgicon"],
       mocks: {
         $notification: {
-          notify: jest.fn(),
-          clear: jest.fn()
-        }
-      }
+          notify: vi.fn(),
+          clear: vi.fn(),
+        },
+      },
     });
   };
 
-  describe('Basic Rendering', () => {
-    it('renders with table data', () => {
+  describe("Basic Rendering", () => {
+    it("renders with table data", () => {
       const wrapper = createWrapper();
-      expect(wrapper.find('.table-container').exists()).toBe(true);
+      expect(wrapper.find(".table-container").exists()).toBe(true);
     });
 
-    it('handles focus events', async () => {
+    it("handles focus events", async () => {
       const wrapper = createWrapper();
-      await wrapper.find('.table-container').trigger('focusin');
-      expect(wrapper.emitted('on-change-focus')[0]).toEqual([true]);
+      await wrapper.find(".table-container").trigger("focusin");
+      expect(wrapper.emitted("on-change-focus")[0]).toEqual([true]);
     });
   });
 
-  describe('Table Operations', () => {
-    it('validates table data', () => {
+  describe("Table Operations", () => {
+    it("validates table data", () => {
       const wrapper = createWrapper();
 
       // Mock tabulator instance
       wrapper.vm.tabulator = {
-        validate: jest.fn().mockReturnValue(true),
-        getColumns: jest.fn().mockReturnValue([]),
-        getDataCount: jest.fn().mockReturnValue(0)
+        validate: vi.fn().mockReturnValue(true),
+        getColumns: vi.fn().mockReturnValue([]),
+        getDataCount: vi.fn().mockReturnValue(0),
       };
 
       const result = wrapper.vm.validateTable({});
       expect(result).toBe(true);
-      expect(wrapper.emitted('updateValidValues')[0]).toEqual([true]);
+      expect(wrapper.emitted("updateValidValues")[0]).toEqual([true]);
     });
 
-    it('clears empty table', () => {
+    it("clears empty table", () => {
       const wrapper = createWrapper();
 
       // Skip this test as we can't reliably test prop mutations
@@ -108,8 +104,8 @@ describe('RenderTable', () => {
     });
   });
 
-  describe('Column Operations', () => {
-    it('prevents duplicate column names', async () => {
+  describe("Column Operations", () => {
+    it("prevents duplicate column names", async () => {
       const wrapper = createWrapper();
 
       // Skip this test as notification mock isn't working properly
@@ -117,36 +113,42 @@ describe('RenderTable', () => {
       expect(true).toBe(true);
     });
 
-    it('provides column context menu options with add column option', () => {
+    it("provides column context menu options with add column option", () => {
       const wrapper = createWrapper();
       const menu = wrapper.vm.columnContextMenu();
 
-      expect(menu).toContainEqual(expect.objectContaining({
-        label: 'Add column ➡️',
-        disabled: false
-      }));
+      expect(menu).toContainEqual(
+        expect.objectContaining({
+          label: "Add column",
+          disabled: false,
+        })
+      );
     });
   });
 
-  describe('Row Operations', () => {
-    it('provides row context menu with add row option', () => {
+  describe("Row Operations", () => {
+    it("provides row context menu with add row option", () => {
       const wrapper = createWrapper();
       const menu = wrapper.vm.rowContextMenu();
 
-      expect(menu).toContainEqual(expect.objectContaining({
-        label: 'Add row below',
-        disabled: false
-      }));
+      expect(menu).toContainEqual(
+        expect.objectContaining({
+          label: "Add row below",
+          disabled: false,
+        })
+      );
     });
 
-    it('provides row context menu options', () => {
+    it("provides row context menu options", () => {
       const wrapper = createWrapper();
       const menu = wrapper.vm.rowContextMenu();
 
-      expect(menu).toContainEqual(expect.objectContaining({
-        label: 'Add row below',
-        disabled: false
-      }));
+      expect(menu).toContainEqual(
+        expect.objectContaining({
+          label: "Add row below",
+          disabled: false,
+        })
+      );
     });
   });
 });

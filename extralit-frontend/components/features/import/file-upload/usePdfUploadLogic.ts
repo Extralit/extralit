@@ -3,7 +3,7 @@
  * Gradual migration to Composition API while maintaining existing structure
  */
 
-import { ref, watch, onMounted, computed } from "@nuxtjs/composition-api";
+import { ref, watch, onMounted, computed } from "vue";
 import { useResolve } from "ts-injecty";
 import type { PdfData } from "./types";
 import { PdfMatchingService } from "~/v1/domain/services/FileMatchingService";
@@ -270,7 +270,7 @@ export const usePdfUploadLogic = (
       const hasValidBibNow = newBibEntries && newBibEntries.data && newBibEntries.data.length > 0;
 
       if (hasValidBibNow && hadNoBibBefore && data.value.totalFiles > 0) {
-        const allFiles = [...data.value.matchedFiles.map(mf => mf.file), ...data.value.unmatchedFiles];
+        const allFiles = [...data.value.matchedFiles.map((mf) => mf.file), ...data.value.unmatchedFiles];
         performFileMatching(allFiles);
         emitUpdate();
       }

@@ -1,30 +1,21 @@
-# Copyright 2024-present, Extralit Labs, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import json
 import logging
 from typing import TYPE_CHECKING, Annotated
 from uuid import UUID, uuid4
 
+from docling_core.types.doc.document import CURRENT_VERSION
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Path, Query, Security, UploadFile, status
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from extralit_server.api.policies.v1 import DocumentPolicy, authorize
+from extralit_server.api.schemas.v1.document.layout import DocumentLayoutOut
 from extralit_server.api.schemas.v1.documents import DocumentCreate, DocumentDelete, DocumentListItem, DocumentUpdate
 from extralit_server.api.schemas.v1.imports import DocumentsBulkCreate, DocumentsBulkResponse
 from extralit_server.contexts import files, imports
+from extralit_server.contexts.ocr import storage as layout_storage
+from extralit_server.contexts.ocr.projection import project_layout
 from extralit_server.database import get_async_db
 from extralit_server.models import User, Workspace
 from extralit_server.models.database import Document
@@ -45,7 +36,7 @@ async def add_document(
     document_create: Annotated[str, Form()],
     file_data: Annotated[UploadFile | None, File()] = None,
     db: AsyncSession = Depends(get_async_db),
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.create())
@@ -89,7 +80,7 @@ async def add_document(
             document_new.file_name = file_data.filename
 
         file_url = await files.put_document_file(
-            s3_client=s3_client,
+            storage=storage,
             workspace_name=workspace.name,
             document_id=document_new.id,  # type: ignore[arg-type]
             file_data=await file_data.read(),
@@ -138,7 +129,7 @@ async def get_document(
     doi: Annotated[str | None, Query(description="DOI")] = None,
     limit: Annotated[int | None, Query(description="Maximum number of documents to return")] = None,
     db: AsyncSession = Depends(get_async_db),
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_current_user),
 ) -> list[DocumentListItem]:
     await authorize(current_user, DocumentPolicy.get())
@@ -217,7 +208,7 @@ async def delete_documents_by_workspace_id(
     workspace_id: UUID,
     document_delete: Annotated[DocumentDelete | None, Body()] = None,
     db: AsyncSession = Depends(get_async_db),
-    s3_client=Depends(files.get_s3_client),
+    storage=Depends(files.get_storage),
     current_user: User = Security(auth.get_current_user),
 ):
     await authorize(current_user, DocumentPolicy.delete(workspace_id))
@@ -240,8 +231,7 @@ async def delete_documents_by_workspace_id(
 
     _LOGGER.info(f"Deleting {len(documents)} documents")
     for document in documents:
-        object_path = files.get_pdf_s3_object_path(document.id)
-        await files.delete_object(s3_client, workspace.name, object_path)
+        await files.delete_document_artifacts(storage, workspace.name, document.id)
 
     return len(documents)
 
@@ -258,6 +248,69 @@ async def list_documents(
     documents = await imports.list_documents(db, workspace_id)
 
     return documents
+
+
+@router.get(
+    "/documents/{document_id}/layout",
+    status_code=status.HTTP_200_OK,
+    description="Get the extracted layout of a document, with per-item page regions.",
+)
+async def get_document_layout(
+    *,
+    db: Annotated[AsyncSession, Depends(get_async_db)],
+    document_id: Annotated[UUID, Path(title="The UUID of the document whose layout will be retrieved")],
+    pages: Annotated[list[int] | None, Query(description="1-indexed pages to include")] = None,
+    labels: Annotated[list[str] | None, Query(description="DocItemLabels to include, e.g. `table`")] = None,
+    storage=Depends(files.get_storage),
+    current_user: User = Security(auth.get_current_user),
+) -> DocumentLayoutOut:
+    await authorize(current_user, DocumentPolicy.get())
+
+    document = await db.get(Document, document_id)
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document with id `{document_id}` not found",
+        )
+
+    # This route returns document *contents*, so membership is checked rather than role alone.
+    await authorize(current_user, DocumentPolicy.get_by_workspace(document.workspace_id))
+
+    workspace = await Workspace.get(db, document.workspace_id)
+    if workspace is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Workspace with id `{document.workspace_id}` not found",
+        )
+
+    layout_metadata = (document.metadata_ or {}).get("layout_metadata")
+    if not layout_metadata:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No layout has been extracted for document `{document_id}`",
+        )
+
+    try:
+        doc = await layout_storage.load_layout(
+            storage,
+            workspace.name,
+            document_id,
+            object_path=layout_metadata.get("layout_url"),
+        )
+    except ValidationError as e:
+        # A layout written by a newer docling-core cannot be read back by this server.
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Stored layout is not readable by docling-core {CURRENT_VERSION}: {e}",
+        ) from e
+    except Exception as e:
+        _LOGGER.error(f"Error loading layout for document {document_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Layout for document `{document_id}` could not be loaded",
+        ) from e
+
+    return project_layout(doc, document_id, pages=pages, labels=labels)
 
 
 @router.post("/documents/bulk", status_code=status.HTTP_201_CREATED)

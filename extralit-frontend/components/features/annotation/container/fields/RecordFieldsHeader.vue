@@ -114,8 +114,8 @@ export default {
 .similarity__progress {
   &[data-title] {
     position: relative;
-    @include tooltip-mini("bottom");
     cursor: default;
+    @include tooltip-mini("bottom");
   }
 }
 .fields__checkbox[data-title] {

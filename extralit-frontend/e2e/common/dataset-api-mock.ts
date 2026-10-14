@@ -28,17 +28,16 @@ const oldDatasets = [
   },
   {
     tags: {
-      description:
-        "This dataset contains text2text records with 10 predictions",
+      description: "This dataset contains text2text records with 10 predictions",
     },
     metadata: {},
     name: "text2text-10-predictions",
     task: "Text2Text",
-    workspace: "recognai",
-    id: "recognai.text2text-10-predictions",
-    owner: "recognai",
+    workspace: "extralit",
+    id: "extralit.text2text-10-predictions",
+    owner: "extralit",
     created_at: fakeDateMonthAgo(6),
-    created_by: "recognai",
+    created_by: "extralit",
     last_updated: fakeDateMonthAgo(3),
   },
   {
@@ -46,11 +45,11 @@ const oldDatasets = [
     metadata: {},
     name: "settings_textclass_with_labels",
     task: "TextClassification",
-    workspace: "recognai",
-    id: "recognai.settings_textclass_with_labels",
-    owner: "recognai",
+    workspace: "extralit",
+    id: "extralit.settings_textclass_with_labels",
+    owner: "extralit",
     created_at: fakeDateMonthAgo(6),
-    created_by: "recognai",
+    created_by: "extralit",
     last_updated: fakeDateMonthAgo(6),
   },
 ];
@@ -100,7 +99,7 @@ export const workspacesMocked = [
   },
   {
     id: "9c14ca14-65bb-4c27-ba1f-cf7e4a6398e8",
-    name: "recognai",
+    name: "extralit",
     inserted_at: fakeDateMonthAgo(1),
     updated_at: fakeDateMonthAgo(1),
   },
@@ -133,10 +132,7 @@ export const mockAllDatasets = async (page: Page) => {
   });
 };
 
-export const mockFeedbackTaskDataset = async (
-  page: Page,
-  { datasetId, workspaceId }: DatasetData
-) => {
+export const mockFeedbackTaskDataset = async (page: Page, { datasetId, workspaceId }: DatasetData) => {
   await page.route(`*/**/api/v1/datasets/${datasetId}`, async (route) => {
     await route.fulfill({
       json: newDatasetsMocked.find((d) => d.id === datasetId),
@@ -149,31 +145,24 @@ export const mockFeedbackTaskDataset = async (
     });
   });
 
-  await page.route(
-    `*/**/api/v1/me/datasets/${datasetId}/metrics`,
-    async (route) => {
-      await route.fulfill({
-        json: {
-          records: {
-            count: 1000,
-          },
-          responses: {
-            count: 29,
-            submitted: 25,
-            discarded: 4,
-            draft: 0,
-          },
+  await page.route(`*/**/api/v1/me/datasets/${datasetId}/metrics`, async (route) => {
+    await route.fulfill({
+      json: {
+        records: {
+          count: 1000,
         },
-      });
-    }
-  );
+        responses: {
+          count: 29,
+          submitted: 25,
+          discarded: 4,
+          draft: 0,
+        },
+      },
+    });
+  });
 };
 
-export const mockDatasetDeletion = async (
-  page: Page,
-  datasetId: string,
-  status: number
-) => {
+export const mockDatasetDeletion = async (page: Page, datasetId: string, status: number) => {
   await page.route(`*/**/api/v1/datasets/${datasetId}`, async (route) => {
     await route.fulfill({
       status,

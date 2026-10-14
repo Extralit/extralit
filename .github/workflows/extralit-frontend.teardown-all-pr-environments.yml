@@ -5,6 +5,9 @@ on:
   # schedule:
   #   - cron: "0 8,20 * * *" # every day at 8:00 and 20:00 UTC
 
+permissions:
+  contents: read
+
 jobs:
   teardown_pr_environments:
     name: Teardown Cloud Run PR environments
@@ -16,16 +19,16 @@ jobs:
       id-token: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GOOGLE_CLOUD_WIP }}
           service_account: ${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v3
         with:
           version: ">= 435.0.0"
 

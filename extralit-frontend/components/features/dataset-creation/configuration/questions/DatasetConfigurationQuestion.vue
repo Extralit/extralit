@@ -28,14 +28,16 @@
       />
       <DatasetConfigurationRanking
         v-else-if="question.settings.type.isRankingType"
-        v-model="question.settings.options"
+        :value="question.settings.options"
+        @on-value-change="question.settings.options = $event"
         @is-focused="$emit('is-focused', $event)"
       />
     </template>
     <span class="separator"></span>
     <DatasetConfigurationColumnSelector
       v-if="showColumnSelector"
-      v-model="question.column"
+      :value="question.column"
+      @onValueChange="question.column = $event"
       class="config-card__type"
       :options="selectedSubset.columns"
     />
@@ -50,7 +52,6 @@
 </template>
 
 <script lang="ts">
-import "assets/icons/close";
 export default {
   props: {
     question: {
@@ -70,10 +71,6 @@ export default {
       required: true,
     },
   },
-  model: {
-    prop: "type",
-    event: "change",
-  },
   computed: {
     noMapping() {
       return this.question.column === "no mapping";
@@ -91,7 +88,7 @@ export default {
         // Rename the question in the subset - this will replace the question object
         this.selectedSubset.renameQuestion(this.question.name, newName);
       } catch (error) {
-        console.error('Failed to rename question:', error.message);
+        console.error("Failed to rename question:", error.message);
         // You could show a user-friendly error message here
       }
     },
