@@ -7,6 +7,10 @@ metadata:
     app.kubernetes.io/component: worker
 spec:
   replicas: {{ .Values.worker.replicaCount }}
+  {{- if include "extralit.rwoPersistence" . }}
+  strategy:
+    type: Recreate
+  {{- end }}
   selector:
     matchLabels:
       {{- include "extralit.selectorLabels" . | nindent 6 }}
@@ -20,6 +24,17 @@ spec:
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "extralit.serviceAccountName" . }}
+      {{- include "extralit.scheduling" . | nindent 6 }}
+      {{- if include "extralit.rwoPersistence" . }}
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  {{- include "extralit.selectorLabels" . | nindent 18 }}
+                  app.kubernetes.io/component: server
+      {{- end }}
       securityContext:
         fsGroup: 1000
       containers:

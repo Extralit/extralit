@@ -9,6 +9,10 @@ spec:
   {{- if not .Values.extralit.hpa.enabled }}
   replicas: {{ .Values.extralit.replicaCount }}
   {{- end }}
+  {{- if include "extralit.rwoPersistence" . }}
+  strategy:
+    type: Recreate
+  {{- end }}
   selector:
     matchLabels:
       {{- include "extralit.selectorLabels" . | nindent 6 }}
@@ -22,6 +26,19 @@ spec:
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
     spec:
       serviceAccountName: {{ include "extralit.serviceAccountName" . }}
+      {{- include "extralit.scheduling" . | nindent 6 }}
+      {{- if include "extralit.rwoPersistence" . }}
+      affinity:
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    {{- include "extralit.selectorLabels" . | nindent 20 }}
+                    app.kubernetes.io/component: worker
+      {{- end }}
       securityContext:
         fsGroup: 1000
       containers:
@@ -49,18 +66,18 @@ spec:
               containerPort: 6900
           startupProbe:
             httpGet:
-              path: {{ printf "%s/api/v1/version" (trimSuffix "/" .Values.extralit.baseUrl) }}
+              path: {{ include "extralit.basePath" . }}/api/v1/version
               port: http
             periodSeconds: 10
             failureThreshold: 60
           readinessProbe:
             httpGet:
-              path: {{ printf "%s/api/v1/version" (trimSuffix "/" .Values.extralit.baseUrl) }}
+              path: {{ include "extralit.basePath" . }}/api/v1/version
               port: http
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: {{ printf "%s/api/v1/version" (trimSuffix "/" .Values.extralit.baseUrl) }}
+              path: {{ include "extralit.basePath" . }}/api/v1/version
               port: http
             periodSeconds: 20
             failureThreshold: 3

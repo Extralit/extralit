@@ -42,7 +42,10 @@ spec:
             - name: POSTGRES_USER
               value: {{ .Values.postgresql.auth.username | quote }}
             - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgresql.auth.password | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "extralit.fullname" . }}-secrets
+                  key: postgres-password
             - name: POSTGRES_DB
               value: {{ .Values.postgresql.auth.database | quote }}
             - name: PGDATA

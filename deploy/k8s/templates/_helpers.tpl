@@ -44,6 +44,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 {{- end }}
 
+{{- define "extralit.basePath" -}}
+{{- with trimAll "/" .Values.extralit.baseUrl }}/{{ . }}{{ end }}
+{{- end }}
+
+{{- define "extralit.rwoPersistence" -}}
+{{- if and .Values.extralit.persistence.enabled (eq .Values.extralit.persistence.accessMode "ReadWriteOnce") }}true{{ end }}
+{{- end }}
+
+{{- define "extralit.scheduling" -}}
+{{- with .Values.nodeSelector }}
+nodeSelector:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- with .Values.tolerations }}
+tolerations:
+  {{- toYaml . | nindent 2 }}
+{{- end }}
+{{- end }}
+
 {{- define "extralit.image" -}}
 {{ .Values.extralit.image.repository }}:{{ .Values.extralit.image.tag | default .Chart.AppVersion }}
 {{- end }}
@@ -126,9 +145,9 @@ Environment shared by the server and worker containers.
 - name: EXTRALIT_S3_REGION
   value: {{ .Values.storage.s3.region | quote }}
 {{- end }}
-{{- if .Values.extralit.baseUrl }}
+{{- with include "extralit.basePath" . }}
 - name: EXTRALIT_BASE_URL
-  value: {{ .Values.extralit.baseUrl | quote }}
+  value: {{ . | quote }}
 {{- end }}
 {{- with .Values.extralit.extraEnv }}
 {{ toYaml . }}

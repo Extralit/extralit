@@ -19,7 +19,7 @@ spec:
     - host: {{ .Values.extralit.ingress.host | quote }}
       http:
         paths:
-          - path: {{ .Values.extralit.baseUrl | default "/" }}
+          - path: {{ include "extralit.basePath" . | default "/" }}
             pathType: Prefix
             backend:
               service:

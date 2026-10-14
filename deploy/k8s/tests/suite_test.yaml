@@ -204,3 +204,34 @@ tests:
     asserts:
       - hasDocuments:
           count: 0
+
+  - it: should co-schedule the worker with the server on a ReadWriteOnce volume
+    template: templates/worker-deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution[0].labelSelector.matchLabels["app.kubernetes.io/component"]
+          value: server
+      - equal:
+          path: spec.strategy.type
+          value: Recreate
+
+  - it: should not constrain scheduling on a ReadWriteMany volume
+    set:
+      extralit.persistence.accessMode: ReadWriteMany
+    templates:
+      - templates/deployment.yaml
+      - templates/worker-deployment.yaml
+    asserts:
+      - notExists:
+          path: spec.template.spec.affinity
+      - notExists:
+          path: spec.strategy
+
+  - it: should normalize baseUrl
+    set:
+      extralit.baseUrl: extralit/
+    template: templates/deployment.yaml
+    asserts:
+      - equal:
+          path: spec.template.spec.containers[0].readinessProbe.httpGet.path
+          value: /extralit/api/v1/version

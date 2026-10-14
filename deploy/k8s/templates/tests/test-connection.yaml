@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ["wget"]
-      args: ["-qO-", "http://{{ include "extralit.fullname" . }}:{{ .Values.extralit.service.port }}{{ trimSuffix "/" .Values.extralit.baseUrl }}/api/v1/version"]
+      args: ["-qO-", "http://{{ include "extralit.fullname" . }}:{{ .Values.extralit.service.port }}{{ include "extralit.basePath" . }}/api/v1/version"]
   restartPolicy: Never

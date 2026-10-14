@@ -7,6 +7,7 @@ metadata:
     {{- include "extralit.labels" . | nindent 4 }}
 spec:
   version: {{ .Values.elasticsearch.version }}
+  volumeClaimDeletePolicy: DeleteOnScaledown
   http:
     tls:
       selfSignedCertificate:

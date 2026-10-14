@@ -64,12 +64,13 @@ Set values with `--set` or a values file (`helm install ... -f my-values.yaml`).
 | Value | Default | Notes |
 |---|---|---|
 | `extralit.image.repository` / `tag` | `extralit/extralit-server` / chart `appVersion` | Use `extralitdev/extralit-server` for builds from `main` |
-| `extralit.auth.username` / `password` / `apiKey` / `workspace` | `extralit` / `12345678` / `extralit.apikey` / `default` | Owner user created on startup |
+| `extralit.auth.username` / `password` / `apiKey` / `workspace` | `extralit` / `12345678` / `extralit.apikey` / `default` | Owner user created on first install only |
 | `extralit.authSecretKey` | generated | Kept across upgrades |
 | `extralit.baseUrl` | `""` | Serve under a path prefix, e.g. `/extralit` |
-| `extralit.persistence.*` | 2Gi `ReadWriteOnce` at `/var/lib/extralit` | Use `ReadWriteMany` to run server and worker pods on different nodes |
+| `extralit.persistence.*` | 2Gi `ReadWriteOnce` at `/var/lib/extralit` | With `ReadWriteOnce` the worker runs on the server's node and rollouts use `Recreate`; use `ReadWriteMany` to spread pods |
 | `extralit.ingress.*` | disabled | `className`, `host`, `annotations`, `tls` |
 | `extralit.hpa.*` | disabled | Needs a `ReadWriteMany` volume or S3 storage |
+| `nodeSelector`, `tolerations` | none | Applied to server and worker pods |
 | `extralit.extraEnv` | `[]` | Any other `EXTRALIT_*` [server setting](../reference/extralit-server/configuration.md) |
 | `storage.url`, `storage.s3.*` | files on the PVC | `s3://bucket[/prefix]`, or `http(s)://host[:port]/bucket` for MinIO and R2 |
 | `postgresql.enabled` / `externalDatabase.url` | `true` / `""` | External format: `postgresql+asyncpg://user:pass@host:5432/db` |
@@ -123,14 +124,15 @@ helm upgrade extralit deploy/k8s -n extralit --reuse-values
 helm uninstall extralit -n extralit
 ```
 
-`helm uninstall` keeps the PostgreSQL and Elasticsearch PVCs created from volume claim templates. Delete them with `kubectl -n extralit delete pvc -l app.kubernetes.io/instance=extralit` and `kubectl -n extralit delete pvc -l elasticsearch.k8s.elastic.co/cluster-name=extralit` if you no longer need the data.
+`helm uninstall` keeps the PostgreSQL and Elasticsearch PVCs. Delete them with `kubectl -n extralit delete pvc -l app.kubernetes.io/instance=extralit` and `kubectl -n extralit delete pvc -l elasticsearch.k8s.elastic.co/cluster-name=extralit` if you no longer need the data.
 
 ## Troubleshooting
 
 - **Server pod restarts during startup:** check `kubectl -n extralit logs deploy/extralit`. Migrations and user creation need PostgreSQL and Elasticsearch to be ready; the server retries until its startup probe gives up after 10 minutes.
-- **Pods stuck in `Pending`:** usually a PVC that can't bind. Check `kubectl -n extralit get pvc` and set the `*.persistence.storageClass` values if the cluster has no default StorageClass. With a `ReadWriteOnce` volume, the server and worker must be scheduled on the same node.
+- **Pods stuck in `Pending`:** usually a PVC that can't bind. Check `kubectl -n extralit get pvc` and set the `*.persistence.storageClass` values if the cluster has no default StorageClass. With a `ReadWriteOnce` volume the worker is placed on the server's node, so it stays `Pending` until the server is scheduled.
 - **Elasticsearch never becomes healthy:** check `kubectl -n extralit get elasticsearch` and the operator logs with `kubectl -n elastic-system logs statefulset/elastic-operator`. A single-node cluster needs about 2 GB of memory.
 - **Search index lost:** records are stored in PostgreSQL, so you can rebuild the index with `kubectl -n extralit exec deploy/extralit -- python -m extralit_server search-engine reindex`.
+- **Changed `extralit.auth.*` after install:** the owner user is only created on first install, so changing these values afterwards updates the Secret but not the user's real credentials.
 - **Changed `postgresql.auth.password` after install:** PostgreSQL only reads it when initializing an empty volume. Change the password inside the database as well, or delete the PostgreSQL PVC to start over.
 
 For support, join the [Extralit Slack channel](https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw).

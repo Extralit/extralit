@@ -17,6 +17,7 @@ extralit:
       memory: 2Gi
   # Generated and kept across upgrades when empty.
   authSecretKey: ""
+  # Only applied on first install; the owner user is not updated afterwards.
   auth:
     username: "extralit"
     password: "12345678"
@@ -26,7 +27,7 @@ extralit:
   extraEnv: []
   persistence:
     enabled: true
-    # ReadWriteOnce pins server and worker pods to one node; use ReadWriteMany to spread them.
+    # ReadWriteOnce co-schedules the worker with the server and uses Recreate rollouts; use ReadWriteMany to spread pods.
     accessMode: ReadWriteOnce
     size: 2Gi
     storageClass: ""
@@ -122,6 +123,10 @@ redis:
 externalRedis:
   url: "redis://localhost:6379/0"
   useCluster: false
+
+# Applied to the server and worker pods.
+nodeSelector: {}
+tolerations: []
 
 serviceAccount:
   create: false
