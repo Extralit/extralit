@@ -114,7 +114,7 @@ export default defineNuxtConfig({
       },
     },
     build: {
-      target: "esnext", // Perspective 4.x ESM/WASM requirement
+      target: "esnext", // Perspective 5.x ESM/WASM requirement
     },
     css: {
       preprocessorOptions: {
