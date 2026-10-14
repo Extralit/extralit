@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -113,7 +113,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#kubernetes-development-setup" class="md-skip">
+        <a href="#deploy-with-kubernetes" class="md-skip">
           Skip to content
         </a>
       
@@ -1670,10 +1670,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Prerequisites
       
     </span>
   </a>
@@ -1681,22 +1681,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#setup-and-configuration" class="md-nav__link">
+  <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Setup and Configuration
+        Install
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Setup and Configuration">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#deploying-services" class="md-nav__link">
+  <a href="#ingress" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deploying Services
+        Ingress
       
     </span>
   </a>
@@ -1704,32 +1726,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#user-account-setup" class="md-nav__link">
+  <a href="#external-services" class="md-nav__link">
     <span class="md-ellipsis">
       
-        User Account Setup
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#frontend-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Frontend Development
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#backend-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Backend Development
+        External services
       
     </span>
   </a>
@@ -1738,6 +1738,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#upgrade-and-uninstall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrade and uninstall
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1749,45 +1760,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#persistent-volume-storage-clases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Persistent Volume &amp; storage clases
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#deployment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deployment
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-persistence" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Data persistence
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -3610,10 +3582,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Prerequisites
       
     </span>
   </a>
@@ -3621,22 +3593,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#setup-and-configuration" class="md-nav__link">
+  <a href="#install" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Setup and Configuration
+        Install
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Setup and Configuration">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#deploying-services" class="md-nav__link">
+  <a href="#ingress" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deploying Services
+        Ingress
       
     </span>
   </a>
@@ -3644,32 +3638,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#user-account-setup" class="md-nav__link">
+  <a href="#external-services" class="md-nav__link">
     <span class="md-ellipsis">
       
-        User Account Setup
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#frontend-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Frontend Development
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#backend-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Backend Development
+        External services
       
     </span>
   </a>
@@ -3678,6 +3650,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#upgrade-and-uninstall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrade and uninstall
+      
+    </span>
+  </a>
   
 </li>
       
@@ -3689,45 +3672,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#persistent-volume-storage-clases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Persistent Volume &amp; storage clases
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#deployment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deployment
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-persistence" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Data persistence
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -3830,134 +3774,192 @@
   
 
 
-<h1 id="kubernetes-development-setup">Kubernetes Development Setup<a class="headerlink" href="#kubernetes-development-setup" title="Permanent link">&para;</a></h1>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>The Extralit system consists of multiple microservices:</p>
+<h1 id="deploy-with-kubernetes">Deploy with Kubernetes<a class="headerlink" href="#deploy-with-kubernetes" title="Permanent link">&para;</a></h1>
+<p>The Helm chart in <a href="https://github.com/extralit/extralit/tree/main/deploy/k8s"><code>deploy/k8s</code></a> deploys:</p>
 <ul>
-<li>extralit-server: Web server for data annotation, dataset management, and extraction services</li>
-<li>extralit-server: <abbr title="Application Programming Interface.">API</abbr> server for data extraction, PDF parsing, and schema generation</li>
-<li>Postgres database: Main database for extracted data and user accounts</li>
-<li>Elasticsearch: Search engine for data <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr></li>
-<li>Minio/S3: File storage for schemas, PDFs, and intermediate outputs</li>
-<li>Weaviate: Vector database for text and table sections</li>
-<li>Langfuse: <abbr title="Large Language Model, an AI system trained on vast amounts of text data.">LLM</abbr> instrumentation service for query tracing and logging</li>
+<li><code>extralit</code> server: web UI and <abbr title="Application Programming Interface.">API</abbr> on port 6900</li>
+<li><code>extralit-worker</code>: RQ workers for background jobs. Every worker pod pulls from the same Redis queues, so raising <code>worker.replicaCount</code> spreads jobs across pods</li>
+<li>PostgreSQL: main database (in-chart StatefulSet, or external)</li>
+<li>Redis: job queue, persisted with AOF (in-chart Deployment, or external)</li>
+<li>Elasticsearch: search engine for <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> (managed by the ECK operator, or external)</li>
 </ul>
-<h2 id="setup-and-configuration">Setup and Configuration<a class="headerlink" href="#setup-and-configuration" title="Permanent link">&para;</a></h2>
+<p>Uploaded files and LanceDB indexes live under <code>EXTRALIT_HOME_PATH</code> on a PersistentVolumeClaim shared by the server and worker, unless you point <code>storage.url</code> at S3-compatible storage.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Kubernetes 1.23+ with a default StorageClass</li>
+<li><a href="https://kubernetes.io/docs/tasks/tools/">kubectl</a> and <a href="https://helm.sh/docs/intro/install/">Helm</a> 3.8+</li>
+<li>The <a href="https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-install-helm.html">ECK operator</a>, unless you use an external Elasticsearch</li>
+</ul>
+<p>For a local cluster, <a href="https://kind.sigs.k8s.io/docs/user/quick-start/#installation">kind</a> or <a href="https://minikube.sigs.k8s.io/docs/start/">minikube</a> both work; give it at least 4 GB of memory.</p>
+<h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
-<p>Install required tools:</p>
-<ul>
-<li><a href="https://kubernetes.io/docs/tasks/tools/">kubectl</a></li>
-<li><a href="https://docs.tilt.dev/install.html">Tilt</a></li>
-<li><a href="https://kind.sigs.k8s.io/docs/user/quick-start/#installation">kind</a> (for local clusters)</li>
-</ul>
+<p>Install the ECK operator:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>elastic<span class="w"> </span>https://helm.elastic.co
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>helm<span class="w"> </span>install<span class="w"> </span>elastic-operator<span class="w"> </span>elastic/eck-operator<span class="w"> </span>-n<span class="w"> </span>elastic-system<span class="w"> </span>--create-namespace
+</span></code></pre></div>
 </li>
 <li>
-<p>Create a local Kubernetes cluster:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>kind<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>--name<span class="w"> </span><span class="o">{</span>cluster_name<span class="o">}</span>
-</span></code></pre></div></p>
-</li>
-<li>
-<p>Clone the repository:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/extralit/extralit.git
+<p>Clone the repository and install the chart:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/extralit/extralit.git
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">cd</span><span class="w"> </span>extralit
-</span></code></pre></div></p>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>helm<span class="w"> </span>install<span class="w"> </span>extralit<span class="w"> </span>deploy/k8s<span class="w"> </span>-n<span class="w"> </span>extralit<span class="w"> </span>--create-namespace
+</span></code></pre></div>
+<p>The owner password, <abbr title="Application Programming Interface.">API</abbr> key and PostgreSQL password are generated unless you set <code>extralit.auth.password</code>, <code>extralit.auth.apiKey</code> and <code>postgresql.auth.password</code>. Set all three when rendering without cluster access (<code>helm template</code>, Argo CD, Flux): the chart can't read back the previous values there, so it would generate new ones on every sync and the server would lose access to PostgreSQL.</p>
 </li>
 <li>
-<p>Set up the Kubernetes cluster:
-    <details>
-    <summary>Local <code>kind</code> Cluster Setup</summary></p>
-<p>Install additional tools:
-- <a href="https://github.com/tilt-dev/ctlptl/tree/main#how-do-i-install-it">ctlptl</a></p>
-<p>Create cluster and local registry:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ctlptl<span class="w"> </span>create<span class="w"> </span>registry<span class="w"> </span>ctlptl-registry<span class="w"> </span>--port<span class="o">=</span><span class="m">5005</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>ctlptl<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span><span class="o">{</span>cluster_name<span class="o">}</span><span class="w"> </span>--registry<span class="o">=</span>ctlptl-registry
-</span></code></pre></div></p>
-<p>Apply storage configurations:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>ctlptl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>k8s/kind/kind-config.yaml
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>kubectl<span class="w"> </span>--context<span class="w"> </span>kind-kind<span class="w"> </span>taint<span class="w"> </span>node<span class="w"> </span>kind-control-plane<span class="w"> </span>node-role.kubernetes.io/control-plane:NoSchedule-
-</span></code></pre></div></p>
-<blockquote>
-<p><strong>Note:</strong> Tilt will apply <code>k8s/kind/tilt-local-dev-kind-storage-policy.yaml</code> for local storage class.</p>
-</blockquote>
-</details>
+<p>Wait for the pods to become ready. The server pod runs database migrations and creates the owner user on startup, so it takes a minute or two:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>extralit<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-w
+</span></code></pre></div>
 </li>
 <li>
-<p>Configure cluster context:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>config<span class="w"> </span>set-cluster<span class="w"> </span><span class="o">{</span>cluster_name<span class="o">}</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>kubectl<span class="w"> </span>config<span class="w"> </span>use-context<span class="w"> </span><span class="o">{</span>cluster_context<span class="o">}</span>
-</span></code></pre></div></p>
+<p>Open Extralit:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>extralit<span class="w"> </span>port-forward<span class="w"> </span>svc/extralit<span class="w"> </span><span class="m">6900</span>
+</span></code></pre></div>
+<p>Then go to http://localhost:6900 and log in as <code>extralit</code>. Get the password with:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>-n<span class="w"> </span>extralit<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>extralit-secrets<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.password}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d
+</span></code></pre></div>
+</li>
+<li>
+<p>Optionally, check the release with the bundled Helm test:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>helm<span class="w"> </span><span class="nb">test</span><span class="w"> </span>extralit<span class="w"> </span>-n<span class="w"> </span>extralit
+</span></code></pre></div>
 </li>
 </ol>
-<h3 id="deploying-services">Deploying Services<a class="headerlink" href="#deploying-services" title="Permanent link">&para;</a></h3>
-<p>Set environment variables:
-- <code>ENV</code>: <code>dev</code> for development, <code>prod</code> for production
-- <code>NAMESPACE</code>: Kubernetes namespace for services
-- <code>DOCKER_REPO</code>: Docker repository URL
-- <code>CLUSTER_CONTEXT</code>: Kubernetes cluster context</p>
-<ol>
-<li>
-<p>Create namespace:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>ns<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
-</span></code></pre></div></p>
-</li>
-<li>
-<p>Set up secrets:
-    <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>extralit-secrets.yaml<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>langfuse-secrets.yaml<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>weaviate-api-keys.yaml<span class="w"> </span>-n<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span>
-</span></code></pre></div></p>
-</li>
-<li>
-<p>Deploy services:</p>
-<p>We use Tilt to manage the development environment and deploys services to Kubernetes by providing a single command to build, deploy, and monitor services.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nv">ENV</span><span class="o">={</span>ENV<span class="o">}</span><span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">={</span>DOCKER_REPO<span class="o">}</span><span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>--namespace<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span><span class="w"> </span>--context<span class="w"> </span><span class="o">{</span>CLUSTER_CONTEXT<span class="o">}</span>
-</span></code></pre></div>
-<p>If you set <code>DOCKER_REPO</code>, Tilt will automatically handles building, tagging, pushing, and pulling Docker images.</p>
-<p><details>
-<summary>Troubleshooting PV issues on local clusters</summary></p>
-<p>Deploy services iteratively:
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>--namespace<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span><span class="w"> </span>--context<span class="w"> </span><span class="o">{</span>CLUSTER_CONTEXT<span class="o">}</span><span class="w"> </span>elasticsearch
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>--namespace<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span><span class="w"> </span>--context<span class="w"> </span><span class="o">{</span>CLUSTER_CONTEXT<span class="o">}</span><span class="w"> </span>main-db
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>--namespace<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span><span class="w"> </span>--context<span class="w"> </span><span class="o">{</span>CLUSTER_CONTEXT<span class="o">}</span><span class="w"> </span>minio
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>--namespace<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span><span class="w"> </span>--context<span class="w"> </span><span class="o">{</span>CLUSTER_CONTEXT<span class="o">}</span><span class="w"> </span>weaviate
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nv">ENV</span><span class="o">=</span>dev<span class="w"> </span><span class="nv">DOCKER_REPO</span><span class="o">=</span>localhost:5005<span class="w"> </span>tilt<span class="w"> </span>up<span class="w"> </span>--namespace<span class="w"> </span><span class="o">{</span>NAMESPACE<span class="o">}</span><span class="w"> </span>--context<span class="w"> </span><span class="o">{</span>CLUSTER_CONTEXT<span class="o">}</span>
-</span></code></pre></div>
-</details></p>
-</li>
-<li>
-<p>Monitor deployment in Tilt UI: <code>http://localhost:10350</code></p>
-</li>
-</ol>
-<h3 id="user-account-setup">User Account Setup<a class="headerlink" href="#user-account-setup" title="Permanent link">&para;</a></h3>
-<p>Run the <code>start_extralit_server.sh</code> script for initial setup. Manage users with <code>extralit_server</code> <abbr title="Command Line Interface.">CLI</abbr>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nv">EXTRALIT_DATABASE_URL</span><span class="o">=</span>postgresql+asyncpg://postgres:<span class="nv">$POSTGRES_PASSWORD</span>@<span class="nv">$POSTGRES_HOST</span>/postgres<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nv">EXTRALIT_LOCAL_AUTH_USERS_DB_FILE</span><span class="o">=</span>path/to/users.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>extralit_server<span class="w"> </span>database<span class="w"> </span>users<span class="w"> </span>migrate
-</span></code></pre></div>
-<h3 id="frontend-development">Frontend Development<a class="headerlink" href="#frontend-development" title="Permanent link">&para;</a></h3>
-<p>Set up and run frontend:
-   <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">cd</span><span class="w"> </span>extralit-frontend
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>npm<span class="w"> </span>install
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nv">API_BASE_URL</span><span class="o">=</span>http://path.to.server<span class="w"> </span>npm<span class="w"> </span>run<span class="w"> </span>dev
-</span></code></pre></div></p>
-<h3 id="backend-development">Backend Development<a class="headerlink" href="#backend-development" title="Permanent link">&para;</a></h3>
-<p>Changes to <code>src/extralit_server/</code> or <code>src/extralit/</code> are automatically updated while running Tilt with <code>ENV=dev</code>. Manually rebuild if needed.</p>
-<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
-<h3 id="persistent-volume-storage-clases">Persistent Volume &amp; storage clases<a class="headerlink" href="#persistent-volume-storage-clases" title="Permanent link">&para;</a></h3>
-<p>The services are configured to use persistent volumes (PVs) to store data, such as the Postgres database, Elasticsearch data, Minio files, and Weaviate vector embeddings. The PVs are created with a storage class, which currently is hard-coded to <code>k8s-storage-policy</code>. The storage class is defined in the <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr> yaml files for each service, such as <code>main-db</code>, <code>elasticsearch</code>, <code>minio</code>, and <code>weaviate</code>.</p>
-<p>However these issues can arise:
-- The PVs are not available when the services are deployed, causing the services to fail to start. This especially happens on the <code>kind</code> cluster, the PV were not created automatically before the service is deployed, so the <code>k8s/kind/tilt-local-dev-kind-storage-policy.yaml</code> file has to manually create the PV.
-- Some Persistent Volume Claim (PVC) may bound to the incorrect PV, depending on the order they were created, causing issues where the expected storage path doesn't match requirements of the . You may check the <code>uncategorized</code> resource under <code>unlabeled</code> in the Tilt web interface to see if the PVs were created, or restart this resource to recreate the PVs, but it doesn't always fix it. Sometimes <code>rm -rf /tmp/kind-volumes/</code> and restarting the <code>kind</code> cluster is needed for redeployment of elasticsearch and postgres.
-- Many of the Persistent Volume definitions were initially setup with a modest size, 4Gi to 9Gi. This will need to be resized to support higher data storage requirements.</p>
-<h3 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h3>
-<p>Check the Tilt web interface for services that are not green in deployment status. Services that often fail to deploy when the cluster restarts or the pods are restarted are:
-- <code>elasticsearch</code>: This helm chart often fails to redeploy due to the <code>elasticsearch-master-0</code> worker pod not being able reach green status due to issues with the data-shards in the persistent volume when the deployment restart. This can be fixed by deleting the <code>elasticsearch-master-0</code> pod, the <code>elasticsearch-master-elasticsearch-master-0</code> PVC and PV and allowing it to recreate a new database.
-- <code>main-db</code> Postgres: This service can fail to redeploy due to the <code>main-db-0</code> pod not being able to mount the original persistent volume when the helm chart is redeployed, because it generated a new random password that was different from the original password. Fix it by changing the <code>posgres-password</code> to original password in the <code>main-db</code> <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr> secret.</p>
-<h3 id="data-persistence">Data persistence<a class="headerlink" href="#data-persistence" title="Permanent link">&para;</a></h3>
+<h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>elasticsearch</code>: Same issue described above causes the data index to be lost when the <code>elasticsearch-master-0</code> pod is recreated. The data index can be restored with persistent data in the <code>main-db</code> Postgres database by reindexing the data with the <code>extralit_server</code> <abbr title="Command Line Interface.">CLI</abbr> tool, see <a href="https://github.com/extralit/extralit-server/blob/main/docker/server/scripts/check_search_engine.sh">check_search_engine.sh</a>.</li>
-<li><code>minio</code>: As a standalone pod in the <abbr title="Kubernetes, an open-source platform designed to automate deploying, scaling, and operating application containers.">K8s</abbr> cluster for file blob storage, the Minio service is not automatically backed up. The data under the <code>EXTRALIT_STORAGE_URL</code> bucket can be lost if the pod is deleted or the cluster fails in any way. Restoring it means putting every object back at the same key: each workspace is a <code>{workspace}/...</code> path under the bucket and whatever prefix <code>EXTRALIT_STORAGE_URL</code> sets, not at the bucket root.</li>
+<li><strong>Text extraction jobs fail.</strong> The <code>ocr</code> queue's text-extraction job imports <code>extralit_ocr</code>, which is installed in the <abbr title="HuggingFace - A platform for deploying and managing open-source AI applications, models and datasets in the cloud.">HF</abbr> Space image but not in <code>extralit-server</code>. Layout extraction and the other <code>ocr</code> jobs run.</li>
+<li><strong>Redis is a single pod.</strong> It keeps queued jobs across restarts but has no failover; use <code>externalRedis</code> with a managed Redis for high availability.</li>
+<li><strong>Workers share one node by default.</strong> With a <code>ReadWriteOnce</code> volume and file storage, every worker runs on the server's node. To spread workers across nodes, use S3 storage (<code>storage.url</code>) and <code>extralit.persistence.accessMode=ReadWriteMany</code>.</li>
+</ul>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<p>Set values with <code>--set</code> or a values file (<code>helm install ... -f my-values.yaml</code>). See <a href="https://github.com/extralit/extralit/blob/main/deploy/k8s/values.yaml"><code>values.yaml</code></a> for all options.</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Default</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>extralit.image.repository</code> / <code>tag</code></td>
+<td><code>extralit/extralit-server</code> / chart <code>appVersion</code></td>
+<td>Use <code>extralitdev/extralit-server</code> for builds from <code>main</code></td>
+</tr>
+<tr>
+<td><code>extralit.auth.username</code> / <code>password</code> / <code>apiKey</code> / <code>workspace</code></td>
+<td><code>extralit</code> / generated / generated / <code>default</code></td>
+<td>Owner user created on first install only</td>
+</tr>
+<tr>
+<td><code>extralit.authSecretKey</code></td>
+<td>generated</td>
+<td>Kept across upgrades</td>
+</tr>
+<tr>
+<td><code>extralit.baseUrl</code></td>
+<td><code>""</code></td>
+<td>Serve under a path prefix, e.g. <code>/extralit</code></td>
+</tr>
+<tr>
+<td><code>extralit.persistence.*</code></td>
+<td>2Gi <code>ReadWriteOnce</code> at <code>/var/lib/extralit</code></td>
+<td>With <code>ReadWriteOnce</code> the worker runs on the server's node and rollouts use <code>Recreate</code>; use <code>ReadWriteMany</code> to spread pods</td>
+</tr>
+<tr>
+<td><code>extralit.ingress.*</code></td>
+<td>disabled</td>
+<td><code>className</code>, <code>host</code>, <code>annotations</code>, <code>tls</code></td>
+</tr>
+<tr>
+<td><code>extralit.hpa.*</code></td>
+<td>disabled</td>
+<td>Needs <code>ReadWriteMany</code> persistence; the chart refuses to render it with <code>ReadWriteOnce</code></td>
+</tr>
+<tr>
+<td><code>nodeSelector</code>, <code>tolerations</code></td>
+<td>none</td>
+<td>Applied to server and worker pods</td>
+</tr>
+<tr>
+<td><code>worker.replicaCount</code> / <code>numWorkers</code> / <code>queues</code></td>
+<td><code>1</code> / <code>2</code> / <code>[high, default, ocr]</code></td>
+<td>Pods × processes per pod; queues in priority order</td>
+</tr>
+<tr>
+<td><code>extralit.extraEnv</code></td>
+<td><code>[]</code></td>
+<td>Any other <code>EXTRALIT_*</code> <a href="../../reference/extralit-server/configuration/">server setting</a></td>
+</tr>
+<tr>
+<td><code>storage.url</code>, <code>storage.s3.*</code></td>
+<td>files on the PVC</td>
+<td><code>s3://bucket[/prefix]</code>, or <code>http(s)://host[:port]/bucket</code> for MinIO and R2</td>
+</tr>
+<tr>
+<td><code>postgresql.enabled</code> / <code>externalDatabase.url</code></td>
+<td><code>true</code> / <code>""</code></td>
+<td>External format: <code>postgresql+asyncpg://user:pass@host:5432/db</code></td>
+</tr>
+<tr>
+<td><code>elasticsearch.useOperator</code> / <code>externalElasticsearch.url</code></td>
+<td><code>true</code> / <code>""</code></td>
+<td>External format: <code>http://user:pass@host:9200</code></td>
+</tr>
+<tr>
+<td><code>redis.enabled</code> / <code>externalRedis.url</code></td>
+<td><code>true</code> / <code>redis://localhost:6379/0</code></td>
+<td><code>redis.persistence.*</code> keeps queued jobs across restarts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ingress">Ingress<a class="headerlink" href="#ingress" title="Permanent link">&para;</a></h3>
+<p>To expose Extralit through an ingress controller, e.g. on minikube:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>minikube<span class="w"> </span>addons<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>ingress
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>extralit<span class="w"> </span>deploy/k8s<span class="w"> </span>-n<span class="w"> </span>extralit<span class="w"> </span>--reuse-values<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--set<span class="w"> </span>extralit.ingress.enabled<span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>--set<span class="w"> </span>extralit.ingress.host<span class="o">=</span>extralit.local
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>minikube<span class="w"> </span>ip<span class="k">)</span><span class="s2"> extralit.local&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>sudo<span class="w"> </span>tee<span class="w"> </span>-a<span class="w"> </span>/etc/hosts
+</span></code></pre></div>
+<h3 id="external-services">External services<a class="headerlink" href="#external-services" title="Permanent link">&para;</a></h3>
+<p>To use managed services instead of the in-chart ones:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">postgresql</span><span class="p">:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nt">externalDatabase</span><span class="p">:</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgresql+asyncpg://extralit:&lt;password&gt;@db.example.com:5432/extralit</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="nt">elasticsearch</span><span class="p">:</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="nt">useOperator</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="nt">externalElasticsearch</span><span class="p">:</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://elastic:&lt;password&gt;@es.example.com:9200</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="nt">redis</span><span class="p">:</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="nt">externalRedis</span><span class="p">:</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis://redis.example.com:6379/0</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">  </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3://my-bucket/extralit</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">  </span><span class="nt">s3</span><span class="p">:</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">    </span><span class="nt">accessKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;access-key&gt;</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">    </span><span class="nt">secretKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;secret-key&gt;</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">    </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east-1</span>
+</span></code></pre></div>
+<h2 id="upgrade-and-uninstall">Upgrade and uninstall<a class="headerlink" href="#upgrade-and-uninstall" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>extralit<span class="w"> </span>deploy/k8s<span class="w"> </span>-n<span class="w"> </span>extralit<span class="w"> </span>--reuse-values
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>extralit<span class="w"> </span>-n<span class="w"> </span>extralit
+</span></code></pre></div>
+<p><code>helm uninstall</code> keeps the PostgreSQL and Elasticsearch PVCs. Delete them with <code>kubectl -n extralit delete pvc -l app.kubernetes.io/instance=extralit</code> and <code>kubectl -n extralit delete pvc -l elasticsearch.k8s.elastic.co/cluster-name=extralit</code> if you no longer need the data.</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Server pod restarts during startup:</strong> check <code>kubectl -n extralit logs deploy/extralit</code>. Migrations and user creation need PostgreSQL and Elasticsearch to be ready; the server retries until its startup probe gives up after 10 minutes.</li>
+<li><strong>Pods stuck in <code>Pending</code>:</strong> usually a PVC that can't bind. Check <code>kubectl -n extralit get pvc</code> and set the <code>*.persistence.storageClass</code> values if the cluster has no default StorageClass. With a <code>ReadWriteOnce</code> volume the worker is placed on the server's node, so it stays <code>Pending</code> until the server is scheduled.</li>
+<li><strong>Elasticsearch never becomes healthy:</strong> check <code>kubectl -n extralit get elasticsearch</code> and the operator logs with <code>kubectl -n elastic-system logs statefulset/elastic-operator</code>. A single-node cluster needs about 2 GB of memory.</li>
+<li><strong>Search index lost:</strong> <abbr title="In Extralit, a record is a structured data entry that contains information about a specific instance, such as a text document, an image, or any other type of data that can be annotated or analyzed. Records are the fundamental units of data in Extralit and can be associated with various metadata, labels, and annotations.">records</abbr> are stored in PostgreSQL, so you can rebuild the index with <code>kubectl -n extralit exec deploy/extralit -- python -m extralit_server search-engine reindex</code>.</li>
+<li><strong>Changed <code>extralit.auth.*</code> after install:</strong> the owner user is only created on first install, so changing these values afterwards updates the Secret but not the user's real credentials.</li>
+<li><strong>Changed <code>postgresql.auth.password</code> after install:</strong> PostgreSQL only reads it when initializing an empty volume. Change the password inside the database as well, or delete the PostgreSQL PVC to start over.</li>
 </ul>
 <p>For support, join the <a href="https://join.slack.com/t/extralit/shared_invite/zt-3gw1ah8bl-AiVNrkIVYOL4yVGOxN8WFw">Extralit Slack channel</a>.</p>
 <!-- General -->
@@ -4132,7 +4134,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "navigation.tabs", "navigation.footer", "navigation.top", "navigation.tracking", "navigation.path", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.tooltips", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/open_in_new_tab.js"></script>
       

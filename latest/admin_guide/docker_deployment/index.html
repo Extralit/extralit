@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1646,6 +1646,17 @@
     <span class="md-ellipsis">
       
         Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-compose-behind-a-reverse-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Compose behind a reverse proxy
       
     </span>
   </a>
@@ -3509,6 +3520,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#docker-compose-behind-a-reverse-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Compose behind a reverse proxy
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3620,6 +3642,13 @@
 <li>Access to an Elasticsearch instance</li>
 <li>MinIO or S3-compatible object storage (optional; defaults to local disk under <code>EXTRALIT_HOME_PATH/storage</code>)</li>
 </ul>
+<h2 id="docker-compose-behind-a-reverse-proxy">Docker Compose behind a reverse proxy<a class="headerlink" href="#docker-compose-behind-a-reverse-proxy" title="Permanent link">&para;</a></h2>
+<p><a href="https://github.com/extralit/extralit/tree/main/deploy/docker"><code>deploy/docker</code></a> runs the server, an RQ worker, PostgreSQL, Elasticsearch and Redis behind nginx or Traefik at <code>http://localhost/extralit/</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>deploy/docker
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>cp<span class="w"> </span>example.env<span class="w"> </span>.env<span class="w">   </span><span class="c1"># set EXTRALIT_PASSWORD, EXTRALIT_API_KEY and POSTGRES_PASSWORD</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>docker<span class="w"> </span>compose<span class="w"> </span>--profile<span class="w"> </span>nginx<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--wait<span class="w">     </span><span class="c1"># or: --profile traefik</span>
+</span></code></pre></div>
+<p>Set <code>EXTRALIT_IMAGE</code> to choose the server image. Text-extraction jobs need <code>extralit_ocr</code>, which the <code>extralit-server</code> image does not include.</p>
 <!-- General -->
 <!-- Extralit specific -->
 
@@ -3795,7 +3824,7 @@
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.instant", "navigation.sections", "navigation.tabs", "navigation.footer", "navigation.top", "navigation.tracking", "navigation.path", "toc.follow", "content.code.copy", "content.code.annotate", "content.action.edit", "content.tooltips", "search.suggest", "search.highlight", "search.share"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/open_in_new_tab.js"></script>
       
