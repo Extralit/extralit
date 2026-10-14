@@ -30,7 +30,7 @@
     "@nuxtjs/i18n": "^10.6.0",
     "@orcid/bibtex-parse-js": "^0.0.25",
     "@perspective-dev/client": "4.5.2",
-    "@perspective-dev/server": "4.5.2",
+    "@perspective-dev/server": "5.5.1",
     "@perspective-dev/viewer": "4.5.2",
     "@perspective-dev/viewer-datagrid": "4.5.2",
     "@pinia/nuxt": "^1.0.2",
