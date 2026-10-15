@@ -133,7 +133,7 @@ dev = [
     "pytest-env>=1.1.3",
     "factory-boy>=3.2.1",
     "httpx>=0.26.0",
-    "pytest-randomly>=3.16.0",
+    "pytest-randomly>=5.0.0",
     # For mocking httpx requests and responses
     "respx>=0.21.1",
     "ruff>=0.12.11",
