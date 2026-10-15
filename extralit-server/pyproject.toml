@@ -75,7 +75,7 @@ dependencies = [
     "opencv-python-headless>=4.11.0.86",
     "pandera[io]>=0.32.0",
     "lancedb>=0.37.1",
-    "pylance>=10.0.0",
+    "pylance>=13.0.0",
     "duckdb>=1.5.4",
     # ships lance.duckdb_extension in the wheel and pins duckdb to the release it was built for
     "duckdb-extension-lance>=1.5.5",
