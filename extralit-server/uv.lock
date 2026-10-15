@@ -1363,7 +1363,7 @@ requires-dist = [
     { name = "rich", specifier = "!=13.1.0" },
     { name = "rq", specifier = ">=2.4.1" },
     { name = "semchunk", specifier = ">=2.2" },
-    { name = "social-auth-core", specifier = ">=4.5.0" },
+    { name = "social-auth-core", specifier = ">=6.1.1" },
     { name = "sqlalchemy", specifier = ">=2.0.0" },
     { name = "standardwebhooks", specifier = ">=1.0.0" },
     { name = "tenacity", specifier = ">=9.1.2" },
