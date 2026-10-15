@@ -110,11 +110,28 @@ dev = [
     "mkdocs-open-in-new-tab >= 1.0.3",
     "material-plausible-plugin>=0.2.0",
     "mike >= 2.0.0",
-    "Pillow >= 9.5.0",
-    "CairoSVG >= 2.7.1",
+    "Pillow >= 12.3.0; python_version >= '3.10'",
+    "CairoSVG >= 2.9.1; python_version >= '3.10'",
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
     "ty>=0.0.46",
+]
+
+[tool.uv]
+# Lock-only floors for vulnerable transitive deps; not part of published metadata.
+constraint-dependencies = [
+    "aiohttp>=3.9.4",
+    "anyio>=4.14.2; python_version >= '3.10'",
+    "black>=26.3.1; python_version >= '3.10'",
+    "gitpython>=3.1.60",
+    "mistune>=3.3.0",
+    "pillow>=12.3.0; python_version >= '3.10'",
+    "pyarrow>=23.0.1; python_version >= '3.10'",
+    "pymdown-extensions>=11.0.1; python_version >= '3.10'",
+    "simpleeval>=1.0.5",
+    "soupsieve>=2.8.4",
+    "tornado>=6.5.9",
+    "urllib3>=2.8.0; python_version >= '3.10'",
 ]
 
 [project.scripts]
