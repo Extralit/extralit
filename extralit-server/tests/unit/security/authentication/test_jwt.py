@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
+import jwt
 import pytest
-from jose import jwt
 
 from extralit_server.errors import UnauthorizedError
 from extralit_server.security.authentication.jwt import JWT
