@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.10"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -1330,7 +1330,7 @@ requires-dist = [
     { name = "litellm", specifier = ">=1.80.0,<=1.105.0" },
     { name = "liteparse", specifier = ">=2.14.0" },
     { name = "numpy", specifier = ">=2.0.0,<3.0.0" },
-    { name = "oauthlib", specifier = ">=3.2.0" },
+    { name = "oauthlib", specifier = ">=4.0.0" },
     { name = "obstore", specifier = ">=0.11.0" },
     { name = "ocrmypdf", specifier = ">=16.11.0" },
     { name = "opencv-python-headless", specifier = ">=4.11.0.86" },
