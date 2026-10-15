@@ -46,7 +46,7 @@ dependencies = [
     "litellm>=1.80.0,<=1.105.0",
     # GitHub Copilot OAuth device flow + token file locking
     "authlib>=1.6.9",
-    "filelock>=3.25.2",
+    "filelock>=4.1.0",
     # Background processing
     "rq>=2.4.1",
     "lazy-loader>=0.4",

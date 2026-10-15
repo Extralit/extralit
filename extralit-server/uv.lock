@@ -1320,7 +1320,7 @@ requires-dist = [
     { name = "duckdb-extension-lance", specifier = ">=1.5.5" },
     { name = "elasticsearch8", extras = ["async"], specifier = ">=8.7.0" },
     { name = "fastapi", specifier = ">=0.115.0" },
-    { name = "filelock", specifier = ">=3.25.2" },
+    { name = "filelock", specifier = ">=4.1.0" },
     { name = "greenlet", specifier = ">=3.1.0" },
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "huggingface-hub", specifier = ">=0.34.0" },
