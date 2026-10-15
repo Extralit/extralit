@@ -1323,7 +1323,7 @@ requires-dist = [
     { name = "filelock", specifier = ">=3.25.2" },
     { name = "greenlet", specifier = ">=3.1.0" },
     { name = "httpx", specifier = ">=0.27.0" },
-    { name = "huggingface-hub", specifier = ">=0.34.0" },
+    { name = "huggingface-hub", specifier = ">=2.2.0" },
     { name = "jinja2", specifier = ">=3.1.4" },
     { name = "lancedb", specifier = ">=0.37.1" },
     { name = "lazy-loader", specifier = ">=0.4" },
