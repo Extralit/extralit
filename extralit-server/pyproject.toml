@@ -41,7 +41,7 @@ dependencies = [
     # OAuth2 integration
     "httpx >= 0.27.0",
     "oauthlib >= 4.0.0",
-    "social-auth-core >= 4.5.0",
+    "social-auth-core >= 6.1.1",
     # LiteLLM for chat integration
     "litellm>=1.80.0,<=1.105.0",
     # GitHub Copilot OAuth device flow + token file locking
