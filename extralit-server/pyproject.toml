@@ -66,7 +66,7 @@ dependencies = [
     # NumPy 2.x compatibility
     "numpy>=2.0.0,<3.0.0",
     # For Telemetry
-    "huggingface-hub>=0.34.0",
+    "huggingface-hub>=2.2.0",
     "Jinja2>=3.1.4", # Used by huggingface-hub to render dataset card templates
     # For file storage
     # For document processing
