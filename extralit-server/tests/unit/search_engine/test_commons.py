@@ -1797,4 +1797,4 @@ class TestBaseElasticAndOpenSearchEngine:
             record_responses = opensearch.get(index=index_name, id=record.id)["_source"].get("responses") or []
             record_responses.extend(responses)
 
-            opensearch.update(index_name, id=record.id, body={"doc": {"responses": record_responses}})
+            opensearch.update(index=index_name, id=record.id, body={"doc": {"responses": record_responses}})
