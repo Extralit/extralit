@@ -4554,7 +4554,7 @@
 <p>Update the backend environment variables before starting <code>server-dev</code>:</p>
 <p><div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Use Supabase PostgreSQL (Session pooler)</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">unset</span><span class="w"> </span>EXTRALIT_DATABASE_URL
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EXTRALIT_DATABASE_URL</span><span class="o">=</span><span class="s2">&quot;postgresql+asyncpg://&lt;user&gt;:&lt;password&gt;@&lt;session-pooler-host&gt;:6543/&lt;database&gt;?ssl=require&quot;</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EXTRALIT_DATABASE_URL</span><span class="o">=</span><span class="s2">"postgresql+asyncpg://&lt;user&gt;:&lt;password&gt;@&lt;session-pooler-host&gt;:6543/&lt;database&gt;?ssl=require"</span>
 </span></code></pre></div>
 You can find the values in Supabase Dashboard -&gt; Settings -&gt; Database -&gt; Connection String</p>
 </li>
@@ -4573,7 +4573,7 @@ You can find the values in Supabase Dashboard -&gt; Settings -&gt; Database -&gt
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>uv<span class="w"> </span>sync
 </span></code></pre></div>
 Verify the package loads correctly:
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>uv run python -c &quot;import extralit; print(&#39;ok&#39;)&quot;
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>uv run python -c "import extralit; print('ok')"
 </span></code></pre></div>
 5. Start the backend and frontend in separate terminals:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Terminal 1: backend</span>
@@ -4618,7 +4618,7 @@ This will trigger table creation with alembic schema migrations.</p>
 <h2 id="option-2-local-development-setup">Option 2: Local Development Setup<a class="headerlink" href="#option-2-local-development-setup" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Python 3.9 or later</li>
+<li>Python 3.10 or later</li>
 <li>Node.js 18 or later</li>
 <li>Docker and Docker Compose</li>
 <li>Git</li>
@@ -4662,7 +4662,7 @@ This will trigger table creation with alembic schema migrations.</p>
 <h3 id="5-set-up-the-databases">5. Set Up the Databases<a class="headerlink" href="#5-set-up-the-databases" title="Permanent link">&para;</a></h3>
 <h4 id="vector-database-elasticsearch">Vector database (Elasticsearch)<a class="headerlink" href="#vector-database-elasticsearch" title="Permanent link">&para;</a></h4>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Extralit supports ElasticSearch versions &gt;=8.5</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>elasticsearch-for-extralit<span class="w"> </span>-p<span class="w"> </span><span class="m">9200</span>:9200<span class="w"> </span>-p<span class="w"> </span><span class="m">9300</span>:9300<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;ES_JAVA_OPTS=-Xms512m -Xmx512m&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;discovery.type=single-node&quot;</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;xpack.security.enabled=false&quot;</span><span class="w"> </span>docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>elasticsearch-for-extralit<span class="w"> </span>-p<span class="w"> </span><span class="m">9200</span>:9200<span class="w"> </span>-p<span class="w"> </span><span class="m">9300</span>:9300<span class="w"> </span>-e<span class="w"> </span><span class="s2">"ES_JAVA_OPTS=-Xms512m -Xmx512m"</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">"discovery.type=single-node"</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">"xpack.security.enabled=false"</span><span class="w"> </span>docker.elastic.co/elasticsearch/elasticsearch:8.17.0
 </span></code></pre></div>
 <h4 id="relational-database-postgresql">Relational database (PostgreSQL)<a class="headerlink" href="#relational-database-postgresql" title="Permanent link">&para;</a></h4>
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>postgres-for-extralit<span class="w"> </span>-p<span class="w"> </span><span class="m">5432</span>:5432<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>postgres<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_USER</span><span class="o">=</span>postgres<span class="w"> </span>-e<span class="w"> </span><span class="nv">POSTGRES_DB</span><span class="o">=</span>postgres<span class="w"> </span>postgres:14
