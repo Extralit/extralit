@@ -134,7 +134,7 @@ def test_export_records_dict_nested_orient_index(client: Extralit, dataset: ex.D
     dataset.records.log(records=mock_data)
     exported_records = dataset.records.to_dict(flatten=False, orient="index")
     assert isinstance(exported_records, dict)
-    for mock_record, (id_, exported_record) in zip(mock_data, exported_records.items()):
+    for mock_record, (id_, exported_record) in zip(mock_data, exported_records.items(), strict=False):
         assert id_ == exported_record["id"]
         assert exported_record["fields"]["text"] == mock_record["text"]
         assert exported_record["suggestions"]["label"]["value"] == mock_record["label"]

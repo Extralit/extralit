@@ -1,29 +1,8 @@
-import sys
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import Any, Callable, TypeVar
+from typing import Any, ParamSpec, TypeVar
 
 import typer
-
-# Monkey-patch click to make ctx optional in Parameter.make_metavar for compatibility
-try:
-    import click
-
-    # Save original method
-    _orig_make_metavar = click.core.Parameter.make_metavar
-
-    # Define wrapper to make ctx optional
-    def make_metavar(self, ctx=None):
-        return _orig_make_metavar(self, ctx)
-
-    click.core.Parameter.make_metavar = make_metavar
-except ImportError:
-    pass
-
-if sys.version_info < (3, 10):
-    from typing_extensions import ParamSpec
-else:
-    from typing import ParamSpec
 
 P = ParamSpec("P")
 R = TypeVar("R")

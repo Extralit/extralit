@@ -1,16 +1,29 @@
 repos:
 
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.9.30
+    rev: 0.13.1
     hooks:
       - id: uv-lock
         name: "Lock extralit dependencies"
-        files: '^extralit/pyproject\.toml$'
+        files: '^extralit/(pyproject\.toml|uv\.lock)$'
         args: [--directory, extralit]
       - id: uv-lock
         name: "Lock extralit-server dependencies"
-        files: '^extralit-server/pyproject\.toml$'
+        files: '^extralit-server/(pyproject\.toml|uv\.lock)$'
         args: [--directory, extralit-server]
+      # pre-commit run --hook-stage manual uv-lock-upgrade
+      - id: uv-lock
+        alias: uv-lock-upgrade
+        name: "Upgrade extralit lockfile"
+        args: [--directory, extralit, --upgrade]
+        stages: [manual]
+        always_run: true
+      - id: uv-lock
+        alias: uv-lock-upgrade
+        name: "Upgrade extralit-server lockfile"
+        args: [--directory, extralit-server, --upgrade]
+        stages: [manual]
+        always_run: true
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.12.9

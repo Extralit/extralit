@@ -22,6 +22,9 @@ These are the section headers that we use:
 ### Fixed
 - Fixed single document uploads via CLI (`extralit documents add`) to start PDF workflow.
 
+### Removed
+- Dropped support for Python 3.9; the SDK now requires Python 3.10 or later.
+
 ## [Extralit] [v0.6.1](https://github.com/extralit/extralit/compare/v0.5.0...v0.6.1)
 ### Added
 - Introduced structured dataset mapping via `DatasetMappingModel` and `DatasetMapping` abstractions for validated, first-class mapping support

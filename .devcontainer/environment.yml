@@ -5,7 +5,7 @@ channels:
   - huggingface
   - defaults
 dependencies:
-  - python~=3.9.7
+  - python~=3.10.0
   - pip>=2.22.0
   - uv
   # pyparsing 3.0.5 seems to be buggy
