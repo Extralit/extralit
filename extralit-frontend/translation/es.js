@@ -132,6 +132,7 @@ export default {
     logging_in: "Iniciando sesión...",
     signin_with_provider: "Iniciar sesión con {provider}",
     "hf-login": "Iniciar sesión con Hugging Face",
+    "extralithub-login": "Iniciar sesión con Extralit Hub",
     sign_in_with_username: "Iniciar sesión con nombre de usuario",
     cancel: "Cancelar",
     continue: "Continuar",

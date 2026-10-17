@@ -60,7 +60,7 @@ PROXY_RESPONSES = {
     responses=PROXY_RESPONSES,
 )
 async def proxy(request: Request, rest_of_path: str, current_user: User = Depends(auth.get_current_user)):
-    url = urljoin(settings.extralit_url, rest_of_path)
+    url = urljoin(settings.hub_url, rest_of_path)
     params = dict(request.query_params)
 
     _LOGGER.info("PROXY %s %s", url, params)

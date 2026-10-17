@@ -2982,6 +2982,20 @@ export interface components {
             /** Visible Options */
             visible_options?: number | null;
         };
+        /**
+         * OAuthProvider
+         * @description OAuth provider configuration for frontend display.
+         */
+        OAuthProvider: {
+            /** Display Name */
+            display_name: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Icon */
+            icon?: string | null;
+            /** Name */
+            name: string;
+        };
         /** ObjectMetadata */
         ObjectMetadata: {
             /** Content Type */
@@ -3639,6 +3653,11 @@ export interface components {
         Settings: {
             extralit: components["schemas"]["ExtralitSettings"];
             huggingface?: components["schemas"]["HuggingfaceSettings"] | null;
+            /**
+             * Oauth Providers
+             * @default []
+             */
+            oauth_providers: components["schemas"]["OAuthProvider"][];
         };
         /**
          * SimilarityOrder
