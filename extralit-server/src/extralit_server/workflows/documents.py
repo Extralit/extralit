@@ -101,6 +101,12 @@ async def create_document_workflow(
 
     group.enqueue_many(queue=OCR_QUEUE, job_datas=[text_extraction_job_data])
 
+    # Step 5: Chunking job — runs after text extraction completes.
+    # `process_text_extraction_result_job` is invoked with the OCR result
+    # (the dict returned by pymupdf_to_markdown_job) once that job finishes.
+    # Wiring via RQ Callback or a dependent enqueue is done by the caller
+    # that has access to the text-extraction result.
+
     # Deferred OCR branch: once an OCR engine is configured, an `ocr_job` is enqueued here when
     # triage reports pages needing OCR, and layout depends on it instead of on triage. pdf-inspector
     # classifies those pages but bundles no engine, so today they stay an explicitly surfaced gap.
