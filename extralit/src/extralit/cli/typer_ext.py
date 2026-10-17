@@ -1,7 +1,6 @@
-import sys
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
 from functools import wraps
-from typing import Any, Callable, TypeVar
+from typing import Any, ParamSpec, TypeVar
 
 import typer
 
@@ -19,11 +18,6 @@ try:
     click.core.Parameter.make_metavar = make_metavar
 except ImportError:
     pass
-
-if sys.version_info < (3, 10):
-    from typing_extensions import ParamSpec
-else:
-    from typing import ParamSpec
 
 P = ParamSpec("P")
 R = TypeVar("R")

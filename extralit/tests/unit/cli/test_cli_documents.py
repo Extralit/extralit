@@ -8,8 +8,9 @@ from extralit.cli.app import app
 
 
 @pytest.fixture
-def runner():
-    """Fixture providing a CLI runner."""
+def runner(tmp_path, monkeypatch):
+    """Fixture providing a CLI runner in an isolated working directory."""
+    monkeypatch.chdir(tmp_path)
     return CliRunner()
 
 
@@ -45,23 +46,22 @@ def test_import_bibtex_analysis(
     mock_analysis.return_value = mock_analysis_result
 
     # Run the command
-    with runner.isolated_filesystem():
-        with open("test.bib", "w") as f:
-            f.write("@article{key1, title={Test Title}, author={Author One and Author Two}, year={2025}}")
-        Path("pdfs").mkdir()
-        result = runner.invoke(
-            app,
-            [
-                "documents",
-                "import",
-                "--workspace",
-                "test-workspace",
-                "--bibtex",
-                "test.bib",
-                "pdfs",  # positional argument
-                "--dry-run",
-            ],
-        )
+    with open("test.bib", "w") as f:
+        f.write("@article{key1, title={Test Title}, author={Author One and Author Two}, year={2025}}")
+    Path("pdfs").mkdir()
+    result = runner.invoke(
+        app,
+        [
+            "documents",
+            "import",
+            "--workspace",
+            "test-workspace",
+            "--bibtex",
+            "test.bib",
+            "pdfs",  # positional argument
+            "--dry-run",
+        ],
+    )
     assert result.exit_code == 0
     assert "import analysis complete" in result.stdout.lower()
 
@@ -112,23 +112,22 @@ def test_import_bibtex_with_pdf_matching(
     mock_analysis.return_value = mock_analysis_result
 
     # Run the command
-    with runner.isolated_filesystem():
-        with open("test.bib", "w") as f:
-            f.write("@article{key1, title={Test Title}, author={Author One and Author Two}, year={2025}}")
-        Path("pdfs").mkdir()
-        result = runner.invoke(
-            app,
-            [
-                "documents",
-                "import",
-                "--workspace",
-                "test-workspace",
-                "--bibtex",
-                "test.bib",
-                "pdfs",  # positional argument
-                "--dry-run",
-            ],
-        )
+    with open("test.bib", "w") as f:
+        f.write("@article{key1, title={Test Title}, author={Author One and Author Two}, year={2025}}")
+    Path("pdfs").mkdir()
+    result = runner.invoke(
+        app,
+        [
+            "documents",
+            "import",
+            "--workspace",
+            "test-workspace",
+            "--bibtex",
+            "test.bib",
+            "pdfs",  # positional argument
+            "--dry-run",
+        ],
+    )
     assert result.exit_code == 0
     assert "import analysis complete" in result.stdout.lower()
     # Verify that PDF matching was called
@@ -137,11 +136,10 @@ def test_import_bibtex_with_pdf_matching(
 
 def test_import_bibtex_file_error(runner):
     """Test the 'import' command with a file error."""
-    with runner.isolated_filesystem():
-        Path("pdfs").mkdir()
-        result = runner.invoke(
-            app, ["documents", "import", "--workspace", "test-workspace", "--bibtex", "nonexistent.bib", "pdfs"]
-        )
+    Path("pdfs").mkdir()
+    result = runner.invoke(
+        app, ["documents", "import", "--workspace", "test-workspace", "--bibtex", "nonexistent.bib", "pdfs"]
+    )
     # Typer returns exit code 2 for usage errors (file not found, etc.)
     assert result.exit_code == 2
     assert "nonexistent.bib" in result.output or "does not exist" in result.output
@@ -162,13 +160,12 @@ def test_import_bibtex_api_error(mock_parse_bib, mock_validate, mock_from_creden
     # Simulate API error by raising ValueError in parsing
     mock_parse_bib.side_effect = ValueError("Error analyzing import: Validation error")
 
-    with runner.isolated_filesystem():
-        with open("test.bib", "w") as f:
-            f.write("@article{key1, title={Test Title}, author={Author One}, year={2025}}")
-        Path("pdfs").mkdir()
-        result = runner.invoke(
-            app, ["documents", "import", "--workspace", "test-workspace", "--bibtex", "test.bib", "pdfs"]
-        )
+    with open("test.bib", "w") as f:
+        f.write("@article{key1, title={Test Title}, author={Author One}, year={2025}}")
+    Path("pdfs").mkdir()
+    result = runner.invoke(
+        app, ["documents", "import", "--workspace", "test-workspace", "--bibtex", "test.bib", "pdfs"]
+    )
     # Application error should return exit code 1
     assert result.exit_code == 1
     assert "error" in result.stdout.lower() or "error" in result.output.lower()
@@ -257,23 +254,22 @@ def test_import_bibtex_filename_matching(
     mock_analysis.return_value = mock_analysis_result
 
     # Run the command
-    with runner.isolated_filesystem():
-        with open("test.bib", "w") as f:
-            f.write("@article{key1, title={Test Title}, author={Author One}, year={2025}}")
-        Path("pdfs").mkdir()
-        result = runner.invoke(
-            app,
-            [
-                "documents",
-                "import",
-                "--workspace",
-                "test-workspace",
-                "--bibtex",
-                "test.bib",
-                "pdfs",
-                "--dry-run",
-            ],
-        )
+    with open("test.bib", "w") as f:
+        f.write("@article{key1, title={Test Title}, author={Author One}, year={2025}}")
+    Path("pdfs").mkdir()
+    result = runner.invoke(
+        app,
+        [
+            "documents",
+            "import",
+            "--workspace",
+            "test-workspace",
+            "--bibtex",
+            "test.bib",
+            "pdfs",
+            "--dry-run",
+        ],
+    )
     assert result.exit_code == 0
     assert "import analysis complete" in result.stdout.lower()
     # Verify that PDF matching was called with the parsed DataFrame

@@ -92,12 +92,12 @@ def test_add_dict_records(client: Extralit, dataset_name: str):
     # Now the dataset is published and is ready for annotate
     ds.records.log(mock_data)
 
-    for record, data in zip(ds.records, mock_data):
+    for record, data in zip(ds.records, mock_data, strict=False):
         assert record.id == data["id"]
         assert record.fields["text"] == data["text"]
         assert "label" not in record.__dict__
 
-    for record, data in zip(ds.records(batch_size=1, with_suggestions=True), mock_data):
+    for record, data in zip(ds.records(batch_size=1, with_suggestions=True), mock_data, strict=False):
         assert record.id == data["id"]
         assert record.suggestions["label"].value == data["label"]
 
@@ -253,7 +253,7 @@ def test_add_records_with_responses(client, username: str) -> None:
 
     dataset_records = list(dataset.records(with_responses=True))
 
-    for record, mock_record in zip(dataset_records, mock_data):
+    for record, mock_record in zip(dataset_records, mock_data, strict=False):
         assert record.id == str(mock_record["id"])
         assert record.fields["text"] == mock_record["text"]
         assert record.responses["label"][0].value == mock_record["my_label"]
