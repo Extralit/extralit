@@ -135,6 +135,7 @@ constraint-dependencies = [
     "pyarrow>=23.0.1",
     "pygments>=2.20.0",
     "pymdown-extensions>=11.0.1",
+    "pymdown-extensions<12; python_version < '3.11'",
     "pytest>=9.0.3",
     "requests>=2.33.0",
     "simpleeval>=1.0.5",
