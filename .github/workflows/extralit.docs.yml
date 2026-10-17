@@ -47,7 +47,7 @@ jobs:
         uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884
         with:
           pyproject-file: "extralit/pyproject.toml"
-          python-version: "3.10"
+          python-version: "3.12"
           enable-cache: true
           cache-local-path: ~/.cache/uv
           ignore-nothing-to-cache: true
