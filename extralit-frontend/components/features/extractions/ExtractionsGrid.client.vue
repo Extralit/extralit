@@ -4,6 +4,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import type { Client, Table } from "@perspective-dev/client";
 import { type HTMLPerspectiveViewerElement } from "@perspective-dev/viewer";
 import { initPerspectiveClient } from "~/components/features/extractions/perspective-bootstrap";
 import { type WorkspaceProjection, type ProjectionGridCell } from "~/v1/domain/entities/projection/WorkspaceProjection";
@@ -36,14 +37,6 @@ interface RegularTableLike extends HTMLElement {
   getMeta(element?: HTMLElement): CellMeta | undefined;
 }
 
-interface PerspectiveTableLike {
-  delete: () => Promise<unknown>;
-}
-
-interface PerspectiveClientLike {
-  table: (data: Record<string, unknown>[]) => Promise<PerspectiveTableLike>;
-}
-
 const props = defineProps<{ projection: WorkspaceProjection }>();
 
 const emit = defineEmits<{
@@ -61,8 +54,8 @@ const viewerEl = ref<HTMLPerspectiveViewerElement | null>(null);
 // `props.projection` changes so it never lags behind the rows currently on screen.
 let bandByRow: number[] = bandParity(props.projection);
 
-let client: PerspectiveClientLike | null = null;
-let table: PerspectiveTableLike | null = null;
+let client: Client | null = null;
+let table: Table | null = null;
 let regularTable: RegularTableLike | null = null;
 let unsubscribeStyle: (() => void) | null = null;
 
@@ -80,7 +73,7 @@ let cancelled = false;
 // tables.
 let loadChain: Promise<void> = Promise.resolve();
 
-async function safeDelete(candidate: PerspectiveTableLike | null): Promise<void> {
+async function safeDelete(candidate: Table | null): Promise<void> {
   if (!candidate) {
     return;
   }
@@ -92,7 +85,7 @@ async function safeDelete(candidate: PerspectiveTableLike | null): Promise<void>
   }
 }
 
-async function deleteSupersededTable(candidate: PerspectiveTableLike | null): Promise<void> {
+async function deleteSupersededTable(candidate: Table | null): Promise<void> {
   if (!candidate) {
     return;
   }
@@ -231,11 +224,11 @@ function handleClick(event: Event): void {
  * frame ... is guaranteed to have been drawn" — nothing about releasing a *previous*
  * binding. `Table.delete()` (`@perspective-dev/client/dist/wasm/perspective-js.d.ts`)
  * throws unless the table "has no View instances registered to it (which must be deleted
- * first)". `eject()`, however, is documented to "Restart this `<perspective-viewer>` to its
- * initial state, before `load()`" specifically so `load()` can be called again on the same
- * element — the strongest documented lever available for releasing the current binding
- * without tearing the viewer down — so it is called on the outgoing table's behalf before
- * loading its replacement. That still isn't an explicit guarantee against `Table.delete()`
+ * first)". `eject()`, however, is documented to "dispose every panel bound to" the client
+ * ("each panel's `View` is deleted and its `Table` reference released") while leaving the
+ * element usable for another `load()` — the strongest documented lever available for releasing
+ * the current binding without tearing the viewer down — so it is called on the outgoing
+ * table's behalf before loading its replacement. That still isn't an explicit guarantee against `Table.delete()`
  * throwing afterwards, so a rejection there is handled by `deleteSupersededTable`, not
  * silently swallowed.
  */
@@ -256,7 +249,7 @@ async function performLoad(projection: WorkspaceProjection): Promise<void> {
     return;
   }
 
-  let newTable: PerspectiveTableLike;
+  let newTable: Table;
   try {
     // Building the table is guarded here (rather than a bare `await` before any try/catch)
     // specifically so a rejection — e.g. a non-scalar cell value `client.table()` can't

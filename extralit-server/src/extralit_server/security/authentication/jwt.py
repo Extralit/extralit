@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Literal
 
-from jose import JWTError, jwt
+import jwt
 
 from extralit_server.errors import UnauthorizedError
 from extralit_server.security.authentication.userinfo import UserInfo
@@ -27,7 +27,7 @@ class JWT:
     def decode(cls, token: str) -> dict:
         try:
             return jwt.decode(token, cls.secret, algorithms=[cls.algorithm])
-        except JWTError:
+        except jwt.PyJWTError:
             raise UnauthorizedError("Invalid token")
 
     @classmethod
