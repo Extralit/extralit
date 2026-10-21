@@ -25,7 +25,7 @@ dependencies = [
     "typer>=0.27.0",
     "lazy-loader>=0.4",
     "bibtexparser>=1.4.3,<2",
-    "pandera[io]>=0.26.1, < 0.27.0",
+    "pandera[io]>=0.26.1,<0.35.0",
     "pandas>=2.3.2",
 ]
 nlp = [
