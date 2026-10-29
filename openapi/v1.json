@@ -10798,6 +10798,7 @@
             }
           },
           {
+            "description": "Relationships to include in the response",
             "in": "query",
             "name": "include",
             "required": false,
@@ -10813,7 +10814,7 @@
                   "type": "null"
                 }
               ],
-              "help": "Relationships to include in the response",
+              "description": "Relationships to include in the response",
               "title": "Include"
             }
           }
@@ -11243,6 +11244,7 @@
             }
           },
           {
+            "description": "Relationships to include in the response",
             "in": "query",
             "name": "include",
             "required": false,
@@ -11258,7 +11260,7 @@
                   "type": "null"
                 }
               ],
-              "help": "Relationships to include in the response",
+              "description": "Relationships to include in the response",
               "title": "Include"
             }
           }
@@ -15943,6 +15945,7 @@
             }
           },
           {
+            "description": "Relationships to include in the response",
             "in": "query",
             "name": "include",
             "required": false,
@@ -15958,7 +15961,7 @@
                   "type": "null"
                 }
               ],
-              "help": "Relationships to include in the response",
+              "description": "Relationships to include in the response",
               "title": "Include"
             }
           }
