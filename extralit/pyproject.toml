@@ -142,6 +142,7 @@ constraint-dependencies = [
     "soupsieve>=2.9.0",
     "tornado>=6.5.9",
     "urllib3>=2.8.0",
+    "virtualenv>=21.14.13",
 ]
 
 [project.scripts]
