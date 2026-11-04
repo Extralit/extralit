@@ -1,7 +1,6 @@
 """Tests for the DoclingDocument builder seam shared by every layout parser."""
 
 import pytest
-from docling_core.transforms.chunker import HierarchicalChunker
 from docling_core.types.doc import BoundingBox, ContentLayer, CoordOrigin, DocItemLabel, Size, TableCell
 
 from extralit_server.contexts.ocr.docling_builder import (
@@ -334,7 +333,7 @@ class TestAppendBlocks:
             "body": ContentLayer.BODY,
             "Page 1": ContentLayer.FURNITURE,
         }
-        assert [c.text for c in HierarchicalChunker().chunk(doc)] == ["body"]
+        assert [item.text for item, _ in doc.iterate_items()] == ["body"]
 
     def test_empty_text_blocks_are_skipped(self, doc, ctx):
         blocks = [
