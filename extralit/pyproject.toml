@@ -114,7 +114,7 @@ dev = [
     "CairoSVG >= 2.9.1",
     "mknotebooks >= 0.8.0",
     "pytest-retry>=1.5",
-    "ty>=0.0.94",
+    "ty>=0.0.95",
 ]
 
 [tool.uv]
@@ -127,12 +127,14 @@ constraint-dependencies = [
     "filelock>=3.20.3",
     "fsspec>=2026.6.0",
     "gitpython>=3.1.60",
+    "huggingface-hub>=2.4.0",
     "idna>=3.15",
     "mistune>=3.3.0",
     "multidict>=6.9.1",
     "nbconvert>=7.17.1",
     "pillow>=12.3.0",
     "pyarrow>=23.0.1",
+    "pydantic>=2.14.2",
     "pygments>=2.20.0",
     "pymdown-extensions>=11.0.1",
     "pymdown-extensions<12; python_version < '3.11'",
