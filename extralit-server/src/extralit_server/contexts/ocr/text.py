@@ -39,5 +39,9 @@ def add_text_block(
     if block.label == DocItemLabel.SECTION_HEADER:
         return doc.add_heading(text=text, level=block.level or 1, prov=prov, parent=parent)
 
+    # add_text dispatches LIST_ITEM to add_list_item but drops the marker, so route it here too.
+    if block.label == DocItemLabel.LIST_ITEM:
+        return doc.add_list_item(text=text, enumerated=block.enumerated, marker=block.marker, prov=prov, parent=parent)
+
     layer = ContentLayer.FURNITURE if block.label in FURNITURE_LABELS else ContentLayer.BODY
     return doc.add_text(label=block.label, text=text, prov=prov, parent=parent, content_layer=layer)

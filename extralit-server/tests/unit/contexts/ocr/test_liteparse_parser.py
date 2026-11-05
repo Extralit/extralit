@@ -4,14 +4,15 @@ from pathlib import Path
 
 import liteparse
 import pytest
-from docling_core.types.doc import CoordOrigin, DocItemLabel
+from docling_core.types.doc import CoordOrigin, DocItemLabel, Size
 
 from extralit_server.api.schemas.v1.document.metadata import TriageMetadata
 from extralit_server.contexts.ocr.parsers.liteparse import LiteParseParser, to_layout_block
-from extralit_server.contexts.ocr.parsers.service import ParserService
+from extralit_server.contexts.ocr.parsers.service import ParserService, build_document
 
 FIXTURES = Path(__file__).parents[3] / "fixtures" / "pdf"
 RECT = liteparse.AnnotationRect(x=72.0, y=100.0, width=200.0, height=20.0)
+PAGE = Size(width=612.0, height=792.0)
 
 
 def _cell(text: str, bbox=RECT) -> liteparse.LayoutCell:
@@ -76,6 +77,42 @@ class TestToLayoutBlock:
     )
     def test_unplaceable_blocks_are_dropped(self, block):
         assert to_layout_block(block) is None
+
+    @pytest.mark.parametrize(
+        ("markdown", "plain"),
+        [
+            ("**Received:** September 13", "Received: September 13"),
+            ("Anopheles *gambiae s.s. Kisumu", "Anopheles gambiae s.s. Kisumu"),
+            ("a ~~b~~ ~~c~~", "a b c"),
+            ("~~**both**~~", "both"),
+            (r"\* corresponding at p<0.01\*\*", "* corresponding at p<0.01**"),
+            (r"9789241564472\_ eng.pdf", "9789241564472_ eng.pdf"),
+            ("~~unpaired tilde", "~~unpaired tilde"),
+            (r"C:\temp [x](y) <b> `tick`", r"C:\temp [x](y) <b> `tick`"),
+        ],
+    )
+    @pytest.mark.parametrize("kind", ["paragraph", "list_item"])
+    def test_markdown_kinds_lose_inline_markup(self, kind, markdown, plain):
+        assert to_layout_block(liteparse.LayoutBlock(kind=kind, text=markdown, bbox=RECT)).text == plain
+
+    def test_heading_text_is_raw(self):
+        block = liteparse.LayoutBlock(kind="heading", text="Adageba1,2*, Kanmiki", level=1, bbox=RECT)
+        assert to_layout_block(block).text == "Adageba1,2*, Kanmiki"
+
+    def test_code_lines_are_verbatim(self):
+        block = liteparse.LayoutBlock(kind="code", lines=["a = b ** 2"], bbox=RECT)
+        assert to_layout_block(block).text == "a = b ** 2"
+
+    def test_table_cell_text_is_raw(self):
+        block = liteparse.LayoutBlock(kind="table", rows=[[_cell("0.39*")]], bbox=RECT)
+        assert to_layout_block(block).cells[0].text == "0.39*"
+
+    @pytest.mark.parametrize(("marker", "ordered"), [("1.", True), ("-", None)])
+    def test_list_marker_is_carried(self, marker, ordered):
+        block = liteparse.LayoutBlock(kind="list_item", text="x", marker=marker, ordered=ordered, bbox=RECT)
+        mapped = to_layout_block(block)
+        assert mapped.marker == marker
+        assert mapped.enumerated is bool(ordered)
 
     def test_header_row_comes_first_and_is_marked(self):
         block = liteparse.LayoutBlock(
@@ -171,6 +208,21 @@ def service() -> ParserService:
 @pytest.fixture(scope="module")
 def document(service, sample_bytes):
     return service.parse(sample_bytes, service.plan(sample_bytes), name="sample", filename="sample.pdf")
+
+
+class TestListItems:
+    @pytest.fixture(scope="class")
+    def document(self, two_page):
+        return build_document(two_page, page_sizes={1: PAGE, 2: PAGE}, name="two_page")
+
+    def test_markers_reach_the_document(self, document):
+        items = [(item.marker, item.enumerated) for item in document.texts if item.label == DocItemLabel.LIST_ITEM]
+        assert items == [("1.", True), ("2.", True), ("-", False), ("-", False)]
+
+    def test_numbers_survive_markdown_export(self, document):
+        markdown = document.export_to_markdown()
+        assert "1. first site" in markdown
+        assert "2. second site" in markdown
 
 
 class TestParserService:

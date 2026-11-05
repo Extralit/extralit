@@ -48,6 +48,8 @@ class LayoutBlock:
     level: Optional[int] = None
     cells: Optional[list[TableCell]] = None
     image: Optional[ImageRef] = None
+    marker: Optional[str] = None
+    enumerated: bool = False
 
 
 @dataclass(frozen=True)
