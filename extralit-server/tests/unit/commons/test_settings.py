@@ -64,6 +64,13 @@ def test_settings_database_postgresql_max_overflow(monkeypatch):
     assert Settings().database_postgresql_max_overflow == 12
 
 
+def test_settings_database_postgresql_connect_timeout(monkeypatch):
+    monkeypatch.setenv("EXTRALIT_DATABASE_URL", "postgresql://user:pass@localhost:5432/db")
+    monkeypatch.setenv("EXTRALIT_DATABASE_POSTGRESQL_CONNECT_TIMEOUT", "7")
+
+    assert Settings().database_engine_args["connect_args"]["timeout"] == 7
+
+
 def test_enable_share_your_progress(monkeypatch):
     monkeypatch.setenv("EXTRALIT_ENABLE_SHARE_YOUR_PROGRESS", "true")
 
