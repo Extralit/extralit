@@ -1423,7 +1423,7 @@ requires-dist = [
     { name = "python-multipart", specifier = ">=0.0.16" },
     { name = "pyyaml", specifier = ">=5.4.1,<6.1.0" },
     { name = "rich", specifier = "!=13.1.0" },
-    { name = "rq", specifier = ">=2.4.1" },
+    { name = "rq", specifier = ">=3.0.0" },
     { name = "social-auth-core", specifier = ">=6.2.0" },
     { name = "sqlalchemy", specifier = ">=2.0.0" },
     { name = "standardwebhooks", specifier = ">=1.0.0" },
