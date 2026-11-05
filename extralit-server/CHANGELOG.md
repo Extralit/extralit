@@ -41,6 +41,8 @@ These are the section headers that we use:
 
 ### Fixed
 
+- `EXTRALIT_DATABASE_POSTGRESQL_CONNECT_TIMEOUT` is now passed to asyncpg; it was defined but never used.
+- Raised the `asyncpg` floor to 0.31, so statements are unnamed with the cache off and can't collide on transaction-mode poolers such as Supabase port 6543.
 - `extralit_server worker` now listens on `high` before `default` by default. RQ takes jobs from queues in the order listed, so webhook jobs on `high` were waiting behind document processing.
 - Username authentication is now case-insensitive, allowing users to login with any case variation of their username.
 - Improved database connection pool configuration to prevent connection timeout issues after periods of inactivity.

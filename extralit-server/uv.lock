@@ -1380,7 +1380,7 @@ dev = [
 requires-dist = [
     { name = "aiosqlite", specifier = "==0.22.1" },
     { name = "alembic", specifier = ">=1.20.1" },
-    { name = "asyncpg", marker = "extra == 'postgresql'", specifier = ">=0.30.0" },
+    { name = "asyncpg", marker = "extra == 'postgresql'", specifier = ">=0.31" },
     { name = "authlib", specifier = ">=1.6.9" },
     { name = "bcrypt", specifier = ">=4.2.0" },
     { name = "brotli-asgi", specifier = ">=1.4.0" },

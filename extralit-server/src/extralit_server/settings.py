@@ -354,6 +354,7 @@ class Settings(BaseSettings):
                     "application_name": "extralit-server",
                 },
                 "command_timeout": self.database_postgresql_command_timeout,
+                "timeout": self.database_postgresql_connect_timeout,
             }
 
             # For external connection poolers (Supabase, PgBouncer), disable prepared statements
