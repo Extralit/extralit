@@ -96,7 +96,7 @@ postgresql = [
     "asyncpg >= 0.31",
 ]
 # AGPL — must stay optional so the Apache-2.0 distribution never requires it
-pymupdf = ["pymupdf4llm>=0.3.4,<1.29.0"]
+pymupdf = ["pymupdf4llm>=2.0,<2.1.0"]
 
 [project.urls]
 homepage = "https://extralit.ai"
