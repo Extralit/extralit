@@ -7,7 +7,7 @@ import pytest
 from docling_core.types.doc import CoordOrigin, DocItemLabel, Size
 
 from extralit_server.api.schemas.v1.document.metadata import TriageMetadata
-from extralit_server.contexts.ocr.parsers.liteparse import LiteParseParser, to_layout_block
+from extralit_server.contexts.ocr.parsers.liteparse import LiteParseParser, restore_stripped_rows, to_layout_block
 from extralit_server.contexts.ocr.parsers.service import ParserService, build_document
 
 FIXTURES = Path(__file__).parents[3] / "fixtures" / "pdf"
@@ -194,6 +194,42 @@ class TestParsePages:
         assert calls[0]["extract_blocks"] is True
         assert calls[0]["target_pages"] == "1,3"
         assert calls[0]["num_workers"] == 2
+        assert calls[0]["keep_headers_footers"] is False
+
+    def test_second_parse_covers_only_table_pages(self, monkeypatch):
+        calls = []
+
+        class FakeEngine:
+            def __init__(self, **kwargs):
+                calls.append(kwargs)
+
+            def parse(self, data):
+                table = liteparse.ParsedPage(page_num=3, width=1, height=1, text="", blocks=[_table([["a", "b"]])])
+                return liteparse.ParseResult(pages=[table], text="")
+
+        monkeypatch.setattr(liteparse, "LiteParse", FakeEngine)
+        LiteParseParser().parse_pages(b"%PDF", [1, 3], ocr=True)
+
+        assert [(c["target_pages"], c["keep_headers_footers"], c["ocr_enabled"]) for c in calls] == [
+            ("1,3", False, True),
+            ("3", True, True),
+        ]
+
+    def test_single_page_is_parsed_once(self, monkeypatch):
+        calls = []
+
+        class FakeEngine:
+            def __init__(self, **kwargs):
+                calls.append(kwargs)
+
+            def parse(self, data):
+                table = liteparse.ParsedPage(page_num=3, width=1, height=1, text="", blocks=[_table([["a", "b"]])])
+                return liteparse.ParseResult(pages=[table], text="")
+
+        monkeypatch.setattr(liteparse, "LiteParse", FakeEngine)
+        LiteParseParser().parse_pages(b"%PDF", [3], ocr=False)
+
+        assert len(calls) == 1
 
 
 @pytest.fixture(scope="module")
@@ -208,6 +244,66 @@ def service() -> ParserService:
 @pytest.fixture(scope="module")
 def document(service, sample_bytes):
     return service.parse(sample_bytes, service.plan(sample_bytes), name="sample", filename="sample.pdf")
+
+
+def _table(rows: list[list[str]], header: list[str] | None = None) -> liteparse.LayoutBlock:
+    return liteparse.LayoutBlock(
+        kind="table",
+        header=[_cell(text) for text in header] if header else None,
+        rows=[[_cell(text) for text in row] for row in rows],
+        bbox=RECT,
+    )
+
+
+class TestRestoreStrippedRows:
+    BODY = [["gambiae", "12"], ["funestus", "9"]]
+
+    def test_lost_header_is_restored(self):
+        full = _table(self.BODY, header=["Species", "Count"])
+        assert restore_stripped_rows(_table(self.BODY), [full]) is full
+
+    def test_lost_row_without_header_flag_is_restored(self):
+        full = _table([["Species", "Count"], *self.BODY])
+        assert restore_stripped_rows(_table(self.BODY), [full]) is full
+
+    def test_blank_row_left_behind_by_stripping_is_ignored(self):
+        full = _table(self.BODY, header=["Species", "Count"])
+        assert restore_stripped_rows(_table([["", ""], *self.BODY]), [full]) is full
+
+    def test_running_title_fused_onto_table_is_not_restored(self):
+        block = _table(self.BODY)
+        assert restore_stripped_rows(block, [_table([["PLOS ONE", ""], *self.BODY])]) is block
+
+    def test_different_table_is_not_restored(self):
+        block = _table(self.BODY)
+        assert restore_stripped_rows(block, [_table([["a", "b"], ["c", "d"], ["e", "f"]])]) is block
+
+    def test_complete_table_is_unchanged(self):
+        block = _table(self.BODY, header=["Species", "Count"])
+        assert restore_stripped_rows(block, [_table(self.BODY, header=["Species", "Count"])]) is block
+
+    def test_non_table_is_unchanged(self):
+        block = liteparse.LayoutBlock(kind="paragraph", text="x", bbox=RECT)
+        assert restore_stripped_rows(block, [_table(self.BODY)]) is block
+
+
+class TestRepeatedHeader:
+    @pytest.fixture(scope="class")
+    def pages(self):
+        pdf_bytes = (FIXTURES / "repeated_header.pdf").read_bytes()
+        return LiteParseParser().parse_pages(pdf_bytes, [1, 2, 3], ocr=False)
+
+    @pytest.mark.parametrize("page", [1, 2, 3])
+    def test_every_page_keeps_its_column_labels(self, pages, page):
+        (table,) = [block for block in pages[page] if block.label == DocItemLabel.TABLE]
+        assert [c.text for c in table.cells if c.column_header] == ["Species", "Count", "Mean"]
+
+    def test_body_rows_are_not_duplicated(self, pages):
+        (table,) = [block for block in pages[2] if block.label == DocItemLabel.TABLE]
+        assert max(c.start_row_offset_idx for c in table.cells) == 6
+
+    def test_running_title_stays_stripped(self, pages):
+        assert not [block for found in pages.values() for block in found if "Journal of Layout" in block.text]
 
 
 class TestListItems:

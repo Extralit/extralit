@@ -201,8 +201,33 @@ def build_two_page(path: Path) -> None:
     pdf.save(path)
 
 
+def build_repeated_header(path: Path) -> None:
+    """One table continuing over three pages, with its header row at the same position on each."""
+    pdf, resources = _base_pdf()
+    resources.Font.F2 = pdf.make_indirect(
+        Dictionary(
+            Type=Name.Font,
+            Subtype=Name.Type1,
+            BaseFont=Name("/Helvetica-Bold"),
+            Encoding=Name.WinAnsiEncoding,
+        )
+    )
+    for page in range(3):
+        rows = [("Species", "Count", "Mean")]
+        rows += [(f"species{page}{i}", str(page * 7 + i), f"{page}.{i}") for i in range(6)]
+        table = "".join(
+            _text_op(text, x, 700 - 16 * index, 10, "F2" if index == 0 else "F1")
+            for index, row in enumerate(rows)
+            for text, x in zip(row, (72, 220, 320), strict=True)
+        )
+        running_title = _text_op("Journal of Layout Studies", 72, 750, 9)
+        _add_page(pdf, resources, running_title + table)
+    pdf.save(path)
+
+
 if __name__ == "__main__":
     build_untagged(HERE / "sample.pdf")
     build_tagged(HERE / "sample_tagged.pdf")
     build_two_page(HERE / "two_page.pdf")
-    print(f"wrote sample.pdf, sample_tagged.pdf and two_page.pdf to {HERE}")
+    build_repeated_header(HERE / "repeated_header.pdf")
+    print(f"wrote sample.pdf, sample_tagged.pdf, two_page.pdf and repeated_header.pdf to {HERE}")
