@@ -39,7 +39,6 @@ These are the section headers that we use:
 
 ### Removed
 
-- Removed `InMemoryChunkStore` (`chunk_store.py`): chunks are persisted to workspace storage instead of a process-local dict.
 - Removed `contexts/document/analysis.py` (`PDFOCRLayerDetector`) and the OCR-only preprocessing knobs (`language`, `force_ocr`, `redo_ocr`, `skip_big`, `pdf_renderer`, `output_type`, `fast_web_view`, `deskew`, `enable_analysis`); `has_ocr_text_layer`, `needs_ocr` and `ocr_quality` are no longer written.
 - Removed the `marker` extra (`marker-pdf`, `torch`, `torchvision`, `transformers`) and the unused `async_marker_layout_job`.
 - Removed the deprecated Unstructured-shaped `document/chunks.py` schemas (`Segments`, `TextSegment`, `TableSegment`, `FigureSegment`, `Coordinates`) and the unreferenced `GPU_QUEUE`.
