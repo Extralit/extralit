@@ -20,7 +20,7 @@ uv run ruff format                                     # Ruff formatting
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.10+
 - Used for programmatic interaction with extralit-server
 
 ## Usage

@@ -7587,6 +7587,7 @@ export interface operations {
                 limit?: number;
                 /** @description Filter records by exact `reference` match */
                 reference?: string | null;
+                /** @description Relationships to include in the response */
                 include?: string[] | null;
             };
             header?: never;
@@ -8132,6 +8133,7 @@ export interface operations {
             query?: {
                 offset?: number;
                 limit?: number;
+                /** @description Relationships to include in the response */
                 include?: string[] | null;
             };
             header?: never;
@@ -12602,6 +12604,7 @@ export interface operations {
             query?: {
                 offset?: number;
                 limit?: number;
+                /** @description Relationships to include in the response */
                 include?: string[] | null;
             };
             header?: never;

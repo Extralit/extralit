@@ -65,7 +65,7 @@ LIST_DATASET_RECORDS_DEFAULT_SORT_BY = {RecordSortField.inserted_at.value: "asc"
 DELETE_DATASET_RECORDS_LIMIT = 100
 
 parse_record_include_param = parse_query_param(
-    name="include", help="Relationships to include in the response", model=RecordIncludeParam
+    name="include", description="Relationships to include in the response", model=RecordIncludeParam
 )
 
 router = APIRouter()

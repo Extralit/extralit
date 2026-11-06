@@ -55,7 +55,7 @@ uv run ruff check        # Run ruff linting
 ### Testing
 - Backend: pytest with async support, factory-boy for fixtures
 - Frontend: Jest for unit tests, Playwright for e2e
-- Python packages require Python 3.9+ (extralit) or 3.10+ (extralit-server)
+- Python packages require Python 3.10+ (extralit and extralit-server)
 - Node.js 18+ required for frontend
 
 ### Container Environment
@@ -229,7 +229,7 @@ The package provides an `extralit` CLI command that registers multiple subcomman
 ## Key Development Notes
 
 ### Dependencies
-- **Python Requirements**: 3.9.2+ (supports up to 3.13)
+- **Python Requirements**: 3.10+ (supports up to 3.13)
 - **Core Dependencies**: httpx, pydantic, typer, rich, huggingface_hub
 - **AI/ML Stack**: llama-index, weaviate-client, spacy, transformers
 - **Optional Features**: OCR (`nougat-ocr`), PDF processing (`unstructured`), NLP (`textdescriptives`)

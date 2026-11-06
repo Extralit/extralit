@@ -86,6 +86,9 @@ def database_url_sync() -> str:
     an asynchronous connection, like running database migration inside the alembic script.
     """
     database_url = make_url(settings.database_url)
+    # SQLAlchemy 2.1 defaults bare postgresql:// to psycopg 3; we ship psycopg2
+    if database_url.get_backend_name() == "postgresql":
+        return settings.database_url.replace(f"+{database_url.get_driver_name()}", "+psycopg2")
     return settings.database_url.replace(f"+{database_url.get_driver_name()}", "")
 
 

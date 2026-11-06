@@ -1,8 +1,9 @@
 import os
 import time
 import warnings
+from collections.abc import Callable
 from threading import Thread
-from typing import TYPE_CHECKING, Callable, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 import extralit as ex
 from extralit import Extralit

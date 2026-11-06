@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from datasets import Sequence, Value, load_dataset
+from datasets import Features, Sequence, Value, load_dataset
 
 import extralit as ex
 from extralit.records._io import HFDatasetsIO
@@ -43,55 +43,57 @@ class TestHFDatasetsIO:
         ]
 
         ds = HFDatasetsIO.to_datasets(records, dataset=mock_dataset)
-        assert ds.features == {
-            "status": Value(dtype="string", id=None),
-            "_server_id": Value(dtype="null", id=None),
-            "a": Value(dtype="string", id=None),
-            "b": Value(dtype="string", id=None),
-            "field": Value(dtype="string", id=None),
-            "id": Value(dtype="string", id=None),
-            "other": Value(dtype="string", id=None),
-            "other_question.responses": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
-            "other_question.responses.status": Sequence(feature=Value(dtype="null", id=None), length=-1, id=None),
-            "other_question.responses.users": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
-            "question.suggestion": Value(dtype="string", id=None),
-            "question.suggestion.agent": Value(dtype="null", id=None),
-            "question.suggestion.score": Value(dtype="null", id=None),
-            "ranking.responses": Sequence(
-                feature=Sequence(feature=Value(dtype="string", id=None), length=-1, id=None), length=-1, id=None
-            ),
-            "ranking.responses.status": Sequence(feature=Value(dtype="null", id=None), length=-1, id=None),
-            "ranking.responses.users": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
-            "ranking.suggestion": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
-            "ranking.suggestion.agent": Value(dtype="null", id=None),
-            "ranking.suggestion.score": Value(dtype="null", id=None),
-            "rating.responses": Sequence(feature=Value(dtype="int64", id=None), length=-1, id=None),
-            "rating.responses.status": Sequence(feature=Value(dtype="null", id=None), length=-1, id=None),
-            "rating.responses.users": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
-            "rating.suggestion": Value(dtype="int64", id=None),
-            "rating.suggestion.agent": Value(dtype="null", id=None),
-            "rating.suggestion.score": Value(dtype="null", id=None),
-            "spans.responses": [
-                [
+        assert ds.features == Features(
+            {
+                "status": Value(dtype="string", id=None),
+                "_server_id": Value(dtype="null", id=None),
+                "a": Value(dtype="string", id=None),
+                "b": Value(dtype="string", id=None),
+                "field": Value(dtype="string", id=None),
+                "id": Value(dtype="string", id=None),
+                "other": Value(dtype="string", id=None),
+                "other_question.responses": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
+                "other_question.responses.status": Sequence(feature=Value(dtype="null", id=None), length=-1, id=None),
+                "other_question.responses.users": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
+                "question.suggestion": Value(dtype="string", id=None),
+                "question.suggestion.agent": Value(dtype="null", id=None),
+                "question.suggestion.score": Value(dtype="null", id=None),
+                "ranking.responses": Sequence(
+                    feature=Sequence(feature=Value(dtype="string", id=None), length=-1, id=None), length=-1, id=None
+                ),
+                "ranking.responses.status": Sequence(feature=Value(dtype="null", id=None), length=-1, id=None),
+                "ranking.responses.users": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
+                "ranking.suggestion": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
+                "ranking.suggestion.agent": Value(dtype="null", id=None),
+                "ranking.suggestion.score": Value(dtype="null", id=None),
+                "rating.responses": Sequence(feature=Value(dtype="int64", id=None), length=-1, id=None),
+                "rating.responses.status": Sequence(feature=Value(dtype="null", id=None), length=-1, id=None),
+                "rating.responses.users": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
+                "rating.suggestion": Value(dtype="int64", id=None),
+                "rating.suggestion.agent": Value(dtype="null", id=None),
+                "rating.suggestion.score": Value(dtype="null", id=None),
+                "spans.responses": [
+                    [
+                        {
+                            "end": Value(dtype="int64", id=None),
+                            "label": Value(dtype="string", id=None),
+                            "start": Value(dtype="int64", id=None),
+                        }
+                    ]
+                ],
+                "spans.responses.status": Sequence(feature=Value(dtype="null", id=None), length=-1, id=None),
+                "spans.responses.users": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
+                "spans.suggestion": [
                     {
                         "end": Value(dtype="int64", id=None),
                         "label": Value(dtype="string", id=None),
                         "start": Value(dtype="int64", id=None),
                     }
-                ]
-            ],
-            "spans.responses.status": Sequence(feature=Value(dtype="null", id=None), length=-1, id=None),
-            "spans.responses.users": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
-            "spans.suggestion": [
-                {
-                    "end": Value(dtype="int64", id=None),
-                    "label": Value(dtype="string", id=None),
-                    "start": Value(dtype="int64", id=None),
-                }
-            ],
-            "spans.suggestion.agent": Value(dtype="null", id=None),
-            "spans.suggestion.score": Value(dtype="null", id=None),
-        }
+                ],
+                "spans.suggestion.agent": Value(dtype="null", id=None),
+                "spans.suggestion.score": Value(dtype="null", id=None),
+            }
+        )
 
     def test_to_extralit_with_sequence_of_class_labels(self):
         dataset = ex.Dataset(name="test", settings=ex.Settings(fields=[ex.TextField(name="text")]))

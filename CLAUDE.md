@@ -21,7 +21,7 @@ Each component has its own `CLAUDE.md` with setup details:
 
 ## Prerequisites
 
-- Python 3.10+ (server) / 3.9+ (SDK)
+- Python 3.10+ (server and SDK)
 - Node.js 18+
 - Docker & Docker Compose (for full stack)
 - uv (Python package manager)
