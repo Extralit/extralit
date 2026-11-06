@@ -1,24 +1,25 @@
 """Document upload job functions."""
 
 import logging
-import re
 from typing import Any
 from uuid import UUID
 
+from anyio import to_thread
 from rq import Retry, get_current_job
 from rq.decorators import job
 
-from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingMetadata
+from extralit_server.api.schemas.v1.document.metadata import ChunkingMetadata, DocumentProcessingMetadata
 from extralit_server.contexts import files
-from extralit_server.contexts.document.chunker import chunk_text
+from extralit_server.contexts.document import chunk_storage
+from extralit_server.contexts.document.chunker import chunk_document, load_config, rules_path
 from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.metadata import update_processing_metadata
 from extralit_server.contexts.document.preprocessing import PDFPreprocessor
+from extralit_server.contexts.ocr import storage as layout_storage
 from extralit_server.contexts.ocr.triage import triage_pdf
 from extralit_server.contexts.workflows import writer_skip_reason
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
-from extralit_server.models.database import Document
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -158,92 +159,68 @@ async def analysis_and_preprocess_job(
 
 
 @job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=600, retry=Retry(max=3, interval=[10, 30, 60]))
-async def process_text_extraction_result_job(document_id: UUID, extraction_result: dict) -> dict[str, Any]:
-    """Process text-extraction JSON, chunk text with chonkie, and persist to DB.
+async def document_chunking_job(document_id: UUID, workspace_name: str) -> dict[str, Any]:
+    """Chunk a document's canonical layout and persist the chunks.
 
-    Accepts the JSON result produced by an external OCR / text-extraction
-    worker (e.g. ``extralit_ocr.jobs.pymupdf_to_markdown_job``).  The
-    ``extraction_result`` dict may have one of these shapes:
+    Runs after `async_document_layout_job`: it reads the stored `DoclingDocument`, renders its body
+    to Markdown and splits that with the YAML-configured chonkie `RecursiveChunker`. The chunks go
+    to object storage; `documents.metadata_` only gets a `ChunkingMetadata` pointer.
 
-    * ``{"markdown": "..."}``
-    * ``{"text": "..."}``
-    * Marker-style ``{"pages": [{"blocks": [{"text"|"content"|"markdown": ...}]}]}``
+    Args:
+        document_id: UUID of the document to chunk
+        workspace_name: workspace holding the layout and receiving the chunks
 
-    Steps
-    -----
-    1. Extract plain text from whichever JSON shape is provided.
-    2. Create text chunks using **chonkie** ``RecursiveChunker``
-       (via :func:`~extralit_server.contexts.document.chunker.chunk_text`).
-    3. Persist the extracted text **and** chunks into
-       ``documents.metadata_`` → ``text_extraction_metadata`` in the DB.
+    Returns:
+        The chunks path and counts, or `skipped` with the reason nothing was written.
     """
     current_job = get_current_job()
-    if current_job is None:
-        raise Exception("No current job found")
-
-    current_job.meta.update({"document_id": str(document_id), "workflow_step": "process_text_extraction"})
-    current_job.save_meta()
+    if current_job is not None:
+        current_job.meta.update({"document_id": str(document_id), "workflow_step": "document_chunking"})
+        current_job.save_meta()
 
     try:
-        text = _extract_text_from_result(extraction_result)
+        storage = await files.get_storage()
+        doc = await layout_storage.load_layout(storage, workspace_name, document_id)
 
-        # Chunk the text using chonkie RecursiveChunker
-        chunks = chunk_text(text or "")
+        path = rules_path()
+        config = load_config(path)
+        markdown, chunks = await to_thread.run_sync(lambda: chunk_document(doc, path=path))
 
-        # Persist text + chunks into document metadata in the database
+        workflow_id = (current_job.meta or {}).get("workflow_id") if current_job is not None else None
         async with AsyncSessionLocal() as db:
-            document = await db.get(Document, document_id)
-            if document:
-                if document.metadata_ is None:
-                    document.metadata_ = DocumentProcessingMetadata().model_dump()
+            skip = await writer_skip_reason(db, document_id, workflow_id)
+        if skip is not None:
+            _LOGGER.info(f"Chunks for document {document_id} were not stored: {skip}")
+            return {"document_id": str(document_id), "skipped": skip}
 
-                metadata = DocumentProcessingMetadata(**document.metadata_)
-                metadata.update_text_extraction_results(
-                    text=text or "",
-                    chunks=chunks,
-                    extraction_method="external_ocr",
-                )
-                document.metadata_ = metadata.model_dump()
-                await db.commit()
+        chunks_url = await chunk_storage.store_chunks(storage, workspace_name, document_id, markdown, chunks)
+        chunking = ChunkingMetadata(
+            chunks_url=chunks_url,
+            num_chunks=len(chunks),
+            markdown_length=len(markdown),
+            tokenizer=config.tokenizer,
+            chunk_size=config.chunk_size,
+        )
 
-        current_job.meta["chunks_count"] = len(chunks)
-        current_job.save_meta()
+        async with AsyncSessionLocal() as db:
+            updated = await update_processing_metadata(
+                db, document_id, lambda m: setattr(m, "chunking_metadata", chunking)
+            )
+        if updated is None:
+            # Deleted between the check and the write: drop what we just stored.
+            await chunk_storage.delete_chunks(storage, workspace_name, document_id)
+            return {"document_id": str(document_id), "skipped": "document deleted"}
 
-        return {"document_id": str(document_id), "chunks_count": len(chunks)}
+        if current_job is not None:
+            current_job.meta["num_chunks"] = len(chunks)
+            current_job.save_meta()
+
+        _LOGGER.info(f"Chunking complete for {document_id}: {len(chunks)} chunks")
+        return {"document_id": str(document_id), **chunking.model_dump()}
 
     except Exception as e:
-        _LOGGER.error(f"Error processing text extraction for document {document_id}: {e}")
-        current_job.meta["error"] = str(e)
-        current_job.save_meta()
+        _LOGGER.error(f"Error chunking document {document_id}: {e}", exc_info=True)
+        if current_job is not None:
+            current_job.meta["error"] = str(e)
+            current_job.save_meta()
         raise
-
-
-def _extract_text_from_result(extraction_result: dict) -> str:
-    """Pull plain text out of the various JSON shapes produced by OCR workers."""
-    if not extraction_result:
-        return ""
-
-    # Direct string fields
-    for key in ("markdown", "text", "content", "value"):
-        val = extraction_result.get(key)
-        if isinstance(val, str):
-            return val
-
-    # Marker-style pages → blocks
-    if "pages" in extraction_result and isinstance(extraction_result["pages"], list):
-        parts: list[str] = []
-        for page in extraction_result["pages"]:
-            blocks = page.get("blocks", []) if isinstance(page, dict) else []
-            for block in blocks:
-                if not isinstance(block, dict):
-                    continue
-                content = block.get("markdown") or block.get("text") or block.get("content") or block.get("html") or ""
-                # Strip basic HTML tags if present
-                if content and "<" in content and ">" in content:
-                    content = re.sub(r"<[^>]+>", "", content)
-                if content:
-                    parts.append(content)
-        return "\n\n".join(parts)
-
-    # Absolute fallback
-    return str(extraction_result)

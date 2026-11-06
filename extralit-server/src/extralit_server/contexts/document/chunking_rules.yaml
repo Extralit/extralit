@@ -1,0 +1,35 @@
+# chonkie RecursiveChunker configuration for document chunks.
+#
+# The chunker splits on the first level whose pieces fit `chunk_size`, recursing into the next
+# level only for pieces that are still too large, then greedily merges neighbours back up to
+# `chunk_size`. The input is the Markdown export of the document's canonical DoclingDocument, so
+# tables arrive as contiguous `| ... |` row blocks: they split only at the row level, and only
+# when one table alone exceeds `chunk_size`.
+#
+# Point EXTRALIT_CHUNKING_RULES_PATH at a copy of this file to tune it without a code change.
+# Schema: https://docs.chonkie.ai/oss/chunkers/recursive-chunker
+
+tokenizer: character
+chunk_size: 2048
+min_characters_per_chunk: 24
+
+rules:
+  levels:
+    # 1. Section headings. A newline before the hashes keeps inline `#` (e.g. "sample #3") from
+    #    splitting, and include_delim: next keeps each heading attached to the section it opens.
+    - delimiters: ["\n# ", "\n## ", "\n### ", "\n#### ", "\n##### ", "\n###### "]
+      include_delim: next
+    # 2. Blocks: paragraphs, lists and whole tables are separated by a blank line.
+    - delimiters: ["\n\n", "\r\n\r\n"]
+      include_delim: prev
+    # 3. Lines: list items and table rows.
+    - delimiters: ["\n", "\r\n"]
+      include_delim: prev
+    # 4. Sentences.
+    - delimiters: [". ", "! ", "? "]
+      include_delim: prev
+    # 5. Words.
+    - whitespace: true
+      include_delim: prev
+    # 6. Characters, the last resort for a single oversized token.
+    - include_delim: prev

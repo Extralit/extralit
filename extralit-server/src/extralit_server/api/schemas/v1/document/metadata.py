@@ -68,11 +68,11 @@ class PreprocessingMetadata(BaseModel):
 
 
 class ChunkMetadata(BaseModel):
-    """A single text chunk produced by the chunker."""
+    """One chunk of a document's Markdown, as stored in its chunks JSON object."""
 
     text: str = Field(..., description="Chunk text content")
-    start_index: int = Field(..., description="Character start offset in source text")
-    end_index: int = Field(..., description="Character end offset in source text")
+    start_index: int = Field(..., description="Character start offset in the document Markdown")
+    end_index: int = Field(..., description="Character end offset in the document Markdown")
     token_count: int = Field(..., description="Number of tokens in the chunk")
 
 
@@ -81,7 +81,6 @@ class TextExtractionMetadata(BaseModel):
 
     markdown: str = Field(None, description="Extracted text")
     extraction_method: str = Field(..., description="Method used for extraction")
-    chunks: Optional[list[ChunkMetadata]] = Field(None, description="Text chunks for embedding / retrieval")
 
 
 class LayoutMetadata(BaseModel):
@@ -105,6 +104,20 @@ class LayoutMetadata(BaseModel):
     )
 
 
+class ChunkingMetadata(BaseModel):
+    """Chunking job results.
+
+    Only pointers and counts, like `LayoutMetadata`: the chunks live in object storage because
+    `documents.metadata_` is returned in full by every `GET /documents` listing.
+    """
+
+    chunks_url: str = Field(..., description="S3 object path of the chunks JSON")
+    num_chunks: int = Field(default=0, description="Number of chunks produced")
+    markdown_length: int = Field(default=0, description="Characters in the Markdown the chunk offsets index into")
+    tokenizer: str = Field(..., description="Tokenizer `token_count` was measured with")
+    chunk_size: int = Field(..., description="Maximum tokens per chunk the rules allowed")
+
+
 class DocumentProcessingMetadata(BaseModel):
     """Complete document processing metadata stored in documents.metadata_."""
 
@@ -113,6 +126,7 @@ class DocumentProcessingMetadata(BaseModel):
     preprocessing_metadata: Optional[PreprocessingMetadata] = Field(None, description="Preprocessing results")
     text_extraction_metadata: Optional[TextExtractionMetadata] = Field(None, description="Text extraction results")
     layout_metadata: Optional[LayoutMetadata] = Field(None, description="Layout extraction results")
+    chunking_metadata: Optional[ChunkingMetadata] = Field(None, description="Chunking results")
     workflow_status: str = Field(default="running", description="Overall workflow status")
 
     def update_analysis_results(self, analysis_result: dict) -> None:
@@ -152,16 +166,6 @@ class DocumentProcessingMetadata(BaseModel):
             processed_s3_url=preprocess_result.get("processed_s3_url"),
             rotation_ran=preprocess_result.get("rotation_ran"),
             error=preprocess_result.get("error"),
-        )
-
-    def update_text_extraction_results(
-        self, text: str, chunks: list[dict], extraction_method: str = "external_ocr"
-    ) -> None:
-        """Update text extraction metadata including chunks."""
-        self.text_extraction_metadata = TextExtractionMetadata(
-            markdown=text,
-            extraction_method=extraction_method,
-            chunks=[ChunkMetadata(**c) for c in chunks],
         )
 
     def is_workflow_complete(self) -> bool:

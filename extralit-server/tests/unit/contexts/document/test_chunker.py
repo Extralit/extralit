@@ -12,105 +12,163 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the chonkie-based text chunker."""
+"""Tests for the YAML-configured chonkie chunker."""
 
-from extralit_server.contexts.document.chunker import chunk_text
+import json
+from pathlib import Path
+
+import pytest
+from docling_core.types.doc import ContentLayer, DocItemLabel, DoclingDocument, TableCell, TableData
+
+from extralit_server.contexts.document import chunker
+from extralit_server.contexts.document.chunker import (
+    DEFAULT_RULES_PATH,
+    chunk_document,
+    chunk_text,
+    load_config,
+    rules_path,
+)
+
+SENTENCE = "The odds ratio for the resistant genotype was elevated in every cohort. "
+
+
+def table_document() -> DoclingDocument:
+    rows = [["Genotype", "OR", "95% CI"], ["RR", "2.6", "1.01-2.83"], ["RS", "3.04", "1.10-2.72"]]
+    cells = [
+        TableCell(
+            text=value,
+            start_row_offset_idx=r,
+            end_row_offset_idx=r + 1,
+            start_col_offset_idx=c,
+            end_col_offset_idx=c + 1,
+            column_header=r == 0,
+        )
+        for r, row in enumerate(rows)
+        for c, value in enumerate(row)
+    ]
+    doc = DoclingDocument(name="doc")
+    doc.add_heading("Results", level=1)
+    doc.add_text(label=DocItemLabel.TEXT, text=SENTENCE * 12)
+    doc.add_table(data=TableData(num_rows=3, num_cols=3, table_cells=cells))
+    doc.add_text(label=DocItemLabel.PAGE_FOOTER, text="Journal footer 2024", content_layer=ContentLayer.FURNITURE)
+    doc.add_text(label=DocItemLabel.TEXT, text=SENTENCE * 12)
+    return doc
+
+
+class TestRulesConfig:
+    def test_shipped_rules_file_validates(self):
+        config = load_config(DEFAULT_RULES_PATH)
+
+        assert config.tokenizer == "character"
+        assert config.chunk_size > 0
+        assert config.rules["levels"][0]["include_delim"] == "next"
+
+    def test_rules_path_defaults_to_the_shipped_file(self, monkeypatch):
+        monkeypatch.setattr(chunker.settings, "chunking_rules_path", None)
+
+        assert rules_path() == DEFAULT_RULES_PATH
+
+    def test_rules_path_follows_settings(self, monkeypatch, tmp_path):
+        custom = tmp_path / "rules.yaml"
+        monkeypatch.setattr(chunker.settings, "chunking_rules_path", str(custom))
+
+        assert rules_path() == custom
+
+    def test_a_custom_rules_file_changes_the_split(self, tmp_path):
+        # Only a blank-line level: sentences inside one paragraph are never split apart.
+        custom = tmp_path / "rules.yaml"
+        custom.write_text(
+            "chunk_size: 64\nmin_characters_per_chunk: 1\nrules:\n  levels:\n"
+            '    - delimiters: ["\\n\\n"]\n'
+            "    - whitespace: true\n"
+        )
+        text = "First block.\n\nSecond block."
+
+        chunks = chunk_text(text, path=Path(custom))
+
+        assert "".join(c["text"] for c in chunks) == text
+
+    def test_an_invalid_rules_file_is_rejected(self, tmp_path):
+        custom = tmp_path / "rules.yaml"
+        custom.write_text("chunk_size: 0\nrules: {}\n")
+
+        with pytest.raises(ValueError):
+            load_config(Path(custom))
 
 
 class TestChunkText:
-    """Tests for chunk_text using chonkie RecursiveChunker."""
+    @pytest.mark.parametrize("text", ["", "   \n\t  "])
+    def test_blank_text_has_no_chunks(self, text):
+        assert chunk_text(text) == []
 
-    def test_empty_string_returns_empty(self):
-        assert chunk_text("") == []
+    def test_chunks_are_json_serialisable_dicts(self):
+        chunks = chunk_text("Some sample text for testing the chunker output format.")
 
-    def test_whitespace_only_returns_empty(self):
-        assert chunk_text("   \n\t  ") == []
+        assert chunks
+        assert set(chunks[0]) == {"text", "start_index", "end_index", "token_count"}
+        json.dumps(chunks)
 
-    def test_short_text_single_chunk(self):
-        text = "Hello world. This is a short sentence."
-        chunks = chunk_text(text, chunk_size=512)
-        assert len(chunks) >= 1
-        # The full text should appear in the chunk(s)
-        combined = " ".join(c["text"] for c in chunks)
-        assert "Hello world" in combined
+    def test_offsets_index_into_the_source_text(self):
+        text = "# Title\n\n" + SENTENCE * 80 + "\n\n## Methods\n\n" + SENTENCE * 40
 
-    def test_chunk_dict_keys(self):
-        text = "Some sample text for testing the chunker output format."
-        chunks = chunk_text(text, chunk_size=512)
-        assert len(chunks) >= 1
-        for chunk in chunks:
-            assert "text" in chunk
-            assert "start_index" in chunk
-            assert "end_index" in chunk
-            assert "token_count" in chunk
-            assert isinstance(chunk["text"], str)
-            assert isinstance(chunk["start_index"], int)
-            assert isinstance(chunk["end_index"], int)
-            assert isinstance(chunk["token_count"], int)
-
-    def test_long_text_produces_multiple_chunks(self):
-        # Create text that exceeds a single chunk
-        text = "This is a paragraph of text. " * 200
-        chunks = chunk_text(text, chunk_size=64)
-        assert len(chunks) > 1
-
-    def test_token_count_positive(self):
-        text = "The quick brown fox jumps over the lazy dog."
-        chunks = chunk_text(text, chunk_size=512)
-        for chunk in chunks:
-            assert chunk["token_count"] > 0
-
-    def test_start_end_index_ordering(self):
-        text = "Sentence number one. " * 100
-        chunks = chunk_text(text, chunk_size=32)
-        for chunk in chunks:
-            assert chunk["start_index"] < chunk["end_index"]
-
-    def test_chunks_are_json_serialisable(self):
-        import json
-
-        text = "A simple test for JSON serialisation."
-        chunks = chunk_text(text, chunk_size=512)
-        # Should not raise
-        serialised = json.dumps(chunks)
-        assert isinstance(serialised, str)
-
-    def test_custom_chunk_size(self):
-        text = "Word " * 500
-        chunks_small = chunk_text(text, chunk_size=32)
-        chunks_large = chunk_text(text, chunk_size=256)
-        # Smaller chunk size ⇒ more chunks
-        assert len(chunks_small) > len(chunks_large)
-
-    def test_table_header_and_body_are_merged(self):
-        text = (
-            "Table 2  Evaluation of the association between different genotypes of L119F-GSTe2 and the longevity "
-            "of exposed mosquitoes\n\n"
-            "Genotypes\n\nRR vs. SS\n\nRR vs. RS\n\nRS vs. SS\n\nR vs. S\n\n"
-            "(D2-D5)\n\n(D6-D10)\n\nOR\n\n95% CI\n\nP\n\n"
-            "2.6\n\n1.01-2.83\n\n0.02*\n\n"
-            "3.04\n\n1.10-2.72\n\n0.004*\n\n"
-            "6.47\n\n1.69-5.27\n\n< 0.0001*\n"
-        )
-
-        # Force base chunking to split, then verify table-aware merge rejoins it.
-        chunks = chunk_text(text, chunk_size=160, merge_table_chunks=True)
-
-        assert len(chunks) == 1
-        assert "Table 2" in chunks[0]["text"]
-        assert "0.004*" in chunks[0]["text"]
-
-    def test_table_merge_can_be_disabled(self):
-        text = (
-            "Table 2  Evaluation of the association between different genotypes of L119F-GSTe2 and the longevity "
-            "of exposed mosquitoes\n\n"
-            "Genotypes\n\nRR vs. SS\n\nRR vs. RS\n\nRS vs. SS\n\nR vs. S\n\n"
-            "(D2-D5)\n\n(D6-D10)\n\nOR\n\n95% CI\n\nP\n\n"
-            "2.6\n\n1.01-2.83\n\n0.02*\n\n"
-            "3.04\n\n1.10-2.72\n\n0.004*\n\n"
-            "6.47\n\n1.69-5.27\n\n< 0.0001*\n"
-        )
-
-        chunks = chunk_text(text, chunk_size=160, merge_table_chunks=False)
+        chunks = chunk_text(text, chunk_size=400)
 
         assert len(chunks) > 1
+        assert all(text[c["start_index"] : c["end_index"]] == c["text"] for c in chunks)
+        assert "".join(c["text"] for c in chunks) == text
+
+    def test_chunks_respect_chunk_size(self):
+        chunks = chunk_text(SENTENCE * 100, chunk_size=300)
+
+        assert all(c["token_count"] <= 300 for c in chunks)
+
+    def test_smaller_chunk_size_gives_more_chunks(self):
+        text = SENTENCE * 100
+
+        assert len(chunk_text(text, chunk_size=200)) > len(chunk_text(text, chunk_size=1000))
+
+    def test_long_paragraphs_split_at_sentence_ends(self):
+        chunks = chunk_text(SENTENCE * 40, chunk_size=800)
+
+        assert len(chunks) > 1
+        assert all(c["text"].endswith(". ") for c in chunks)
+
+    def test_a_heading_opens_the_chunk_of_its_section(self):
+        text = SENTENCE * 20 + "\n## Methods\n\n" + SENTENCE * 20
+
+        chunks = chunk_text(text, chunk_size=1500)
+
+        assert any(c["text"].startswith("\n## Methods") for c in chunks)
+
+    def test_an_inline_hash_is_not_a_heading(self):
+        text = (SENTENCE * 10) + "We used sample #3 and C# tooling. " + (SENTENCE * 10)
+
+        chunks = chunk_text(text, chunk_size=1000)
+
+        assert not any(c["text"].startswith(("#3", "# tooling")) for c in chunks)
+
+
+class TestChunkDocument:
+    def test_a_table_stays_in_one_chunk(self):
+        markdown, chunks = chunk_document(table_document(), chunk_size=800)
+
+        table_chunks = [c for c in chunks if "| Genotype" in c["text"]]
+        assert len(table_chunks) == 1
+        assert "1.10-2.72" in table_chunks[0]["text"]
+        assert "| Genotype" in markdown
+
+    def test_offsets_index_into_the_returned_markdown(self):
+        markdown, chunks = chunk_document(table_document(), chunk_size=800)
+
+        assert all(markdown[c["start_index"] : c["end_index"]] == c["text"] for c in chunks)
+
+    def test_furniture_is_left_out(self):
+        markdown, chunks = chunk_document(table_document())
+
+        assert "Journal footer" not in markdown
+        assert not any("Journal footer" in c["text"] for c in chunks)
+
+    def test_heading_is_rendered_as_markdown(self):
+        markdown, _ = chunk_document(table_document())
+
+        assert markdown.startswith("# Results") or markdown.startswith("## Results")

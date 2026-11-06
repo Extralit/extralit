@@ -110,6 +110,18 @@ class TestLayoutJobSequencing:
         for step in ("text_extraction", "document_layout"):
             assert prepared_for(enqueued, step)["depends_on"].allow_failure is True
 
+    async def test_chunking_depends_on_the_layout_job(self, enqueued):
+        # Chunks are cut from the stored DoclingDocument, which only exists once layout commits.
+        await run_workflow(layout_parser="pdf_inspector")
+
+        layout = prepared_for(enqueued, "document_layout")
+        chunking = prepared_for(enqueued, "document_chunking")
+
+        assert chunking is not None
+        assert chunking["depends_on"].dependencies[0].id == layout["job_id"]
+        assert chunking["depends_on"].allow_failure is False
+        assert chunking["args"][1] == "ws"
+
     async def test_layout_is_enqueued_after_the_analysis_batch(self, enqueued):
         await run_workflow(layout_parser="pdf_inspector")
 

@@ -12,18 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Context-aware semantic chunking using chonkie's RecursiveChunker.
+"""Markdown-aware document chunking with chonkie's `RecursiveChunker`.
 
-Uses ``RecursiveChunker.from_recipe("markdown")`` which applies a hierarchy
-of Markdown-aware splitting rules:
+The splitting hierarchy is configuration, not code: it is read from a YAML file
+(`chunking_rules.yaml` next to this module, or `settings.chunking_rules_path`) into chonkie's
+`RecursiveRules`, so splitting runs in chonkie rather than in Python loops over the text.
 
-1. Markdown headers (``#`` through ``######``), kept attached to subsequent
-   text via ``include_delim="next"``.
-2. Double newlines (``\\n\\n``) for paragraph boundaries.
-3. Single newlines, then sentence-ending punctuation (``.``, ``!``, ``?``).
-
-This produces semantically contiguous chunks aligned with document sections
-instead of fixed-size token windows.
+Tables need no special casing. Chunks are cut from the Markdown export of the canonical
+`DoclingDocument`, where the layout parser has already identified each table and docling renders
+it as one contiguous block of rows. The rules split at blank lines before rows, so a table stays
+whole unless it alone is larger than `chunk_size`.
 
 See https://docs.chonkie.ai/oss/chunkers/recursive-chunker
 """
@@ -31,132 +29,105 @@ See https://docs.chonkie.ai/oss/chunkers/recursive-chunker
 from __future__ import annotations
 
 import logging
-import re
-from typing import Any
+from functools import lru_cache
+from pathlib import Path
+from typing import Any, Optional
 
-from chonkie import RecursiveChunker
+import yaml
+from chonkie import RecursiveChunker, RecursiveRules
+from docling_core.types.doc import DoclingDocument
+from pydantic import BaseModel, Field
+
+from extralit_server.settings import settings
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_CHUNK_SIZE = 2048
-DEFAULT_TABLE_CHUNK_SIZE = 900
-
-_TABLE_HEADER_RE = re.compile(r"^\s*Table\s+\d+\b", re.IGNORECASE)
-_TABLE_TERM_RE = re.compile(r"\b(?:OR|CI|P|Genotypes|RR|RS|SS)\b")
-_TABLE_INTERVAL_RE = re.compile(r"\(D\d+\s*[-–]\s*D\d+\)|\(D\d+\)")  # noqa: RUF001
+DEFAULT_RULES_PATH = Path(__file__).with_name("chunking_rules.yaml")
 
 
-def _is_table_header(text: str) -> bool:
-    """Return True if *text* starts with a table heading."""
-    return bool(_TABLE_HEADER_RE.match(text.strip()))
+class ChunkerConfig(BaseModel):
+    """What a chunking rules YAML file holds."""
+
+    tokenizer: str = Field("character", description="chonkie tokenizer name; `character` counts characters")
+    chunk_size: int = Field(2048, gt=0, description="Maximum tokens per chunk")
+    min_characters_per_chunk: int = Field(24, ge=1, description="Shortest piece kept as a split of its own")
+    rules: dict[str, Any] = Field(..., description="chonkie `RecursiveRules.from_dict` payload")
 
 
-def _looks_like_table_continuation(text: str) -> bool:
-    """Heuristically identify table-like continuation fragments.
+def rules_path() -> Path:
+    """The configured rules file, falling back to the one shipped with the server."""
+    configured = settings.chunking_rules_path
+    return Path(configured) if configured else DEFAULT_RULES_PATH
 
-    Scientific PDFs often extract table cells as many short lines. This helper
-    flags those chunks so we can keep table header/body together.
-    """
-    stripped = text.strip()
-    if not stripped:
-        return False
 
-    lines = [line.strip() for line in stripped.splitlines() if line.strip()]
-    if len(lines) < 2:
-        return False
+@lru_cache(maxsize=8)
+def load_config(path: Path) -> ChunkerConfig:
+    """Parse and validate a rules file. Cached: the file is read once per process."""
+    with open(path, encoding="utf-8") as f:
+        return ChunkerConfig.model_validate(yaml.safe_load(f))
 
-    short_line_count = sum(1 for line in lines if len(line) <= 20)
-    numeric_like_count = sum(1 for line in lines if re.search(r"\d|%|±|×|<|>", line))  # noqa: RUF001
-    has_table_terms = _TABLE_TERM_RE.search(stripped) is not None
-    has_intervals = _TABLE_INTERVAL_RE.search(stripped) is not None
 
-    return (short_line_count / len(lines) >= 0.55) and (
-        (numeric_like_count / len(lines) >= 0.35) or has_table_terms or has_intervals
+@lru_cache(maxsize=8)
+def get_chunker(path: Path, chunk_size: Optional[int] = None) -> RecursiveChunker:
+    """Build the chunker for a rules file once; chonkie chunkers are stateless between calls."""
+    config = load_config(path)
+    return RecursiveChunker(
+        tokenizer=config.tokenizer,
+        chunk_size=chunk_size or config.chunk_size,
+        rules=RecursiveRules.from_dict(config.rules),
+        min_characters_per_chunk=config.min_characters_per_chunk,
     )
-
-
-def _merge_adjacent_table_chunks(chunks: list[dict[str, Any]], max_table_chunk_size: int) -> list[dict[str, Any]]:
-    """Merge table heading + continuation chunks to preserve table context."""
-    if not chunks:
-        return []
-
-    merged: list[dict[str, Any]] = []
-    i = 0
-
-    while i < len(chunks):
-        current = dict(chunks[i])
-
-        if _is_table_header(current.get("text", "")) and i + 1 < len(chunks):
-            while i + 1 < len(chunks):
-                next_chunk = chunks[i + 1]
-                next_text = next_chunk.get("text", "")
-                combined_token_count = current.get("token_count", 0) + next_chunk.get("token_count", 0)
-
-                if combined_token_count > max_table_chunk_size:
-                    break
-
-                if not _looks_like_table_continuation(next_text):
-                    break
-
-                current["text"] = f"{current.get('text', '')}{next_text}"
-                current["end_index"] = next_chunk.get("end_index", current.get("end_index"))
-                current["token_count"] = combined_token_count
-                i += 1
-
-        merged.append(current)
-        i += 1
-
-    return merged
 
 
 def chunk_text(
     text: str,
     *,
-    chunk_size: int = DEFAULT_CHUNK_SIZE,
-    merge_table_chunks: bool = True,
-    max_table_chunk_size: int = DEFAULT_TABLE_CHUNK_SIZE,
+    chunk_size: Optional[int] = None,
+    path: Optional[Path] = None,
 ) -> list[dict[str, Any]]:
-    """Chunk *text* using chonkie's Markdown-aware ``RecursiveChunker``.
+    """Chunk Markdown `text` with the configured recursive rules.
 
-    Splits on Markdown headers first, then paragraph breaks, then
-    sentences — producing semantically contiguous, section-aligned chunks.
+    Args:
+        text: Markdown to split.
+        chunk_size: Overrides the rules file's `chunk_size`.
+        path: Rules file; defaults to `rules_path()`.
 
-    Returns a list of plain dicts (JSON-serialisable) with keys:
-        - ``text``: the chunk content
-        - ``start_index``: character start offset in the original text
-        - ``end_index``: character end offset in the original text
-        - ``token_count``: number of tokens in the chunk
+    Returns:
+        JSON-serialisable dicts with `text`, `start_index` and `end_index` (character offsets
+        into `text`) and `token_count`, in document order.
     """
     if not text or not text.strip():
         return []
 
-    chunker = RecursiveChunker.from_recipe(
-        "markdown",
-        lang="en",
-        chunk_size=chunk_size,
-    )
+    chunker = get_chunker(path or rules_path(), chunk_size)
+    return [
+        {
+            "text": chunk.text,
+            "start_index": chunk.start_index,
+            "end_index": chunk.end_index,
+            "token_count": chunk.token_count,
+        }
+        for chunk in chunker.chunk(text)
+    ]
 
-    chunks = chunker.chunk(text)
 
-    result: list[dict[str, Any]] = []
-    for chunk in chunks:
-        result.append(
-            {
-                "text": chunk.text,
-                "start_index": chunk.start_index,
-                "end_index": chunk.end_index,
-                "token_count": chunk.token_count,
-            }
-        )
+def document_markdown(doc: DoclingDocument) -> str:
+    """Body content as Markdown, rendered by docling: page headers and footers are furniture and
+    stay out, tables become Markdown tables, pictures leave no placeholder text behind."""
+    return doc.export_to_markdown(image_placeholder="")
 
-    if merge_table_chunks:
-        result = _merge_adjacent_table_chunks(result, max_table_chunk_size=max_table_chunk_size)
 
-    _LOGGER.debug(
-        "Chunked %d chars into %d chunks (size=%d, merge_table_chunks=%s)",
-        len(text),
-        len(result),
-        chunk_size,
-        merge_table_chunks,
-    )
-    return result
+def chunk_document(
+    doc: DoclingDocument,
+    *,
+    chunk_size: Optional[int] = None,
+    path: Optional[Path] = None,
+) -> tuple[str, list[dict[str, Any]]]:
+    """Render `doc` to Markdown and chunk it.
+
+    Returns the Markdown alongside the chunks, because chunk offsets index into it.
+    """
+    markdown = document_markdown(doc)
+    chunks = chunk_text(markdown, chunk_size=chunk_size, path=path)
+    _LOGGER.debug(f"Chunked {len(markdown)} chars of {doc.name!r} into {len(chunks)} chunks")
+    return markdown, chunks

@@ -1464,7 +1464,7 @@ requires-dist = [
     { name = "authlib", specifier = ">=1.9.2" },
     { name = "bcrypt", specifier = ">=4.2.0" },
     { name = "brotli-asgi", specifier = ">=1.7.0" },
-    { name = "chonkie", specifier = ">=1.0.2" },
+    { name = "chonkie", specifier = ">=1.7.0,<2.0.0" },
     { name = "click", specifier = ">=8.2.0" },
     { name = "datasets", specifier = ">=3.6.0" },
     { name = "docling-core", specifier = ">=2.105.0,<3.0.0" },

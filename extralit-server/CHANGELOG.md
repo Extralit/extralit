@@ -18,9 +18,10 @@ These are the section headers that we use:
 ### Added
 
 - Refactor document analysis and preprocessing job to support asynchronous s3 IO operations and large file processing.
-- Added text chunking pipeline using chonkie `RecursiveChunker` with a new RQ job (`process_text_extraction_result_job`) that extracts text from OCR JSON results, chunks it, and persists chunks to `documents.metadata_` in the database.
-- Added `ChunkMetadata` schema and `chunks` field to `TextExtractionMetadata` for storing text chunks alongside extracted text.
-- Added `chonkie>=1.0.2` as a dependency.
+- Added document chunking: `document_chunking_job` runs after `async_document_layout_job`, renders the stored `DoclingDocument` body to Markdown and splits it with chonkie's `RecursiveChunker`. Tables stay whole because the layout parser already delimits them; no regex heuristics.
+- Added `contexts/document/chunking_rules.yaml`, the chunker's tokenizer, `chunk_size` and splitting hierarchy (headings, blocks, lines, sentences, words) as chonkie `RecursiveRules`; override it with `EXTRALIT_CHUNKING_RULES_PATH`.
+- Added `ChunkingMetadata` (`chunks_url`, `num_chunks`, `markdown_length`, `tokenizer`, `chunk_size`) to the processing metadata. The chunks and their Markdown live at `chunks/{document_id}.json` in workspace storage, out of `documents.metadata_`, and are deleted with the document.
+- Added `chonkie>=1.7.0,<2.0.0` as a dependency.
 - Adopted `DoclingDocument` as the canonical internal layout model, so every extracted item carries a `page_no` + `bbox` + `charspan` provenance triple that an extraction record can cite.
 - Added swappable layout parsers behind `contexts/ocr/parsers`: `pdf_inspector` (MIT, required, the default) and `pymupdf` (AGPL, optional `pymupdf` extra, the only one yielding per-cell table geometry).
 - Added `async_document_layout_job` on the OCR queue, persisting layout as canonical JSON plus a columnar projection in the workspace's `layout/items.lance` and `layout/pages.lance` datasets, queryable through `LayoutStore` and its DuckDB views as soon as the job commits.
@@ -38,7 +39,7 @@ These are the section headers that we use:
 
 ### Removed
 
-- Removed `InMemoryChunkStore` (`chunk_store.py`) — chunks are now persisted to the database instead of a process-local dict.
+- Removed `InMemoryChunkStore` (`chunk_store.py`): chunks are persisted to workspace storage instead of a process-local dict.
 - Removed `contexts/document/analysis.py` (`PDFOCRLayerDetector`) and the OCR-only preprocessing knobs (`language`, `force_ocr`, `redo_ocr`, `skip_big`, `pdf_renderer`, `output_type`, `fast_web_view`, `deskew`, `enable_analysis`); `has_ocr_text_layer`, `needs_ocr` and `ocr_quality` are no longer written.
 - Removed the `marker` extra (`marker-pdf`, `torch`, `torchvision`, `transformers`) and the unused `async_marker_layout_job`.
 - Removed the deprecated Unstructured-shaped `document/chunks.py` schemas (`Segments`, `TextSegment`, `TableSegment`, `FigureSegment`, `Coordinates`) and the unreferenced `GPU_QUEUE`.

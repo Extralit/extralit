@@ -23,7 +23,7 @@ class TestDeleteDocumentArtifacts:
             await files.delete_document_artifacts(AsyncMock(), WORKSPACE, document_id)
 
         deleted = [call.args[2] for call in delete_object.await_args_list]
-        assert deleted == [f"pdf/{document_id}", f"thumbnails/{document_id}"]
+        assert deleted == [f"pdf/{document_id}", f"thumbnails/{document_id}", f"chunks/{document_id}.json"]
         assert delete_layout.await_args.args[1:] == (WORKSPACE, document_id)
 
     async def test_a_failing_artifact_does_not_stop_the_others(self):
@@ -35,7 +35,7 @@ class TestDeleteDocumentArtifacts:
         ):
             await files.delete_document_artifacts(AsyncMock(), WORKSPACE, document_id)
 
-        assert delete_object.await_count == 2
+        assert delete_object.await_count == 3
         assert delete_layout.await_count == 1
 
     async def test_a_failing_layout_delete_is_swallowed(self):
