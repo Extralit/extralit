@@ -7,7 +7,7 @@ from rq.job import Dependency
 
 from extralit_server.contexts.ocr.parsers.registry import default_parser_name
 from extralit_server.database import AsyncSessionLocal
-from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
+from extralit_server.jobs.document_jobs import analysis_and_preprocess_job, document_chunking_job
 from extralit_server.jobs.ocr_jobs import async_document_layout_job
 from extralit_server.jobs.queues import DEFAULT_QUEUE, OCR_QUEUE, REDIS_CONNECTION
 from extralit_server.models.database import DocumentWorkflow
@@ -114,7 +114,22 @@ async def create_document_workflow(
         result_ttl=JOB_RESULT_TTL,
         meta=meta("document_layout"),
     )
-    group.enqueue_many(queue=OCR_QUEUE, job_datas=[layout_job_data])
+    layout_jobs = group.enqueue_many(queue=OCR_QUEUE, job_datas=[layout_job_data])
+
+    # Step 5: Chunk the canonical layout. No allow_failure: with layout failed there is nothing
+    # (or only a stale layout) to chunk. The group already reports failed, and restarting the
+    # layout job releases this one.
+    chunking_job_data = DEFAULT_QUEUE.prepare_data(
+        document_chunking_job,
+        (document_id, workspace_name),
+        timeout=600,
+        job_id=f"document_chunking_{document_id}_{run_suffix}",
+        depends_on=Dependency(jobs=[layout_jobs[0]]) if layout_jobs else None,
+        retry=Retry(max=3, interval=[10, 30, 60]),
+        result_ttl=JOB_RESULT_TTL,
+        meta=meta("document_chunking"),
+    )
+    group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[chunking_job_data])
 
     # Step 6: Future table extraction job (conditional based on analysis results)
     # This will be added when table extraction is implemented

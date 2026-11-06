@@ -18,6 +18,10 @@ These are the section headers that we use:
 ### Added
 
 - Refactor document analysis and preprocessing job to support asynchronous s3 IO operations and large file processing.
+- Added document chunking: `document_chunking_job` runs after `async_document_layout_job`, renders the stored `DoclingDocument` body to Markdown and splits it with chonkie's `RecursiveChunker`. Tables stay whole because the layout parser already delimits them; no regex heuristics.
+- Added `contexts/document/chunking_rules.yaml`, the chunker's tokenizer, `chunk_size` and splitting hierarchy (headings, blocks, lines, sentences, words) as chonkie `RecursiveRules`; override it with `EXTRALIT_CHUNKING_RULES_PATH`.
+- Added `ChunkingMetadata` (`chunks_url`, `num_chunks`, `markdown_length`, `tokenizer`, `chunk_size`) to the processing metadata. The chunks and their Markdown live at `chunks/{document_id}.json` in workspace storage, out of `documents.metadata_`, and are deleted with the document.
+- Added `chonkie>=1.7.0,<2.0.0` as a dependency.
 - Adopted `DoclingDocument` as the canonical internal layout model, so every extracted item carries a `page_no` + `bbox` + `charspan` provenance triple that an extraction record can cite.
 - Added swappable layout parsers behind `contexts/ocr/parsers`: `pdf_inspector` (MIT, required, the default) and `pymupdf` (AGPL, optional `pymupdf` extra, the only one yielding per-cell table geometry).
 - Added `async_document_layout_job` on the OCR queue, persisting layout as canonical JSON plus a columnar projection in the workspace's `layout/items.lance` and `layout/pages.lance` datasets, queryable through `LayoutStore` and its DuckDB views as soon as the job commits.

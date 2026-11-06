@@ -4,14 +4,18 @@ import logging
 from typing import Any
 from uuid import UUID
 
+from anyio import to_thread
 from rq import Retry, get_current_job
 from rq.decorators import job
 
-from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingMetadata
+from extralit_server.api.schemas.v1.document.metadata import ChunkingMetadata, DocumentProcessingMetadata
 from extralit_server.contexts import files
+from extralit_server.contexts.document import chunk_storage
+from extralit_server.contexts.document.chunker import chunk_document, load_config, rules_path
 from extralit_server.contexts.document.margin import PDFAnalyzer
 from extralit_server.contexts.document.metadata import update_processing_metadata
 from extralit_server.contexts.document.preprocessing import PDFPreprocessor
+from extralit_server.contexts.ocr import storage as layout_storage
 from extralit_server.contexts.ocr.triage import triage_pdf
 from extralit_server.contexts.workflows import writer_skip_reason
 from extralit_server.database import AsyncSessionLocal
@@ -151,4 +155,72 @@ async def analysis_and_preprocess_job(
         _LOGGER.error(f"Error in analysis_and_preprocess_job for document {document_id}: {e}")
         current_job.meta["error"] = str(e)
         current_job.save_meta()
+        raise
+
+
+@job(queue=DEFAULT_QUEUE, connection=REDIS_CONNECTION, timeout=600, retry=Retry(max=3, interval=[10, 30, 60]))
+async def document_chunking_job(document_id: UUID, workspace_name: str) -> dict[str, Any]:
+    """Chunk a document's canonical layout and persist the chunks.
+
+    Runs after `async_document_layout_job`: it reads the stored `DoclingDocument`, renders its body
+    to Markdown and splits that with the YAML-configured chonkie `RecursiveChunker`. The chunks go
+    to object storage; `documents.metadata_` only gets a `ChunkingMetadata` pointer.
+
+    Args:
+        document_id: UUID of the document to chunk
+        workspace_name: workspace holding the layout and receiving the chunks
+
+    Returns:
+        The chunks path and counts, or `skipped` with the reason nothing was written.
+    """
+    current_job = get_current_job()
+    if current_job is not None:
+        current_job.meta.update({"document_id": str(document_id), "workflow_step": "document_chunking"})
+        current_job.save_meta()
+
+    try:
+        storage = await files.get_storage()
+        doc = await layout_storage.load_layout(storage, workspace_name, document_id)
+
+        path = rules_path()
+        config = load_config(path)
+        markdown, chunks = await to_thread.run_sync(lambda: chunk_document(doc, path=path))
+
+        workflow_id = (current_job.meta or {}).get("workflow_id") if current_job is not None else None
+        async with AsyncSessionLocal() as db:
+            skip = await writer_skip_reason(db, document_id, workflow_id)
+        if skip is not None:
+            _LOGGER.info(f"Chunks for document {document_id} were not stored: {skip}")
+            return {"document_id": str(document_id), "skipped": skip}
+
+        chunks_url = await chunk_storage.store_chunks(storage, workspace_name, document_id, markdown, chunks)
+        chunking = ChunkingMetadata(
+            chunks_url=chunks_url,
+            num_chunks=len(chunks),
+            markdown_length=len(markdown),
+            tokenizer=config.tokenizer,
+            chunk_size=config.chunk_size,
+        )
+
+        async with AsyncSessionLocal() as db:
+            updated = await update_processing_metadata(
+                db, document_id, lambda m: setattr(m, "chunking_metadata", chunking)
+            )
+        if updated is None:
+            # Deleted between the check and the write: drop what we just stored.
+            await chunk_storage.delete_chunks(storage, workspace_name, document_id)
+            return {"document_id": str(document_id), "skipped": "document deleted"}
+
+        if current_job is not None:
+            current_job.meta["num_chunks"] = len(chunks)
+            current_job.save_meta()
+
+        _LOGGER.info(f"Chunking complete for {document_id}: {len(chunks)} chunks")
+        return {"document_id": str(document_id), **chunking.model_dump()}
+
+    except Exception as e:
+        _LOGGER.error(f"Error chunking document {document_id}: {e}", exc_info=True)
+        if current_job is not None:
+            current_job.meta["error"] = str(e)
+            current_job.save_meta()
         raise

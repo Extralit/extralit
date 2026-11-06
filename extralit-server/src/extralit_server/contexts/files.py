@@ -360,13 +360,14 @@ async def delete_workspace_objects(storage: ObjectStorage, workspace: str) -> No
 
 
 async def delete_document_artifacts(storage: ObjectStorage, workspace: str, document_id: UUID | str) -> None:
-    """Remove every artifact of a document: PDF, thumbnail, layout JSON and layout rows.
+    """Remove every artifact of a document: PDF, thumbnail, layout JSON, layout rows and chunks.
 
     Best effort — the DB rows are already gone by the time this runs, so a storage hiccup leaves a
     leaked object rather than a document the caller cannot delete. A leak here is negligible and can
     be ignored: the objects are unreachable and layout rows only survive until the document is
     re-parsed or a sweeper runs.
     """
+    from extralit_server.contexts.document import chunk_storage
     from extralit_server.contexts.ocr import storage as layout_storage
 
     for object_path in (get_pdf_s3_object_path(document_id), get_thumbnail_s3_object_path(document_id)):
@@ -379,6 +380,8 @@ async def delete_document_artifacts(storage: ObjectStorage, workspace: str, docu
         await layout_storage.delete_layout(storage, workspace, document_id)
     except Exception as e:
         _LOGGER.warning(f"Could not delete layout artifacts for document {document_id}: {e}")
+
+    await chunk_storage.delete_chunks(storage, workspace, document_id)
 
 
 async def put_document_file(

@@ -67,6 +67,15 @@ class PreprocessingMetadata(BaseModel):
     error: Optional[str] = Field(None, description="Why preprocessing fell back to the original PDF")
 
 
+class ChunkMetadata(BaseModel):
+    """One chunk of a document's Markdown, as stored in its chunks JSON object."""
+
+    text: str = Field(..., description="Chunk text content")
+    start_index: int = Field(..., description="Character start offset in the document Markdown")
+    end_index: int = Field(..., description="Character end offset in the document Markdown")
+    token_count: int = Field(..., description="Number of tokens in the chunk")
+
+
 class TextExtractionMetadata(BaseModel):
     """Text extraction job results."""
 
@@ -95,6 +104,20 @@ class LayoutMetadata(BaseModel):
     )
 
 
+class ChunkingMetadata(BaseModel):
+    """Chunking job results.
+
+    Only pointers and counts, like `LayoutMetadata`: the chunks live in object storage because
+    `documents.metadata_` is returned in full by every `GET /documents` listing.
+    """
+
+    chunks_url: str = Field(..., description="S3 object path of the chunks JSON")
+    num_chunks: int = Field(default=0, description="Number of chunks produced")
+    markdown_length: int = Field(default=0, description="Characters in the Markdown the chunk offsets index into")
+    tokenizer: str = Field(..., description="Tokenizer `token_count` was measured with")
+    chunk_size: int = Field(..., description="Maximum tokens per chunk the rules allowed")
+
+
 class DocumentProcessingMetadata(BaseModel):
     """Complete document processing metadata stored in documents.metadata_."""
 
@@ -103,6 +126,7 @@ class DocumentProcessingMetadata(BaseModel):
     preprocessing_metadata: Optional[PreprocessingMetadata] = Field(None, description="Preprocessing results")
     text_extraction_metadata: Optional[TextExtractionMetadata] = Field(None, description="Text extraction results")
     layout_metadata: Optional[LayoutMetadata] = Field(None, description="Layout extraction results")
+    chunking_metadata: Optional[ChunkingMetadata] = Field(None, description="Chunking results")
     workflow_status: str = Field(default="running", description="Overall workflow status")
 
     def update_analysis_results(self, analysis_result: dict) -> None:

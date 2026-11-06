@@ -183,6 +183,12 @@ class Settings(BaseSettings):
         "an s3:// URI is accepted by lancedb.connect but unsupported/unvalidated for now.",
     )
 
+    chunking_rules_path: str | None = Field(
+        default=None,
+        description="YAML file of chonkie RecursiveChunker rules used to chunk documents. Defaults to the "
+        "`chunking_rules.yaml` shipped in `extralit_server/contexts/document`.",
+    )
+
     extralit_url: str | None = Field(default=None, description="The extralit server url for LLM serving endpoint")
 
     elasticsearch: str = "http://localhost:9200"
