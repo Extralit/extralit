@@ -49,38 +49,9 @@ def _plain_text(markdown: str) -> str:
     return _ESCAPE_OR_EMPHASIS.sub(lambda m: m[1] or "", _STRIKETHROUGH.sub(r"\1", markdown))
 
 
-def _table_rows(block: liteparse.LayoutBlock) -> list[list[liteparse.LayoutCell]]:
-    """`header` is not repeated in `rows`, so it becomes row 0 and the body shifts down."""
-    return [block.header, *(block.rows or [])] if block.header else (block.rows or [])
-
-
-def _filled_rows(block: liteparse.LayoutBlock) -> list[list[str]]:
-    rows = ([cell.text.strip() for cell in row] for row in _table_rows(block))
-    return [row for row in rows if any(row)]
-
-
-def restore_stripped_rows(
-    block: liteparse.LayoutBlock, unstripped: Sequence[liteparse.LayoutBlock]
-) -> liteparse.LayoutBlock:
-    """Swap in the unstripped table when it is this table plus lost leading rows.
-
-    A lost row must fill two cells, because a running title can also fuse onto a table.
-    """
-    if block.kind != "table":
-        return block
-
-    rows = _filled_rows(block)
-    for candidate in unstripped:
-        if candidate.kind != "table":
-            continue
-        candidate_rows = _filled_rows(candidate)
-        lost = candidate_rows[: -len(rows)] if rows else []
-        if lost and candidate_rows[-len(rows) :] == rows and all(sum(map(bool, row)) >= 2 for row in lost):
-            return candidate
-    return block
-
-
 def _table_cells(block: liteparse.LayoutBlock) -> list[TableCell]:
+    """`header` is not repeated in `rows`, so it becomes row 0 and the body shifts down."""
+    grid = [block.header, *(block.rows or [])] if block.header else (block.rows or [])
     return [
         make_cell(
             cell.text.strip(),
@@ -89,7 +60,7 @@ def _table_cells(block: liteparse.LayoutBlock) -> list[TableCell]:
             column_header=bool(block.header) and row_index == 0,
             bbox=_bbox(cell.bbox) if cell.bbox else None,
         )
-        for row_index, row in enumerate(_table_rows(block))
+        for row_index, row in enumerate(grid)
         for col_index, cell in enumerate(row)
     ]
 
@@ -123,36 +94,22 @@ class LiteParseParser:
     def __init__(self, *, num_workers: Optional[int] = None):
         self._num_workers = num_workers
 
-    def _blocks(
-        self, pdf_bytes: bytes, pages: Sequence[int], *, ocr: bool, keep_headers_footers: bool = False
-    ) -> dict[int, list[liteparse.LayoutBlock]]:
-        engine = liteparse.LiteParse(
-            ocr_enabled=ocr,
-            extract_blocks=True,
-            target_pages=",".join(str(page) for page in pages),
-            num_workers=self._num_workers,
-            keep_headers_footers=keep_headers_footers,
-            quiet=True,
-        )
-        return {page.page_num: page.blocks or [] for page in engine.parse(pdf_bytes).pages}
-
     def parse_pages(self, pdf_bytes: bytes, pages: Sequence[int], *, ocr: bool) -> dict[int, list[LayoutBlock]]:
         # liteparse rejects an empty target_pages rather than reading it as "no pages".
         if not pages:
             return {}
 
-        blocks = self._blocks(pdf_bytes, pages, ocr=ocr)
-
-        # Stripping compares pages, so it also eats a table header repeated on each of them.
-        table_pages = [page for page, found in blocks.items() if any(b.kind == "table" for b in found)]
-        if len(pages) > 1 and table_pages:
-            unstripped = self._blocks(pdf_bytes, table_pages, ocr=ocr, keep_headers_footers=True)
-            for page, found in unstripped.items():
-                blocks[page] = [restore_stripped_rows(block, found) for block in blocks[page]]
-
+        engine = liteparse.LiteParse(
+            ocr_enabled=ocr,
+            extract_blocks=True,
+            target_pages=",".join(str(page) for page in pages),
+            num_workers=self._num_workers,
+            quiet=True,
+        )
         return {
-            page: [mapped for block in found if (mapped := to_layout_block(block))] for page, found in blocks.items()
+            page.page_num: [mapped for block in page.blocks or [] if (mapped := to_layout_block(block))]
+            for page in engine.parse(pdf_bytes).pages
         }
 
 
-__all__ = ["LiteParseParser", "restore_stripped_rows", "to_layout_block"]
+__all__ = ["LiteParseParser", "to_layout_block"]
