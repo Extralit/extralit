@@ -104,6 +104,8 @@ class LiteParseParser:
             extract_blocks=True,
             target_pages=",".join(str(page) for page in pages),
             num_workers=self._num_workers,
+            # True fuses running titles onto body paragraphs; False also strips repeated table headers.
+            keep_headers_footers=False,
             quiet=True,
         )
         return {

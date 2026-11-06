@@ -194,6 +194,7 @@ class TestParsePages:
         assert calls[0]["extract_blocks"] is True
         assert calls[0]["target_pages"] == "1,3"
         assert calls[0]["num_workers"] == 2
+        assert calls[0]["keep_headers_footers"] is False
 
 
 @pytest.fixture(scope="module")
