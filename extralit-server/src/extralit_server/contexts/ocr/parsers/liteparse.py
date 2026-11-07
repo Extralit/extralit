@@ -14,7 +14,7 @@ from dataclasses import replace
 from typing import Optional
 
 import liteparse
-from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, TableCell
+from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel
 
 from extralit_server.contexts.ocr.docling_builder import LayoutBlock
 from extralit_server.contexts.ocr.tables import make_cell
@@ -40,11 +40,6 @@ def _bbox(rect: liteparse.AnnotationRect) -> BoundingBox:
         b=rect.y + rect.height,
         coord_origin=CoordOrigin.TOPLEFT,
     )
-
-
-def _contains(rect: liteparse.AnnotationRect, item: liteparse.TextItem) -> bool:
-    x, y = item.x + item.width / 2, item.y + item.height / 2
-    return rect.x <= x <= rect.x + rect.width and rect.y <= y <= rect.y + rect.height
 
 
 def _union(rects: Sequence[liteparse.AnnotationRect]) -> liteparse.AnnotationRect:
@@ -75,11 +70,12 @@ def restore_stripped_header(
 
     columns: dict[int, list[liteparse.TextItem]] = defaultdict(list)
     for item in items:
+        center_x, center_y = item.x + item.width / 2, item.y + item.height / 2
         above_body = item.y + item.height <= top + 1 and item.y + 2 * item.height >= top
         over_table = item.x < block.bbox.x + block.bbox.width and item.x + item.width > block.bbox.x
-        if item.text.strip() and above_body and over_table and not any(_contains(rect, item) for rect in others):
-            column = bisect.bisect_right(lefts, item.x + item.width / 2) - 1
-            columns[max(column, 0)].append(item)
+        placed = any(r.x <= center_x <= r.x + r.width and r.y <= center_y <= r.y + r.height for r in others)
+        if item.text.strip() and above_body and over_table and not placed:
+            columns[max(bisect.bisect_right(lefts, center_x) - 1, 0)].append(item)
     if len(columns) < 2:
         return block
 
@@ -95,22 +91,6 @@ def restore_stripped_header(
     return replace(block, header=header, rows=body, bbox=bbox)
 
 
-def _table_cells(block: liteparse.LayoutBlock) -> list[TableCell]:
-    """`header` is not repeated in `rows`, so it becomes row 0 and the body shifts down."""
-    grid = [block.header, *(block.rows or [])] if block.header else (block.rows or [])
-    return [
-        make_cell(
-            cell.text.strip(),
-            row=row_index,
-            col=col_index,
-            column_header=bool(block.header) and row_index == 0,
-            bbox=_bbox(cell.bbox) if cell.bbox else None,
-        )
-        for row_index, row in enumerate(grid)
-        for col_index, cell in enumerate(row)
-    ]
-
-
 def to_layout_block(block: liteparse.LayoutBlock) -> Optional[LayoutBlock]:
     """Map one liteparse block; rules carry no content, and a block without a bbox cannot be placed."""
     if block.kind == "rule":
@@ -121,6 +101,22 @@ def to_layout_block(block: liteparse.LayoutBlock) -> Optional[LayoutBlock]:
         _LOGGER.warning(f"dropping liteparse {block.kind!r} block with bbox {block.bbox}")
         return None
 
+    cells = None
+    if label == DocItemLabel.TABLE:
+        # `header` is not repeated in `rows`, so it becomes row 0 and the body shifts down.
+        grid = [block.header, *(block.rows or [])] if block.header else (block.rows or [])
+        cells = [
+            make_cell(
+                cell.text.strip(),
+                row=row_index,
+                col=col_index,
+                column_header=bool(block.header) and row_index == 0,
+                bbox=_bbox(cell.bbox) if cell.bbox else None,
+            )
+            for row_index, row in enumerate(grid)
+            for col_index, cell in enumerate(row)
+        ]
+
     return LayoutBlock(
         label=label,
         bbox=_bbox(block.bbox),
@@ -128,7 +124,7 @@ def to_layout_block(block: liteparse.LayoutBlock) -> Optional[LayoutBlock]:
         text=block.text or "\n".join(block.lines or []),
         # On a list_item `level` is nesting depth, which must not turn it into a heading.
         level=block.level if label == DocItemLabel.SECTION_HEADER else None,
-        cells=_table_cells(block) if label == DocItemLabel.TABLE else None,
+        cells=cells,
         marker=block.marker,
         enumerated=bool(block.ordered),
     )
