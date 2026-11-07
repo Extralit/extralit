@@ -87,7 +87,8 @@ def restore_stripped_header(
     columns: dict[int, list[liteparse.TextItem]] = defaultdict(list)
     for item in items:
         above_body = item.y + item.height <= top + 1 and item.y + 2 * item.height >= top
-        if item.text.strip() and above_body and not any(_contains(rect, item) for rect in others):
+        over_table = item.x < block.bbox.x + block.bbox.width and item.x + item.width > block.bbox.x
+        if item.text.strip() and above_body and over_table and not any(_contains(rect, item) for rect in others):
             column = bisect.bisect_right(lefts, item.x + item.width / 2) - 1
             columns[max(column, 0)].append(item)
     if len(columns) < 2:

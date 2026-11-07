@@ -253,6 +253,11 @@ class TestRestoreStrippedHeader:
         words = [_word("Journal", 72.0, y=33.0), _word("Volume", 220.0, y=33.0)]
         assert restore_stripped_header(block, [block], words) is block
 
+    def test_words_outside_the_table_width_are_ignored(self):
+        block = _body()
+        words = [_word("Fig", 400.0), _word("Species", 72.0)]
+        assert restore_stripped_header(block, [block], words) is block
+
     def test_words_placed_in_another_block_are_ignored(self):
         block = _body()
         rect = liteparse.AnnotationRect(x=60.0, y=80.0, width=300.0, height=16.0)
