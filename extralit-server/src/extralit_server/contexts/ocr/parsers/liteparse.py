@@ -5,9 +5,13 @@ Block and cell rects are natively top-left in 72-DPI page points, so nothing is 
 
 from __future__ import annotations
 
+import bisect
+import itertools
 import logging
 import re
+from collections import defaultdict
 from collections.abc import Sequence
+from dataclasses import replace
 from typing import Optional
 
 import liteparse
@@ -47,6 +51,58 @@ def _bbox(rect: liteparse.AnnotationRect) -> BoundingBox:
 def _plain_text(markdown: str) -> str:
     """Drop inline emphasis; a literal `*` arrives escaped, while an unpaired `~~` is literal."""
     return _ESCAPE_OR_EMPHASIS.sub(lambda m: m[1] or "", _STRIKETHROUGH.sub(r"\1", markdown))
+
+
+def _contains(rect: liteparse.AnnotationRect, item: liteparse.TextItem) -> bool:
+    x, y = item.x + item.width / 2, item.y + item.height / 2
+    return rect.x <= x <= rect.x + rect.width and rect.y <= y <= rect.y + rect.height
+
+
+def _union(rects: Sequence[liteparse.AnnotationRect]) -> liteparse.AnnotationRect:
+    left, top = min(r.x for r in rects), min(r.y for r in rects)
+    right, bottom = max(r.x + r.width for r in rects), max(r.y + r.height for r in rects)
+    return liteparse.AnnotationRect(x=left, y=top, width=right - left, height=bottom - top)
+
+
+def restore_stripped_header(
+    block: liteparse.LayoutBlock, page_blocks: Sequence[liteparse.LayoutBlock], items: Sequence[liteparse.TextItem]
+) -> liteparse.LayoutBlock:
+    """Rebuild a header that stripping removed from `blocks`; `text_items` still hold its words.
+
+    Stripping treats a header repeated on each page as furniture. Words count as that header
+    only if they sit one line above the body, in no other block, across at least two columns.
+    """
+    if block.kind != "table" or block.header or block.bbox is None:
+        return block
+
+    body = list(itertools.dropwhile(lambda row: not any(c.text.strip() for c in row), block.rows or []))
+    rects = [cell.bbox for cell in body[0]] if body else []
+    if len(rects) < 2 or None in rects:
+        return block
+
+    lefts = [rect.x for rect in rects]
+    top = min(rect.y for rect in rects)
+    others = [b.bbox for b in page_blocks if b is not block and b.bbox]
+
+    columns: dict[int, list[liteparse.TextItem]] = defaultdict(list)
+    for item in items:
+        above_body = item.y + item.height <= top + 1 and item.y + 2 * item.height >= top
+        if item.text.strip() and above_body and not any(_contains(rect, item) for rect in others):
+            column = bisect.bisect_right(lefts, item.x + item.width / 2) - 1
+            columns[max(column, 0)].append(item)
+    if len(columns) < 2:
+        return block
+
+    header = []
+    for index in range(len(rects)):
+        words = sorted(columns.get(index, []), key=lambda item: item.x)
+        boxes = [liteparse.AnnotationRect(x=w.x, y=w.y, width=w.width, height=w.height) for w in words]
+        header.append(
+            liteparse.LayoutCell(text=" ".join(w.text.strip() for w in words), bbox=_union(boxes) if boxes else None)
+        )
+
+    bbox = _union([block.bbox, *(cell.bbox for cell in header if cell.bbox)])
+    return replace(block, header=header, rows=body, bbox=bbox)
 
 
 def _table_cells(block: liteparse.LayoutBlock) -> list[TableCell]:
@@ -104,14 +160,18 @@ class LiteParseParser:
             extract_blocks=True,
             target_pages=",".join(str(page) for page in pages),
             num_workers=self._num_workers,
-            # True fuses running titles onto body paragraphs; False also strips repeated table headers.
+            # True fuses running titles onto body paragraphs; see restore_stripped_header for the cost of False.
             keep_headers_footers=False,
             quiet=True,
         )
         return {
-            page.page_num: [mapped for block in page.blocks or [] if (mapped := to_layout_block(block))]
+            page.page_num: [
+                mapped
+                for block in page.blocks or []
+                if (mapped := to_layout_block(restore_stripped_header(block, page.blocks, page.text_items)))
+            ]
             for page in engine.parse(pdf_bytes).pages
         }
 
 
-__all__ = ["LiteParseParser", "to_layout_block"]
+__all__ = ["LiteParseParser", "restore_stripped_header", "to_layout_block"]

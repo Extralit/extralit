@@ -7,7 +7,7 @@ import pytest
 from docling_core.types.doc import CoordOrigin, DocItemLabel, Size
 
 from extralit_server.api.schemas.v1.document.metadata import TriageMetadata
-from extralit_server.contexts.ocr.parsers.liteparse import LiteParseParser, to_layout_block
+from extralit_server.contexts.ocr.parsers.liteparse import LiteParseParser, restore_stripped_header, to_layout_block
 from extralit_server.contexts.ocr.parsers.service import ParserService, build_document
 
 FIXTURES = Path(__file__).parents[3] / "fixtures" / "pdf"
@@ -209,6 +209,91 @@ def service() -> ParserService:
 @pytest.fixture(scope="module")
 def document(service, sample_bytes):
     return service.parse(sample_bytes, service.plan(sample_bytes), name="sample", filename="sample.pdf")
+
+
+def _word(text: str, x: float, y: float = 82.0, width: float = 30.0) -> liteparse.TextItem:
+    return liteparse.TextItem(text=text, x=x, y=y, width=width, height=12.0)
+
+
+def _body(y: float = 99.0) -> liteparse.LayoutBlock:
+    rects = [liteparse.AnnotationRect(x=x, y=y, width=20.0, height=12.0) for x in (72.0, 220.0)]
+    row = [liteparse.LayoutCell(text="12", bbox=rect) for rect in rects]
+    bbox = liteparse.AnnotationRect(x=72.0, y=y, width=168.0, height=12.0)
+    return liteparse.LayoutBlock(kind="table", rows=[row], bbox=bbox)
+
+
+def _table(rows: list[list[str]], header: list[str] | None = None) -> liteparse.LayoutBlock:
+    return liteparse.LayoutBlock(
+        kind="table",
+        header=[_cell(text) for text in header] if header else None,
+        rows=[[_cell(text) for text in row] for row in rows],
+        bbox=RECT,
+    )
+
+
+class TestRestoreStrippedHeader:
+    def test_words_above_the_body_become_the_header(self):
+        block = _body()
+        restored = restore_stripped_header(block, [block], [_word("Species", 72.0), _word("Count", 220.0)])
+        assert [cell.text for cell in restored.header] == ["Species", "Count"]
+        assert restored.bbox.y == 82.0
+        assert restored.bbox.height == 29.0
+
+    def test_two_words_in_one_column_join(self):
+        block = _body()
+        words = [_word("Mean", 104.0, width=20.0), _word("Species", 72.0), _word("Count", 220.0)]
+        assert [c.text for c in restore_stripped_header(block, [block], words).header] == ["Species Mean", "Count"]
+
+    def test_single_column_line_such_as_a_caption_is_ignored(self):
+        block = _body()
+        assert restore_stripped_header(block, [block], [_word("Table 1. A caption", 72.0)]) is block
+
+    def test_words_further_up_the_page_are_ignored(self):
+        block = _body()
+        words = [_word("Journal", 72.0, y=33.0), _word("Volume", 220.0, y=33.0)]
+        assert restore_stripped_header(block, [block], words) is block
+
+    def test_words_placed_in_another_block_are_ignored(self):
+        block = _body()
+        rect = liteparse.AnnotationRect(x=60.0, y=80.0, width=300.0, height=16.0)
+        paragraph = liteparse.LayoutBlock(kind="paragraph", text="Species Count", bbox=rect)
+        words = [_word("Species", 72.0), _word("Count", 220.0)]
+        assert restore_stripped_header(block, [paragraph, block], words) is block
+
+    def test_blank_row_left_by_stripping_is_replaced(self):
+        block = _body()
+        blank = [liteparse.LayoutCell(text="", bbox=cell.bbox) for cell in block.rows[0]]
+        ruled = liteparse.LayoutBlock(kind="table", rows=[blank, *_body(y=99.0).rows], bbox=block.bbox)
+        restored = restore_stripped_header(ruled, [ruled], [_word("Species", 72.0), _word("Count", 220.0)])
+        assert len(restored.rows) == 1
+        assert [cell.text for cell in restored.header] == ["Species", "Count"]
+
+    def test_detected_header_is_kept(self):
+        block = _table([["a", "b"]], header=["Group", "N"])
+        assert restore_stripped_header(block, [block], [_word("x", 72.0), _word("y", 220.0)]) is block
+
+    def test_non_table_is_unchanged(self):
+        block = liteparse.LayoutBlock(kind="paragraph", text="x", bbox=RECT)
+        assert restore_stripped_header(block, [block], [_word("x", 72.0), _word("y", 220.0)]) is block
+
+
+class TestRepeatedHeader:
+    @pytest.fixture(scope="class")
+    def pages(self):
+        pdf_bytes = (FIXTURES / "repeated_header.pdf").read_bytes()
+        return LiteParseParser().parse_pages(pdf_bytes, [1, 2, 3], ocr=False)
+
+    @pytest.mark.parametrize("page", [1, 2, 3])
+    def test_every_page_keeps_its_column_labels(self, pages, page):
+        (table,) = [block for block in pages[page] if block.label == DocItemLabel.TABLE]
+        assert [c.text for c in table.cells if c.column_header] == ["Species", "Count", "Mean"]
+
+    def test_body_rows_are_not_duplicated(self, pages):
+        (table,) = [block for block in pages[2] if block.label == DocItemLabel.TABLE]
+        assert max(c.start_row_offset_idx for c in table.cells) == 6
+
+    def test_running_title_stays_stripped(self, pages):
+        assert not [block for found in pages.values() for block in found if "Journal of Layout" in block.text]
 
 
 class TestListItems:
