@@ -37,17 +37,6 @@ repos:
     hooks:
       - id: actionlint
 
-  - repo: local
-    hooks:
-      - id: single-use-helpers
-        name: "Warn on short functions with one consumer"
-        # Advisory: the script always exits 0, and verbose shows its output anyway.
-        entry: python scripts/check_single_use_helpers.py
-        language: python
-        files: '^(extralit|extralit-server)/src/.*\.py$'
-        exclude: '/alembic/versions/'
-        verbose: true
-
   ##############################################################################
   # extralit SDK specific hooks
   ##############################################################################
