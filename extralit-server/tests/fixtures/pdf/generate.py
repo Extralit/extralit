@@ -164,7 +164,70 @@ def build_tagged(path: Path) -> None:
     pdf.save(path)
 
 
+def build_two_page(path: Path) -> None:
+    """Prose then a table and figure, with the font signals liteparse needs for headings and table headers."""
+    pdf, resources = _base_pdf()
+    resources.Font.F2 = pdf.make_indirect(
+        Dictionary(
+            Type=Name.Font,
+            Subtype=Name.Type1,
+            BaseFont=Name("/Helvetica-Bold"),
+            Encoding=Name.WinAnsiEncoding,
+        )
+    )
+
+    prose = (
+        _text_op("Results of the Survey", 72, 720, 24)
+        + _text_op("Mosquito counts were recorded at each site over two seasons.", 72, 690, 11)
+        + _text_op("1. first site", 72, 660, 11)
+        + _text_op("2. second site", 72, 646, 11)
+        + _text_op("- nested detail", 90, 632, 11)
+        + _text_op("- further detail", 90, 618, 11)
+    )
+    _add_page(pdf, resources, prose)
+
+    rows = [
+        ("Species", "Count", "Mean"),
+        ("gambiae", "12", "3.4"),
+        ("funestus", "9", "2.1"),
+        ("arabiensis", "7", "1.9"),
+    ]
+    table = "".join(
+        _text_op(text, x, 700 - 16 * index, 10, "F2" if index == 0 else "F1")
+        for index, row in enumerate(rows)
+        for text, x in zip(row, (72, 220, 320), strict=True)
+    )
+    _add_page(pdf, resources, table + _image_ops() + _text_op(*CAPTION))
+    pdf.save(path)
+
+
+def build_repeated_header(path: Path) -> None:
+    """One table continuing over three pages, with its header row at the same position on each."""
+    pdf, resources = _base_pdf()
+    resources.Font.F2 = pdf.make_indirect(
+        Dictionary(
+            Type=Name.Font,
+            Subtype=Name.Type1,
+            BaseFont=Name("/Helvetica-Bold"),
+            Encoding=Name.WinAnsiEncoding,
+        )
+    )
+    for page in range(3):
+        rows = [("Species", "Count", "Mean")]
+        rows += [(f"species{page}{i}", str(page * 7 + i), f"{page}.{i}") for i in range(6)]
+        table = "".join(
+            _text_op(text, x, 700 - 16 * index, 10, "F2" if index == 0 else "F1")
+            for index, row in enumerate(rows)
+            for text, x in zip(row, (72, 220, 320), strict=True)
+        )
+        running_title = _text_op("Journal of Layout Studies", 72, 750, 9)
+        _add_page(pdf, resources, running_title + table)
+    pdf.save(path)
+
+
 if __name__ == "__main__":
     build_untagged(HERE / "sample.pdf")
     build_tagged(HERE / "sample_tagged.pdf")
-    print(f"wrote {HERE / 'sample.pdf'} and {HERE / 'sample_tagged.pdf'}")
+    build_two_page(HERE / "two_page.pdf")
+    build_repeated_header(HERE / "repeated_header.pdf")
+    print(f"wrote sample.pdf, sample_tagged.pdf, two_page.pdf and repeated_header.pdf to {HERE}")
