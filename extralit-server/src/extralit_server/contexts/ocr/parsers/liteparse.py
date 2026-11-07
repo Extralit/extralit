@@ -8,7 +8,6 @@ from __future__ import annotations
 import bisect
 import itertools
 import logging
-import re
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import replace
@@ -21,11 +20,6 @@ from extralit_server.contexts.ocr.docling_builder import LayoutBlock
 from extralit_server.contexts.ocr.tables import make_cell
 
 _LOGGER = logging.getLogger(__name__)
-
-# Only these kinds render as markdown; heading and table cell text is raw, so its `*` is literal.
-_MARKDOWN_KINDS = frozenset({"paragraph", "list_item"})
-_STRIKETHROUGH = re.compile(r"~~(.+?)~~")
-_ESCAPE_OR_EMPHASIS = re.compile(r"\\([!-/:-@\[-`{-~])|\*+")
 
 _LABELS = {
     "heading": DocItemLabel.SECTION_HEADER,
@@ -46,11 +40,6 @@ def _bbox(rect: liteparse.AnnotationRect) -> BoundingBox:
         b=rect.y + rect.height,
         coord_origin=CoordOrigin.TOPLEFT,
     )
-
-
-def _plain_text(markdown: str) -> str:
-    """Drop inline emphasis; a literal `*` arrives escaped, while an unpaired `~~` is literal."""
-    return _ESCAPE_OR_EMPHASIS.sub(lambda m: m[1] or "", _STRIKETHROUGH.sub(r"\1", markdown))
 
 
 def _contains(rect: liteparse.AnnotationRect, item: liteparse.TextItem) -> bool:
@@ -132,11 +121,11 @@ def to_layout_block(block: liteparse.LayoutBlock) -> Optional[LayoutBlock]:
         _LOGGER.warning(f"dropping liteparse {block.kind!r} block with bbox {block.bbox}")
         return None
 
-    text = block.text or "\n".join(block.lines or [])
     return LayoutBlock(
         label=label,
         bbox=_bbox(block.bbox),
-        text=_plain_text(text) if block.kind in _MARKDOWN_KINDS else text,
+        # paragraph and list_item text is rendered markdown; liteparse has no plain-text field.
+        text=block.text or "\n".join(block.lines or []),
         # On a list_item `level` is nesting depth, which must not turn it into a heading.
         level=block.level if label == DocItemLabel.SECTION_HEADER else None,
         cells=_table_cells(block) if label == DocItemLabel.TABLE else None,

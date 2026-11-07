@@ -78,23 +78,6 @@ class TestToLayoutBlock:
     def test_unplaceable_blocks_are_dropped(self, block):
         assert to_layout_block(block) is None
 
-    @pytest.mark.parametrize(
-        ("markdown", "plain"),
-        [
-            ("**Received:** September 13", "Received: September 13"),
-            ("Anopheles *gambiae s.s. Kisumu", "Anopheles gambiae s.s. Kisumu"),
-            ("a ~~b~~ ~~c~~", "a b c"),
-            ("~~**both**~~", "both"),
-            (r"\* corresponding at p<0.01\*\*", "* corresponding at p<0.01**"),
-            (r"9789241564472\_ eng.pdf", "9789241564472_ eng.pdf"),
-            ("~~unpaired tilde", "~~unpaired tilde"),
-            (r"C:\temp [x](y) <b> `tick`", r"C:\temp [x](y) <b> `tick`"),
-        ],
-    )
-    @pytest.mark.parametrize("kind", ["paragraph", "list_item"])
-    def test_markdown_kinds_lose_inline_markup(self, kind, markdown, plain):
-        assert to_layout_block(liteparse.LayoutBlock(kind=kind, text=markdown, bbox=RECT)).text == plain
-
     def test_heading_text_is_raw(self):
         block = liteparse.LayoutBlock(kind="heading", text="Adageba1,2*, Kanmiki", level=1, bbox=RECT)
         assert to_layout_block(block).text == "Adageba1,2*, Kanmiki"
