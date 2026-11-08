@@ -152,6 +152,17 @@ def _blocks_for_page(page: pymupdf.Page, headers: Any) -> list[LayoutBlock]:
     return blocks
 
 
+class PyMuPDFParser:
+    """`PageParser` over pymupdf; it reads the text layer, so `ocr` has no effect."""
+
+    def parse_pages(self, pdf_bytes: bytes, pages: Sequence[int], *, ocr: bool) -> dict[int, list[LayoutBlock]]:
+        if not pages:
+            return {}
+        with pymupdf.open(stream=pdf_bytes, filetype="pdf") as pdf:
+            headers = _header_levels(pdf, pages)
+            return {p: _blocks_for_page(pdf[p - 1], headers) for p in sorted(set(pages)) if 0 < p <= pdf.page_count}
+
+
 def parse(
     pdf_bytes: bytes,
     *,

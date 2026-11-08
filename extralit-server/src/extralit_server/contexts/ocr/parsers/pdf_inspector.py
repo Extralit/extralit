@@ -254,6 +254,20 @@ def _blocks_for_page(
     return blocks
 
 
+class PdfInspectorParser:
+    """`PageParser` over pdf-inspector; it reads the text layer, so `ocr` has no effect."""
+
+    def parse_pages(self, pdf_bytes: bytes, pages: Sequence[int], *, ocr: bool) -> dict[int, list[LayoutBlock]]:
+        if not pages:
+            return {}
+        sizes = page_sizes(pdf_bytes)
+        roles = _structure_roles(pdf_bytes)
+        by_page: dict[int, list[Any]] = defaultdict(list)
+        for item in pdf_inspector.extract_text_with_positions_bytes(pdf_bytes):
+            by_page[item.page].append(item)
+        return {p: _blocks_for_page(by_page.get(p, []), roles, p) for p in sorted(set(pages)) if p in sizes}
+
+
 def parse(
     pdf_bytes: bytes,
     *,

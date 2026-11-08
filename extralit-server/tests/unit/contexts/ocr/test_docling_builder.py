@@ -13,6 +13,7 @@ from extralit_server.contexts.ocr.docling_builder import (
     new_document,
     register_page,
 )
+from extralit_server.contexts.ocr.tables import make_cell
 
 PAGE_HEIGHT = 792.0
 PAGE_WIDTH = 612.0
@@ -105,44 +106,82 @@ class TestMakeProv:
         assert prov.bbox.r == PAGE_WIDTH
 
 
+def _table(box: BoundingBox, *cell_texts: str) -> LayoutBlock:
+    cells = [make_cell(text, row=0, col=i) for i, text in enumerate(cell_texts)]
+    return LayoutBlock(label=DocItemLabel.TABLE, bbox=box, cells=cells)
+
+
+def _text(box: BoundingBox, text: str) -> LayoutBlock:
+    return LayoutBlock(label=DocItemLabel.TEXT, bbox=box, text=text)
+
+
 class TestIsContained:
-    def test_text_inside_an_existing_table_is_contained(self, doc, ctx):
-        register_page(doc, ctx)
-        append_blocks(doc, ctx, [LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300, left=0, right=500))])
+    def test_text_inside_a_table_that_carries_its_words_is_contained(self, ctx):
+        table = _table(bbox(t=100, b=300, left=0, right=500), "cell", "text")
+        block = _text(bbox(t=150, b=170, left=10, right=200), "cell text")
 
-        assert is_contained(doc, bbox(t=150, b=170, left=10, right=200), page_no=1)
+        assert is_contained(block, block.bbox, [table], ctx)
 
-    def test_text_outside_every_table_is_not_contained(self, doc, ctx):
-        register_page(doc, ctx)
-        append_blocks(doc, ctx, [LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300, left=0, right=500))])
+    def test_text_inside_a_table_that_lacks_its_words_is_kept(self, ctx):
+        table = _table(bbox(t=100, b=300, left=0, right=500), "Variable", "Number")
+        block = _text(bbox(t=150, b=170, left=10, right=200), "(192) (217) (212) (621)")
 
-        assert not is_contained(doc, bbox(t=400, b=420, left=10, right=200), page_no=1)
+        assert not is_contained(block, block.bbox, [table], ctx)
 
-    def test_overlap_below_threshold_is_not_contained(self, doc, ctx):
-        register_page(doc, ctx)
-        append_blocks(doc, ctx, [LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=200, left=0, right=100))])
+    def test_prose_inside_one_giant_cell_is_kept(self, ctx):
+        # A false table whose single cell holds the whole page's text must not absorb the page's blocks.
+        prose = "daily biting rate parity rate sporozoite rate inoculation rate " * 5
+        giant = make_cell(prose + " extra words", row=0, col=0, bbox=bbox(t=100, b=500, left=0, right=500))
+        table = LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=500, left=0, right=500), cells=[giant])
+        block = _text(bbox(t=120, b=140, left=10, right=400), "daily biting rate parity rate")
 
+        assert not is_contained(block, block.bbox, [table], ctx)
+
+    def test_text_matching_a_small_cell_under_it_is_contained(self, ctx):
+        small = make_cell("Anopheles gambiae", row=0, col=0, bbox=bbox(t=100, b=110, left=0, right=100))
+        other = make_cell("14999", row=0, col=1, bbox=bbox(t=300, b=310, left=0, right=100))
+        table = LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=90, b=320, left=0, right=200), cells=[small, other])
+        block = _text(bbox(t=100, b=110, left=0, right=100), "Anopheles gambiae")
+
+        assert is_contained(block, block.bbox, [table], ctx)
+
+    def test_a_table_without_cells_absorbs_no_text(self, ctx):
+        table = LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300, left=0, right=500))
+        block = _text(bbox(t=150, b=170, left=10, right=200), "real prose")
+
+        assert not is_contained(block, block.bbox, [table], ctx)
+
+    def test_text_outside_every_table_is_not_contained(self, ctx):
+        table = _table(bbox(t=100, b=300, left=0, right=500), "cell")
+        block = _text(bbox(t=400, b=420, left=10, right=200), "cell")
+
+        assert not is_contained(block, block.bbox, [table], ctx)
+
+    def test_overlap_below_threshold_is_not_contained(self, ctx):
+        table = _table(bbox(t=100, b=200, left=0, right=100), "cell")
         # Half of this box lies inside the table -> IoSelf 0.5, under the 0.6 default.
-        assert not is_contained(doc, bbox(t=150, b=250, left=0, right=100), page_no=1)
+        block = _text(bbox(t=150, b=250, left=0, right=100), "cell")
 
-    def test_overlap_above_threshold_is_contained(self, doc, ctx):
-        register_page(doc, ctx)
-        append_blocks(doc, ctx, [LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=200, left=0, right=100))])
+        assert not is_contained(block, block.bbox, [table], ctx)
 
-        # 70% of this box lies inside the table.
-        assert is_contained(doc, bbox(t=130, b=230, left=0, right=100), page_no=1)
+    def test_overlap_above_threshold_is_contained(self, ctx):
+        table = _table(bbox(t=100, b=200, left=0, right=100), "cell")
+        block = _text(bbox(t=130, b=230, left=0, right=100), "cell")
 
-    def test_containment_is_scoped_to_the_page(self, doc, ctx):
-        register_page(doc, ctx)
-        append_blocks(doc, ctx, [LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300, left=0, right=500))])
+        assert is_contained(block, block.bbox, [table], ctx)
 
-        assert not is_contained(doc, bbox(t=150, b=170, left=10, right=200), page_no=2)
+    def test_pictures_absorb_text_by_position_alone(self, ctx):
+        picture = LayoutBlock(label=DocItemLabel.PICTURE, bbox=bbox(t=100, b=300, left=0, right=500))
+        block = _text(bbox(t=150, b=170, left=10, right=200), "axis label")
 
-    def test_pictures_also_absorb_text(self, doc, ctx):
-        register_page(doc, ctx)
-        append_blocks(doc, ctx, [LayoutBlock(label=DocItemLabel.PICTURE, bbox=bbox(t=100, b=300, left=0, right=500))])
+        assert is_contained(block, block.bbox, [picture], ctx)
 
-        assert is_contained(doc, bbox(t=150, b=170, left=10, right=200), page_no=1)
+    def test_bottom_left_containers_are_flipped_before_comparing(self, ctx):
+        box = BoundingBox(l=0, r=500, b=PAGE_HEIGHT - 300, t=PAGE_HEIGHT - 100, coord_origin=CoordOrigin.BOTTOMLEFT)
+        table = _table(box, "cell")
+        block = _text(bbox(t=150, b=170, left=10, right=200), "cell")
+
+        assert is_contained(block, block.bbox, [table], ctx)
 
 
 class TestAppendBlocks:
@@ -194,7 +233,7 @@ class TestAppendBlocks:
 
     def test_text_inside_a_table_is_dropped(self, doc, ctx):
         blocks = [
-            LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300, left=0, right=500)),
+            _table(bbox(t=100, b=300, left=0, right=500), "cell text"),
             LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=150, b=170, left=10, right=200), text="cell text"),
             LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=400, b=420), text="body text"),
         ]
@@ -396,3 +435,19 @@ class TestAppendBlocks:
 
         assert restored.texts[0].text == "hello"
         assert restored.tables[0].prov[0].page_no == 1
+
+
+class TestReadingOrderIsKept:
+    def test_blocks_keep_the_order_the_parser_gave(self, doc, ctx):
+        # Two columns: the parser reads the whole left column, then the right; a (top, left) sort would interleave.
+        blocks = [
+            LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=100, b=120, left=0, right=250), text="left one"),
+            LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=300, b=320, left=0, right=250), text="left two"),
+            LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=100, b=120, left=300, right=550), text="right one"),
+            LayoutBlock(label=DocItemLabel.TEXT, bbox=bbox(t=300, b=320, left=300, right=550), text="right two"),
+        ]
+
+        append_blocks(doc, ctx, blocks)
+
+        assert [t.text for t in doc.texts] == ["left one", "left two", "right one", "right two"]
+        assert [i.text for i, _ in doc.iterate_items(with_groups=False)] == [b.text for b in blocks]
