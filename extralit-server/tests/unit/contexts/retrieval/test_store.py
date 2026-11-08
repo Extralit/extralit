@@ -257,3 +257,21 @@ def test_replace_document_keeps_vectors_of_unchanged_chunks(tmp_path, monkeypatc
     )
 
     assert store.unembedded(MODEL_A).column("embed_text").to_pylist() == ["c"]
+
+
+class TestDeleteLayoutDropsChunks:
+    @pytest.mark.asyncio
+    async def test_delete_layout_removes_the_documents_chunks(self, store, doc):
+        from unittest.mock import AsyncMock
+
+        from extralit_server.contexts.ocr.storage import delete_layout
+
+        other = str(uuid4())
+        store.replace_chunks(doc, chunks(doc, ["a", "b"]))
+        store.replace_chunks(other, chunks(other, ["keep"]))
+        from unittest.mock import patch
+
+        with patch("extralit_server.contexts.ocr.storage.files.delete_object", AsyncMock()):
+            await delete_layout(AsyncMock(), "ws-chunks", doc, store=store.layout)
+
+        assert store.open().to_table(columns=["text"]).column(0).to_pylist() == ["keep"]

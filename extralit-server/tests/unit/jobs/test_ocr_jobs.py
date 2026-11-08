@@ -60,10 +60,11 @@ def job_context(tmp_path, monkeypatch):
         patch(f"{MODULE}.get_current_job", return_value=MagicMock(meta={"workflow_id": "wf-1"})),
         patch(f"{MODULE}.writer_skip_reason", AsyncMock(return_value=None)) as skip,
         patch(f"{MODULE}.AsyncSessionLocal") as session,
+        patch(f"{MODULE}.async_document_chunk_job.delay") as chunk_delay,
     ):
         session.return_value.__aenter__ = AsyncMock(return_value=db)
         session.return_value.__aexit__ = AsyncMock(return_value=False)
-        yield {"calls": calls, "store": store, "skip": skip, "layouts": layouts}
+        yield {"calls": calls, "store": store, "skip": skip, "layouts": layouts, "chunk_delay": chunk_delay}
 
 
 async def run_job(document_id=None, parser=None):
@@ -102,6 +103,29 @@ class TestLayoutJobOrdering:
         result = await run_job()
 
         assert result["pages_needing_ocr"] == [2]
+
+
+class TestChunkJobEnqueue:
+    async def test_chunk_job_is_enqueued_after_the_layout_is_stored(self, job_context):
+        document_id = uuid4()
+        result = await run_job(document_id)
+
+        job_context["chunk_delay"].assert_called_once_with(document_id, "ws")
+        assert result["chunk_job_id"] == job_context["chunk_delay"].return_value.id
+
+    async def test_a_skipped_layout_enqueues_no_chunk_job(self, job_context):
+        job_context["skip"].return_value = "document deleted"
+
+        await run_job()
+
+        job_context["chunk_delay"].assert_not_called()
+
+    async def test_enqueue_failure_does_not_fail_the_layout_job(self, job_context):
+        job_context["chunk_delay"].side_effect = ConnectionError("redis down")
+
+        result = await run_job()
+
+        assert result["chunk_job_id"] is None
 
 
 class TestExecutedPlanMetadata:

@@ -18,6 +18,7 @@ from extralit_server.contexts.ocr.parsers.registry import default_service
 from extralit_server.contexts.workflows import writer_skip_reason
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import OCR_QUEUE, REDIS_CONNECTION
+from extralit_server.jobs.retrieval_jobs import async_document_chunk_job
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -103,9 +104,17 @@ async def async_document_layout_job(
         async with AsyncSessionLocal() as db:
             await update_processing_metadata(db, document_id, lambda m: setattr(m, "layout_metadata", layout))
 
+        try:
+            chunk_job_id = async_document_chunk_job.delay(document_id, workspace_name).id
+        except Exception as e:
+            # The layout is stored; `retrieval backfill` picks the document up later.
+            _LOGGER.warning(f"Could not enqueue the chunk job for document {document_id}: {e}")
+            chunk_job_id = None
+
         result = {
             "document_id": str(document_id),
             "parser": parser_name,
+            "chunk_job_id": chunk_job_id,
             **layout.model_dump(),
         }
 
