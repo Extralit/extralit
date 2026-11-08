@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import Optional
 
 from docling_core.types.doc import ContentLayer, DocItemLabel, DoclingDocument
@@ -24,6 +25,7 @@ def add_text_block(
     block: LayoutBlock,
     ctx: PageContext,
     parent: Optional[NodeItem] = None,
+    containers: Sequence[LayoutBlock] = (),
 ) -> Optional[NodeItem]:
     """Add one text block, skipping anything empty or already covered by a table/picture."""
     text = (block.text or "").strip()
@@ -32,7 +34,7 @@ def add_text_block(
 
     prov = make_prov(ctx, block.bbox, text)
 
-    if block.label not in CONTAINMENT_EXEMPT_LABELS and is_contained(doc, prov.bbox, ctx.page_no):
+    if block.label not in CONTAINMENT_EXEMPT_LABELS and is_contained(block, prov.bbox, containers, ctx):
         return None
 
     # add_text dispatches SECTION_HEADER to add_heading but drops the level, so route it here.

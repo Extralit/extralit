@@ -62,14 +62,12 @@ def prepared_for(calls, step):
 
 @pytest.mark.asyncio
 class TestLayoutJobSequencing:
-    async def test_layout_runs_by_default_with_the_default_parser(self, enqueued):
-        from extralit_server.contexts.ocr.parsers.registry import default_parser_name
-
+    async def test_layout_runs_by_default_with_per_page_routing(self, enqueued):
         await run_workflow(layout_parser=None)
 
         layout = prepared_for(enqueued, "document_layout")
         assert layout is not None
-        assert layout["args"][3] == default_parser_name()
+        assert layout["args"][3] is None
 
     async def test_a_named_parser_overrides_the_default(self, enqueued):
         await run_workflow(layout_parser="pdf_inspector")

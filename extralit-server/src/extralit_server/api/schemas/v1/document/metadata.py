@@ -93,6 +93,14 @@ class LayoutMetadata(BaseModel):
     pages_needing_ocr: list[int] = Field(
         default_factory=list, description="1-indexed pages with no reliable text layer"
     )
+    parsers: dict[str, list[int]] = Field(
+        default_factory=dict, description="Executed plan: parser name -> 1-indexed pages it parsed"
+    )
+    ocr_pages: list[int] = Field(default_factory=list, description="1-indexed pages where OCR actually ran")
+    ocr_skipped_pages: list[int] = Field(
+        default_factory=list,
+        description="Pages planned for OCR that already had a text layer, which the parser read instead of running OCR",
+    )
 
 
 class DocumentProcessingMetadata(BaseModel):

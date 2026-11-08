@@ -14,6 +14,7 @@ from extralit_server.contexts.ocr.parsers.service import (
     ParseTask,
     build_document,
 )
+from extralit_server.contexts.ocr.tables import make_cell
 
 PAGE = Size(width=100.0, height=200.0)
 
@@ -111,9 +112,104 @@ class TestPlan:
 
         assert plan.pages_by_parser == {"pymupdf": [1, 3], "liteparse": [2]}
         assert plan.ocr_pages == [2]
+        assert plan.ocr_skipped_pages == []
+
+    def test_ocr_pages_exclude_pages_read_from_a_text_layer(self):
+        plan = ParsePlan(
+            tasks=(ParseTask(pages=(1, 2), parser="liteparse", ocr=True),),
+            pages_needing_ocr=(1, 2),
+            text_layer_pages=(2,),
+        )
+
+        assert plan.ocr_pages == [1]
+        assert plan.ocr_skipped_pages == [2]
+
+
+class TestPlanDetails:
+    def test_hidden_text_layer_pages_are_flagged_as_not_ocrd(self):
+        triage = TriageMetadata(
+            pdf_type="image_based",
+            page_count=3,
+            pages_needing_ocr=[1, 2, 3],
+            ocr_reasons_by_page={"1": ["invisible_text_layer"], "2": ["no_text"], "3": ["invisible_text_layer"]},
+        )
+        service = _service({"pymupdf": FakeParser(), "liteparse": FakeParser()}, triage)
+
+        plan = service.plan(b"%PDF")
+
+        assert plan.tasks == (ParseTask(pages=(1, 2, 3), parser="liteparse", ocr=True),)
+        assert plan.ocr_pages == [2]
+        assert plan.ocr_skipped_pages == [1, 3]
+        assert plan.pages_needing_ocr == (1, 2, 3)
+
+    def test_a_named_parser_takes_every_page(self):
+        triage = TriageMetadata(pdf_type="mixed", page_count=3, pages_needing_ocr=[2])
+        service = _service({"pymupdf": FakeParser(), "pdf_inspector": FakeParser()}, triage)
+
+        plan = service.plan(b"%PDF", parser="pdf_inspector")
+
+        assert plan.tasks == (ParseTask(pages=(1, 2, 3), parser="pdf_inspector", ocr=False),)
+
+    def test_a_named_liteparse_still_ocrs_flagged_pages(self):
+        triage = TriageMetadata(pdf_type="mixed", page_count=3, pages_needing_ocr=[2])
+        service = _service({"liteparse": FakeParser()}, triage)
+
+        plan = service.plan(b"%PDF", parser="liteparse")
+
+        assert plan.tasks == (
+            ParseTask(pages=(1, 3), parser="liteparse", ocr=False),
+            ParseTask(pages=(2,), parser="liteparse", ocr=True),
+        )
+
+    def test_an_unknown_named_parser_raises(self):
+        service = _service({"pymupdf": FakeParser()}, TriageMetadata(pdf_type="mixed"))
+
+        with pytest.raises(ValueError, match="nope"):
+            service.plan(b"%PDF", parser="nope")
 
 
 class TestParse:
+    def test_a_parsers_reading_order_survives_the_merge(self):
+        # Two columns read left-then-right: a (top, left) sort would interleave them.
+        parser = FakeParser({1: [_text(10, 0, "L1"), _text(100, 0, "L2"), _text(10, 50, "R1"), _text(100, 50, "R2")]})
+        service = _service({"a": parser}, TriageMetadata(pdf_type="mixed"), page_count=1)
+        plan = ParsePlan(tasks=(ParseTask(pages=(1,), parser="a", ocr=False),))
+
+        doc = service.parse(b"%PDF", plan, name="doc")
+
+        assert [t.text for t in doc.texts] == ["L1", "L2", "R1", "R2"]
+
+    def test_a_later_task_keeps_its_own_order_when_slotted_in(self):
+        first = FakeParser({1: [_text(10, 0, "a"), _text(100, 0, "d")]})
+        second = FakeParser({1: [_text(50, 0, "b"), _text(60, 0, "c")]})
+        service = _service({"a": first, "b": second}, TriageMetadata(pdf_type="mixed"), page_count=1)
+        plan = ParsePlan(
+            tasks=(
+                ParseTask(pages=(1,), parser="a", ocr=False),
+                ParseTask(pages=(1,), parser="b", ocr=False),
+            )
+        )
+
+        doc = service.parse(b"%PDF", plan, name="doc")
+
+        assert [t.text for t in doc.texts] == ["a", "b", "c", "d"]
+
+    def test_prose_over_a_false_table_survives_but_its_own_words_do_not(self):
+        table = LayoutBlock(
+            label=DocItemLabel.TABLE,
+            bbox=_box(0, 0, size=150),
+            cells=[make_cell("Variable", row=0, col=0), make_cell("1246", row=0, col=1)],
+        )
+        parser = FakeParser(
+            {1: [table, _text(20, 10, "Table 2. Ratio of people per net"), _text(60, 10, "Variable 1246")]}
+        )
+        service = _service({"a": parser}, TriageMetadata(pdf_type="mixed"), page_count=1)
+        plan = ParsePlan(tasks=(ParseTask(pages=(1,), parser="a", ocr=False),))
+
+        doc = service.parse(b"%PDF", plan, name="doc")
+
+        assert [t.text for t in doc.texts] == ["Table 2. Ratio of people per net"]
+
     def test_each_task_runs_on_its_parser_with_its_ocr_flag(self):
         pymupdf, liteparse = FakeParser(), FakeParser()
         service = _service({"pymupdf": pymupdf, "liteparse": liteparse}, TriageMetadata(pdf_type="mixed"))
@@ -129,8 +225,8 @@ class TestParse:
         assert pymupdf.calls == [((1, 3), False)]
         assert liteparse.calls == [((2,), True)]
 
-    def test_blocks_from_different_tasks_merge_per_page_in_reading_order(self):
-        first = FakeParser({1: [_text(50, 0, "middle"), _text(10, 0, "top")]})
+    def test_blocks_from_different_tasks_merge_per_page_by_position(self):
+        first = FakeParser({1: [_text(10, 0, "top"), _text(50, 0, "middle")]})
         second = FakeParser({1: [_text(50, 20, "middle-right"), _text(90, 0, "bottom")]})
         service = _service({"a": first, "b": second}, TriageMetadata(pdf_type="mixed"))
         plan = ParsePlan(
