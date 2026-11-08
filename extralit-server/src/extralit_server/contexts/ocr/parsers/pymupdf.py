@@ -13,7 +13,7 @@ from typing import Any, Optional
 import pymupdf
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, DoclingDocument, Size, TableCell
 
-# pymupdf4llm drops its top-level IdentifyHeaders/TocHeaders when pymupdf-layout is installed.
+# pymupdf-layout removes these names from the package namespace; the submodule keeps them.
 from pymupdf4llm.helpers.pymupdf_rag import IdentifyHeaders, TocHeaders
 
 from extralit_server.contexts.ocr.docling_builder import (
