@@ -11,8 +11,10 @@ from collections.abc import Sequence
 from typing import Any, Optional
 
 import pymupdf
-import pymupdf4llm
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, DoclingDocument, Size, TableCell
+
+# pymupdf-layout removes these names from the package namespace; the submodule keeps them.
+from pymupdf4llm.helpers.pymupdf_rag import IdentifyHeaders, TocHeaders
 
 from extralit_server.contexts.ocr.docling_builder import (
     LayoutBlock,
@@ -39,7 +41,7 @@ def _header_levels(doc: pymupdf.Document, pages: Optional[Sequence[int]]) -> Opt
     """Prefer the PDF outline for heading levels; fall back to font-size ranking."""
     try:
         if doc.get_toc():
-            return pymupdf4llm.TocHeaders(doc)
+            return TocHeaders(doc)
     except Exception as e:
         _LOGGER.debug(f"outline unusable, ranking by font size instead: {e}")
 
@@ -49,7 +51,7 @@ def _header_levels(doc: pymupdf.Document, pages: Optional[Sequence[int]]) -> Opt
         indices = [p - 1 for p in pages if 0 < p <= doc.page_count]
         if not indices:
             return None
-    return pymupdf4llm.IdentifyHeaders(doc, pages=indices)
+    return IdentifyHeaders(doc, pages=indices)
 
 
 def _heading_level(headers: Optional[Any], span: dict, page: pymupdf.Page) -> Optional[int]:
