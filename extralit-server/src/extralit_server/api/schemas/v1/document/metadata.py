@@ -79,6 +79,10 @@ class LayoutMetadata(BaseModel):
 
     Only pointers and counts — the layout itself lives in object storage, because
     `documents.metadata_` is returned in full by every `GET /documents` listing.
+
+    `parsers` is the executed plan (parser name -> pages). `ocr_pages` are pages where OCR actually
+    ran; `ocr_skipped_pages` are pages planned for OCR (triage flagged them) whose existing text
+    layer the parser read instead, so `pages_needing_ocr` = planned, `ocr_pages` = actual.
     """
 
     layout_url: str = Field(..., description="S3 object path of the canonical DoclingDocument JSON")
