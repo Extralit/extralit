@@ -238,3 +238,22 @@ def test_layout_store_replace_accepts_registered_extra_datasets(tmp_path, monkey
             pa.Table.from_pylist([], schema=PAGE_SCHEMA),
             extra={"unknown": pa.table({})},
         )
+
+
+def test_replace_document_keeps_vectors_of_unchanged_chunks(tmp_path, monkeypatch):
+    monkeypatch.setattr(settings, "storage_url", tmp_path.as_uri())
+    layout = LayoutStore.for_workspace("ws-keep")
+    store = ChunkStore(layout)
+    doc = str(uuid4())
+    table = chunks(doc, ["a", "b"])
+    store.replace_chunks(doc, table)
+    store.upsert_vectors(MODEL_A, vectors(MODEL_A, table.column("chunk_id").to_pylist(), 4))
+
+    layout.replace_document(
+        doc,
+        pa.Table.from_pylist([], schema=ITEM_SCHEMA),
+        pa.Table.from_pylist([], schema=PAGE_SCHEMA),
+        extra={"chunks": chunks(doc, ["a", "c"])},
+    )
+
+    assert store.unembedded(MODEL_A).column("embed_text").to_pylist() == ["c"]

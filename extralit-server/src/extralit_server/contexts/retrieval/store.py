@@ -9,7 +9,7 @@ from uuid import UUID
 import lance
 import pyarrow as pa
 
-from extralit_server.contexts.ocr.layout_store import LayoutStore
+from extralit_server.contexts.ocr.layout_store import LayoutStore, _document_filter
 from extralit_server.contexts.retrieval.arrow import (
     CHUNK_SCHEMA,
     CHUNKS_DATASET,
@@ -30,16 +30,12 @@ class DimensionMismatchError(ValueError):
     """The model already has a vector column of another size or identity."""
 
 
-def _document_filter(document_id: UUID | str) -> str:
-    return f"document_id = '{UUID(str(document_id))}'"
-
-
 class ChunkStore:
     """Reader and writer of one workspace's chunks. Writers must hold the layout store's lock."""
 
     def __init__(self, layout: LayoutStore) -> None:
         self.layout = layout
-        layout.register_dataset(CHUNKS_DATASET, CHUNK_SCHEMA)
+        layout.register_dataset(CHUNKS_DATASET, CHUNK_SCHEMA, replacer=self.replace_chunks)
 
     @classmethod
     def for_workspace(cls, workspace_name: str) -> ChunkStore:
