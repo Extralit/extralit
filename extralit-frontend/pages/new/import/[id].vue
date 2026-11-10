@@ -43,6 +43,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { type ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
 import { useImportConfigurationViewModel } from "./useImportConfigurationViewModel";
 
