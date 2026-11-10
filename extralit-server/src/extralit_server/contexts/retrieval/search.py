@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from importlib.resources import files
 from typing import Any, Optional
 from uuid import UUID
 
@@ -113,6 +114,12 @@ LIMIT {int(limit)}
 """
 
 
+def _load_lance(connection: duckdb.DuckDBPyConnection) -> None:
+    # By path: `LOAD lance` only searches ~/.duckdb/extensions, which the wheel never populates.
+    path = files("duckdb_extension_lance") / "extensions" / f"v{duckdb.__version__}" / "lance.duckdb_extension"
+    connection.execute(f"LOAD {_literal(str(path))}")
+
+
 def _vector_literal(vector: Sequence[float]) -> str:
     return f"[{', '.join(repr(float(x)) for x in vector)}]::FLOAT[{len(vector)}]"
 
@@ -164,7 +171,7 @@ def _run(
 ) -> list[ChunkHit]:
     connection = duckdb.connect()
     try:
-        connection.execute("LOAD lance")
+        _load_lance(connection)
         tables = []
         for index, store in enumerate(stores):
             if store.open() is None:

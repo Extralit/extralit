@@ -5124,6 +5124,88 @@
         "title": "SchemaVersionRead",
         "type": "object"
       },
+      "SearchHit": {
+        "properties": {
+          "chunk_id": {
+            "title": "Chunk Id",
+            "type": "string"
+          },
+          "document_id": {
+            "format": "uuid",
+            "title": "Document Id",
+            "type": "string"
+          },
+          "headings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Headings",
+            "type": "array"
+          },
+          "item_refs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Item Refs",
+            "type": "array"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_end": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page End"
+          },
+          "page_start": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Start"
+          },
+          "reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference"
+          },
+          "scores": {
+            "$ref": "#/components/schemas/SearchScores"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "chunk_id",
+          "document_id",
+          "kind",
+          "text",
+          "headings",
+          "item_refs",
+          "scores"
+        ],
+        "title": "SearchHit",
+        "type": "object"
+      },
       "SearchRecord": {
         "properties": {
           "query_score": {
@@ -5208,6 +5290,112 @@
           "items"
         ],
         "title": "SearchRecordsResult",
+        "type": "object"
+      },
+      "SearchRequest": {
+        "properties": {
+          "document_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Document Ids",
+            "type": "array"
+          },
+          "kinds": {
+            "items": {
+              "enum": [
+                "text",
+                "table",
+                "figure"
+              ],
+              "type": "string"
+            },
+            "title": "Kinds",
+            "type": "array"
+          },
+          "limit": {
+            "default": 10,
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "pages": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Pages",
+            "type": "array"
+          },
+          "query": {
+            "minLength": 1,
+            "title": "Query",
+            "type": "string"
+          },
+          "references": {
+            "items": {
+              "type": "string"
+            },
+            "title": "References",
+            "type": "array"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "title": "SearchRequest",
+        "type": "object"
+      },
+      "SearchResponse": {
+        "properties": {
+          "hits": {
+            "items": {
+              "$ref": "#/components/schemas/SearchHit"
+            },
+            "title": "Hits",
+            "type": "array"
+          }
+        },
+        "required": [
+          "hits"
+        ],
+        "title": "SearchResponse",
+        "type": "object"
+      },
+      "SearchScores": {
+        "properties": {
+          "bm25": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bm25"
+          },
+          "rrf": {
+            "title": "Rrf",
+            "type": "number"
+          },
+          "vector": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vector"
+          }
+        },
+        "required": [
+          "rrf"
+        ],
+        "title": "SearchScores",
         "type": "object"
       },
       "SearchSuggestionOptions": {
@@ -22924,6 +23112,143 @@
         "summary": "Delete Workspace User",
         "tags": [
           "workspaces"
+        ]
+      }
+    },
+    "/workspaces/{workspace_name}/search": {
+      "post": {
+        "operationId": "search_workspace_workspaces__workspace_name__search_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "workspace_name",
+            "required": true,
+            "schema": {
+              "title": "Workspace Name",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::MissingDatasetRecordsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ForbiddenOperationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityNotFoundError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::EntityAlreadyExistsError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "extralit.api.errors::ValidationError",
+                    "params": {
+                      "extra": "error parameters"
+                    }
+                  }
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": {
+                    "code": "builtins.TypeError"
+                  }
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          },
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Search Workspace",
+        "tags": [
+          "search"
         ]
       }
     }
