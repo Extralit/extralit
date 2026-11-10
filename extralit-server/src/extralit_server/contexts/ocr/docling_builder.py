@@ -66,10 +66,12 @@ class PageContext:
 
     @property
     def height(self) -> float:
+        """Page height in points."""
         return self.size.height
 
     @property
     def width(self) -> float:
+        """Page width in points."""
         return self.size.width
 
 
@@ -134,11 +136,14 @@ def _carries_text(block_words: list[str], container: LayoutBlock, box: BoundingB
     """Whether the cells under `box` hold this block's words and little else.
 
     A cell much longer than the block is a false table swallowing prose, so the block is kept.
+    Cells without a bbox count only if they share a word with the block.
     """
+
+    block_set = set(block_words)
 
     def touches(cell: TableCell) -> bool:
         if cell.bbox is None:
-            return True
+            return not block_set.isdisjoint(_tokens(cell.text))
         return box.intersection_over_self(clamp_to_page(flip_to_top_left(cell.bbox, ctx.height), ctx)) > 0
 
     under = [cell for cell in container.cells or [] if touches(cell)]

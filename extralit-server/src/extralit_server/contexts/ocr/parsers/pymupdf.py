@@ -158,6 +158,7 @@ class PyMuPDFParser:
     """`PageParser` over pymupdf; it reads the text layer, so `ocr` has no effect."""
 
     def parse_pages(self, pdf_bytes: bytes, pages: Sequence[int], *, ocr: bool) -> dict[int, list[LayoutBlock]]:
+        """Parse the given 1-indexed pages into top-left-origin blocks, keyed by page number."""
         if not pages:
             return {}
         with pymupdf.open(stream=pdf_bytes, filetype="pdf") as pdf:
