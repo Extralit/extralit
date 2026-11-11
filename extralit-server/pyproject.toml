@@ -97,7 +97,7 @@ postgresql = [
 ]
 # AGPL — must stay optional so the Apache-2.0 distribution never requires it
 # >=1.28.2: earlier releases pin a PolyForm-Noncommercial pymupdf-layout; 2.x is an empty package
-pymupdf = ["pymupdf4llm>=1.28.2,<1.29.0"]
+pymupdf = ["pymupdf4llm>=1.28.2,<2.1.0"]
 
 [project.urls]
 homepage = "https://extralit.ai"
