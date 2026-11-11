@@ -140,11 +140,19 @@ def _match_pdfs_to_dataframe(df: pl.DataFrame, pdf_folder: Path, console: Consol
 
         # Strategy 2: fallback for references without a file-tag match: PDFs whose stem contains the key
         fallback_refs = refs.join(via_tag.select("_idx").unique(), on="_idx", how="anti")
+        # Per-reference filter instead of a cross join, which would hold refs x PDFs rows in memory.
         via_fallback = (
-            fallback_refs.select("_idx", "reference")
-            .join(pdf_stems, how="cross")
-            .filter(pl.col("stem").str.contains(pl.col("reference"), literal=True))
-            .select("_idx", "pdf")
+            pl.concat(
+                [
+                    pdf_stems.filter(pl.col("stem").str.contains(ref, literal=True)).select(
+                        pl.lit(idx, pl.UInt32).alias("_idx"), "pdf"
+                    )
+                    for idx, ref in fallback_refs.select("_idx", "reference").iter_rows()
+                ],
+                how="vertical",
+            )
+            if fallback_refs.height
+            else pl.DataFrame(schema={"_idx": pl.UInt32, "pdf": pl.String})
         )
 
         matched = (
@@ -214,6 +222,8 @@ def _file_paths(df: pl.DataFrame) -> pl.DataFrame:
 
 def _build_documents_payload(df: pl.DataFrame, workspace_obj: Workspace, collection: Optional[str]) -> dict:
     """Build documents payload for import analysis request from DataFrame."""
+    if "reference" not in df.columns:
+        return {}
     metadata = {"collections": [collection], "source": "bib_import"} if collection else {}
     column = {c: pl.col(c) if c in df.columns else pl.lit("") for c in ("doi", "pmid")}
     rows = (

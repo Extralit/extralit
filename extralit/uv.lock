@@ -756,7 +756,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "bibtexparser", specifier = ">=1.4.3,<3" },
+    { name = "bibtexparser", specifier = ">=2.0.0,<3" },
     { name = "datasets", specifier = ">=5.0.1,<6" },
     { name = "httpx", specifier = ">=0.26.0" },
     { name = "huggingface-hub", specifier = ">=2.3.0" },

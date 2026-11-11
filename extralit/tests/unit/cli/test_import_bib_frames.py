@@ -46,3 +46,10 @@ def test_parse_match_and_payload(tmp_path):
     assert rows["lee2019"]["year"] is None
     assert rows["lee2019"]["doi"] == ""
     assert {"name": "reference", "type": "string"} in history["schema"]["fields"]
+
+
+def test_empty_bib_gives_empty_payload(tmp_path):
+    (tmp_path / "refs.bib").write_text("% no entries\n")
+    console = Console(quiet=True)
+    df = _match_pdfs_to_dataframe(_parse_bibtex_to_dataframe(tmp_path / "refs.bib", console), tmp_path, console)
+    assert _build_documents_payload(df, SimpleNamespace(id="ws"), None) == {}
