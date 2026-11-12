@@ -25,6 +25,8 @@ SCANNED = "robert1991-bullwho-scanned"
 
 @dataclass
 class HeaderCheck:
+    """Whether one gold table's header row survived into the parsed markdown."""
+
     table: str
     header: list[str]
     status: str  # ok | cells-elsewhere | missing | excepted
@@ -88,6 +90,7 @@ def check_headers(paper: str, gold_md: str, markdown: str) -> list[HeaderCheck]:
 
 
 def dump_paper(paper: str, gold_dir: Path, out_dir: Path) -> tuple[list[str], list[HeaderCheck], bool]:
+    """Parse one gold paper, write its artifacts, and return its report lines, header checks and routing verdict."""
     pdf_bytes = (gold_dir / paper / "source.pdf").read_bytes()
     service = default_service()
     plan = service.plan(pdf_bytes)
@@ -116,11 +119,8 @@ def dump_paper(paper: str, gold_dir: Path, out_dir: Path) -> tuple[list[str], li
     checks = check_headers(paper, (gold_dir / paper / "gold.md").read_text(), markdown)
     routed = True
     if paper == SCANNED:
-        routed = (
-            bool(plan.pages_needing_ocr)
-            and all(t.parser == OCR_PARSER and t.ocr for t in plan.tasks)
-            and sorted(p for t in plan.tasks for p in t.pages) == sorted(plan.pages_needing_ocr)
-        )
+        ocr_covered = {p for t in plan.tasks if t.parser == OCR_PARSER and t.ocr for p in t.pages}
+        routed = bool(plan.pages_needing_ocr) and set(plan.pages_needing_ocr) <= ocr_covered
 
     labels = {}
     for item, _ in doc.iterate_items(with_groups=False):
@@ -133,7 +133,7 @@ def dump_paper(paper: str, gold_dir: Path, out_dir: Path) -> tuple[list[str], li
         f"- items by label: `{json.dumps(labels, sort_keys=True)}`",
     ]
     if paper == SCANNED:
-        summary.append(f"- all pages routed through liteparse+OCR: **{routed}**")
+        summary.append(f"- every page needing OCR routed through liteparse+OCR: **{routed}**")
     summary.append("- gold table header rows:")
     summary += [
         f"  - {c.table}: **{c.status}** — {' | '.join(c.header)}"
@@ -144,6 +144,7 @@ def dump_paper(paper: str, gold_dir: Path, out_dir: Path) -> tuple[list[str], li
 
 
 def main() -> int:
+    """Dump every checkpoint paper and return non-zero if any gate fails."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--gold-dir", type=Path, default=Path("~/Projects/Extralit/data/gold").expanduser())
     parser.add_argument("--out", type=Path, default=Path("/tmp/eng85-checkpoint1"))

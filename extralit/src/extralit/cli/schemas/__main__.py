@@ -99,7 +99,7 @@ def list_schemas(
     """List available schemas with optional filtering."""
     from rich.console import Console
 
-    from extralit.cli.rich import console_table_to_pandas_df, get_themed_panel, print_rich_table
+    from extralit.cli.rich import console_table_to_df, get_themed_panel, print_rich_table
 
     client, workspace_data = get_workspace_client(workspace)
     ctx.obj = {
@@ -151,8 +151,8 @@ def list_schemas(
             table = print_rich_table(filtered_schemas, title=table_title, return_table=True)
 
             if table:
-                df = console_table_to_pandas_df(table)
-                df.to_csv(csv_path, index=False)
+                df = console_table_to_df(table)
+                df.write_csv(csv_path)
                 console.print(f"Exported {len(filtered_schemas)} schemas to {csv_path}")
         else:
             print_rich_table(filtered_schemas, title=table_title)

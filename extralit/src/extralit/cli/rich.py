@@ -12,8 +12,8 @@ if TYPE_CHECKING:
     from extralit.client.resources import Documents
 
     try:
-        import pandas as pd
         import pandera as pa
+        import polars as pl
     except ImportError:
         pass
 
@@ -74,27 +74,20 @@ def get_themed_panel(
     )
 
 
-def console_table_to_pandas_df(table: Table) -> "pd.DataFrame":
+def console_table_to_df(table: Table) -> "pl.DataFrame":
     """
-    Converts a rich table to a pandas DataFrame.
+    Converts a rich table to a polars DataFrame of strings.
 
     Args:
         table: The rich table to convert
 
     Returns:
-        A pandas DataFrame
+        A polars DataFrame
     """
-    try:
-        import pandas as pd
-    except ImportError:
-        raise ImportError("pandas is required to convert a table to a DataFrame. Install it with pip install pandas")
+    import polars as pl
 
-    headers = [column.header for column in table.columns]
-    rows = []
-    for row in table.rows:
-        rows.append([cell.renderable if hasattr(cell, "renderable") else str(cell) for cell in row.cells])
-
-    return pd.DataFrame(rows, columns=headers)
+    columns = {str(column.header): [str(cell) for cell in column.cells] for column in table.columns}
+    return pl.DataFrame(columns, schema=dict.fromkeys(columns, pl.String))
 
 
 def print_rich_table(

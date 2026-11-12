@@ -17,7 +17,6 @@ vi.mock("~/v1/infrastructure/services/useTranslate", () => ({
 // @vue/test-utils v2: config.mocks -> config.global.mocks
 config.global.mocks = {
   $t: translationMock,
-  $tc: translationMock,
   $language: { isRTL: () => false },
 };
 

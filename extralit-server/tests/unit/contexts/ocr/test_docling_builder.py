@@ -145,6 +145,22 @@ class TestIsContained:
 
         assert is_contained(block, block.bbox, [table], ctx)
 
+    def test_one_row_of_a_table_whose_cells_lack_bboxes_is_contained(self, ctx):
+        rows = [("Anopheles", "gambiae", "14999"), ("Culex", "pipiens", "212"), ("Aedes", "aegypti", "37")]
+        cells = [make_cell(text, row=r, col=c) for r, row in enumerate(rows) for c, text in enumerate(row)]
+        table = LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300, left=0, right=500), cells=cells)
+        block = _text(bbox(t=150, b=170, left=10, right=200), "Culex pipiens 212")
+
+        assert all(cell.bbox is None for cell in cells)
+        assert is_contained(block, block.bbox, [table], ctx)
+
+    def test_prose_inside_one_giant_cell_without_a_bbox_is_kept(self, ctx):
+        prose = "daily biting rate parity rate sporozoite rate inoculation rate " * 5
+        table = _table(bbox(t=100, b=500, left=0, right=500), prose)
+        block = _text(bbox(t=120, b=140, left=10, right=400), "daily biting rate parity rate")
+
+        assert not is_contained(block, block.bbox, [table], ctx)
+
     def test_a_table_without_cells_absorbs_no_text(self, ctx):
         table = LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300, left=0, right=500))
         block = _text(bbox(t=150, b=170, left=10, right=200), "real prose")

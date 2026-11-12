@@ -40,11 +40,15 @@ TEXT_LAYER_REASON = "invisible_text_layer"
 class PageParser(Protocol):
     """Parse a 1-indexed page subset into top-left-origin blocks, keyed by page number."""
 
-    def parse_pages(self, pdf_bytes: bytes, pages: Sequence[int], *, ocr: bool) -> dict[int, list[LayoutBlock]]: ...
+    def parse_pages(self, pdf_bytes: bytes, pages: Sequence[int], *, ocr: bool) -> dict[int, list[LayoutBlock]]:
+        """Parse the given pages; `ocr` asks for OCR where the parser supports it."""
+        ...
 
 
 @dataclass(frozen=True)
 class ParseTask:
+    """One parser run over a page subset, optionally with OCR and clipped to a region."""
+
     pages: tuple[int, ...]
     parser: str
     ocr: bool = False
@@ -53,6 +57,8 @@ class ParseTask:
 
 @dataclass(frozen=True)
 class ParsePlan:
+    """The tasks that together parse a document, plus the triage facts behind them."""
+
     tasks: tuple[ParseTask, ...]
     #: Triage's full OCR-needed list, regardless of the page allowlist.
     pages_needing_ocr: tuple[int, ...] = ()
@@ -61,6 +67,7 @@ class ParsePlan:
 
     @property
     def pages_by_parser(self) -> dict[str, list[int]]:
+        """Sorted pages assigned to each parser."""
         pages: dict[str, set[int]] = defaultdict(set)
         for task in self.tasks:
             pages[task.parser].update(task.pages)
@@ -68,6 +75,7 @@ class ParsePlan:
 
     @property
     def planned_ocr_pages(self) -> list[int]:
+        """Pages in a task with OCR enabled."""
         return sorted({p for task in self.tasks if task.ocr for p in task.pages})
 
     @property
@@ -77,6 +85,7 @@ class ParsePlan:
 
     @property
     def ocr_skipped_pages(self) -> list[int]:
+        """OCR-planned pages whose text layer is read instead of running OCR."""
         return [p for p in self.planned_ocr_pages if p in set(self.text_layer_pages)]
 
 
@@ -122,6 +131,8 @@ def build_document(
 
 
 class ParserService:
+    """Plan per-page parser routing for a PDF and merge the parsers' output into one `DoclingDocument`."""
+
     def __init__(
         self,
         parsers: Mapping[str, PageParser],

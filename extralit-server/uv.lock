@@ -1457,7 +1457,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.6.0" },
     { name = "pyjwt", specifier = ">=2.10.0" },
     { name = "pylance", specifier = ">=14.0.2" },
-    { name = "pymupdf4llm", marker = "extra == 'pymupdf'", specifier = ">=1.28.2,<2" },
+    { name = "pymupdf4llm", marker = "extra == 'pymupdf'", specifier = ">=1.28.2,<1.29.0" },
     { name = "python-multipart", specifier = ">=0.0.16" },
     { name = "pyyaml", specifier = ">=5.4.1,<6.1.0" },
     { name = "rich", specifier = "!=13.1.0" },

@@ -32,9 +32,9 @@ def test_import_bibtex_analysis(
     mock_validate.return_value = mock_workspace
 
     # Mock DataFrame parsing
-    import pandas as pd
+    import polars as pl
 
-    mock_df = pd.DataFrame([{"reference": "key1", "title": "Test Title", "files": ""}])
+    mock_df = pl.DataFrame([{"reference": "key1", "title": "Test Title", "files": ""}])
     mock_parse_bib.return_value = mock_df
     mock_match_pdfs.return_value = mock_df
 
@@ -84,15 +84,15 @@ def test_import_bibtex_with_pdf_matching(
     mock_validate.return_value = mock_workspace
 
     # Mock DataFrame parsing and PDF matching
-    import pandas as pd
+    import polars as pl
 
-    mock_df_initial = pd.DataFrame(
+    mock_df_initial = pl.DataFrame(
         [
             {"reference": "key1", "title": "Test Title", "files": ""},
             {"reference": "key2", "title": "Another Title", "files": ""},
         ]
     )
-    mock_df_matched = pd.DataFrame(
+    mock_df_matched = pl.DataFrame(
         [
             {"reference": "key1", "title": "Test Title", "files": "pdfs/key1.pdf"},
             {"reference": "key2", "title": "Another Title", "files": "pdfs/key2_paper.pdf"},
@@ -223,16 +223,16 @@ def test_import_bibtex_filename_matching(
     mock_validate.return_value = mock_workspace
 
     # Mock DataFrame parsing and PDF matching
-    import pandas as pd
+    import polars as pl
 
-    mock_df_initial = pd.DataFrame(
+    mock_df_initial = pl.DataFrame(
         [
             {"reference": "key1", "title": "Test Title", "files": ""},
             {"reference": "key2", "title": "Another Title", "files": ""},
             {"reference": "key3", "title": "Third Title", "files": ""},
         ]
     )
-    mock_df_matched = pd.DataFrame(
+    mock_df_matched = pl.DataFrame(
         [
             {"reference": "key1", "title": "Test Title", "files": "pdfs/key1.pdf"},
             {"reference": "key2", "title": "Another Title", "files": "pdfs/paper_key2.pdf"},

@@ -1,37 +1,37 @@
 <template>
   <span class="bulk__container">
     <LoadLine v-if="isSubmitting || isDraftSaving || isDiscarding" />
-    <VerticalResizable class="wrapper" :id="`${recordCriteria.datasetId}-r-v-rz`">
+    <VerticalResizable :id="`${recordCriteria.datasetId}-r-v-rz`" class="wrapper">
       <template #left>
         <HorizontalResizable :id="`${recordCriteria.datasetId}-r-h-rz`" class="wrapper__left" collapsable>
           <template #up>
             <section class="wrapper__records" aria-label="Bulk Annotation View">
-              <DatasetFilters :recordCriteria="recordCriteria">
+              <DatasetFilters :record-criteria="recordCriteria">
                 <ToggleAnnotationType
                   v-if="records.hasRecordsToAnnotate && recordCriteria.committed.isPending"
-                  :recordCriteria="recordCriteria"
+                  :record-criteria="recordCriteria"
               /></DatasetFilters>
               <SimilarityRecordReference
                 v-show="recordCriteria.isFilteringBySimilarity"
                 v-if="!!records.reference"
                 :fields="records.reference.fields"
-                :recordCriteria="recordCriteria"
-                :availableVectors="datasetVectors"
+                :record-criteria="recordCriteria"
+                :available-vectors="datasetVectors"
               />
               <div class="wrapper__records__header">
                 <div class="wrapper__records__header--left">
                   <BaseCheckbox
-                    :data-title="!selectedRecords.length ? $t('bulkAnnotation.select_to_annotate') : null"
                     v-if="records.hasRecordsToAnnotate"
+                    :data-title="!selectedRecords.length ? $t('bulkAnnotation.select_to_annotate') : null"
                     :decoration-circle="true"
                     class="wrapper__records__header__checkbox"
                     :value="isSelectedAll"
                     @input="toggleAllRecords"
                   />
                   <span
-                    class="wrapper__records__header__selection-text"
                     v-if="selectedRecords.length && !affectAllRecords"
-                    v-text="$tc('bulkAnnotation.recordsSelected', selectedRecords.length)"
+                    class="wrapper__records__header__selection-text"
+                    v-text="$t('bulkAnnotation.recordsSelected', selectedRecords.length)"
                   />
 
                   <div v-if="isAffectAllRecordsAllowed" class="bulk-by-criteria">
@@ -60,23 +60,23 @@
                   </div>
                 </div>
                 <RecordsViewConfig v-if="records.hasRecordsToAnnotate" v-model="recordHeight" />
-                <PaginationFeedbackTask :recordCriteria="recordCriteria" />
+                <PaginationFeedbackTask :record-criteria="recordCriteria" />
               </div>
               <div v-if="recordsMessage" class="wrapper--empty">
                 <p class="wrapper__text --heading3" v-html="recordsMessage" />
               </div>
-              <div ref="bulkScrollableArea" class="bulk__records snap" v-else>
+              <div v-else ref="bulkScrollableArea" class="bulk__records snap">
                 <Record
+                  v-for="(record, i) in recordsOnPage"
+                  :key="`${recordCriteria.committed.page.client.page}_${record.id}_${i}`"
                   class="snap-child"
                   :class="{
                     'record__wrapper--fixed-height': recordHeight === 'fixedHeight',
                   }"
-                  v-for="(record, i) in recordsOnPage"
-                  :key="`${recordCriteria.committed.page.client.page}_${record.id}_${i}`"
-                  :datasetVectors="datasetVectors"
-                  :recordCriteria="recordCriteria"
+                  :dataset-vectors="datasetVectors"
+                  :record-criteria="recordCriteria"
                   :record="record"
-                  :selectedRecords="selectedRecords"
+                  :selected-records="selectedRecords"
                   @on-select-record="onSelectRecord"
                 />
               </div>
@@ -98,7 +98,7 @@
               :key="`${recordCriteria.committed.page.client.page}_${record.id}_questions`"
               class="wrapper__form"
               :class="statusClass"
-              :datasetId="recordCriteria.datasetId"
+              :dataset-id="recordCriteria.datasetId"
               :record="record"
               :is-bulk-mode="true"
               :show-discard-button="recordsOnPage.some((r) => !r.isDiscarded)"
@@ -118,19 +118,19 @@
             />
           </template>
           <template #downHeader>
-            <AnnotationProgress class="annotation-progress" :datasetId="recordCriteria.datasetId" />
+            <AnnotationProgress class="annotation-progress" :dataset-id="recordCriteria.datasetId" />
           </template>
           <template #downHeaderExpanded>
             <p v-text="$t('metrics.progress.my')" />
           </template>
           <template #downContent>
-            <AnnotationProgressDetailed :datasetId="recordCriteria.datasetId" />
+            <AnnotationProgressDetailed :dataset-id="recordCriteria.datasetId" />
           </template>
         </HorizontalResizable>
       </template>
       <BaseCollapsablePanel
-        hideOnDesktop
-        :isExpanded="expandedGuidelines"
+        hide-on-desktop
+        :is-expanded="expandedGuidelines"
         :aria-expanded="expandedGuidelines"
         @toggle-expand="expandedGuidelines = !expandedGuidelines"
       >
@@ -191,6 +191,9 @@ export default {
       required: true,
     },
   },
+  setup(props) {
+    return useBulkAnnotationViewModel(props);
+  },
   data() {
     return {
       selectedRecords: [],
@@ -215,7 +218,7 @@ export default {
     bulkActionsTooltip() {
       if (!this.hasSelectedAtLeastOneRecord) return this.$t("bulkAnnotation.to_annotate_record_bulk_required");
 
-      return this.$tc("bulkAnnotation.recordsSelected", this.numberOfSelectedRecords);
+      return this.$t("bulkAnnotation.recordsSelected", this.numberOfSelectedRecords);
     },
     isSelectedAll() {
       return this.selectedRecords.length === this.recordsOnPage.length;
@@ -235,6 +238,41 @@ export default {
       return this.record.questions
         .filter((q) => q.isSpanType)
         .filter((s) => s.answer.options.some((e) => e.isSelected));
+    },
+  },
+  watch: {
+    spansQuestionsWithSelectedEntities: {
+      deep: true,
+      handler() {
+        const spanQuestions = this.recordsOnPage.flatMap((r) => r.questions).filter((q) => q.isSpanType);
+
+        this.spansQuestionsWithSelectedEntities.forEach((q) => {
+          spanQuestions.forEach((question) => {
+            if (question.id === q.id) {
+              question.answer.options.forEach((option) => {
+                option.isSelected = q.answer.options.some((o) => o.isSelected && o.id === option.id);
+              });
+            }
+          });
+        });
+      },
+    },
+    "recordCriteria.status"() {
+      this.recordCriteria.page.focusMode();
+    },
+    "recordCriteria.committed.page"() {
+      this.selectedRecords = [];
+      this.resetScroll();
+    },
+    "recordCriteria.page.client.many"() {
+      this.recordCriteria.page.goToFirst();
+
+      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
+    },
+    isSelectedAll(value) {
+      if (!value) {
+        this.affectAllRecords = false;
+      }
     },
   },
   methods: {
@@ -321,44 +359,6 @@ export default {
       if (!this.$refs.bulkScrollableArea) return;
       this.$refs.bulkScrollableArea.scrollTop = 0;
     },
-  },
-  watch: {
-    spansQuestionsWithSelectedEntities: {
-      deep: true,
-      handler() {
-        const spanQuestions = this.recordsOnPage.flatMap((r) => r.questions).filter((q) => q.isSpanType);
-
-        this.spansQuestionsWithSelectedEntities.forEach((q) => {
-          spanQuestions.forEach((question) => {
-            if (question.id === q.id) {
-              question.answer.options.forEach((option) => {
-                option.isSelected = q.answer.options.some((o) => o.isSelected && o.id === option.id);
-              });
-            }
-          });
-        });
-      },
-    },
-    "recordCriteria.status"() {
-      this.recordCriteria.page.focusMode();
-    },
-    "recordCriteria.committed.page"() {
-      this.selectedRecords = [];
-      this.resetScroll();
-    },
-    "recordCriteria.page.client.many"() {
-      this.recordCriteria.page.goToFirst();
-
-      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
-    },
-    isSelectedAll(value) {
-      if (!value) {
-        this.affectAllRecords = false;
-      }
-    },
-  },
-  setup(props) {
-    return useBulkAnnotationViewModel(props);
   },
 };
 </script>
