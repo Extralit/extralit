@@ -1,16 +1,16 @@
 """
-Document import CLI with pandas-based BibTeX processing and dataframe support.
+Document import CLI with polars-based BibTeX processing and dataframe support.
 
 This module implements the CLI interface for the papers library importer feature,
-using pandas for proper BibTeX parsing and dataframe handling:
+using polars for proper BibTeX parsing and dataframe handling:
 
-- Parses BibTeX files into pandas DataFrame with proper field handling
+- Parses BibTeX files into a polars DataFrame with proper field handling
 - Matches PDF files to references and stores file paths in 'files' column
 - Uses DataFrame for import_history.data storage
 - Simplified and refactored code for better reuse and maintainability
 
 The CLI workflow:
-1. Parse BibTeX file into pandas DataFrame with proper field parsing
+1. Parse BibTeX file into a polars DataFrame with proper field parsing
 2. Match PDF files to references and add to 'files' column
 3. Send analysis request with file metadata
 4. Display preview with multi-file information
@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Optional
 
 import lazy_loader as lazy
-import pandas as pd
+import polars as pl
 import typer
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
@@ -44,8 +44,8 @@ def _clean_bibtex_field(value: str) -> str:
     return value.replace("{", "").replace("}", "").strip()
 
 
-def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFrame:
-    """Parse BibTeX file into a pandas DataFrame with proper field handling."""
+def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pl.DataFrame:
+    """Parse BibTeX file into a polars DataFrame with proper field handling."""
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -54,31 +54,29 @@ def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFr
         task = progress.add_task("Parsing BibTeX file to DataFrame...", total=None)
 
         try:
-            with open(bibtex_file, encoding="utf-8") as bibtex_fp:
-                bib_database = bibtexparser.load(bibtex_fp)
-                entries = bib_database.entries
+            library = bibtexparser.parse_file(str(bibtex_file), encoding="utf-8")
+            entries = [
+                {"ID": e.key, "ENTRYTYPE": e.entry_type, **{k: f.value for k, f in e.fields_dict.items()}}
+                for e in library.entries
+            ]
 
             if not entries:
                 progress.update(task, completed=True, description="No entries found in BibTeX file")
-                return pd.DataFrame()
+                return pl.DataFrame()
 
-            # Convert entries to DataFrame storing all fields as-is
-            data_rows = []
-            for entry in entries:
-                # Start with the reference field (ID)
-                row = {"reference": entry.get("ID", "")}
-
-                # Add all other fields as-is, cleaning only braces
-                for key, value in entry.items():
-                    if key != "ID":  # Skip ID since we already have it as 'reference'
-                        row[key] = _clean_bibtex_field(str(value)) if value else ""
-
-                # Add empty files column for PDF matching
-                row["files"] = ""
-
-                data_rows.append(row)
-
-            df = pd.DataFrame(data_rows)
+            # Entries have different fields; a field an entry lacks becomes null.
+            df = pl.from_dicts(entries, infer_schema_length=None).select(pl.all().cast(pl.String))
+            df = (
+                df.rename({"ID": "reference"})
+                if "ID" in df.columns
+                else df.with_columns(reference=pl.lit(None, pl.String))
+            )
+            fields = [c for c in df.columns if c != "reference"]
+            df = df.with_columns(
+                pl.col("reference").fill_null(""),
+                *(pl.col(c).str.replace_all("[{}]", "").str.strip_chars().alias(c) for c in fields if c != "files"),
+                files=pl.lit(""),
+            ).select("reference", *(c for c in fields if c != "files"), "files")
             progress.update(task, completed=True, description=f"Parsed {len(df)} entries to DataFrame")
             return df
 
@@ -87,7 +85,7 @@ def _parse_bibtex_to_dataframe(bibtex_file: Path, console: Console) -> pd.DataFr
             raise ValueError(f"Error parsing BibTeX file: {e!s}")
 
 
-def _match_pdfs_to_dataframe(df: pd.DataFrame, pdf_folder: Path, console: Console) -> pd.DataFrame:
+def _match_pdfs_to_dataframe(df: pl.DataFrame, pdf_folder: Path, console: Console) -> pl.DataFrame:
     """
     Match PDF files to BibTeX DataFrame entries and populate 'files' column.
 
@@ -99,13 +97,18 @@ def _match_pdfs_to_dataframe(df: pd.DataFrame, pdf_folder: Path, console: Consol
     Returns:
         Updated DataFrame with 'files' column populated
     """
-    if df.empty:
+    if df.is_empty():
         return df
 
     all_pdf_files = list(pdf_folder.rglob("*.pdf"))
-    pdf_files_by_name = {pdf.name: pdf for pdf in all_pdf_files}
-    matched_via_file_tag = 0
-    matched_via_fallback = 0
+    pdf_files_by_name = pl.DataFrame(
+        {"file_name": [pdf.name for pdf in all_pdf_files], "pdf": [str(pdf) for pdf in all_pdf_files]},
+        schema={"file_name": pl.String, "pdf": pl.String},
+    ).unique("file_name", keep="last", maintain_order=True)
+    pdf_stems = pl.DataFrame(
+        {"stem": [pdf.stem for pdf in all_pdf_files], "pdf": [str(pdf) for pdf in all_pdf_files]},
+        schema={"stem": pl.String, "pdf": pl.String},
+    )
 
     with Progress(
         SpinnerColumn(),
@@ -114,54 +117,60 @@ def _match_pdfs_to_dataframe(df: pd.DataFrame, pdf_folder: Path, console: Consol
     ) as progress:
         task = progress.add_task("Matching PDF files to DataFrame entries...", total=None)
 
-        # Create a copy to avoid modifying the original
-        df_matched = df.copy()
+        refs = df.with_row_index("_idx").filter(pl.col("reference") != "")
+        file_tag = pl.col("file") if "file" in df.columns else pl.lit("")
 
-        for idx, row in df_matched.iterrows():
-            reference = row["reference"]
-            if not reference:
-                continue
+        # Strategy 1: the BibTeX 'file' field, "Description:path/to/file.pdf:application/pdf" or "path/to/file.pdf"
+        entries = (
+            refs.select("_idx", entry=file_tag.fill_null("").str.split(";"))
+            .explode("entry")
+            .with_columns(pl.col("entry").str.strip_chars())
+            .filter(pl.col("entry") != "")
+            .with_columns(parts=pl.col("entry").str.split(":"))
+            .with_columns(
+                path=pl.when(pl.col("parts").list.len() >= 2)
+                .then(pl.col("parts").list.get(1))
+                .otherwise(pl.col("parts").list.get(0))
+            )
+            .with_columns(file_name=pl.col("path").str.replace(r"^.*/", ""))
+        )
+        via_tag = entries.join(pdf_files_by_name, on="file_name", how="inner", maintain_order="left").select(
+            "_idx", "pdf"
+        )
 
-            matched_pdfs = []
+        # Strategy 2: fallback for references without a file-tag match: PDFs whose stem contains the key
+        fallback_refs = refs.join(via_tag.select("_idx").unique(), on="_idx", how="anti")
+        # Per-reference filter instead of a cross join, which would hold refs x PDFs rows in memory.
+        via_fallback = (
+            pl.concat(
+                [
+                    pdf_stems.filter(pl.col("stem").str.contains(ref, literal=True)).select(
+                        pl.lit(idx, pl.UInt32).alias("_idx"), "pdf"
+                    )
+                    for idx, ref in fallback_refs.select("_idx", "reference").iter_rows()
+                ],
+                how="vertical",
+            )
+            if fallback_refs.height
+            else pl.DataFrame(schema={"_idx": pl.UInt32, "pdf": pl.String})
+        )
 
-            # Strategy 1: Parse 'file' field from BibTeX entry (supports multiple files)
-            file_tag = row.get("file", "")
-            if file_tag:
-                file_entries = [f.strip() for f in file_tag.split(";") if f.strip()]
-                for file_entry in file_entries:
-                    # Handle different file field formats:
-                    # "Description:path/to/file.pdf:application/pdf"
-                    # "path/to/file.pdf"
-                    parts = file_entry.split(":")
-                    if len(parts) >= 2:
-                        file_name = Path(parts[1]).name
-                    else:
-                        file_name = Path(parts[0]).name
+        matched = (
+            pl.concat([via_tag, via_fallback])
+            .group_by("_idx", maintain_order=True)
+            .agg(files=pl.col("pdf").str.join("; "))
+        )
+        df_matched = (
+            df.with_row_index("_idx")
+            .join(matched, on="_idx", how="left", suffix="_matched")
+            .with_columns(files=pl.col("files_matched").fill_null(""))
+            .drop("_idx", "files_matched")
+        )
 
-                    pdf = pdf_files_by_name.get(file_name)
-                    if pdf:
-                        matched_pdfs.append(str(pdf))
-
-                if matched_pdfs:
-                    matched_via_file_tag += len(matched_pdfs)
-                else:
-                    # Strategy 2: Fallback - find PDFs containing reference key in filename
-                    fallback_matches = [str(pdf) for pdf in all_pdf_files if reference in pdf.stem]
-                    if fallback_matches:
-                        matched_pdfs = fallback_matches
-                        matched_via_fallback += len(fallback_matches)
-            else:
-                # Strategy 2: Fallback - find PDFs containing reference key in filename
-                fallback_matches = [str(pdf) for pdf in all_pdf_files if reference in pdf.stem]
-                if fallback_matches:
-                    matched_pdfs = fallback_matches
-                    matched_via_fallback += len(fallback_matches)
-
-            # Store matched files as semicolon-separated string
-            df_matched.at[idx, "files"] = "; ".join(matched_pdfs) if matched_pdfs else ""
-
+        matched_via_file_tag = via_tag.height
+        matched_via_fallback = via_fallback.height
         total_files = matched_via_file_tag + matched_via_fallback
-        refs_with_files = len(df_matched[df_matched["files"] != ""])
+        refs_with_files = df_matched.filter(pl.col("files") != "").height
 
         progress.update(
             task,
@@ -172,86 +181,81 @@ def _match_pdfs_to_dataframe(df: pd.DataFrame, pdf_folder: Path, console: Consol
     return df_matched
 
 
-def _dataframe_to_import_history_format(df: pd.DataFrame) -> dict:
+def _dataframe_to_import_history_format(df: pl.DataFrame) -> dict:
     """Convert DataFrame to import history data format."""
-    if df.empty:
+    if df.is_empty():
         return {"schema": {"fields": []}, "data": []}
 
-    # Build schema from DataFrame columns
-    schema_fields = []
-    for col in df.columns:
-        dtype = df[col].dtype
-        if pd.api.types.is_integer_dtype(dtype):
-            field_type = "integer"
-        elif pd.api.types.is_float_dtype(dtype):
-            field_type = "float"
-        elif pd.api.types.is_bool_dtype(dtype):
-            field_type = "boolean"
-        else:
-            field_type = "string"
+    def field_type(dtype: pl.DataType) -> str:
+        if dtype.is_integer():
+            return "integer"
+        if dtype.is_float():
+            return "float"
+        if dtype == pl.Boolean:
+            return "boolean"
+        return "string"
 
-        schema_fields.append({"name": col, "type": field_type})
-
+    schema_fields = [{"name": name, "type": field_type(dtype)} for name, dtype in df.schema.items()]
     schema = {"fields": schema_fields, "primaryKey": ["reference"]}
 
-    # Convert DataFrame to list of dictionaries, handling NaN values
-    data_rows = []
-    for _, row in df.iterrows():
-        row_dict = {}
-        for col in df.columns:
-            value = row[col]
-            # Handle NaN values
-            if pd.isna(value):
-                row_dict[col] = None if col in ["year"] else ""
-            else:
-                row_dict[col] = value
-        data_rows.append(row_dict)
-
+    # Missing values become None for 'year' and "" elsewhere.
+    floats = [pl.col(name).fill_nan(None) for name, dtype in df.schema.items() if dtype.is_float()]
+    data_rows = [
+        {k: ("" if v is None and k != "year" else v) for k, v in row.items()}
+        for row in df.with_columns(floats).to_dicts()
+    ]
     return {"schema": schema, "data": data_rows}
 
 
-def _build_documents_payload(df: pd.DataFrame, workspace_obj: Workspace, collection: Optional[str]) -> dict:
+def _file_paths(df: pl.DataFrame) -> pl.DataFrame:
+    """One row per (row index, path) from the semicolon-separated 'files' column."""
+    if "files" not in df.columns:
+        return pl.DataFrame(schema={"_idx": pl.UInt32, "path": pl.String})
+    return (
+        df.with_row_index("_idx")
+        .select("_idx", path=pl.col("files").fill_null("").str.split(";"))
+        .explode("path")
+        .with_columns(pl.col("path").str.strip_chars())
+        .filter(pl.col("path").is_not_null() & (pl.col("path") != ""))
+    )
+
+
+def _build_documents_payload(df: pl.DataFrame, workspace_obj: Workspace, collection: Optional[str]) -> dict:
     """Build documents payload for import analysis request from DataFrame."""
-    documents = {}
+    if "reference" not in df.columns:
+        return {}
+    metadata = {"collections": [collection], "source": "bib_import"} if collection else {}
+    column = {c: pl.col(c) if c in df.columns else pl.lit("") for c in ("doi", "pmid")}
+    rows = (
+        df.with_row_index("_idx")
+        .filter(pl.col("reference").is_not_null() & (pl.col("reference") != ""))
+        .select("_idx", "reference", doi=column["doi"], pmid=column["pmid"])
+    )
 
-    for _, row in df.iterrows():
-        reference = row["reference"]
-        if not reference:
-            continue
+    existing = [p for p in _file_paths(df).iter_rows(named=True) if Path(p["path"]).exists()]
+    files = pl.DataFrame(
+        {
+            "_idx": [p["_idx"] for p in existing],
+            "file": [{"filename": Path(p["path"]).name, "size": Path(p["path"]).stat().st_size} for p in existing],
+        },
+        schema={"_idx": pl.UInt32, "file": pl.Struct({"filename": pl.String, "size": pl.Int64})},
+    )
+    grouped = files.group_by("_idx", maintain_order=True).agg(associated_files=pl.col("file"))
+    rows = rows.join(grouped, on="_idx", how="left", maintain_order="left")
 
-        # Build document_create payload
-        document_create = {
-            "workspace_id": str(workspace_obj.id),
-            "reference": reference,
-            "doi": row.get("doi", ""),
-            "pmid": row.get("pmid", ""),
+    return {
+        row["reference"]: {
+            "document_create": {
+                "workspace_id": str(workspace_obj.id),
+                "reference": row["reference"],
+                "doi": row["doi"],
+                "pmid": row["pmid"],
+                **({"metadata": metadata} if metadata else {}),
+            },
+            "associated_files": row["associated_files"] or [],
         }
-
-        # Add metadata if collection is specified
-        metadata = {}
-        if collection:
-            metadata["collections"] = [collection]
-            metadata["source"] = "bib_import"
-        if metadata:
-            document_create["metadata"] = metadata
-
-        # Build associated_files list from 'files' column
-        associated_files = []
-        files_str = row.get("files", "")
-        if files_str:
-            file_paths = [f.strip() for f in files_str.split(";") if f.strip()]
-            for file_path in file_paths:
-                pdf_path = Path(file_path)
-                if pdf_path.exists():
-                    associated_files.append({"filename": pdf_path.name, "size": pdf_path.stat().st_size})
-
-        # Build DocumentMetadata structure for analysis request - extract basic fields
-        documents[reference] = {
-            "document_create": document_create,
-            "associated_files": associated_files,
-        }
-
-    return documents
+        for row in rows.iter_rows(named=True)
+    }
 
 
 def _send_import_analysis_request(client: Extralit, workspace_obj: Workspace, documents, console: Console):
@@ -275,7 +279,7 @@ def _send_import_analysis_request(client: Extralit, workspace_obj: Workspace, do
 
 
 def _execute_document_bulk_import(
-    client: Extralit, analysis_result: dict, df: pd.DataFrame, df_data: dict, bibtex_file: Path, console: Console
+    client: Extralit, analysis_result: dict, df: pl.DataFrame, df_data: dict, bibtex_file: Path, console: Console
 ) -> None:
     """Execute bulk document import with multi-file support per reference."""
     with Progress(
@@ -308,16 +312,7 @@ def _execute_document_bulk_import(
         files_to_upload: list = []
 
         # Create file mapping from DataFrame
-        file_map = {}
-        for _, row in df.iterrows():
-            row["reference"]
-            files_str = row.get("files", "")
-            if files_str:
-                file_paths = [f.strip() for f in files_str.split(";") if f.strip()]
-                for file_path in file_paths:
-                    pdf_path = Path(file_path)
-                    if pdf_path.exists():
-                        file_map[pdf_path.name] = pdf_path
+        file_map = {Path(path).name: Path(path) for path in _file_paths(df)["path"].to_list() if Path(path).exists()}
 
         for ref_key, doc_info in documents_to_import.items():
             document_create = doc_info.get("document_create", {})

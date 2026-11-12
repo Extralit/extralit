@@ -31,24 +31,24 @@ export default {
       switch (this.record.status) {
         case "pending":
           return {
-            name: this.$tc("recordStatus.pending", 1),
+            name: this.$t("recordStatus.pending", 1),
             class: "--pending",
           };
         case "draft":
           return {
-            name: this.$tc("recordStatus.draft", 1),
+            name: this.$t("recordStatus.draft", 1),
             class: "--draft",
           };
 
         case "discarded":
           return {
-            name: this.$tc("recordStatus.discarded", 1),
+            name: this.$t("recordStatus.discarded", 1),
             class: "--discarded",
           };
 
         case "submitted":
           return {
-            name: this.$tc("recordStatus.submitted", 1),
+            name: this.$t("recordStatus.submitted", 1),
             class: "--submitted",
           };
       }

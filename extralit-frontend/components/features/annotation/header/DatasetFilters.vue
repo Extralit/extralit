@@ -1,22 +1,22 @@
 <template>
   <div class="filters__wrapper">
     <div class="filters">
-      <SearchBarFilter v-model="recordCriteria.searchText" :fields="datasetFields" />
-      <StatusFilter class="filters__status" v-model="recordCriteria.status" />
+      <SearchBarFilter :value="recordCriteria.searchText" :fields="datasetFields" />
+      <StatusFilter v-model="recordCriteria.status" class="filters__status" />
       <FilterButton
         v-if="isAnyAvailableFilter"
         class="filters__filter-button"
-        @click="toggleVisibilityOfFilters"
         :button-name="$t('filters')"
         icon-name="filter"
         :show-chevron-icon="false"
         :is-button-active="isAnyFilterActive"
+        @click="toggleVisibilityOfFilters"
       />
       <Sort
         v-if="datasetMetadataIsLoaded && datasetQuestionIsLoaded"
-        :datasetMetadata="datasetMetadata"
-        :datasetQuestions="datasetQuestions"
         v-model="recordCriteria.sortBy.value"
+        :dataset-metadata="datasetMetadata"
+        :dataset-questions="datasetQuestions"
       />
       <BaseButton
         v-if="isAnyFilterActive || isSortedBy"
@@ -28,19 +28,19 @@
         <slot></slot>
       </div>
     </div>
-    <div class="filters__list__wrapper" v-if="visibleFilters">
+    <div v-if="visibleFilters" class="filters__list__wrapper">
       <transition name="filterAppear" appear>
         <div class="filters__list">
           <MetadataFilter
             v-if="datasetMetadataIsLoaded && !!datasetMetadata.length"
-            :datasetMetadata="datasetMetadata"
             v-model="recordCriteria.metadata.value"
+            :dataset-metadata="datasetMetadata"
           />
-          <ResponsesFilter :datasetQuestions="datasetQuestions" v-model="recordCriteria.response.value" />
+          <ResponsesFilter v-model="recordCriteria.response.value" :dataset-questions="datasetQuestions" />
           <SuggestionFilter
             v-model="recordCriteria.suggestion.value"
-            :datasetId="recordCriteria.datasetId"
-            :datasetQuestions="datasetQuestions"
+            :dataset-id="recordCriteria.datasetId"
+            :dataset-questions="datasetQuestions"
           />
         </div>
       </transition>
@@ -60,6 +60,9 @@ export default {
       required: true,
     },
   },
+  setup(props) {
+    return useDatasetsFiltersViewModel(props);
+  },
   data: () => {
     return {
       visibleFilters: false,
@@ -78,22 +81,6 @@ export default {
     },
     isSortedBy() {
       return this.recordCriteria.isSortedBy;
-    },
-  },
-  methods: {
-    newFiltersChanged() {
-      if (!this.recordCriteria.hasChanges) return;
-      if (!this.recordCriteria.isChangingAutomatically) {
-        this.recordCriteria.page.goToFirst();
-      }
-
-      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
-    },
-    toggleVisibilityOfFilters() {
-      this.visibleFilters = !this.visibleFilters;
-    },
-    resetFilters() {
-      this.recordCriteria.reset();
     },
   },
   watch: {
@@ -116,8 +103,21 @@ export default {
       this.newFiltersChanged();
     },
   },
-  setup(props) {
-    return useDatasetsFiltersViewModel(props);
+  methods: {
+    newFiltersChanged() {
+      if (!this.recordCriteria.hasChanges) return;
+      if (!this.recordCriteria.isChangingAutomatically) {
+        this.recordCriteria.page.goToFirst();
+      }
+
+      eventBus.emit("on-change-record-criteria-filter", this.recordCriteria);
+    },
+    toggleVisibilityOfFilters() {
+      this.visibleFilters = !this.visibleFilters;
+    },
+    resetFilters() {
+      this.recordCriteria.reset();
+    },
   },
 };
 </script>

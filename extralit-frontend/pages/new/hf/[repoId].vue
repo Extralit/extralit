@@ -12,6 +12,9 @@
 </template>
 
 <script setup>
+import { computed, onMounted } from "vue";
+import { useNewDatasetViewModel } from "@/pages/useNewDatasetViewModel";
+
 definePageMeta({
   middleware(to) {
     if (to.params.repoId === "datasets") {
@@ -19,25 +22,15 @@ definePageMeta({
     }
   },
 });
-</script>
 
-<script>
-import { useNewDatasetViewModel } from "@/pages/useNewDatasetViewModel";
+const route = useRoute();
+const { datasetConfig, getNewHfDatasetByRepoId, changeSubset } = useNewDatasetViewModel();
 
-export default {
-  mounted() {
-    const repoId = this.$route.params.repoId;
-    this.getNewHfDatasetByRepoId(decodeURIComponent(repoId));
-  },
-  setup() {
-    return useNewDatasetViewModel();
-  },
-  computed: {
-    repoIdWithoutOrg() {
-      return this.datasetConfig?.repoId?.split("/")[1];
-    },
-  },
-};
+const repoIdWithoutOrg = computed(() => datasetConfig.value?.repoId?.split("/")[1]);
+
+onMounted(() => {
+  getNewHfDatasetByRepoId(decodeURIComponent(route.params.repoId));
+});
 </script>
 
 <style scoped lang="scss">
