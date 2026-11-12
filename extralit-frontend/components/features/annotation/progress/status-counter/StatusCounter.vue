@@ -33,7 +33,7 @@ export default {
   },
   computed: {
     statusLabel() {
-      return this.$tc(`recordStatus.${this.name}`, 1);
+      return this.$t(`recordStatus.${this.name}`, 1);
     },
   },
 };

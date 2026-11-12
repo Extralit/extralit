@@ -43,6 +43,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
+import { type ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
+import { useImportConfigurationViewModel } from "./useImportConfigurationViewModel";
+
 definePageMeta({
   middleware(to) {
     if (!to.params.id) {
@@ -50,49 +55,41 @@ definePageMeta({
     }
   },
 });
-</script>
 
-<script lang="ts">
-import { type ImportHistoryDetails } from "~/v1/domain/entities/import/ImportHistoryDetails";
-import { useImportConfigurationViewModel } from "./useImportConfigurationViewModel";
+const { t } = useI18n();
+const {
+  isLoading,
+  error,
+  importHistoryData,
+  datasetConfig,
+  retryCount,
+  maxRetries,
+  loadImportConfiguration,
+  retry,
+  navigateToHome,
+  handleSubsetChange,
+  handleBreadcrumbAction,
+  getImportId,
+} = useImportConfigurationViewModel();
 
-export default {
-  async mounted() {
-    const importId = this.getImportId();
-    if (importId) {
-      await this.loadImportConfiguration(importId);
-    } else {
-      this.error = "No import ID provided in the URL.";
-    }
+const breadcrumbs = computed(() => [
+  { link: "/", name: t("breadcrumbs.home") },
+  {
+    link: "",
+    name: importHistoryData.value?.filename
+      ? `${t("importConfiguration.title")}: ${importHistoryData.value.filename}`
+      : t("importConfiguration.title"),
   },
-  setup() {
-    return useImportConfigurationViewModel();
-  },
-  computed: {
-    breadcrumbs() {
-      const breadcrumbs = [
-        {
-          link: "/",
-          name: this.$t("breadcrumbs.home"),
-        },
-      ];
+]);
 
-      if (this.importHistoryData?.filename) {
-        breadcrumbs.push({
-          link: "",
-          name: `${this.$t("importConfiguration.title")}: ${this.importHistoryData.filename}`,
-        });
-      } else {
-        breadcrumbs.push({
-          link: "",
-          name: this.$t("importConfiguration.title"),
-        });
-      }
-
-      return breadcrumbs;
-    },
-  },
-};
+onMounted(async () => {
+  const importId = getImportId();
+  if (importId) {
+    await loadImportConfiguration(importId);
+  } else {
+    error.value = "No import ID provided in the URL.";
+  }
+});
 </script>
 
 <style scoped lang="scss">

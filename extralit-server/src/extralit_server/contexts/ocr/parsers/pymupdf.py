@@ -13,7 +13,7 @@ from typing import Any, Optional
 import pymupdf
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, DoclingDocument, Size, TableCell
 
-# pymupdf-layout removes these names from the package namespace; the submodule keeps them.
+# pymupdf4llm drops its top-level IdentifyHeaders/TocHeaders when pymupdf-layout is installed.
 from pymupdf4llm.helpers.pymupdf_rag import IdentifyHeaders, TocHeaders
 
 from extralit_server.contexts.ocr.docling_builder import (
@@ -152,18 +152,6 @@ def _blocks_for_page(page: pymupdf.Page, headers: Any) -> list[LayoutBlock]:
 
     blocks.sort(key=lambda b: (b.bbox.t, b.bbox.l))
     return blocks
-
-
-class PyMuPDFParser:
-    """`PageParser` over pymupdf; it reads the text layer, so `ocr` has no effect."""
-
-    def parse_pages(self, pdf_bytes: bytes, pages: Sequence[int], *, ocr: bool) -> dict[int, list[LayoutBlock]]:
-        """Parse the given 1-indexed pages into top-left-origin blocks, keyed by page number."""
-        if not pages:
-            return {}
-        with pymupdf.open(stream=pdf_bytes, filetype="pdf") as pdf:
-            headers = _header_levels(pdf, pages)
-            return {p: _blocks_for_page(pdf[p - 1], headers) for p in sorted(set(pages)) if 0 < p <= pdf.page_count}
 
 
 def parse(
