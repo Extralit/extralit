@@ -56,7 +56,7 @@
     "marked-highlight": "^2.2.4",
     "marked-katex-extension": "^5.1.13",
     "mitt": "^3.0.1",
-    "nuxt": "^4.6.3",
+    "nuxt": "^4.6.4",
     "papaparse": "^5.7.0",
     "pinia": "^4.0.3",
     "sass": "~1.107.1",
