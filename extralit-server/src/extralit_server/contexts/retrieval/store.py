@@ -149,7 +149,7 @@ class ChunkStore:
         return dataset.to_table(columns=columns, filter=" AND ".join(conditions) or None)
 
     def drop_vector_column(self, model: str) -> None:
-        dataset = self.open()
-        column = vector_column(model)
-        if dataset is not None and column in dataset.schema.names:
-            dataset.drop_columns([column])
+        """Drop `model`'s column, found by field metadata so a slug collision never drops another model."""
+        column = self.vector_columns().get(model)
+        if column is not None:
+            self.open().drop_columns([column])

@@ -257,3 +257,13 @@ def test_replace_document_keeps_vectors_of_unchanged_chunks(tmp_path, monkeypatc
     )
 
     assert store.unembedded(MODEL_A).column("embed_text").to_pylist() == ["c"]
+
+
+def test_dropping_a_colliding_model_leaves_the_stored_one(store, doc):
+    table = chunks(doc, ["a"])
+    store.replace_chunks(doc, table)
+    store.upsert_vectors("x:m-1", vectors("x:m-1", table.column("chunk_id").to_pylist(), 4))
+
+    store.drop_vector_column("x:m_1")
+
+    assert store.vector_columns() == {"x:m-1": vector_column("x:m-1")}
