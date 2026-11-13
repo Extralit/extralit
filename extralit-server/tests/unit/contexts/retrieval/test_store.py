@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import numpy as np
@@ -10,6 +11,7 @@ import pytest
 
 from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA, PAGE_SCHEMA
 from extralit_server.contexts.ocr.layout_store import LayoutStore
+from extralit_server.contexts.ocr.storage import delete_layout
 from extralit_server.contexts.retrieval.arrow import CHUNK_SCHEMA, vector_column, vector_field
 from extralit_server.contexts.retrieval.store import ChunkStore, DimensionMismatchError
 from extralit_server.settings import settings
@@ -259,18 +261,22 @@ def test_replace_document_keeps_vectors_of_unchanged_chunks(tmp_path, monkeypatc
     assert store.unembedded(MODEL_A).column("embed_text").to_pylist() == ["c"]
 
 
+def test_dropping_a_colliding_model_leaves_the_stored_one(store, doc):
+    table = chunks(doc, ["a"])
+    store.replace_chunks(doc, table)
+    store.upsert_vectors("x:m-1", vectors("x:m-1", table.column("chunk_id").to_pylist(), 4))
+
+    store.drop_vector_column("x:m_1")
+
+    assert store.vector_columns() == {"x:m-1": vector_column("x:m-1")}
+
+
 class TestDeleteLayoutDropsChunks:
     @pytest.mark.asyncio
     async def test_delete_layout_removes_the_documents_chunks(self, store, doc):
-        from unittest.mock import AsyncMock
-
-        from extralit_server.contexts.ocr.storage import delete_layout
-
         other = str(uuid4())
         store.replace_chunks(doc, chunks(doc, ["a", "b"]))
         store.replace_chunks(other, chunks(other, ["keep"]))
-        from unittest.mock import patch
-
         with patch("extralit_server.contexts.ocr.storage.files.delete_object", AsyncMock()):
             await delete_layout(AsyncMock(), "ws-chunks", doc, store=store.layout)
 

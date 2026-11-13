@@ -5,7 +5,14 @@ from extralit_server.contexts.retrieval.settings import RetrievalSettings
 
 
 def test_defaults_mean_full_text_only(monkeypatch):
-    for key in ("EMBEDDING_MODEL", "EMBEDDING_DIMENSIONS", "EMBEDDING_SETTINGS"):
+    for key in (
+        "EMBEDDING_MODEL",
+        "EMBEDDING_DIMENSIONS",
+        "EMBEDDING_SETTINGS",
+        "EMBEDDING_BATCH_SIZE",
+        "RRF_K",
+        "CANDIDATE_K",
+    ):
         monkeypatch.delenv(f"EXTRALIT_RETRIEVAL_{key}", raising=False)
 
     settings = RetrievalSettings()
