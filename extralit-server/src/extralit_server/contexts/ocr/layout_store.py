@@ -9,7 +9,7 @@ every writer holds the workspace lock across the pair.
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import asynccontextmanager, contextmanager
 from datetime import timedelta
 from typing import TYPE_CHECKING, Any, Optional
@@ -42,7 +42,7 @@ LOCK_TTL_SECONDS = 600
 LOCK_WAIT_SECONDS = 300
 REPLACE_ATTEMPTS = 3
 
-_SCHEMAS = {ITEMS_DATASET: ITEM_SCHEMA, PAGES_DATASET: PAGE_SCHEMA}
+_BASE_SCHEMAS = {ITEMS_DATASET: ITEM_SCHEMA, PAGES_DATASET: PAGE_SCHEMA}
 
 
 def layout_root(workspace_name: str) -> tuple[str, Optional[dict[str, str]]]:
@@ -69,6 +69,19 @@ class LayoutStore:
         self.storage_options = storage_options
         self._lock_depth = 0
         self._lock = None
+        self._schemas: dict[str, pa.Schema] = dict(_BASE_SCHEMAS)
+        self._replacers: dict[str, Callable[[UUID | str, pa.Table], None]] = {}
+
+    def register_dataset(
+        self,
+        name: str,
+        schema: pa.Schema,
+        replacer: Optional[Callable[[UUID | str, pa.Table], None]] = None,
+    ) -> None:
+        """Make another dataset known to `delete_document`/`source`; `replacer` overrides delete+append."""
+        self._schemas[name] = schema
+        if replacer is not None:
+            self._replacers[name] = replacer
 
     @classmethod
     def for_workspace(cls, workspace_name: str) -> LayoutStore:
@@ -152,10 +165,29 @@ class LayoutStore:
             return lance.dataset(self.uri(name), storage_options=self.storage_options).version
         return self._write(name, data, mode="append")
 
-    def replace_document(self, document_id: UUID | str, items: pa.Table, pages: pa.Table) -> dict[str, int]:
-        """Swap this document's rows for `items`/`pages`. Caller must hold the workspace lock."""
+    def replace_document(
+        self,
+        document_id: UUID | str,
+        items: pa.Table,
+        pages: pa.Table,
+        extra: Optional[Mapping[str, pa.Table]] = None,
+    ) -> dict[str, int]:
+        """Swap this document's rows for `items`/`pages` and any `extra` registered datasets.
+
+        Caller must hold the workspace lock.
+        """
+        datasets = {ITEMS_DATASET: items, PAGES_DATASET: pages}
+        for name, data in (extra or {}).items():
+            if name not in self._schemas:
+                raise KeyError(f"Dataset {name!r} is not registered")
+            datasets[name] = data
         versions = {}
-        for name, data in ((ITEMS_DATASET, items), (PAGES_DATASET, pages)):
+        for name, data in datasets.items():
+            if name in self._replacers:
+                self._replacers[name](document_id, data)
+                dataset = self.open(name)
+                versions[f"{name}_version"] = dataset.version if dataset is not None else 0
+                continue
             for attempt in range(1, REPLACE_ATTEMPTS + 1):
                 try:
                     versions[f"{name}_version"] = self._replace_one(name, document_id, data)
@@ -170,7 +202,7 @@ class LayoutStore:
     def delete_document(self, document_id: UUID | str) -> None:
         """Drop this document's rows. Caller must hold the workspace lock."""
         condition = _document_filter(document_id)
-        for name in (ITEMS_DATASET, PAGES_DATASET):
+        for name in self._schemas:
             dataset = self.open(name)
             if dataset is not None:
                 dataset.delete(condition)
@@ -188,7 +220,7 @@ class LayoutStore:
         projection = list(columns) if columns else None
         dataset = self.open(name)
         if dataset is None:
-            empty = pa.Table.from_pylist([], schema=_SCHEMAS[name])
+            empty = pa.Table.from_pylist([], schema=self._schemas[name])
             return empty.select(projection) if projection else empty
         return dataset.to_table(filter=f"({condition}) AND ({where})" if where else condition, columns=projection)
 
@@ -201,13 +233,13 @@ class LayoutStore:
     def source(self, name: str) -> Any:
         """The dataset, or an empty table of the right schema when nothing has been written yet."""
         dataset = self.open(name)
-        return dataset if dataset is not None else pa.Table.from_pylist([], schema=_SCHEMAS[name])
+        return dataset if dataset is not None else pa.Table.from_pylist([], schema=self._schemas[name])
 
     # --- maintenance ---------------------------------------------------------------------------
 
     def maybe_compact(self) -> None:
         """Best effort: a failed compaction must never fail the extraction that triggered it."""
-        for name in (ITEMS_DATASET, PAGES_DATASET):
+        for name in self._schemas:
             try:
                 dataset = self.open(name)
                 if dataset is None or len(dataset.get_fragments()) <= COMPACT_FRAGMENT_THRESHOLD:
