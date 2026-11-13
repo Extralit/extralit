@@ -764,11 +764,11 @@ requires-dist = [
     { name = "pandera", extras = ["io"], specifier = ">=0.26.1,<0.36.0" },
     { name = "pillow", specifier = ">=9.5.0" },
     { name = "polars", specifier = ">=1.20" },
-    { name = "pydantic", specifier = ">=2.6.0,<3.0.0" },
+    { name = "pydantic", specifier = ">=2.14.3,<3.0.0" },
     { name = "rich", specifier = ">=10.0.0" },
     { name = "standardwebhooks", specifier = ">=1.0.0" },
     { name = "tqdm", specifier = ">=4.60.0" },
-    { name = "typer", specifier = ">=0.27.0" },
+    { name = "typer", specifier = ">=0.28.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -794,8 +794,8 @@ dev = [
     { name = "pytest-httpx", specifier = ">=0.36.0" },
     { name = "pytest-mock", specifier = ">=3.12.0" },
     { name = "pytest-retry", specifier = ">=1.5" },
-    { name = "ruff", specifier = ">=0.17.3" },
-    { name = "ty", specifier = ">=0.0.95" },
+    { name = "ruff", specifier = ">=0.17.4" },
+    { name = "ty", specifier = ">=0.0.99" },
 ]
 
 [[package]]
