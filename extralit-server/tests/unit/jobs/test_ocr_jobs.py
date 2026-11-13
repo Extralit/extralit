@@ -110,7 +110,7 @@ class TestChunkJobEnqueue:
         document_id = uuid4()
         result = await run_job(document_id)
 
-        job_context["chunk_delay"].assert_called_once_with(document_id, "ws")
+        job_context["chunk_delay"].assert_called_once_with(document_id, "ws", "wf-1")
         assert result["chunk_job_id"] == job_context["chunk_delay"].return_value.id
 
     async def test_a_skipped_layout_enqueues_no_chunk_job(self, job_context):
@@ -120,12 +120,11 @@ class TestChunkJobEnqueue:
 
         job_context["chunk_delay"].assert_not_called()
 
-    async def test_enqueue_failure_does_not_fail_the_layout_job(self, job_context):
+    async def test_enqueue_failure_fails_the_layout_job_so_rq_retries_it(self, job_context):
         job_context["chunk_delay"].side_effect = ConnectionError("redis down")
 
-        result = await run_job()
-
-        assert result["chunk_job_id"] is None
+        with pytest.raises(ConnectionError):
+            await run_job()
 
 
 class TestExecutedPlanMetadata:

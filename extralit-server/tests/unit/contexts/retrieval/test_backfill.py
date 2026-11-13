@@ -44,7 +44,7 @@ def world(tmp_path, monkeypatch):
     store.replace_chunks(str(stale), chunks(str(stale), ["b"]))
     session = FakeSession(
         [(workspace_id, "ws")],
-        [[(fresh, layout), (stale, layout), (unchunked, layout), (unparsed, {})]],
+        [[(fresh, layout), (stale, layout), (unchunked, layout), (unparsed, {}), (uuid4(), {"layout_metadata": None})]],
     )
     with (
         patch.object(module, "AsyncSessionLocal", lambda: session),

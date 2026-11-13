@@ -89,8 +89,8 @@ def build_filter(filters: Optional[SearchFilters]) -> Optional[str]:
             raise ValueError(f"Unknown chunk kinds: {sorted(unknown)}")
         clauses.append(_in("kind", list(filters.kinds)))
     if filters.pages:
-        pages = [int(p) for p in filters.pages]
-        clauses.append(f"({_in('page_start', pages)} OR {_in('page_end', pages)})")
+        spans = [f"({_column('page_start')} <= {int(p)} AND {_column('page_end')} >= {int(p)})" for p in filters.pages]
+        clauses.append(f"({' OR '.join(spans)})")
     return " AND ".join(clauses) or None
 
 
@@ -128,7 +128,9 @@ def _attach(connection: duckdb.DuckDBPyConnection, index: int, store: ChunkStore
     root, options = store.layout.root_uri, store.layout.storage_options
     if root.startswith("s3://") and options:
         pairs = ", ".join(f"{_literal(k)}: {_literal(str(v))}" for k, v in options.items())
-        connection.execute(f"CREATE SECRET (TYPE LANCE, SCOPE {_literal(root)}, STORAGE_OPTIONS MAP {{{pairs}}})")
+        connection.execute(
+            f"CREATE SECRET lance_ns{index} (TYPE LANCE, SCOPE {_literal(root)}, STORAGE_OPTIONS MAP {{{pairs}}})"
+        )
     alias = f"ns{index}"
     connection.execute(f"ATTACH {_literal(root)} AS {alias} (TYPE LANCE, READ_ONLY false)")
     return f"{alias}.main.chunks"
@@ -180,7 +182,7 @@ def _run(
             tables.append((_attach(connection, index, store), column))
         if not tables:
             return []
-        fts, fts_params, vec, vec_params = _legs(tables, query, vector, filter_, settings.candidate_k)
+        fts, fts_params, vec, vec_params = _legs(tables, query, vector, filter_, max(settings.candidate_k, limit))
         sql = fuse_sql(fts, vec, settings.rrf_k, limit)
         rows = connection.execute(sql, fts_params + vec_params).fetchall()
     finally:

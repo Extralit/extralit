@@ -39,7 +39,7 @@ async def backfill(workspace: Optional[str] = None) -> list[WorkspaceBackfill]:
                         select(Document.id, Document.metadata_).where(Document.workspace_id == workspace_id)
                     )
                 ).all()
-                if (metadata or {}).get("layout_metadata", {}).get("layout_url")
+                if ((metadata or {}).get("layout_metadata") or {}).get("layout_url")
             ]
             for workspace_id, _ in workspaces
         }

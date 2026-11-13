@@ -98,6 +98,17 @@ class TestChunkJob:
 
         chunk_env["delay"].assert_not_called()
 
+    async def test_workflow_id_from_the_layout_job_reaches_the_writer_guard(self, store, chunk_env, config):
+        from extralit_server.jobs.retrieval_jobs import async_document_chunk_job
+
+        doc_id = uuid4()
+        chunk_env["skip"].return_value = "workflow superseded"
+        result = await async_document_chunk_job(doc_id, "ws-jobs", "wf-old")
+
+        assert chunk_env["skip"].call_args.args[1:] == (doc_id, "wf-old")
+        assert result["skipped"] == "workflow superseded"
+        assert store.open() is None
+
     async def test_deleted_document_writes_nothing(self, store, chunk_env, config):
         from extralit_server.jobs.retrieval_jobs import async_document_chunk_job
 

@@ -31,11 +31,14 @@ _LOGGER = logging.getLogger(__name__)
     result_ttl=3600,
     retry=Retry(max=2, interval=[30, 60]),
 )
-async def async_document_chunk_job(document_id: UUID, workspace_name: str) -> dict[str, Any]:
+async def async_document_chunk_job(
+    document_id: UUID, workspace_name: str, workflow_id: Optional[str] = None
+) -> dict[str, Any]:
     """Chunk the stored `{document_id}.docling.json` and replace the document's chunks."""
     document_id = UUID(str(document_id))
     current_job = get_current_job()
-    workflow_id = (current_job.meta or {}).get("workflow_id") if current_job is not None else None
+    if workflow_id is None and current_job is not None:
+        workflow_id = (current_job.meta or {}).get("workflow_id")
 
     storage = await files.get_storage()
     doc = await layout_storage.load_layout(storage, workspace_name, document_id)

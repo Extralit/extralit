@@ -38,7 +38,7 @@ class TestFilter:
 
         assert clause == (
             f"document_id IN ('{doc}') AND reference IN ('O''Brien2020') AND kind IN ('table') "
-            "AND (page_start IN (2, 3) OR page_end IN (2, 3))"
+            "AND ((page_start <= 2 AND page_end >= 2) OR (page_start <= 3 AND page_end >= 3))"
         )
 
     def test_document_ids_must_be_uuids(self):

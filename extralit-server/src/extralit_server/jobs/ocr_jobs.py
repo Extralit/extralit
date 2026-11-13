@@ -104,12 +104,8 @@ async def async_document_layout_job(
         async with AsyncSessionLocal() as db:
             await update_processing_metadata(db, document_id, lambda m: setattr(m, "layout_metadata", layout))
 
-        try:
-            chunk_job_id = async_document_chunk_job.delay(document_id, workspace_name).id
-        except Exception as e:
-            # The layout is stored; `retrieval backfill` picks the document up later.
-            _LOGGER.warning(f"Could not enqueue the chunk job for document {document_id}: {e}")
-            chunk_job_id = None
+        # Must not be swallowed: backfill cannot see stale chunks of a re-parsed document.
+        chunk_job_id = async_document_chunk_job.delay(document_id, workspace_name, workflow_id).id
 
         result = {
             "document_id": str(document_id),
