@@ -28,8 +28,19 @@ class TestRegistry:
     def test_pymupdf_is_registered_when_the_extra_is_installed(self):
         assert "pymupdf" in list_parsers()
 
-    def test_get_parser_resolves_it(self, pdf_bytes):
-        assert get_parser("pymupdf")(pdf_bytes, name="sample").name == "sample"
+    def test_get_parser_resolves_a_page_parser(self, pdf_bytes):
+        blocks = get_parser("pymupdf").parse_pages(pdf_bytes, [1, 99], ocr=False)
+
+        assert list(blocks) == [1]
+        assert blocks[1]
+
+    def test_ocr_flag_does_not_change_the_output(self, pdf_bytes):
+        parser = get_parser("pymupdf")
+
+        assert parser.parse_pages(pdf_bytes, [1], ocr=True) == parser.parse_pages(pdf_bytes, [1], ocr=False)
+
+    def test_no_pages_means_no_output(self, pdf_bytes):
+        assert get_parser("pymupdf").parse_pages(pdf_bytes, [], ocr=False) == {}
 
 
 class TestGeometry:

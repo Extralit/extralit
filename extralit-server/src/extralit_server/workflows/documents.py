@@ -5,7 +5,6 @@ from rq import Retry
 from rq.group import Group
 from rq.job import Dependency
 
-from extralit_server.contexts.ocr.parsers.registry import default_parser_name
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
 from extralit_server.jobs.ocr_jobs import async_document_layout_job
@@ -38,7 +37,7 @@ async def create_document_workflow(
         reference: Reference key for tracking
         workspace_name: Workspace name for job context
         workspace_id: UUID of the workspace
-        layout_parser: Layout parser to run; None uses the default parser
+        layout_parser: Force one layout parser for every page; None routes per page
 
     Returns:
         Dictionary containing workflow_id and group_id for tracking
@@ -106,7 +105,7 @@ async def create_document_workflow(
     # classifies those pages but bundles no engine, so today they stay an explicitly surfaced gap.
     layout_job_data = OCR_QUEUE.prepare_data(
         async_document_layout_job,
-        (document_id, s3_url, workspace_name, layout_parser or default_parser_name()),
+        (document_id, s3_url, workspace_name, layout_parser),
         timeout=1800,
         job_id=f"document_layout_{document_id}_{run_suffix}",
         depends_on=on_analysis,

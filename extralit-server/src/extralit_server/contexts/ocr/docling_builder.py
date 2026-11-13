@@ -6,6 +6,8 @@ Parsers normalize whatever their backend produces into `LayoutBlock`s; everythin
 
 from __future__ import annotations
 
+import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Optional
 
@@ -26,6 +28,9 @@ PDF_MIMETYPE = "application/pdf"
 
 #: Fraction of a text block that must fall inside a table/picture for it to count as duplicated.
 CONTAINMENT_THRESHOLD = 0.6
+
+#: Share of the cell text under a block that the block's own words must account for to count as a duplicate.
+CELL_SHARE_THRESHOLD = 0.5
 
 #: Labels routed to `add_table` / `add_picture` rather than `add_text`.
 TABLE_LABELS = frozenset({DocItemLabel.TABLE, DocItemLabel.DOCUMENT_INDEX})
@@ -61,10 +66,12 @@ class PageContext:
 
     @property
     def height(self) -> float:
+        """Page height in points."""
         return self.size.height
 
     @property
     def width(self) -> float:
+        """Page width in points."""
         return self.size.width
 
 
@@ -121,41 +128,49 @@ def make_prov(ctx: PageContext, bbox: BoundingBox, text: Optional[str]) -> Prove
     )
 
 
-def is_contained(
-    doc: DoclingDocument,
-    bbox: BoundingBox,
-    page_no: int,
-    threshold: float = CONTAINMENT_THRESHOLD,
-) -> bool:
-    """Whether `bbox` is mostly swallowed by a table or picture already on this page."""
-    for item in [*doc.tables, *doc.pictures]:
-        for prov in item.prov:
-            if prov.page_no != page_no:
-                continue
-            if bbox.intersection_over_self(prov.bbox) >= threshold:
-                return True
-    return False
+def _tokens(text: str) -> list[str]:
+    return re.findall(r"\w+", text.lower())
 
 
-def _sort_key(doc: DoclingDocument, node: NodeItem) -> tuple[float, float, float]:
-    """Position a body child by the earliest provenance anywhere in its subtree."""
-    positions = []
-    stack = [node]
-    while stack:
-        current = stack.pop()
-        for prov in getattr(current, "prov", []) or []:
-            positions.append((float(prov.page_no), prov.bbox.t, prov.bbox.l))
-        stack.extend(child.resolve(doc) for child in current.children)
-    return min(positions) if positions else (float("inf"),) * 3
+def _carries_text(block_words: list[str], container: LayoutBlock, box: BoundingBox, ctx: PageContext) -> bool:
+    """Whether the cells under `box` hold this block's words and little else.
 
-
-def sort_body_by_position(doc: DoclingDocument) -> None:
-    """Restore geometric reading order across text, tables and pictures alike.
-
-    The dedup pass has to add tables and pictures first, which leaves them ahead of every
-    paragraph in the body; this puts the page back in the order a reader would see it.
+    A cell much longer than the block is a false table swallowing prose, so the block is kept.
+    Cells without a bbox count only if they share a word with the block.
     """
-    doc.body.children.sort(key=lambda ref: _sort_key(doc, ref.resolve(doc)))
+
+    block_set = set(block_words)
+
+    def touches(cell: TableCell) -> bool:
+        if cell.bbox is None:
+            return not block_set.isdisjoint(_tokens(cell.text))
+        return box.intersection_over_self(clamp_to_page(flip_to_top_left(cell.bbox, ctx.height), ctx)) > 0
+
+    under = [cell for cell in container.cells or [] if touches(cell)]
+    cell_words = [w for cell in under for w in _tokens(cell.text)]
+    if not cell_words:
+        return False
+    known = set(cell_words)
+    covered = sum(w in known for w in block_words) / len(block_words)
+    return covered >= CONTAINMENT_THRESHOLD and len(block_words) >= CELL_SHARE_THRESHOLD * len(cell_words)
+
+
+def is_contained(block: LayoutBlock, bbox: BoundingBox, containers: Sequence[LayoutBlock], ctx: PageContext) -> bool:
+    """Whether `block` duplicates a table or picture on its page.
+
+    The bbox must be mostly inside the container; for a table the block's words must also be
+    what the cells under it hold, so a false table over real prose or a row it missed drops nothing.
+    """
+    words = _tokens(block.text)
+    for container in containers:
+        container_box = clamp_to_page(flip_to_top_left(container.bbox, ctx.height), ctx)
+        if bbox.intersection_over_self(container_box) < CONTAINMENT_THRESHOLD:
+            continue
+        if container.label in PICTURE_LABELS or not words:
+            return True
+        if _carries_text(words, container, bbox, ctx):
+            return True
+    return False
 
 
 def _page_of(item: NodeItem) -> Optional[int]:
@@ -184,19 +199,15 @@ def link_captions(doc: DoclingDocument) -> None:
 def append_blocks(
     doc: DoclingDocument,
     ctx: PageContext,
-    blocks: list[LayoutBlock],
+    blocks: Sequence[LayoutBlock],
 ) -> list[NodeItem]:
-    """Add one page's blocks, then restore reading order.
-
-    Tables and pictures go in first so the text pass can drop anything they already contain —
-    without that ordering the same words land in the document twice, once as a table cell and
-    once as a stray paragraph.
-    """
+    """Add one page's blocks in the order given, dropping text a table or picture already carries."""
     from extralit_server.contexts.ocr.figures import add_picture_block
     from extralit_server.contexts.ocr.tables import add_table_block
     from extralit_server.contexts.ocr.text import add_text_block
 
     register_page(doc, ctx)
+    containers = [b for b in blocks if b.label in TABLE_LABELS or b.label in PICTURE_LABELS]
 
     added: list[NodeItem] = []
     for block in blocks:
@@ -204,14 +215,8 @@ def append_blocks(
             added.append(add_table_block(doc, block, ctx))
         elif block.label in PICTURE_LABELS:
             added.append(add_picture_block(doc, block, ctx))
-
-    for block in blocks:
-        if block.label in TABLE_LABELS or block.label in PICTURE_LABELS:
-            continue
-        item = add_text_block(doc, block, ctx)
-        if item is not None:
+        elif (item := add_text_block(doc, block, ctx, containers=containers)) is not None:
             added.append(item)
 
-    sort_body_by_position(doc)
     link_captions(doc)
     return added

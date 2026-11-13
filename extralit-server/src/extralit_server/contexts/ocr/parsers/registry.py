@@ -1,42 +1,22 @@
-"""Swappable PDF→`DoclingDocument` parsers.
-
-Each parser normalizes its backend into `LayoutBlock`s and hands them to the shared builder,
-so the document that comes out is the same shape regardless of which one ran.
-"""
+"""Named `PageParser`s available in this environment, and the default `ParserService` over them."""
 
 from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
-from typing import Optional, Protocol
 
-from docling_core.types.doc import DoclingDocument
-
-from extralit_server.contexts.ocr.parsers.pdf_inspector import parse as _parse_pdf_inspector
+from extralit_server.contexts.ocr.parsers.liteparse import LiteParseParser
+from extralit_server.contexts.ocr.parsers.pdf_inspector import PdfInspectorParser
+from extralit_server.contexts.ocr.parsers.service import DIGITAL_PARSER, OCR_PARSER, PageParser, ParserService
 
 try:
-    from extralit_server.contexts.ocr.parsers.pymupdf import parse as _parse_pymupdf
+    from extralit_server.contexts.ocr.parsers.pymupdf import PyMuPDFParser
 except ImportError as e:  # AGPL extra, deliberately optional
-    _parse_pymupdf = None
+    PyMuPDFParser = None
     logging.getLogger(__name__).debug(f"pymupdf layout parser unavailable: {e}")
 
-
-class LayoutParser(Protocol):
-    """Parse PDF bytes into a `DoclingDocument`."""
-
-    def __call__(
-        self,
-        pdf_bytes: bytes,
-        *,
-        name: str,
-        pages: Optional[Sequence[int]] = None,
-        filename: Optional[str] = None,
-    ) -> DoclingDocument: ...
-
-
-_PARSERS: dict[str, LayoutParser] = {"pdf_inspector": _parse_pdf_inspector}
-if _parse_pymupdf is not None:
-    _PARSERS["pymupdf"] = _parse_pymupdf
+_PARSERS: dict[str, PageParser] = {"pdf_inspector": PdfInspectorParser(), OCR_PARSER: LiteParseParser()}
+if PyMuPDFParser is not None:
+    _PARSERS[DIGITAL_PARSER] = PyMuPDFParser()
 
 
 def list_parsers() -> list[str]:
@@ -44,7 +24,7 @@ def list_parsers() -> list[str]:
     return sorted(_PARSERS)
 
 
-def get_parser(name: str) -> LayoutParser:
+def get_parser(name: str) -> PageParser:
     """Look up a parser by name."""
     try:
         return _PARSERS[name]
@@ -52,9 +32,9 @@ def get_parser(name: str) -> LayoutParser:
         raise ValueError(f"unknown layout parser {name!r}; available: {list_parsers()}") from None
 
 
-def default_parser_name() -> str:
-    """Prefer pymupdf's higher-fidelity geometry when the extra is installed."""
-    return "pymupdf" if "pymupdf" in _PARSERS else "pdf_inspector"
+def default_service() -> ParserService:
+    """Routing service over every installed parser; pdf_inspector is only used when named explicitly."""
+    return ParserService(_PARSERS)
 
 
-__all__ = ["LayoutParser", "default_parser_name", "get_parser", "list_parsers"]
+__all__ = ["default_service", "get_parser", "list_parsers"]

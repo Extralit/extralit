@@ -79,6 +79,10 @@ class LayoutMetadata(BaseModel):
 
     Only pointers and counts — the layout itself lives in object storage, because
     `documents.metadata_` is returned in full by every `GET /documents` listing.
+
+    `parsers` is the executed plan (parser name -> pages). `ocr_pages` are pages where OCR actually
+    ran; `ocr_skipped_pages` are pages planned for OCR (triage flagged them) whose existing text
+    layer the parser read instead, so `pages_needing_ocr` = planned, `ocr_pages` = actual.
     """
 
     layout_url: str = Field(..., description="S3 object path of the canonical DoclingDocument JSON")
@@ -92,6 +96,14 @@ class LayoutMetadata(BaseModel):
     num_pages: int = Field(default=0, description="Number of pages with registered geometry")
     pages_needing_ocr: list[int] = Field(
         default_factory=list, description="1-indexed pages with no reliable text layer"
+    )
+    parsers: dict[str, list[int]] = Field(
+        default_factory=dict, description="Executed plan: parser name -> 1-indexed pages it parsed"
+    )
+    ocr_pages: list[int] = Field(default_factory=list, description="1-indexed pages where OCR actually ran")
+    ocr_skipped_pages: list[int] = Field(
+        default_factory=list,
+        description="Pages planned for OCR that already had a text layer, which the parser read instead of running OCR",
     )
 
 
