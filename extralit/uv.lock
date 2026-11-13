@@ -789,7 +789,7 @@ dev = [
     { name = "pillow", specifier = ">=12.3.0" },
     { name = "pre-commit", specifier = ">=3.5.0" },
     { name = "pytest", specifier = ">=9.2.0" },
-    { name = "pytest-asyncio", specifier = ">=1.4.1" },
+    { name = "pytest-asyncio", specifier = ">=1.4.1.post1" },
     { name = "pytest-cov", specifier = ">=4.1.0" },
     { name = "pytest-httpx", specifier = ">=0.36.0" },
     { name = "pytest-mock", specifier = ">=3.12.0" },
