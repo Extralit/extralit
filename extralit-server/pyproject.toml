@@ -48,7 +48,7 @@ dependencies = [
     "authlib>=1.9.5",
     "filelock>=4.1.0",
     # Background processing
-    "rq>=2.4.1",
+    "rq>=3.0.0",
     "lazy-loader>=0.4",
     # Info status
     "psutil>=5.8,<7.3",

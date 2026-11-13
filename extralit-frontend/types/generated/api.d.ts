@@ -2733,7 +2733,7 @@ export interface components {
          * @description The Status of Job within its lifecycle at any given time.
          * @enum {string}
          */
-        JobStatus: "created" | "queued" | "finished" | "failed" | "started" | "deferred" | "scheduled" | "stopped" | "canceled";
+        JobStatus: "created" | "queued" | "finished" | "failed" | "started" | "deferred" | "scheduled" | "stopped" | "canceled" | "rate_limited" | "ready_to_enqueue";
         /** LabelSelectionQuestionSettings */
         LabelSelectionQuestionSettings: {
             /** Options */
