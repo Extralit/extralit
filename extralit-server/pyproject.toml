@@ -17,8 +17,8 @@ authors = [{ name = "Extralit Labs", email = "extralit.contact@gmail.com" }]
 maintainers = [{ name = "Extralit Labs", email = "extralit.contact@gmail.com" }]
 dependencies = [
     # Basic dependencies
-    "fastapi >= 0.162.0",
-    "pydantic >= 2.14.2",
+    "fastapi >= 0.162.2",
+    "pydantic >= 2.14.3",
     "pydantic-settings >= 2.6.0",
     "uvicorn[standard] >= 0.32.0",
     "opensearch-py >= 3.2.0",
@@ -27,7 +27,7 @@ dependencies = [
     "tenacity>=9.1.2",
     # Database dependencies
     "alembic >= 1.20.1",
-    "SQLAlchemy >= 2.0.0",
+    "SQLAlchemy >= 2.0.57",
     "greenlet >= 3.1.0",
     # Async SQLite
     "aiosqlite==0.22.1",
@@ -45,7 +45,7 @@ dependencies = [
     # LiteLLM for chat integration
     "litellm>=1.80.0,<=1.105.0",
     # GitHub Copilot OAuth device flow + token file locking
-    "authlib>=1.9.2",
+    "authlib>=1.9.5",
     "filelock>=4.1.0",
     # Background processing
     "rq>=2.4.1",
@@ -56,7 +56,7 @@ dependencies = [
     "rich != 13.1.0",
     # For CLI
     "typer>=0.27.3", # spaCy only supports typer<0.10.0
-    "click >= 8.2.0", # click >=8.2.0 has TypeError: Parameter.make_metavar() missing 1 required positional argument: 'ctx'
+    "click >= 8.5.1", # click >=8.2.0 has TypeError: Parameter.make_metavar() missing 1 required positional argument: 'ctx'
     "packaging>=23.2",
     # For Webhooks
     "standardwebhooks>=1.0.0",
@@ -79,11 +79,11 @@ dependencies = [
     "duckdb>=1.5.4",
     # ships lance.duckdb_extension in the wheel and pins duckdb to the release it was built for
     "duckdb-extension-lance>=1.5.5",
-    "docling-core>=2.105.0,<3.0.0",
+    "docling-core>=2.106.0,<3.0.0",
     "pyarrow>=23.0.1",
     "pdf-inspector>=1.14.2",
     # abi3 wheels from 2.14, so the block extractor is not tied to one CPython
-    "liteparse>=2.17.0",
+    "liteparse>=2.18.0",
     "pydantic-ai-slim[openai]>=1.39",
     "xxhash>=4.0.2",
     "obstore>=0.11.0",
@@ -120,7 +120,7 @@ exclude = [".env.dev", ".env.test"]
 
 [dependency-groups]
 dev = [
-    "ty>=0.0.95",
+    "ty>=0.0.99",
     "pytest>=9.2.0",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.12.0",
@@ -131,7 +131,7 @@ dev = [
     "pytest-randomly>=5.0.0",
     # For mocking httpx requests and responses
     "respx>=0.21.1",
-    "ruff>=0.17.3",
+    "ruff>=0.17.4",
 ]
 
 [tool.pytest.ini_options]
