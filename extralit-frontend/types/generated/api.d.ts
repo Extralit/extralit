@@ -1554,6 +1554,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/workspaces/{workspace_name}/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Search Workspace */
+        post: operations["search_workspace_workspaces__workspace_name__search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3591,6 +3608,31 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** SearchHit */
+        SearchHit: {
+            /** Chunk Id */
+            chunk_id: string;
+            /**
+             * Document Id
+             * Format: uuid
+             */
+            document_id: string;
+            /** Headings */
+            headings: string[];
+            /** Item Refs */
+            item_refs: string[];
+            /** Kind */
+            kind: string;
+            /** Page End */
+            page_end?: number | null;
+            /** Page Start */
+            page_start?: number | null;
+            /** Reference */
+            reference?: string | null;
+            scores: components["schemas"]["SearchScores"];
+            /** Text */
+            text: string;
+        };
         /** SearchRecord */
         SearchRecord: {
             /** Query Score */
@@ -3613,6 +3655,38 @@ export interface components {
              * @default 0
              */
             total: number;
+        };
+        /** SearchRequest */
+        SearchRequest: {
+            /** Document Ids */
+            document_ids?: string[];
+            /** Kinds */
+            kinds?: ("text" | "table" | "figure")[];
+            /**
+             * Limit
+             * @default 10
+             */
+            limit: number;
+            /** Pages */
+            pages?: number[];
+            /** Query */
+            query: string;
+            /** References */
+            references?: string[];
+        };
+        /** SearchResponse */
+        SearchResponse: {
+            /** Hits */
+            hits: components["schemas"]["SearchHit"][];
+        };
+        /** SearchScores */
+        SearchScores: {
+            /** Bm25 */
+            bm25?: number | null;
+            /** Rrf */
+            rrf: number;
+            /** Vector */
+            vector?: number | null;
         };
         /** SearchSuggestionOptions */
         SearchSuggestionOptions: {
@@ -19738,6 +19812,143 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["User"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "detail": {
+                     *         "code": "extralit.api.errors::MissingDatasetRecordsError",
+                     *         "params": {
+                     *           "extra": "error parameters"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "detail": {
+                     *         "code": "extralit.api.errors::ForbiddenOperationError",
+                     *         "params": {
+                     *           "extra": "error parameters"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "detail": {
+                     *         "code": "extralit.api.errors::EntityNotFoundError",
+                     *         "params": {
+                     *           "extra": "error parameters"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "detail": {
+                     *         "code": "extralit.api.errors::EntityAlreadyExistsError",
+                     *         "params": {
+                     *           "extra": "error parameters"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "detail": {
+                     *         "code": "extralit.api.errors::ValidationError",
+                     *         "params": {
+                     *           "extra": "error parameters"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "detail": {
+                     *         "code": "builtins.TypeError"
+                     *       }
+                     *     }
+                     */
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    search_workspace_workspaces__workspace_name__search_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                workspace_name: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResponse"];
                 };
             };
             /** @description Bad Request */

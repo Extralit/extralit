@@ -49,6 +49,14 @@ services:
       extralit:
         condition: service_healthy
 
+  embed-worker:
+    <<: *extralit
+    # `embed` is not in the general worker's queues; this process bounds concurrent provider calls.
+    command: python -m extralit_server worker --queues embed --num-workers ${EXTRALIT_EMBED_WORKERS:-1}
+    depends_on:
+      extralit:
+        condition: service_healthy
+
   postgres:
     image: postgres:14
     restart: unless-stopped

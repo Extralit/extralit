@@ -17,7 +17,7 @@ CHUNK_SCHEMA = pa.schema(
         ("document_id", pa.string()),
         ("reference", pa.string()),
         ("ordinal", pa.int32()),
-        ("kind", pa.dictionary(pa.int8(), pa.string())),
+        ("kind", pa.string()),
         ("text", pa.string()),
         ("embed_text", pa.string()),
         ("headings", pa.list_(pa.string())),

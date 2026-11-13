@@ -368,6 +368,7 @@ async def delete_document_artifacts(storage: ObjectStorage, workspace: str, docu
     re-parsed or a sweeper runs.
     """
     from extralit_server.contexts.ocr import storage as layout_storage
+    from extralit_server.contexts.retrieval.store import ChunkStore
 
     for object_path in (get_pdf_s3_object_path(document_id), get_thumbnail_s3_object_path(document_id)):
         try:
@@ -376,7 +377,9 @@ async def delete_document_artifacts(storage: ObjectStorage, workspace: str, docu
             _LOGGER.warning(f"Could not delete {object_path} for document {document_id}: {e}")
 
     try:
-        await layout_storage.delete_layout(storage, workspace, document_id)
+        await layout_storage.delete_layout(
+            storage, workspace, document_id, store=ChunkStore.for_workspace(workspace).layout
+        )
     except Exception as e:
         _LOGGER.warning(f"Could not delete layout artifacts for document {document_id}: {e}")
 
