@@ -2556,7 +2556,9 @@
           "deferred",
           "scheduled",
           "stopped",
-          "canceled"
+          "canceled",
+          "rate_limited",
+          "ready_to_enqueue"
         ],
         "title": "JobStatus",
         "type": "string"
