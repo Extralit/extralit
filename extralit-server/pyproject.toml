@@ -68,6 +68,7 @@ dependencies = [
     # For Telemetry
     "huggingface-hub>=2.4.0",
     "Jinja2>=3.1.4", # Used by huggingface-hub to render dataset card templates
+    "opentelemetry-api>=1.45.2",
     # For file storage
     # For document processing
     "ocrmypdf>=16.11.0",
