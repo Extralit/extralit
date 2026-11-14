@@ -19,6 +19,9 @@ export default {
       },
     };
   },
+  mounted() {
+    this.loadShortcuts();
+  },
   methods: {
     async getShortcutsDocumentation() {
       const raw = await docs["/docs/shortcuts.md"]();
@@ -59,9 +62,6 @@ export default {
         this.pending = false;
       }
     },
-  },
-  mounted() {
-    this.loadShortcuts();
   },
 };
 </script>
@@ -134,14 +134,7 @@ export default {
     border-radius: $border-radius;
     background: var(--bg-accent-grey-1) !important;
     color: var(--fg-primary) !important;
-    font-family:
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      "Open Sans",
-      "Helvetica Neue",
-      sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif;
     min-width: 24px;
     text-align: center;
   }
