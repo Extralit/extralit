@@ -7,7 +7,7 @@
     @keydown.stop=""
     @keydown.esc.exact="exitEditionMode"
   >
-    <div class="menubar" v-if="editable">
+    <div v-if="editable" class="menubar">
       <BaseDropdown
         class="dropdown"
         :visible="dropdownAddVisible"
@@ -25,29 +25,29 @@
           ><span>
             <BaseButton
               class="menubar__button"
-              @click.prevent="editor.chain().focus().addColumnBefore().run()"
               :disabled="!editor.can().addColumnBefore()"
+              @click.prevent="editor.chain().focus().addColumnBefore().run()"
             >
               ➕ Column ←
             </BaseButton>
             <BaseButton
               class="menubar__button"
-              @click.prevent="editor.chain().focus().addColumnAfter().run()"
               :disabled="!editor.can().addColumnAfter()"
+              @click.prevent="editor.chain().focus().addColumnAfter().run()"
             >
               ➕ Column →
             </BaseButton>
             <BaseButton
               class="menubar__button"
-              @click.prevent="editor.chain().focus().addRowBefore().run()"
               :disabled="!editor.can().addRowBefore()"
+              @click.prevent="editor.chain().focus().addRowBefore().run()"
             >
               ➕ Row ↑
             </BaseButton>
             <BaseButton
               class="menubar__button"
-              @click.prevent="editor.chain().focus().addRowAfter().run()"
               :disabled="!editor.can().addRowAfter()"
+              @click.prevent="editor.chain().focus().addRowAfter().run()"
             >
               ➕ Row ↓
             </BaseButton>
@@ -72,15 +72,15 @@
           ><span>
             <BaseButton
               class="menubar__button"
-              @click.prevent="editor.chain().focus().deleteColumn().run()"
               :disabled="!editor.can().deleteColumn()"
+              @click.prevent="editor.chain().focus().deleteColumn().run()"
             >
               ➖ Column
             </BaseButton>
             <BaseButton
               class="menubar__button"
-              @click.prevent="editor.chain().focus().deleteRow().run()"
               :disabled="!editor.can().deleteRow()"
+              @click.prevent="editor.chain().focus().deleteRow().run()"
             >
               ➖ Row
             </BaseButton>
@@ -106,25 +106,25 @@
           ><span>
             <BaseButton
               class="menubar__button"
-              @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
               :disabled="!editor.can().toggleHeaderCell()"
               title="Cmd + H"
+              @click.prevent="editor.chain().focus().toggleHeaderCell().run()"
             >
               Toggle Selected as Header
             </BaseButton>
             <BaseButton
               class="menubar__button"
-              @click.prevent="editor.chain().focus().mergeCells().run()"
               :disabled="!editor.can().mergeCells()"
               title="Cmd + G"
+              @click.prevent="editor.chain().focus().mergeCells().run()"
             >
               Merge Cells
             </BaseButton>
             <BaseButton
               class="menubar__button"
-              @click.prevent="editor.chain().focus().splitCell().run()"
               :disabled="!editor.can().splitCell()"
               title="Cmd + Shift + G"
+              @click.prevent="editor.chain().focus().splitCell().run()"
             >
               Split Cell
             </BaseButton>
@@ -157,7 +157,7 @@
             <label for="searchUseRegex" class="dropdown-label">Use Regex:</label>
             <input id="searchUseRegex" v-model="searchUseRegex" type="checkbox" class="dropdown-input" />
 
-            <BaseButton @click.prevent="replaceAll" class="dropdown-button">Find/Replace All</BaseButton>
+            <BaseButton class="dropdown-button" @click.prevent="replaceAll">Find/Replace All</BaseButton>
           </span></template
         >
       </BaseDropdown>
@@ -294,7 +294,6 @@ export default {
         }),
         SearchAndReplace.configure({
           searchResultClass: "search-result",
-          caseSensitive: true,
           disableRegex: !this.searchUseRegex,
         }),
       ],
@@ -315,6 +314,11 @@ export default {
   beforeUnmount() {
     this.editor.destroy();
   },
+  errorCaptured(err, component, info) {
+    this.error = err;
+    console.error(`Error caught from ${component}: ${err}`);
+    return false; // stops the error from propagating further
+  },
 
   methods: {
     replaceAll() {
@@ -327,6 +331,7 @@ export default {
       }
       this.editor.storage.searchAndReplace.searchTerm = this.searchTerm;
       this.editor.storage.searchAndReplace.replaceTerm = this.replaceTerm;
+      this.editor.storage.searchAndReplace.caseSensitive = true;
 
       this.editor.commands.replaceAll();
     },
@@ -424,11 +429,6 @@ export default {
     deleteTable() {
       this.onChangeText("");
     },
-  },
-  errorCaptured(err, component, info) {
-    this.error = err;
-    console.error(`Error caught from ${component}: ${err}`);
-    return false; // stops the error from propagating further
   },
 };
 </script>
