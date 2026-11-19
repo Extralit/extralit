@@ -3,7 +3,7 @@ name = "extralit-server"
 dynamic = ["version"]
 description = "Open-source tool for accurate & fast scientific literature data extraction with LLM and human-in-the-loop."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 keywords = [
     "literature-review",
@@ -75,10 +75,10 @@ dependencies = [
     "opencv-python-headless>=4.11.0.86",
     "pandera[io]>=0.32.0",
     "lancedb>=0.41.0",
-    "pylance>=14.0.2",
-    "duckdb>=1.5.4",
+    "pylance>=14.0.3",
+    "duckdb>=2.0.0",
     # ships lance.duckdb_extension in the wheel and pins duckdb to the release it was built for
-    "duckdb-extension-lance>=1.5.5",
+    "duckdb-extension-lance>=2.0.0",
     "docling-core>=2.105.0,<3.0.0",
     "pyarrow>=23.0.1",
     "pdf-inspector>=1.14.2",
@@ -162,7 +162,7 @@ exclude_lines = [
 
 [tool.ty.environment]
 # Match requires-python; ty otherwise infers from the active interpreter.
-python-version = "3.10"
+python-version = "3.11"
 python = ".venv"
 
 [tool.ty.src]
