@@ -93,7 +93,9 @@ def env(tmp_path, monkeypatch):
     ]
     for p in patches:
         p.start()
+    EMBED_QUEUE.empty()
     yield tmp_path
+    EMBED_QUEUE.empty()
     for p in patches:
         p.stop()
 

@@ -13,7 +13,6 @@ import duckdb
 from anyio import to_thread
 from pydantic_ai import Embedder
 
-from extralit_server.contexts.retrieval.arrow import vector_column
 from extralit_server.contexts.retrieval.settings import RetrievalSettings
 from extralit_server.contexts.retrieval.store import ChunkStore
 
@@ -207,7 +206,7 @@ async def hybrid_search(
     filter_ = build_filter(filters)
     model = settings.embedding_model
     vector = None
-    if embedder is not None and model and any(vector_column(model) in s.vector_columns().values() for s in stores):
+    if embedder is not None and model and any(model in s.vector_columns() for s in stores):
         result = await embedder.embed_query(query)
         vector = [float(x) for x in result.embeddings[0]]
     return await to_thread.run_sync(_run, stores, query, vector, model, filter_, limit, settings)

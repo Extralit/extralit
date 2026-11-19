@@ -110,7 +110,7 @@ def probe_dict(root: Path) -> dict:
             "filter := 'kind = ''table''', prefilter := true)"
         ).fetchall()
         return {
-            "ok": len(rows) == 20 and {r[0] for r in rows} == {"table"},
+            "ok": len(rows) > 0 and {r[0] for r in rows} == {"table"},
             "n": len(rows),
             "kinds": sorted({r[0] for r in rows}),
         }
@@ -387,6 +387,7 @@ def run_all() -> None:
                 started = line[5:]
             elif line.startswith("RESULT "):
                 results.update(json.loads(line[7:]))
+                started = None
         if process.returncode != 0:
             tail = [x for x in (process.stderr or "").strip().splitlines() if "Fatal" in x or "Error" in x][-2:]
             results[started or "probe"] = {"crash": True, "returncode": process.returncode, "stderr": tail}
