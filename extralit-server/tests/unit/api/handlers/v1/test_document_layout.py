@@ -58,7 +58,7 @@ async def make_document(db: AsyncSession, layout_metadata: dict | None) -> Docum
 
 
 LAYOUT_METADATA = {
-    "layout_url": "layout/doc.docling.json",
+    "layout_url": "documents/doc/docling.json",
     "parser": "pdf_inspector",
     "docling_version": CURRENT_VERSION,
     "num_items": 4,
@@ -254,3 +254,36 @@ class TestDocumentLayoutAuthorization:
         response = await async_client.get(f"/api/v1/documents/{document.id}/layout", headers=owner_auth_header)
 
         assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+class TestPageSizesFromTheStoredJson:
+    async def test_page_sizes_come_from_docling_json_with_no_pages_dataset(
+        self, async_client: AsyncClient, db, owner_auth_header, tmp_path, monkeypatch
+    ):
+        import json
+
+        from extralit_server.contexts import files
+        from extralit_server.contexts.ocr import storage as layout_storage
+        from extralit_server.helpers import shared_resources
+
+        monkeypatch.setattr(files.settings, "storage_url", tmp_path.as_uri())
+        storage = files.ObjectStorage()
+        monkeypatch.setitem(shared_resources, "storage", storage)
+        document = await make_document(db, None)
+        workspace = await document.awaitable_attrs.workspace
+        key = layout_storage.layout_object_path(document.id)
+        await files.put_object(storage, workspace.name, key, json.dumps(build_layout().export_to_dict()))
+        document.metadata_ = {"layout_metadata": {**LAYOUT_METADATA, "layout_url": key}}
+        await db.commit()
+
+        with patch.object(layout_storage, "load_layout", wraps=layout_storage.load_layout) as load:
+            response = await async_client.get(f"/api/v1/documents/{document.id}/layout", headers=owner_auth_header)
+
+        assert response.status_code == 200, response.json()
+        assert response.json()["pages"] == [
+            {"page_no": 1, "width": PAGE_WIDTH, "height": PAGE_HEIGHT},
+            {"page_no": 2, "width": PAGE_WIDTH, "height": PAGE_HEIGHT},
+        ]
+        assert load.await_count == 1
+        assert not (tmp_path / workspace.name / "layout" / "pages.lance").exists()

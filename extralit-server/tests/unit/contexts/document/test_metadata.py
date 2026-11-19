@@ -11,7 +11,7 @@ from tests.factories import DocumentFactory, WorkspaceFactory
 
 
 def _layout(parser: str = "pdf_inspector") -> LayoutMetadata:
-    return LayoutMetadata(layout_url="layout/x.docling.json", parser=parser, docling_version="1.7.0")
+    return LayoutMetadata(layout_url="documents/x/docling.json", parser=parser, docling_version="1.7.0")
 
 
 @pytest.mark.asyncio

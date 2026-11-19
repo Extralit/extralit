@@ -33,15 +33,6 @@ ITEM_SCHEMA = pa.schema(
     ]
 )
 
-PAGE_SCHEMA = pa.schema(
-    [
-        ("document_id", pa.string()),
-        ("page_no", pa.int32()),
-        ("width", pa.float32()),
-        ("height", pa.float32()),
-    ]
-)
-
 
 def _enum_value(value: Any) -> Optional[str]:
     if value is None:
@@ -109,21 +100,3 @@ def item_rows(doc: DoclingDocument, document_id: str) -> list[dict[str, Any]]:
 def items_table(doc: DoclingDocument, document_id: str) -> pa.Table:
     """Project every `(DocItem, ProvenanceItem)` pair into an Arrow table."""
     return pa.Table.from_pylist(item_rows(doc, document_id), schema=ITEM_SCHEMA)
-
-
-def page_rows(doc: DoclingDocument, document_id: str) -> list[dict[str, Any]]:
-    """One row per registered page, carrying the size every bbox is relative to."""
-    return [
-        {
-            "document_id": document_id,
-            "page_no": page_no,
-            "width": page.size.width if page.size else None,
-            "height": page.size.height if page.size else None,
-        }
-        for page_no, page in sorted(doc.pages.items())
-    ]
-
-
-def pages_table(doc: DoclingDocument, document_id: str) -> pa.Table:
-    """Project page geometry into an Arrow table."""
-    return pa.Table.from_pylist(page_rows(doc, document_id), schema=PAGE_SCHEMA)

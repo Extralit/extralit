@@ -39,7 +39,7 @@ def job_context(tmp_path, monkeypatch):
 
     async def store_layout(s3_client, workspace_name, document_id, document, store=None):
         calls.append(("store_layout", store._lock_depth))
-        return {"layout_url": "layout/x.docling.json", "items_uri": "items", "pages_uri": "pages"}
+        return {"layout_url": "documents/x/docling.json", "items_uri": "items"}
 
     async def update_metadata(db, document_id, mutate):
         calls.append(("update_metadata", store._lock_depth))
@@ -52,7 +52,7 @@ def job_context(tmp_path, monkeypatch):
 
     with (
         patch(f"{MODULE}.files.get_storage", AsyncMock(return_value=AsyncMock())),
-        patch(f"{MODULE}.files.download_file_content", AsyncMock(return_value=pdf_bytes)),
+        patch(f"{MODULE}.files.read_object", AsyncMock(return_value=pdf_bytes)),
         patch(f"{MODULE}.default_service", return_value=service),
         patch(f"{MODULE}.LayoutStore.for_workspace", return_value=store),
         patch(f"{MODULE}.layout_storage.store_layout", store_layout),

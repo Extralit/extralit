@@ -49,7 +49,7 @@ def job_context():
     written: list[dict] = []
 
     async def put_object(client, workspace, key, data, **kwargs):
-        written.append({"key": key, "data": data})
+        written.append({"key": key, "data": data, "content_type": kwargs.get("content_type")})
 
     with (
         patch(f"{MODULE}.files") as files,
@@ -62,8 +62,11 @@ def job_context():
         patch(f"{MODULE}.AsyncSessionLocal") as session,
     ):
         files.get_storage = AsyncMock(return_value=MagicMock())
-        files.download_file_content = AsyncMock(return_value=b"%PDF original")
-        files.get_thumbnail_s3_object_path.return_value = f"thumbnails/{DOCUMENT_ID}"
+        files.read_object = AsyncMock(return_value=b"%PDF original")
+        files.get_pdf_s3_object_path.return_value = f"documents/{DOCUMENT_ID}/source.pdf"
+        files.get_thumbnail_s3_object_path.return_value = f"documents/{DOCUMENT_ID}/thumbnail.png"
+        files.get_ocr_pdf_s3_object_path.return_value = f"documents/{DOCUMENT_ID}/ocr.pdf"
+        files.get_proxy_document_url.side_effect = lambda workspace, key: f"/api/v1/file/{workspace}/{key}"
         files.put_object = AsyncMock(side_effect=put_object)
         session.return_value.__aenter__ = AsyncMock(return_value=AsyncMock())
         session.return_value.__aexit__ = AsyncMock(return_value=None)
@@ -126,13 +129,30 @@ class TestRotation:
 
         job_context["preprocessor"].preprocess.assert_called_once()
 
-    async def test_the_pdf_rewrite_is_the_last_object_written(self, job_context):
-        await run_job()
+    async def test_the_rotated_pdf_is_written_last_to_ocr_pdf_and_the_upload_is_kept(self, job_context):
+        result = await run_job()
 
         keys = [write["key"] for write in job_context["written"]]
-        assert keys[-1] == f"documents/{DOCUMENT_ID}/test.pdf"
-        assert f"thumbnails/{DOCUMENT_ID}" in keys
+        assert keys[-1] == f"documents/{DOCUMENT_ID}/ocr.pdf"
+        assert f"documents/{DOCUMENT_ID}/thumbnail.png" in keys
+        assert f"documents/{DOCUMENT_ID}/source.pdf" not in keys
         assert job_context["written"][-1]["data"] == b"%PDF rotated"
+        assert job_context["written"][-1]["content_type"] == "application/pdf"
+        assert result["preprocessing_result"]["processed_s3_url"].endswith(f"documents/{DOCUMENT_ID}/ocr.pdf")
+
+    async def test_rotation_reads_source_pdf_and_triage_and_margins_see_the_rotated_bytes(self, job_context):
+        await run_job()
+
+        assert job_context["files"].read_object.await_args.args[2] == f"documents/{DOCUMENT_ID}/source.pdf"
+        assert job_context["preprocessor"].preprocess.call_args.args[0] == b"%PDF original"
+        assert job_context["triage_pdf"].call_args.args[0] == b"%PDF rotated"
+        assert job_context["analyzer"].analyze_pdf_layout.call_args.args[0] == b"%PDF rotated"
+
+    async def test_the_document_url_is_pointed_at_ocr_pdf(self, job_context):
+        await run_job()
+
+        url = job_context["update_metadata"].await_args.kwargs["url"]
+        assert url == f"/api/v1/file/{WORKSPACE}/documents/{DOCUMENT_ID}/ocr.pdf"
 
     async def test_a_failed_rotation_is_recorded_and_the_job_still_succeeds(self, job_context):
         job_context["response"].metadata.rotation_ran = False
@@ -153,13 +173,13 @@ class TestRotation:
         result = await run_job()
 
         assert result["analysis_result"]["thumbnail_generated"] is False
-        assert [write["key"] for write in job_context["written"]] == [f"documents/{DOCUMENT_ID}/test.pdf"]
+        assert [write["key"] for write in job_context["written"]] == [f"documents/{DOCUMENT_ID}/ocr.pdf"]
 
 
 @pytest.mark.asyncio
 class TestFailures:
     async def test_a_storage_failure_surfaces_on_the_job(self, job_context):
-        job_context["files"].download_file_content = AsyncMock(side_effect=RuntimeError("s3 down"))
+        job_context["files"].read_object = AsyncMock(side_effect=RuntimeError("s3 down"))
 
         with pytest.raises(RuntimeError, match="s3 down"):
             await run_job()

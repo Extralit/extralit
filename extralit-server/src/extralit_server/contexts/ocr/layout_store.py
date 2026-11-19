@@ -1,6 +1,6 @@
 """Workspace-scoped Lance datasets for extracted layout.
 
-One `items`/`pages` dataset per workspace, so a corpus-wide question is a single scan instead of a
+One `items` dataset per workspace, so a corpus-wide question is a single scan instead of a
 glob over one small object per document. A document's rows are deleted before they are appended,
 which is what keeps a re-parse from leaving two vintages behind — and because that is two commits,
 every writer holds the workspace lock across the pair.
@@ -21,7 +21,7 @@ from anyio import to_thread
 from lance.commit import CommitConflictError
 
 from extralit_server.contexts.files import ObjectStorage
-from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA, PAGE_SCHEMA
+from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA
 from extralit_server.jobs.queues import REDIS_CONNECTION
 
 if TYPE_CHECKING:
@@ -31,7 +31,6 @@ _LOGGER = logging.getLogger("extralit_server.contexts.ocr.layout_store")
 
 LAYOUT_PREFIX = "layout"
 ITEMS_DATASET = "items"
-PAGES_DATASET = "pages"
 COMPACT_FRAGMENT_THRESHOLD = 32
 # Bounds how much settled data a compaction rewrites, at the cost of more files per workspace.
 TARGET_ROWS_PER_FRAGMENT = 250_000
@@ -42,7 +41,8 @@ LOCK_TTL_SECONDS = 600
 LOCK_WAIT_SECONDS = 300
 REPLACE_ATTEMPTS = 3
 
-_SCHEMAS = {ITEMS_DATASET: ITEM_SCHEMA, PAGES_DATASET: PAGE_SCHEMA}
+_SCHEMAS = {ITEMS_DATASET: ITEM_SCHEMA}
+DATASETS = tuple(_SCHEMAS)
 
 
 def layout_root(workspace_name: str) -> tuple[str, Optional[dict[str, str]]]:
@@ -79,9 +79,6 @@ class LayoutStore:
 
     def items_uri(self) -> str:
         return self.uri(ITEMS_DATASET)
-
-    def pages_uri(self) -> str:
-        return self.uri(PAGES_DATASET)
 
     # --- locking -------------------------------------------------------------------------------
 
@@ -152,25 +149,22 @@ class LayoutStore:
             return lance.dataset(self.uri(name), storage_options=self.storage_options).version
         return self._write(name, data, mode="append")
 
-    def replace_document(self, document_id: UUID | str, items: pa.Table, pages: pa.Table) -> dict[str, int]:
-        """Swap this document's rows for `items`/`pages`. Caller must hold the workspace lock."""
-        versions = {}
-        for name, data in ((ITEMS_DATASET, items), (PAGES_DATASET, pages)):
-            for attempt in range(1, REPLACE_ATTEMPTS + 1):
-                try:
-                    versions[f"{name}_version"] = self._replace_one(name, document_id, data)
-                    break
-                except CommitConflictError:
-                    # Retry the delete and the append together; half a replace is a corrupt vintage.
-                    if attempt == REPLACE_ATTEMPTS:
-                        raise
-                    _LOGGER.warning(f"Commit conflict on {self.uri(name)}, retrying the whole replace")
-        return versions
+    def replace_document(self, document_id: UUID | str, items: pa.Table) -> dict[str, int]:
+        """Swap this document's rows for `items`. Caller must hold the workspace lock."""
+        for attempt in range(1, REPLACE_ATTEMPTS + 1):
+            try:
+                return {f"{ITEMS_DATASET}_version": self._replace_one(ITEMS_DATASET, document_id, items)}
+            except CommitConflictError:
+                # Retry the delete and the append together; half a replace is a corrupt vintage.
+                if attempt == REPLACE_ATTEMPTS:
+                    raise
+                _LOGGER.warning(f"Commit conflict on {self.uri(ITEMS_DATASET)}, retrying the whole replace")
+        raise AssertionError("unreachable")
 
     def delete_document(self, document_id: UUID | str) -> None:
         """Drop this document's rows. Caller must hold the workspace lock."""
         condition = _document_filter(document_id)
-        for name in (ITEMS_DATASET, PAGES_DATASET):
+        for name in DATASETS:
             dataset = self.open(name)
             if dataset is not None:
                 dataset.delete(condition)
@@ -195,9 +189,6 @@ class LayoutStore:
     def load_items(self, document_id: UUID | str, columns=None, where: Optional[str] = None) -> pa.Table:
         return self._read(ITEMS_DATASET, document_id, columns=columns, where=where)
 
-    def load_pages(self, document_id: UUID | str, columns=None, where: Optional[str] = None) -> pa.Table:
-        return self._read(PAGES_DATASET, document_id, columns=columns, where=where)
-
     def source(self, name: str) -> Any:
         """The dataset, or an empty table of the right schema when nothing has been written yet."""
         dataset = self.open(name)
@@ -207,7 +198,7 @@ class LayoutStore:
 
     def maybe_compact(self) -> None:
         """Best effort: a failed compaction must never fail the extraction that triggered it."""
-        for name in (ITEMS_DATASET, PAGES_DATASET):
+        for name in DATASETS:
             try:
                 dataset = self.open(name)
                 if dataset is None or len(dataset.get_fragments()) <= COMPACT_FRAGMENT_THRESHOLD:
@@ -221,7 +212,7 @@ class LayoutStore:
 
 @contextmanager
 def duckdb_connection(workspaces: Sequence[str]) -> Iterator[duckdb.DuckDBPyConnection]:
-    """`items` and `pages` as DuckDB views over one or more workspaces.
+    """The layout datasets as DuckDB views over one or more workspaces.
 
     Lance datasets take the projection and the filter, so `select label, count(*)` never reads the
     text column. Aggregating N workspaces is a loop over their roots, not a catalog.
@@ -230,7 +221,7 @@ def duckdb_connection(workspaces: Sequence[str]) -> Iterator[duckdb.DuckDBPyConn
 
     connection = duckdb.connect()
     try:
-        for name in (ITEMS_DATASET, PAGES_DATASET):
+        for name in DATASETS:
             branches = []
             for index, workspace_name in enumerate(workspaces):
                 alias = f"_{name}_{index}"
