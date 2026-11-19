@@ -11,7 +11,8 @@ from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
 MODULE = "extralit_server.jobs.document_jobs"
 
 DOCUMENT_ID = uuid4()
-S3_URL = f"/api/v1/file/test-workspace/documents/{DOCUMENT_ID}/test.pdf"
+S3_URL = f"/api/v1/file/test-workspace/documents/{DOCUMENT_ID}/source.pdf"
+UPLOADED_NAME = "Smith 2020 - malaria.pdf"
 WORKSPACE = "test-workspace"
 LAYOUT_ANALYSIS = {
     "pages_sampled": 5,
@@ -49,7 +50,7 @@ def job_context():
     written: list[dict] = []
 
     async def put_object(client, workspace, key, data, **kwargs):
-        written.append({"key": key, "data": data, "content_type": kwargs.get("content_type")})
+        written.append({"key": key, "data": data, **kwargs})
 
     with (
         patch(f"{MODULE}.files") as files,
@@ -68,7 +69,10 @@ def job_context():
         files.get_ocr_pdf_s3_object_path.return_value = f"documents/{DOCUMENT_ID}/ocr.pdf"
         files.get_proxy_document_url.side_effect = lambda workspace, key: f"/api/v1/file/{workspace}/{key}"
         files.put_object = AsyncMock(side_effect=put_object)
-        session.return_value.__aenter__ = AsyncMock(return_value=AsyncMock())
+        files.SOURCE_PDF = "source.pdf"
+        db = AsyncMock()
+        db.scalar = AsyncMock(return_value=UPLOADED_NAME)
+        session.return_value.__aenter__ = AsyncMock(return_value=db)
         session.return_value.__aexit__ = AsyncMock(return_value=None)
         yield {
             "job": current_job,
@@ -79,6 +83,7 @@ def job_context():
             "triage_pdf": triage_pdf,
             "update_metadata": update_metadata,
             "written": written,
+            "db": db,
             "skip": skip,
         }
 
@@ -110,13 +115,33 @@ class TestTriage:
         await run_job()
 
         _pdf, filename = job_context["analyzer"].analyze_pdf_layout.call_args.args
-        assert filename == "test.pdf"
+        assert filename == UPLOADED_NAME
         assert MARGIN_SAMPLE_PAGES == 5
 
     async def test_metadata_is_written_under_the_row_lock(self, job_context):
         await run_job()
 
         assert job_context["update_metadata"].await_count == 1
+
+
+@pytest.mark.asyncio
+class TestOriginalFilename:
+    @pytest.mark.parametrize("url_name", ["source.pdf", "ocr.pdf"])
+    async def test_the_uploaded_name_is_recorded_whatever_the_url_says(self, job_context, url_name):
+        # A forced rerun passes documents.url, which points at ocr.pdf after the first run.
+        await analysis_and_preprocess_job(
+            DOCUMENT_ID, f"/api/v1/file/{WORKSPACE}/documents/{DOCUMENT_ID}/{url_name}", "test_ref", WORKSPACE
+        )
+
+        assert {w["metadata"]["original_filename"] for w in job_context["written"]} == {UPLOADED_NAME}
+        assert job_context["preprocessor"].preprocess.call_args.args[1] == UPLOADED_NAME
+
+    async def test_a_document_without_a_file_name_falls_back_to_a_fixed_name(self, job_context):
+        job_context["db"].scalar.return_value = None
+
+        await run_job()
+
+        assert {w["metadata"]["original_filename"] for w in job_context["written"]} == {"source.pdf"}
 
 
 @pytest.mark.asyncio

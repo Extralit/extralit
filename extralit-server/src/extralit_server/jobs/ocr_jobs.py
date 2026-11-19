@@ -63,7 +63,14 @@ async def async_document_layout_job(
         # Shared client — do not enter it as a context manager, that would close it for everyone.
         storage = await files.get_storage()
         # Bboxes must refer to the PDF the viewer shows, which is the preprocessed `ocr.pdf`.
-        pdf_bytes = await files.read_object(storage, workspace_name, files.get_ocr_pdf_s3_object_path(document_id))
+        ocr_key = files.get_ocr_pdf_s3_object_path(document_id)
+        try:
+            pdf_bytes = await files.read_object(storage, workspace_name, ocr_key)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                f"{ocr_key} is missing in workspace {workspace_name!r}: it is written by analysis_and_preprocess_job, "
+                f"which must succeed for document {document_id} before layout can run"
+            ) from e
 
         # Both calls are CPU-bound and sync (liteparse holds the GIL for long stretches), so keep them off the loop.
         service = default_service()

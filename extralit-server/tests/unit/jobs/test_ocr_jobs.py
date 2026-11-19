@@ -98,6 +98,15 @@ class TestLayoutJobOrdering:
         assert result["skipped"] == "document deleted"
         assert job_context["calls"] == []
 
+    async def test_a_missing_ocr_pdf_names_the_file_and_the_analysis_job(self, job_context):
+        document_id = uuid4()
+        job_context["read_object"].side_effect = FileNotFoundError("not found")
+
+        with pytest.raises(FileNotFoundError, match=rf"documents/{document_id}/ocr.pdf.*analysis_and_preprocess_job"):
+            await run_job(document_id)
+
+        assert job_context["calls"] == []
+
     async def test_the_parsers_read_ocr_pdf(self, job_context):
         document_id = uuid4()
 

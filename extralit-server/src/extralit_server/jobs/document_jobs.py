@@ -6,6 +6,7 @@ from uuid import UUID
 
 from rq import Retry, get_current_job
 from rq.decorators import job
+from sqlalchemy import select
 
 from extralit_server.api.schemas.v1.document.metadata import DocumentProcessingMetadata
 from extralit_server.contexts import files
@@ -16,6 +17,7 @@ from extralit_server.contexts.ocr.triage import triage_pdf
 from extralit_server.contexts.workflows import writer_skip_reason
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import DEFAULT_QUEUE, REDIS_CONNECTION
+from extralit_server.models.database import Document
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ async def analysis_and_preprocess_job(
 
     Args:
         document_id: UUID of the document to process
-        s3_url: proxy URL of the document's PDF; only its filename is used
+        s3_url: proxy URL of the document's PDF; unused, the job reads `source.pdf` by document id
         reference: Reference key for tracking
         workspace_name: Name of the workspace where the document is stored
 
@@ -60,7 +62,10 @@ async def analysis_and_preprocess_job(
     try:
         storage = await files.get_storage()
         source = await files.read_object(storage, workspace_name, files.get_pdf_s3_object_path(document_id))
-        filename = s3_url.split("/")[-1]
+        # The object keys are fixed names, so the uploaded name comes from the row, not the URL.
+        async with AsyncSessionLocal() as db:
+            filename = await db.scalar(select(Document.file_name).where(Document.id == document_id))
+        filename = filename or files.SOURCE_PDF
 
         # Rotation runs on every PDF: ocrmypdf's OSD is the only thing that knows which scanned
         # pages are sideways, and under skip_text a born-digital page passes through untouched.
