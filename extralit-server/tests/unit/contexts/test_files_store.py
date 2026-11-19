@@ -12,6 +12,7 @@ from extralit_server.contexts import files
 from extralit_server.contexts.files import ObjectStorage
 
 WORKSPACE = "test-workspace"
+DOC_ID = "11111111-2222-3333-4444-555555555555"
 
 
 @pytest.fixture
@@ -137,15 +138,14 @@ class TestContentType:
 
         assert file.metadata.content_type == "text/plain"
 
-    async def test_extensionless_minted_keys_fall_back_to_their_prefix(self, storage):
-        # `pdf/{id}` and `thumbnails/{id}` carry no extension, and LocalStore cannot persist
-        # attributes, so the prefix map is the only thing standing between a local-dev PDF
-        # and being served as application/octet-stream.
-        await files.put_object(storage, WORKSPACE, "pdf/some-uuid", b"%PDF-1.4", content_type="application/pdf")
+    async def test_document_pdfs_are_served_as_pdf_without_stored_attributes(self, storage):
+        # LocalStore cannot persist attributes, so the `.pdf` extension is all that types the key.
+        for key in (files.get_pdf_s3_object_path(DOC_ID), files.get_ocr_pdf_s3_object_path(DOC_ID)):
+            await files.put_object(storage, WORKSPACE, key, b"%PDF-1.4", content_type="application/pdf")
 
-        file = await files.get_object(storage, WORKSPACE, "pdf/some-uuid")
+            file = await files.get_object(storage, WORKSPACE, key)
 
-        assert file.metadata.content_type == "application/pdf"
+            assert file.metadata.content_type == "application/pdf"
 
     async def test_an_unknown_key_defaults_to_octet_stream(self, storage):
         await files.put_object(storage, WORKSPACE, "mystery", b"x")
@@ -187,7 +187,8 @@ class TestPutDocumentFile:
         )
 
         assert url is not None
-        assert url.startswith(f"/api/v1/file/{WORKSPACE}/pdf/")
+        assert url.startswith(f"/api/v1/file/{WORKSPACE}/documents/")
+        assert url.endswith("/source.pdf")
 
 
 @pytest.mark.asyncio
@@ -205,3 +206,18 @@ class TestWorkspacePrefix:
 
         assert not (tmp_path / WORKSPACE).exists()
         assert (tmp_path / "other" / "pdf" / "y").exists()
+
+
+@pytest.mark.asyncio
+class TestPrefixDelete:
+    async def test_only_keys_under_the_prefix_are_deleted(self, storage):
+        for key in ("documents/a/source.pdf", "documents/a/ocr.pdf", "documents/ab/source.pdf"):
+            await files.put_object(storage, WORKSPACE, key, b"x")
+
+        await files.delete_object_prefix(storage, WORKSPACE, "documents/a/")
+
+        remaining = [o.object_name for o in (await files.list_objects(storage, WORKSPACE)).objects]
+        assert remaining == ["documents/ab/source.pdf"]
+
+    async def test_a_missing_prefix_is_a_no_op(self, storage):
+        await files.delete_object_prefix(storage, WORKSPACE, "documents/missing/")

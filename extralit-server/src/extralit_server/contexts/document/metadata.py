@@ -22,8 +22,9 @@ async def update_processing_metadata(
     db: AsyncSession,
     document_id: UUID,
     mutate: Callable[[DocumentProcessingMetadata], None],
+    url: Optional[str] = None,
 ) -> Optional[DocumentProcessingMetadata]:
-    """Apply `mutate` to the document's processing metadata under a row lock, and commit.
+    """Apply `mutate` to the document's processing metadata (and set `url` if given) under a row lock, and commit.
 
     Returns None when the document is gone, which is how a job learns its work was deleted.
     """
@@ -37,5 +38,7 @@ async def update_processing_metadata(
     metadata = DocumentProcessingMetadata(**(document.metadata_ or {}))
     mutate(metadata)
     document.metadata_ = metadata.model_dump()
+    if url is not None:
+        document.url = url
     await db.commit()
     return metadata

@@ -35,7 +35,7 @@ def _pages(items: list[DocItem]) -> tuple[Optional[int], Optional[int]]:
     return (min(pages), max(pages)) if pages else (None, None)
 
 
-def _kind(item: DocItem) -> str:
+def _type(item: DocItem) -> str:
     if isinstance(item, TableItem):
         return "table"
     if isinstance(item, PictureItem):
@@ -87,7 +87,7 @@ def chunk_document(doc: DoclingDocument, document_id: str, reference: Optional[s
                 "document_id": document_id,
                 "reference": reference,
                 "ordinal": len(rows),
-                "kind": _kind(item),
+                "type": _type(item),
                 "text": text,
                 "embed_text": embed_text,
                 "headings": breadcrumb,

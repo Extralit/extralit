@@ -1,8 +1,8 @@
 """Object-storage layout for extracted document layout.
 
-Canonical JSON is the source of truth; the columnar rows live in the workspace's Lance datasets
-(see `layout_store`) so a corpus-wide question is one scan. Both live in S3 rather than
-`documents.metadata_`, which is returned in full by every document listing.
+Canonical JSON (`documents/{id}/docling.json`) is the source of truth, page sizes included; the
+item rows live in the workspace's Lance datasets (see `layout_store`) so a corpus-wide question is
+one scan. Both live in S3 rather than `documents.metadata_`, which every document listing returns.
 """
 
 from __future__ import annotations
@@ -17,14 +17,15 @@ from docling_core.types.doc import DoclingDocument
 
 from extralit_server.contexts import files
 from extralit_server.contexts.files import ObjectStorage
-from extralit_server.contexts.ocr.arrow import items_table, pages_table
-from extralit_server.contexts.ocr.layout_store import LAYOUT_PREFIX, LayoutStore
+from extralit_server.contexts.ocr.arrow import items_table
+from extralit_server.contexts.ocr.layout_store import LayoutStore
 
 _LOGGER = logging.getLogger("extralit_server.contexts.ocr.storage")
 
 
 def layout_object_path(document_id: UUID | str) -> str:
-    return f"{LAYOUT_PREFIX}/{document_id}.docling.json"
+    """Key of the document's canonical `DoclingDocument` JSON."""
+    return files.get_docling_json_s3_object_path(document_id)
 
 
 async def store_layout(
@@ -53,15 +54,13 @@ async def store_layout(
     )
 
     items = items_table(doc, document_id)
-    pages = pages_table(doc, document_id)
     async with store.locked():
-        versions = await to_thread.run_sync(store.replace_document, document_id, items, pages)
+        versions = await to_thread.run_sync(store.replace_document, document_id, items)
         await to_thread.run_sync(store.maybe_compact)
 
     return {
         "layout_url": layout_url,
         "items_uri": store.items_uri(),
-        "pages_uri": store.pages_uri(),
         **versions,
     }
 
@@ -72,8 +71,7 @@ async def delete_layout(
     document_id: UUID | str,
     store: Optional[LayoutStore] = None,
 ) -> None:
-    """Drop both artifacts. Orphaned rows would skew workspace aggregates, but a failure here is
-    negligible: they are superseded on the next parse of that document."""
+    """Drop the JSON and the rows. Best effort: orphaned rows are superseded on the next parse."""
     try:
         await files.delete_object(storage, workspace_name, layout_object_path(document_id))
     except Exception as error:
