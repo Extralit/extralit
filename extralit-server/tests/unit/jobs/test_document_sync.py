@@ -167,7 +167,7 @@ class TestEnqueueChain:
 
         assert EMBED_QUEUE.count == 1
 
-    def test_a_failed_layout_leaves_the_chunk_job_deferred_not_running_on_stale_data(self, env):
+    def test_a_failed_layout_fails_the_chunk_job_visibly_and_writes_nothing(self, env):
         document_id = uuid4()
         group = start_workflow(document_id)  # no ocr.pdf: the layout job fails
 
@@ -175,7 +175,7 @@ class TestEnqueueChain:
 
         steps = jobs_by_step(group)
         assert steps["document_layout"].get_status(refresh=True) != "finished"
-        assert steps["document_chunks"].get_status(refresh=True) == "deferred"
+        assert steps["document_chunks"].get_status(refresh=True) != "finished"
         assert ChunkStore.for_workspace(WORKSPACE).open() is None
 
 

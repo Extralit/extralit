@@ -69,7 +69,8 @@ def world(tmp_path, monkeypatch):
     with (
         patch.object(module, "AsyncSessionLocal", lambda: session),
         patch.object(module.files, "get_storage", AsyncMock()),
-        patch.object(module.layout_storage, "read_layout", AsyncMock(return_value=(None, HASH))),
+        patch.object(module.files, "read_object", AsyncMock(return_value=b"raw")),
+        patch.object(module.layout_storage, "layout_hash", return_value=HASH),
         patch("extralit_server.jobs.retrieval_jobs.async_document_chunk_job.delay") as chunk,
         patch("extralit_server.jobs.retrieval_jobs.async_embed_chunks_job.delay") as embed,
     ):

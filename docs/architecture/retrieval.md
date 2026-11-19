@@ -27,7 +27,7 @@ analysis_and_preprocess_job (default)         writes ocr.pdf
         │ depends_on, allow_failure
         ▼
 async_document_layout_job (ocr)               writes docling.json, then items
-        │ depends_on (a failed layout leaves the next job DEFERRED, the workflow failed)
+        │ depends_on, allow_failure
         ▼
 async_document_chunk_job (ocr)                writes chunks
         │ .delay() from inside the job, only if EXTRALIT_RETRIEVAL_EMBEDDING_MODEL is set
@@ -41,7 +41,7 @@ POST /api/v1/workspaces/{name}/search
 | Failure | Result |
 |---|---|
 | Analysis fails | RQ retries it (3 times). Layout still runs and fails on the missing `ocr.pdf` with a message naming the analysis job |
-| Layout fails | RQ retries it (2 times). The chunk job stays `deferred`; the workflow reports failed. Items and chunks keep the previous, consistent vintage |
+| Layout fails | RQ retries it (2 times). The chunk job then runs anyway: it fails on a missing `docling.json`, or re-chunks the unchanged old one. Items and chunks never end up half-new |
 | Layout succeeds but its worker dies between the `docling.json` and `items` writes | The chunk job sees items whose hash differs from `docling.json` and rewrites items and chunks together |
 | Chunk job fails, or its embed enqueue raises | The job fails and RQ retries it (2 times); replacing chunks is idempotent. `retrieval backfill` finds what is still stale afterwards |
 | Embed job fails | RQ retries it; rows stay `NULL` and search skips them. `retrieval backfill` re-enqueues |

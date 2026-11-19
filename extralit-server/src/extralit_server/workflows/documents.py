@@ -117,14 +117,14 @@ async def create_document_workflow(
     )
     layout_jobs = group.enqueue_many(queue=OCR_QUEUE, job_datas=[layout_job_data])
 
-    # Chunks follow `docling.json`; without allow_failure a failed layout leaves this DEFERRED and the workflow failed.
+    # allow_failure: a DEFERRED job behind a failed layout would hang `wait`; it fails on a missing docling.json or is a no-op on the old one.
     # The chunk job enqueues the embed job itself when a model is configured, and is retried if that enqueue fails.
     chunk_job_data = OCR_QUEUE.prepare_data(
         async_document_chunk_job,
         (document_id, workspace_name, str(workflow.id)),
         timeout=1800,
         job_id=f"document_chunks_{document_id}_{run_suffix}",
-        depends_on=Dependency(jobs=[layout_jobs[0]]) if layout_jobs else None,
+        depends_on=Dependency(jobs=[layout_jobs[0]], allow_failure=True) if layout_jobs else None,
         retry=Retry(max=2, interval=[30, 60]),
         result_ttl=JOB_RESULT_TTL,
         meta=meta("document_chunks"),

@@ -57,7 +57,8 @@ async def backfill(workspace: Optional[str] = None) -> list[WorkspaceBackfill]:
         stale = []
         for document_id in documents[workspace_id]:
             try:
-                _, source_hash = await layout_storage.read_layout(storage, name, document_id)
+                raw = await files.read_object(storage, name, layout_storage.layout_object_path(document_id))
+                source_hash = layout_storage.layout_hash(raw)
             except Exception as error:
                 _LOGGER.warning(f"Skipping document {document_id}: docling.json unreadable: {error}")
                 continue
