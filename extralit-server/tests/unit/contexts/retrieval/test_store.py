@@ -264,3 +264,5 @@ def test_dropping_a_colliding_model_leaves_the_stored_one(store, doc):
     store.drop_vector_column("x:m_1")
 
     assert store.vector_columns() == {"x:m-1": vector_column("x:m-1")}
+    with pytest.raises(DimensionMismatchError):
+        store.unembedded("x:m_1")

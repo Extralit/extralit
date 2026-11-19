@@ -27,6 +27,7 @@ _MARKDOWN = MarkdownParams(escape_html=False, escape_underscores=False, image_pl
 
 def chunk_id(document_id: str, text: str, occurrence: int) -> str:
     """Stable under insertions and deletions elsewhere: only identical earlier texts shift it."""
+    # Excludes the breadcrumb on purpose: a heading change keeps the vector (settled design, stopgap embed_text).
     return xxhash.xxh64(f"{document_id}\x00{text}\x00{occurrence}".encode()).hexdigest()
 
 
