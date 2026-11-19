@@ -1,4 +1,4 @@
-"""`chunks` dataset beside `items`/`pages`, with one nullable vector column per embedding model."""
+"""`chunks` dataset beside `items`, with one nullable vector column per embedding model."""
 
 from __future__ import annotations
 
@@ -143,7 +143,10 @@ class ChunkStore:
         if dataset is None:
             return pa.Table.from_pylist([], schema=CHUNK_SCHEMA).select(columns)
         column = vector_column(model)
-        conditions = [f"{column} IS NULL"] if column in dataset.schema.names else []
+        owned = self.vector_columns().get(model)
+        if owned is None and column in dataset.schema.names:
+            raise DimensionMismatchError(f"{column} belongs to another embedding model than {model!r}")
+        conditions = [f"{owned} IS NULL"] if owned else []
         if document_id is not None:
             conditions.append(_document_filter(document_id))
         return dataset.to_table(columns=columns, filter=" AND ".join(conditions) or None)

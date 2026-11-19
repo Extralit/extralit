@@ -41,7 +41,7 @@ async def async_document_layout_job(
 
     Args:
         document_id: UUID of the document to process
-        s3_url: proxy URL of the PDF, as stored on the document
+        s3_url: proxy URL of the document's PDF; only its filename is used, the parsers read `ocr.pdf`
         workspace_name: workspace the artifacts are written to
         parser: force one parser for every page; None routes per page
         pages: 1-indexed page allowlist; None processes every page
@@ -63,7 +63,15 @@ async def async_document_layout_job(
     try:
         # Shared client — do not enter it as a context manager, that would close it for everyone.
         storage = await files.get_storage()
-        pdf_bytes = await files.download_file_content(storage, s3_url)
+        # Bboxes must refer to the PDF the viewer shows, which is the preprocessed `ocr.pdf`.
+        ocr_key = files.get_ocr_pdf_s3_object_path(document_id)
+        try:
+            pdf_bytes = await files.read_object(storage, workspace_name, ocr_key)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                f"{ocr_key} is missing in workspace {workspace_name!r}: it is written by analysis_and_preprocess_job, "
+                f"which must succeed for document {document_id} before layout can run"
+            ) from e
 
         # Both calls are CPU-bound and sync (liteparse holds the GIL for long stretches), so keep them off the loop.
         service = default_service()

@@ -9,7 +9,7 @@ import numpy as np
 import pyarrow as pa
 import pytest
 
-from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA, PAGE_SCHEMA
+from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA
 from extralit_server.contexts.ocr.layout_store import LayoutStore
 from extralit_server.contexts.ocr.storage import delete_layout
 from extralit_server.contexts.retrieval.arrow import CHUNK_SCHEMA, vector_column, vector_field
@@ -28,7 +28,7 @@ def chunks(document_id: str, texts: list[str]) -> pa.Table:
                 "document_id": document_id,
                 "reference": "Ref",
                 "ordinal": i,
-                "kind": "text",
+                "type": "text",
                 "text": text,
                 "embed_text": text,
                 "headings": [],
@@ -228,7 +228,6 @@ def test_layout_store_replace_accepts_registered_extra_datasets(tmp_path, monkey
     versions = layout.replace_document(
         doc,
         pa.Table.from_pylist([], schema=ITEM_SCHEMA),
-        pa.Table.from_pylist([], schema=PAGE_SCHEMA),
         extra={"chunks": chunks(doc, ["a"])},
     )
 
@@ -237,7 +236,6 @@ def test_layout_store_replace_accepts_registered_extra_datasets(tmp_path, monkey
         layout.replace_document(
             doc,
             pa.Table.from_pylist([], schema=ITEM_SCHEMA),
-            pa.Table.from_pylist([], schema=PAGE_SCHEMA),
             extra={"unknown": pa.table({})},
         )
 
@@ -254,7 +252,6 @@ def test_replace_document_keeps_vectors_of_unchanged_chunks(tmp_path, monkeypatc
     layout.replace_document(
         doc,
         pa.Table.from_pylist([], schema=ITEM_SCHEMA),
-        pa.Table.from_pylist([], schema=PAGE_SCHEMA),
         extra={"chunks": chunks(doc, ["a", "c"])},
     )
 
@@ -269,6 +266,8 @@ def test_dropping_a_colliding_model_leaves_the_stored_one(store, doc):
     store.drop_vector_column("x:m_1")
 
     assert store.vector_columns() == {"x:m-1": vector_column("x:m-1")}
+    with pytest.raises(DimensionMismatchError):
+        store.unembedded("x:m_1")
 
 
 class TestDeleteLayoutDropsChunks:

@@ -75,14 +75,14 @@ def test_a_page_spanning_item_reports_both_pages():
 
 
 def test_table_and_linked_caption_share_one_chunk(paper):
-    [table] = [r for r in rows(paper) if r["kind"] == "table"]
+    [table] = [r for r in rows(paper) if r["type"] == "table"]
 
     assert table["item_refs"] == ["#/tables/0", "#/texts/5"]
-    assert not [r for r in rows(paper) if r["kind"] == "text" and "Table 1." in r["text"]]
+    assert not [r for r in rows(paper) if r["type"] == "text" and "Table 1." in r["text"]]
 
 
 def test_uncaptioned_picture_yields_no_chunk(paper):
-    assert not [r for r in rows(paper) if r["kind"] == "figure"]
+    assert not [r for r in rows(paper) if r["type"] == "figure"]
 
 
 def test_captioned_picture_is_a_figure_chunk():
@@ -90,7 +90,7 @@ def test_captioned_picture_is_a_figure_chunk():
 
     [chunk] = rows(doc)
 
-    assert chunk["kind"] == "figure"
+    assert chunk["type"] == "figure"
     assert chunk["text"] == "Figure 1. A mouse"
 
 
@@ -103,7 +103,7 @@ def test_unlinked_caption_is_a_text_chunk():
 
     [chunk] = rows(doc)
 
-    assert (chunk["kind"], chunk["text"]) == ("text", "Table 2. Orphan")
+    assert (chunk["type"], chunk["text"]) == ("text", "Table 2. Orphan")
 
 
 def test_rechunking_is_stable(paper):
@@ -145,7 +145,7 @@ def test_chunk_count_is_body_items_minus_captions_and_uncaptioned_pictures(paper
 
 
 def test_table_text_is_a_markdown_table_prefixed_by_its_caption(paper):
-    [table] = [r for r in rows(paper) if r["kind"] == "table"]
+    [table] = [r for r in rows(paper) if r["type"] == "table"]
 
     lines = table["text"].splitlines()
     assert lines[0] == "Table 1. Results"

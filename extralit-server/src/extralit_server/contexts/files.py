@@ -3,6 +3,7 @@ import logging
 import mimetypes
 import shutil
 from datetime import timedelta
+from pathlib import Path
 from typing import Any, BinaryIO
 from uuid import UUID
 
@@ -15,13 +16,9 @@ from extralit_server.api.schemas.v1.files import FileObjectResponse, ListObjects
 from extralit_server.helpers import shared_resources
 from extralit_server.settings import settings
 
-# LocalStore cannot persist attributes (obstore raises NotImplementedError for `put_opts` with
-# attributes), so in local mode the content type has to be recovered from the key. These are the
-# extension-less prefixes minted below; everything else is guessed from the filename.
+# LocalStore cannot persist attributes, so in local mode the content type comes from the key.
+# Extension-less prefixes are listed here; everything else is guessed from the filename.
 _CONTENT_TYPE_BY_PREFIX = {
-    "pdf/": "application/pdf",
-    "thumbnails/": "image/png",
-    "layout/": "application/json",
     "schemas/": "application/json",
 }
 
@@ -166,37 +163,38 @@ def compute_hash(data: bytes) -> str:
     return hashlib.md5(data).hexdigest()
 
 
-def get_pdf_s3_object_path(id: UUID | str) -> str:
+DOCUMENTS_PREFIX = "documents"
+SOURCE_PDF = "source.pdf"
+OCR_PDF = "ocr.pdf"
+DOCLING_JSON = "docling.json"
+THUMBNAIL = "thumbnail.png"
+
+
+def document_prefix(id: UUID | str) -> str:
+    """The directory holding every object of one document; anything but a UUID raises ValueError."""
     if not id:
-        raise Exception("id cannot be None")
+        raise ValueError("id cannot be None")
+    return f"{DOCUMENTS_PREFIX}/{UUID(str(id))}/"
 
-    elif isinstance(id, UUID):
-        object_path = f"pdf/{id!s}"
-    else:
-        object_path = f"pdf/{id}"
 
-    return object_path
+def get_pdf_s3_object_path(id: UUID | str) -> str:
+    """The PDF exactly as uploaded."""
+    return document_prefix(id) + SOURCE_PDF
+
+
+def get_ocr_pdf_s3_object_path(id: UUID | str) -> str:
+    """The preprocessed (rotated) PDF that the layout parsers read."""
+    return document_prefix(id) + OCR_PDF
+
+
+def get_docling_json_s3_object_path(id: UUID | str) -> str:
+    """The canonical `DoclingDocument` JSON."""
+    return document_prefix(id) + DOCLING_JSON
 
 
 def get_thumbnail_s3_object_path(id: UUID | str) -> str:
-    """
-    Generate S3 object path for document thumbnail images.
-
-    Args:
-        id: Document UUID or string identifier
-
-    Returns:
-        S3 object path for thumbnail (e.g., "thumbnails/{document_id}")
-    """
-    if not id:
-        raise Exception("id cannot be None")
-
-    elif isinstance(id, UUID):
-        object_path = f"thumbnails/{id!s}"
-    else:
-        object_path = f"thumbnails/{id}"
-
-    return object_path
+    """The first-page thumbnail image."""
+    return document_prefix(id) + THUMBNAIL
 
 
 def get_proxy_document_url(workspace: str, object_path: str) -> str:
@@ -359,22 +357,28 @@ async def delete_workspace_objects(storage: ObjectStorage, workspace: str) -> No
         storage.forget(workspace)
 
 
-async def delete_document_artifacts(storage: ObjectStorage, workspace: str, document_id: UUID | str) -> None:
-    """Remove every artifact of a document: PDF, thumbnail, layout JSON and layout rows.
+async def delete_object_prefix(storage: ObjectStorage, workspace: str, prefix: str) -> None:
+    """Delete every object under `prefix`."""
+    store = storage.for_workspace(workspace)
+    async for batch in store.list(prefix):
+        await store.delete_async([meta["path"] for meta in batch])
+    if isinstance(store, LocalStore):
+        shutil.rmtree(Path(store.prefix) / prefix, ignore_errors=True)
 
-    Best effort — the DB rows are already gone by the time this runs, so a storage hiccup leaves a
-    leaked object rather than a document the caller cannot delete. A leak here is negligible and can
-    be ignored: the objects are unreachable and layout rows only survive until the document is
-    re-parsed or a sweeper runs.
+
+async def delete_document_artifacts(storage: ObjectStorage, workspace: str, document_id: UUID | str) -> None:
+    """Remove the document's directory (PDFs, thumbnail, layout JSON) and its layout rows.
+
+    Best effort: the DB rows are already gone, so a storage hiccup leaks an unreachable object
+    rather than leaving a document the caller cannot delete.
     """
     from extralit_server.contexts.ocr import storage as layout_storage
     from extralit_server.contexts.retrieval.store import ChunkStore
 
-    for object_path in (get_pdf_s3_object_path(document_id), get_thumbnail_s3_object_path(document_id)):
-        try:
-            await delete_object(storage, workspace, object_path)
-        except Exception as e:
-            _LOGGER.warning(f"Could not delete {object_path} for document {document_id}: {e}")
+    try:
+        await delete_object_prefix(storage, workspace, document_prefix(document_id))
+    except Exception as e:
+        _LOGGER.warning(f"Could not delete objects of document {document_id}: {e}")
 
     try:
         await layout_storage.delete_layout(
@@ -426,13 +430,18 @@ async def put_document_file(
         raise HTTPException(status_code=500, detail=f"Error uploading document: {e!s}")
 
 
+async def read_object(storage: ObjectStorage, workspace: str, object_path: str) -> bytes:
+    """Download the whole body of one object."""
+    result = await storage.for_workspace(workspace).get_async(object_path)
+    return bytes(await result.bytes_async())
+
+
 async def download_file_content(storage: ObjectStorage, document_url: str) -> bytes:
     """Download the whole body behind a `/api/v1/file/{workspace}/{object}` URL."""
     workspace, object_path = split_document_url(document_url)
 
     try:
-        result = await storage.for_workspace(workspace).get_async(object_path)
-        return bytes(await result.bytes_async())
+        return await read_object(storage, workspace, object_path)
     except FileNotFoundError:
         _LOGGER.error(f"File not found: {document_url}")
         raise HTTPException(status_code=404, detail=f"File not found: {document_url}")

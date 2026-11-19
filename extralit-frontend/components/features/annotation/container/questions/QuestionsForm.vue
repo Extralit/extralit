@@ -21,7 +21,7 @@
               class="tooltip"
               :date="record.updatedAt?.toLocaleString()"
               format="date-relative-now"
-              :updateEverySecond="10"
+              :update-every-second="10"
             />
           </div>
 
@@ -39,7 +39,7 @@
 
       <QuestionsComponent
         :questions="record.questions"
-        :autofocusPosition="autofocusPosition"
+        :autofocus-position="autofocusPosition"
         :is-bulk-mode="isBulkMode"
         @on-focus="updateQuestionAutofocus"
       />
@@ -478,14 +478,7 @@ export default {
     color: var(--fg-primary);
     background: var(--bg-accent-grey-2);
     @include font-size(11px);
-    font-family:
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      "Open Sans",
-      "Helvetica Neue",
-      sans-serif;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Open Sans", "Helvetica Neue", sans-serif;
     padding: 0 4px;
   }
   &__shortcuts-group {

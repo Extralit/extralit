@@ -6,12 +6,7 @@ import pyarrow.parquet as pq
 import pytest
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, ProvenanceItem, Size
 
-from extralit_server.contexts.ocr.arrow import (
-    ITEM_SCHEMA,
-    PAGE_SCHEMA,
-    items_table,
-    pages_table,
-)
+from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA, items_table
 from extralit_server.contexts.ocr.docling_builder import (
     LayoutBlock,
     PageContext,
@@ -167,24 +162,6 @@ class TestItemsTable:
         assert table.schema.equals(ITEM_SCHEMA)
 
 
-class TestPagesTable:
-    def test_schema_matches_exactly(self, doc):
-        assert pages_table(doc, DOCUMENT_ID).schema.equals(PAGE_SCHEMA)
-
-    def test_one_row_per_page_with_its_size(self, doc):
-        rows = sorted(pages_table(doc, DOCUMENT_ID).to_pylist(), key=lambda r: r["page_no"])
-
-        assert [r["page_no"] for r in rows] == [1, 2]
-        assert rows[0]["height"] == pytest.approx(792.0)
-        assert rows[1]["height"] == pytest.approx(1008.0)
-
-    def test_empty_document_yields_an_empty_table_with_the_schema(self):
-        table = pages_table(new_document("empty"), DOCUMENT_ID)
-
-        assert table.num_rows == 0
-        assert table.schema.equals(PAGE_SCHEMA)
-
-
 class TestParquetRoundTrip:
     def test_items_survive_a_parquet_round_trip(self, doc, tmp_path):
         original = items_table(doc, DOCUMENT_ID)
@@ -195,14 +172,6 @@ class TestParquetRoundTrip:
 
         assert restored.num_rows == original.num_rows
         assert restored.to_pylist() == original.to_pylist()
-
-    def test_pages_survive_a_parquet_round_trip(self, doc, tmp_path):
-        original = pages_table(doc, DOCUMENT_ID)
-        path = tmp_path / "pages.parquet"
-
-        pq.write_table(original, path)
-
-        assert pq.read_table(path).to_pylist() == original.to_pylist()
 
     def test_dictionary_columns_stay_readable_after_round_trip(self, doc, tmp_path):
         path = tmp_path / "items.parquet"
