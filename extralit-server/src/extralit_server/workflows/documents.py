@@ -5,7 +5,7 @@ from rq import Retry
 from rq.group import Group
 from rq.job import Dependency
 
-from extralit_server.contexts.ocr.parsers.registry import default_parser_name
+from extralit_server.contexts import files
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
 from extralit_server.jobs.ocr_jobs import async_document_layout_job
@@ -38,7 +38,7 @@ async def create_document_workflow(
         reference: Reference key for tracking
         workspace_name: Workspace name for job context
         workspace_id: UUID of the workspace
-        layout_parser: Layout parser to run; None uses the default parser
+        layout_parser: Force one layout parser for every page; None routes per page
 
     Returns:
         Dictionary containing workflow_id and group_id for tracking
@@ -83,14 +83,14 @@ async def create_document_workflow(
 
     analysis_jobs = group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
 
-    # Preprocessing rewrites the PDF at the same S3 key as its last step and writes the margins
-    # every downstream reader needs, so dependents wait on it. Rotation is best effort, hence
-    # allow_failure: otherwise a failed triage strands them in DEFERRED forever.
+    # Preprocessing writes `ocr.pdf`, which every parser reads, so dependents wait on it.
+    # allow_failure: otherwise a failed analysis strands them in DEFERRED; they then fail on the missing `ocr.pdf`.
+    ocr_url = files.get_proxy_document_url(workspace_name, files.get_ocr_pdf_s3_object_path(document_id))
     on_analysis = Dependency(jobs=[analysis_jobs[0]], allow_failure=True) if analysis_jobs else None
 
     text_extraction_job_data = OCR_QUEUE.prepare_data(
         "extralit_ocr.jobs.pymupdf_to_markdown_job",
-        (document_id, s3_url, s3_url.split("/")[-1], {}, workspace_name),
+        (document_id, ocr_url, s3_url.split("/")[-1], {}, workspace_name),
         timeout=900,
         job_id=f"text_extraction_{document_id}_{run_suffix}",
         depends_on=on_analysis,
@@ -106,7 +106,7 @@ async def create_document_workflow(
     # classifies those pages but bundles no engine, so today they stay an explicitly surfaced gap.
     layout_job_data = OCR_QUEUE.prepare_data(
         async_document_layout_job,
-        (document_id, s3_url, workspace_name, layout_parser or default_parser_name()),
+        (document_id, s3_url, workspace_name, layout_parser),
         timeout=1800,
         job_id=f"document_layout_{document_id}_{run_suffix}",
         depends_on=on_analysis,

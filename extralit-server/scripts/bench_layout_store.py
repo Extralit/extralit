@@ -22,13 +22,13 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from extralit_server.contexts.ocr import layout_store
-from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA, PAGE_SCHEMA
-from extralit_server.contexts.ocr.layout_store import ITEMS_DATASET, PAGES_DATASET, LayoutStore
+from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA
+from extralit_server.contexts.ocr.layout_store import DATASETS, ITEMS_DATASET, LayoutStore
 
 LABELS = ["text", "section_header", "table", "picture", "caption"]
 
 
-def synth(document_id: str, n_items: int) -> tuple[pa.Table, pa.Table]:
+def synth(document_id: str, n_items: int) -> pa.Table:
     rows = [
         {
             "document_id": document_id,
@@ -49,8 +49,7 @@ def synth(document_id: str, n_items: int) -> tuple[pa.Table, pa.Table]:
         }
         for i in range(n_items)
     ]
-    pages = [{"document_id": document_id, "page_no": page, "width": 612.0, "height": 792.0} for page in range(1, 11)]
-    return pa.Table.from_pylist(rows, schema=ITEM_SCHEMA), pa.Table.from_pylist(pages, schema=PAGE_SCHEMA)
+    return pa.Table.from_pylist(rows, schema=ITEM_SCHEMA)
 
 
 def du(path: Path) -> int:
@@ -66,7 +65,7 @@ def timed(label: str, fn):
 
 def lance_connection(store: LayoutStore) -> duckdb.DuckDBPyConnection:
     connection = duckdb.connect()
-    for name in (ITEMS_DATASET, PAGES_DATASET):
+    for name in DATASETS:
         connection.register(f"_{name}", store.source(name))
         connection.execute(f"create view {name} as select * from _{name}")
     return connection
@@ -87,20 +86,20 @@ def main() -> None:
     store = LayoutStore.for_workspace(args.workspace) if args.workspace else LayoutStore(str(root / "lance" / "layout"))
 
     documents = [
-        (document_id, *synth(document_id, args.items)) for document_id in (str(uuid4()) for _ in range(args.docs))
+        (document_id, synth(document_id, args.items)) for document_id in (str(uuid4()) for _ in range(args.docs))
     ]
     print(f"{args.docs} documents x {args.items} items at {store.root_uri}\n")
 
     def write_parquet():
-        for document_id, items, _pages in documents:
+        for document_id, items in documents:
             buffer = io.BytesIO()
             pq.write_table(items, buffer, compression="zstd")
             (parquet_dir / f"{document_id}.items.parquet").write_bytes(buffer.getvalue())
 
     def write_lance():
-        for document_id, items, pages in documents:
+        for document_id, items in documents:
             with store.locked_sync():
-                store.replace_document(document_id, items, pages)
+                store.replace_document(document_id, items)
                 store.maybe_compact()
 
     timed("write: parquet sidecars", write_parquet)
@@ -131,7 +130,6 @@ def main() -> None:
         lance_dir = root / "lance"
         print(f"bytes: lance   {du(lance_dir):,}  (retains {layout_store.CLEANUP_OLDER_THAN} of history)")
         store.open(ITEMS_DATASET).cleanup_old_versions(older_than=timedelta(0))
-        store.open(PAGES_DATASET).cleanup_old_versions(older_than=timedelta(0))
         print(f"bytes: lance   {du(lance_dir):,}  (history dropped)")
 
 

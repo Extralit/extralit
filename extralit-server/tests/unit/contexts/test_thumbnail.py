@@ -14,13 +14,13 @@ class TestThumbnailPaths:
         """Test thumbnail path generation with UUID."""
         doc_id = uuid4()
         path = get_thumbnail_s3_object_path(doc_id)
-        assert path == f"thumbnails/{doc_id}"
+        assert path == f"documents/{doc_id}/thumbnail.png"
 
     def test_get_thumbnail_s3_object_path_with_string(self):
-        """Test thumbnail path generation with string."""
-        doc_id = "test-document-id"
+        """Test thumbnail path generation with a UUID string."""
+        doc_id = "11111111-2222-3333-4444-555555555555"
         path = get_thumbnail_s3_object_path(doc_id)
-        assert path == "thumbnails/test-document-id"
+        assert path == f"documents/{doc_id}/thumbnail.png"
 
     def test_get_thumbnail_s3_object_path_with_none_raises_exception(self):
         """Test that None ID raises exception."""

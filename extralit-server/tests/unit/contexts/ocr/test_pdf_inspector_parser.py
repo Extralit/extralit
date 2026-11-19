@@ -41,10 +41,11 @@ class TestRegistry:
     def test_pdf_inspector_is_always_registered(self):
         assert "pdf_inspector" in list_parsers()
 
-    def test_get_parser_returns_a_callable(self, untagged_bytes):
-        doc = get_parser("pdf_inspector")(untagged_bytes, name="sample")
+    def test_get_parser_returns_a_page_parser(self, untagged_bytes):
+        blocks = get_parser("pdf_inspector").parse_pages(untagged_bytes, [1, 99], ocr=False)
 
-        assert doc.name == "sample"
+        assert list(blocks) == [1]
+        assert blocks[1]
 
     def test_unknown_parser_raises(self):
         with pytest.raises(ValueError, match="unknown"):
