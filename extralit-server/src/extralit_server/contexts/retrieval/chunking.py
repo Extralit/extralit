@@ -52,7 +52,9 @@ def _open_headings(stack: list[tuple[int, str]], item: DocItem) -> None:
         stack.append((level, item.text.strip()))
 
 
-def chunk_document(doc: DoclingDocument, document_id: str, reference: Optional[str] = None) -> pa.Table:
+def chunk_document(
+    doc: DoclingDocument, document_id: str, reference: Optional[str] = None, source_hash: Optional[str] = None
+) -> pa.Table:
     """Chunk `doc` in reading order into rows matching `CHUNK_SCHEMA`."""
     serializer = MarkdownDocSerializer(doc=doc, table_serializer=MarkdownTableSerializer(), params=_MARKDOWN)
     document_id = str(document_id)
@@ -96,6 +98,7 @@ def chunk_document(doc: DoclingDocument, document_id: str, reference: Optional[s
                 "page_start": start,
                 "page_end": end,
                 "chunker_fingerprint": CHUNKER_FINGERPRINT,
+                "source_hash": source_hash,
             }
         )
         seen[text] += 1

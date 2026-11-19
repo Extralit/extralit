@@ -11,7 +11,9 @@ from rq.decorators import job
 
 from extralit_server.contexts import files
 from extralit_server.contexts.ocr import storage as layout_storage
-from extralit_server.contexts.retrieval.arrow import vector_column, vector_field
+from extralit_server.contexts.ocr.arrow import items_table
+from extralit_server.contexts.ocr.layout_store import ITEMS_DATASET
+from extralit_server.contexts.retrieval.arrow import CHUNKS_DATASET, vector_column, vector_field
 from extralit_server.contexts.retrieval.chunking import chunk_document
 from extralit_server.contexts.retrieval.embedding import embed_documents, get_embedder
 from extralit_server.contexts.retrieval.settings import RetrievalSettings
@@ -34,20 +36,20 @@ _LOGGER = logging.getLogger(__name__)
 async def async_document_chunk_job(
     document_id: UUID, workspace_name: str, workflow_id: Optional[str] = None
 ) -> dict[str, Any]:
-    """Chunk the stored `{document_id}.docling.json` and replace the document's chunks."""
+    """Chunk the stored `docling.json` and replace the document's chunks, restoring its items if they lag it."""
     document_id = UUID(str(document_id))
     current_job = get_current_job()
     if workflow_id is None and current_job is not None:
         workflow_id = (current_job.meta or {}).get("workflow_id")
 
     storage = await files.get_storage()
-    doc = await layout_storage.load_layout(storage, workspace_name, document_id)
+    doc, source_hash = await layout_storage.read_layout(storage, workspace_name, document_id)
 
     async with AsyncSessionLocal() as db:
         document = await db.get(Document, document_id)
     reference = document.reference if document is not None else None
 
-    table = chunk_document(doc, str(document_id), reference)
+    table = chunk_document(doc, str(document_id), reference, source_hash)
 
     store = ChunkStore.for_workspace(workspace_name)
     async with store.layout.locked():
@@ -56,7 +58,12 @@ async def async_document_chunk_job(
         if skip is not None:
             _LOGGER.info(f"Chunks for document {document_id} were not stored: {skip}")
             return {"document_id": str(document_id), "skipped": skip}
-        await to_thread.run_sync(store.replace_chunks, document_id, table)
+        if store.layout.source_hashes(ITEMS_DATASET, document_id).get(str(document_id)) == {source_hash}:
+            await to_thread.run_sync(store.replace_chunks, document_id, table)
+        else:
+            # A crash between the layout job's two writes leaves items behind docling.json; heal both together.
+            items = items_table(doc, str(document_id), source_hash)
+            await to_thread.run_sync(store.layout.replace_document, document_id, items, {CHUNKS_DATASET: table})
 
     embed_job_id = None
     if RetrievalSettings().embedding_model:

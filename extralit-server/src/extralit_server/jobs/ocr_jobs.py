@@ -8,6 +8,7 @@ from uuid import UUID
 
 from rq import Retry, get_current_job
 from rq.decorators import job
+from sqlalchemy import select
 
 from extralit_server.api.schemas.v1.document.metadata import LayoutMetadata
 from extralit_server.contexts import files
@@ -18,7 +19,7 @@ from extralit_server.contexts.ocr.parsers.registry import default_service
 from extralit_server.contexts.workflows import writer_skip_reason
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import OCR_QUEUE, REDIS_CONNECTION
-from extralit_server.jobs.retrieval_jobs import async_document_chunk_job
+from extralit_server.models.database import Document
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ async def async_document_layout_job(
 
     Args:
         document_id: UUID of the document to process
-        s3_url: proxy URL of the document's PDF; only its filename is used, the parsers read `ocr.pdf`
+        s3_url: proxy URL of the document's PDF; the parsers read `ocr.pdf`, not this
         workspace_name: workspace the artifacts are written to
         parser: force one parser for every page; None routes per page
         pages: 1-indexed page allowlist; None processes every page
@@ -79,8 +80,11 @@ async def async_document_layout_job(
         parser_name = "+".join(sorted(plan.pages_by_parser)) or (parser or "")
         _LOGGER.info(f"Extracting layout for document {document_id} with parser {parser_name}")
 
+        # The uploaded name, not the object key's basename (`ocr.pdf`).
+        async with AsyncSessionLocal() as db:
+            filename = await db.scalar(select(Document.file_name).where(Document.id == document_id))
         doc = await asyncio.to_thread(
-            service.parse, pdf_bytes, plan, name=str(document_id), filename=s3_url.split("/")[-1]
+            service.parse, pdf_bytes, plan, name=str(document_id), filename=filename or s3_url.split("/")[-1]
         )
 
         # Ordering closes the delete-vs-running-job race: nothing may write rows for a document
@@ -112,13 +116,9 @@ async def async_document_layout_job(
         async with AsyncSessionLocal() as db:
             await update_processing_metadata(db, document_id, lambda m: setattr(m, "layout_metadata", layout))
 
-        # Must not be swallowed: backfill cannot see stale chunks of a re-parsed document.
-        chunk_job_id = async_document_chunk_job.delay(document_id, workspace_name, workflow_id).id
-
         result = {
             "document_id": str(document_id),
             "parser": parser_name,
-            "chunk_job_id": chunk_job_id,
             **layout.model_dump(),
         }
 

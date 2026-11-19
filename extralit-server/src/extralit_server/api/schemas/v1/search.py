@@ -9,7 +9,7 @@ class SearchRequest(BaseModel):
     document_ids: list[UUID] = Field(default_factory=list)
     references: list[str] = Field(default_factory=list)
     pages: list[int] = Field(default_factory=list)
-    kinds: list[Literal["text", "table", "figure"]] = Field(default_factory=list)
+    types: list[Literal["text", "table", "figure"]] = Field(default_factory=list)
     limit: int = Field(default=10, ge=1, le=100)
 
 
@@ -24,7 +24,7 @@ class SearchHit(BaseModel):
     chunk_id: str
     document_id: UUID
     reference: Optional[str] = None
-    kind: str
+    type: str
     text: str
     headings: list[str]
     item_refs: list[str]

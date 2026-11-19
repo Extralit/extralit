@@ -3622,7 +3622,7 @@ export interface components {
             /** Item Refs */
             item_refs: string[];
             /** Kind */
-            kind: string;
+            type: string;
             /** Page End */
             page_end?: number | null;
             /** Page Start */
@@ -3661,7 +3661,7 @@ export interface components {
             /** Document Ids */
             document_ids?: string[];
             /** Kinds */
-            kinds?: ("text" | "table" | "figure")[];
+            types?: ("text" | "table" | "figure")[];
             /**
              * Limit
              * @default 10

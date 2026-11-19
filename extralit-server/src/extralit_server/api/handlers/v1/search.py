@@ -36,7 +36,7 @@ async def search_workspace(
         body.query,
         embedder=get_embedder(settings),
         filters=SearchFilters(
-            document_ids=body.document_ids, references=body.references, pages=body.pages, kinds=body.kinds
+            document_ids=body.document_ids, references=body.references, pages=body.pages, types=body.types
         ),
         limit=body.limit,
         settings=settings,

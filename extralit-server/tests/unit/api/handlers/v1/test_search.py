@@ -48,7 +48,7 @@ class TestSearchWorkspace:
         hit = response.json()["hits"][0]
         assert hit["document_id"] == document_id
         assert hit["item_refs"] == ["#/texts/0"]
-        assert hit["kind"] == "table"
+        assert hit["type"] == "table"
         assert hit["scores"]["bm25"] is not None and hit["scores"]["vector"] is not None and hit["scores"]["rrf"] > 0
 
     async def test_reference_filter(self, async_client: AsyncClient, owner_auth_header, workspace_with_chunks):
@@ -81,13 +81,13 @@ class TestSearchWorkspace:
 
         assert response.status_code == 403
 
-    async def test_invalid_kind_is_422(self, async_client: AsyncClient, owner_auth_header, workspace_with_chunks):
+    async def test_invalid_type_is_422(self, async_client: AsyncClient, owner_auth_header, workspace_with_chunks):
         workspace, _ = workspace_with_chunks
 
         response = await async_client.post(
             f"/api/v1/workspaces/{workspace.name}/search",
             headers=owner_auth_header,
-            json={"query": "x", "kinds": ["bogus"]},
+            json={"query": "x", "types": ["bogus"]},
         )
 
         assert response.status_code == 422

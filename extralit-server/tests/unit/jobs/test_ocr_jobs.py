@@ -36,9 +36,11 @@ def job_context(tmp_path, monkeypatch):
     )
     service = ParserService({"pymupdf": StubParser(), "liteparse": StubParser()}, triage=lambda _: triage)
     layouts = []
+    documents = []
 
     async def store_layout(s3_client, workspace_name, document_id, document, store=None):
         calls.append(("store_layout", store._lock_depth))
+        documents.append(document)
         return {"layout_url": "documents/x/docling.json", "items_uri": "items"}
 
     async def update_metadata(db, document_id, mutate):
@@ -49,6 +51,7 @@ def job_context(tmp_path, monkeypatch):
         return None
 
     db = MagicMock()
+    db.scalar = AsyncMock(return_value="paper.pdf")
 
     with (
         patch(f"{MODULE}.files.get_storage", AsyncMock(return_value=AsyncMock())),
@@ -60,7 +63,6 @@ def job_context(tmp_path, monkeypatch):
         patch(f"{MODULE}.get_current_job", return_value=MagicMock(meta={"workflow_id": "wf-1"})),
         patch(f"{MODULE}.writer_skip_reason", AsyncMock(return_value=None)) as skip,
         patch(f"{MODULE}.AsyncSessionLocal") as session,
-        patch(f"{MODULE}.async_document_chunk_job.delay") as chunk_delay,
     ):
         session.return_value.__aenter__ = AsyncMock(return_value=db)
         session.return_value.__aexit__ = AsyncMock(return_value=False)
@@ -69,7 +71,7 @@ def job_context(tmp_path, monkeypatch):
             "store": store,
             "skip": skip,
             "layouts": layouts,
-            "chunk_delay": chunk_delay,
+            "documents": documents,
             "read_object": read_object,
         }
 
@@ -128,26 +130,11 @@ class TestLayoutJobOrdering:
         assert result["pages_needing_ocr"] == [2]
 
 
-class TestChunkJobEnqueue:
-    async def test_chunk_job_is_enqueued_after_the_layout_is_stored(self, job_context):
-        document_id = uuid4()
-        result = await run_job(document_id)
-
-        job_context["chunk_delay"].assert_called_once_with(document_id, "ws", "wf-1")
-        assert result["chunk_job_id"] == job_context["chunk_delay"].return_value.id
-
-    async def test_a_skipped_layout_enqueues_no_chunk_job(self, job_context):
-        job_context["skip"].return_value = "document deleted"
-
+class TestOriginFilename:
+    async def test_the_origin_is_the_uploaded_name_not_ocr_pdf(self, job_context):
         await run_job()
 
-        job_context["chunk_delay"].assert_not_called()
-
-    async def test_enqueue_failure_fails_the_layout_job_so_rq_retries_it(self, job_context):
-        job_context["chunk_delay"].side_effect = ConnectionError("redis down")
-
-        with pytest.raises(ConnectionError):
-            await run_job()
+        assert job_context["documents"][0].origin.filename == "paper.pdf"
 
 
 class TestExecutedPlanMetadata:

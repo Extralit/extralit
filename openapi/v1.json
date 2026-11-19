@@ -5151,10 +5151,6 @@
             "title": "Item Refs",
             "type": "array"
           },
-          "kind": {
-            "title": "Kind",
-            "type": "string"
-          },
           "page_end": {
             "anyOf": [
               {
@@ -5194,12 +5190,16 @@
           "text": {
             "title": "Text",
             "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
           }
         },
         "required": [
           "chunk_id",
           "document_id",
-          "kind",
+          "type",
           "text",
           "headings",
           "item_refs",
@@ -5304,18 +5304,6 @@
             "title": "Document Ids",
             "type": "array"
           },
-          "kinds": {
-            "items": {
-              "enum": [
-                "text",
-                "table",
-                "figure"
-              ],
-              "type": "string"
-            },
-            "title": "Kinds",
-            "type": "array"
-          },
           "limit": {
             "default": 10,
             "maximum": 100.0,
@@ -5340,6 +5328,18 @@
               "type": "string"
             },
             "title": "References",
+            "type": "array"
+          },
+          "types": {
+            "items": {
+              "enum": [
+                "text",
+                "table",
+                "figure"
+              ],
+              "type": "string"
+            },
+            "title": "Types",
             "type": "array"
           }
         },

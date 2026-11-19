@@ -28,7 +28,7 @@ def chunk_rows(document_id: str, reference: str, texts: list[str]) -> pa.Table:
                 "document_id": document_id,
                 "reference": reference,
                 "ordinal": i,
-                "kind": "table" if i == 0 else "text",
+                "type": "table" if i == 0 else "text",
                 "text": text,
                 "embed_text": text,
                 "headings": ["Methods"],
@@ -120,12 +120,12 @@ async def test_filters_apply_before_top_k_on_a_rare_match(store, corpus, embedde
         [store],
         "common words",
         embedder=embedder,
-        filters=SearchFilters(document_ids=[doc_a], kinds=["table"], pages=[1]),
+        filters=SearchFilters(document_ids=[doc_a], types=["table"], pages=[1]),
         limit=5,
         settings=config,
     )
 
-    assert [h.kind for h in hits] == ["table"]
+    assert [h.type for h in hits] == ["table"]
 
 
 async def test_page_filter_matches_inside_a_chunks_span(store, embedder, config):

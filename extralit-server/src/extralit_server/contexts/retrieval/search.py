@@ -19,14 +19,14 @@ from extralit_server.contexts.retrieval.store import ChunkStore
 
 _LOGGER = logging.getLogger("extralit_server.contexts.retrieval.search")
 
-KINDS = ("text", "table", "figure")
-FILTER_COLUMNS = frozenset({"document_id", "reference", "kind", "page_start", "page_end"})
+TYPES = ("text", "table", "figure")
+FILTER_COLUMNS = frozenset({"document_id", "reference", "type", "page_start", "page_end"})
 PAYLOAD = (
     "chunk_id",
     "document_id",
     "reference",
     "ordinal",
-    "kind",
+    "type",
     "text",
     "headings",
     "item_refs",
@@ -40,7 +40,7 @@ class SearchFilters:
     document_ids: Sequence[UUID | str] = field(default_factory=list)
     references: Sequence[str] = field(default_factory=list)
     pages: Sequence[int] = field(default_factory=list)
-    kinds: Sequence[str] = field(default_factory=list)
+    types: Sequence[str] = field(default_factory=list)
 
 
 @dataclass
@@ -49,7 +49,7 @@ class ChunkHit:
     document_id: str
     reference: Optional[str]
     ordinal: int
-    kind: str
+    type: str
     text: str
     headings: list[str]
     item_refs: list[str]
@@ -83,11 +83,11 @@ def build_filter(filters: Optional[SearchFilters]) -> Optional[str]:
         clauses.append(_in("document_id", [str(UUID(str(d))) for d in filters.document_ids]))
     if filters.references:
         clauses.append(_in("reference", [str(r) for r in filters.references]))
-    if filters.kinds:
-        unknown = set(filters.kinds) - set(KINDS)
+    if filters.types:
+        unknown = set(filters.types) - set(TYPES)
         if unknown:
-            raise ValueError(f"Unknown chunk kinds: {sorted(unknown)}")
-        clauses.append(_in("kind", list(filters.kinds)))
+            raise ValueError(f"Unknown chunk types: {sorted(unknown)}")
+        clauses.append(_in("type", list(filters.types)))
     if filters.pages:
         spans = [f"({_column('page_start')} <= {int(p)} AND {_column('page_end')} >= {int(p)})" for p in filters.pages]
         clauses.append(f"({' OR '.join(spans)})")

@@ -69,7 +69,7 @@ def chunk_env(store):
     session.return_value.__aexit__ = AsyncMock(return_value=False)
     with (
         patch(f"{MODULE}.files.get_storage", AsyncMock()),
-        patch(f"{MODULE}.layout_storage.load_layout", AsyncMock(return_value=document())),
+        patch(f"{MODULE}.layout_storage.read_layout", AsyncMock(return_value=(document(), "h1"))),
         patch(f"{MODULE}.ChunkStore.for_workspace", return_value=store),
         patch(f"{MODULE}.AsyncSessionLocal", session),
         patch(f"{MODULE}.writer_skip_reason", AsyncMock(return_value=None)) as skip,

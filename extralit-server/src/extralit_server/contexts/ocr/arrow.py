@@ -30,6 +30,7 @@ ITEM_SCHEMA = pa.schema(
         ("charspan_end", pa.int32()),
         ("text", pa.string()),
         ("html", pa.string()),
+        ("source_hash", pa.string()),
     ]
 )
 
@@ -49,7 +50,7 @@ def _table_html(doc: DoclingDocument, item: DocItem) -> Optional[str]:
         return None
 
 
-def item_rows(doc: DoclingDocument, document_id: str) -> list[dict[str, Any]]:
+def item_rows(doc: DoclingDocument, document_id: str, source_hash: Optional[str] = None) -> list[dict[str, Any]]:
     """Flatten every item's provenance into rows matching `ITEM_SCHEMA`."""
     rows: list[dict[str, Any]] = []
 
@@ -64,6 +65,7 @@ def item_rows(doc: DoclingDocument, document_id: str) -> list[dict[str, Any]]:
             "reading_order": reading_order,
             "text": getattr(item, "text", None) or None,
             "html": _table_html(doc, item),
+            "source_hash": source_hash,
         }
 
         provs = list(getattr(item, "prov", []) or [])
@@ -97,6 +99,6 @@ def item_rows(doc: DoclingDocument, document_id: str) -> list[dict[str, Any]]:
     return rows
 
 
-def items_table(doc: DoclingDocument, document_id: str) -> pa.Table:
+def items_table(doc: DoclingDocument, document_id: str, source_hash: Optional[str] = None) -> pa.Table:
     """Project every `(DocItem, ProvenanceItem)` pair into an Arrow table."""
-    return pa.Table.from_pylist(item_rows(doc, document_id), schema=ITEM_SCHEMA)
+    return pa.Table.from_pylist(item_rows(doc, document_id, source_hash), schema=ITEM_SCHEMA)

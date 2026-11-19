@@ -33,11 +33,11 @@ class TestFilter:
     def test_clauses_are_anded_and_quoted(self):
         doc = uuid4()
         clause = build_filter(
-            SearchFilters(document_ids=[doc], references=["O'Brien2020"], pages=[2, 3], kinds=["table"])
+            SearchFilters(document_ids=[doc], references=["O'Brien2020"], pages=[2, 3], types=["table"])
         )
 
         assert clause == (
-            f"document_id IN ('{doc}') AND reference IN ('O''Brien2020') AND kind IN ('table') "
+            f"document_id IN ('{doc}') AND reference IN ('O''Brien2020') AND type IN ('table') "
             "AND ((page_start <= 2 AND page_end >= 2) OR (page_start <= 3 AND page_end >= 3))"
         )
 
@@ -45,9 +45,9 @@ class TestFilter:
         with pytest.raises(ValueError):
             build_filter(SearchFilters(document_ids=["x' OR 1=1 --"]))
 
-    def test_kinds_are_allow_listed(self):
+    def test_types_are_allow_listed(self):
         with pytest.raises(ValueError):
-            build_filter(SearchFilters(kinds=["text' OR 1=1"]))
+            build_filter(SearchFilters(types=["text' OR 1=1"]))
 
     def test_pages_must_be_integers(self):
         with pytest.raises(ValueError):
