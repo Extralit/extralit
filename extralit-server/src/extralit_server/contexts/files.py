@@ -170,15 +170,11 @@ DOCLING_JSON = "docling.json"
 THUMBNAIL = "thumbnail.png"
 
 
-def _document_id(id: UUID | str) -> str:
+def document_prefix(id: UUID | str) -> str:
+    """The directory holding every object of one document; anything but a UUID raises ValueError."""
     if not id:
         raise ValueError("id cannot be None")
-    return str(UUID(str(id)))
-
-
-def document_prefix(id: UUID | str) -> str:
-    """The directory holding every object of one document."""
-    return f"{DOCUMENTS_PREFIX}/{_document_id(id)}/"
+    return f"{DOCUMENTS_PREFIX}/{UUID(str(id))}/"
 
 
 def get_pdf_s3_object_path(id: UUID | str) -> str:
