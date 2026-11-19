@@ -50,7 +50,8 @@ Worker count: `EXTRALIT_EMBED_WORKERS` (default 1) in the compose files.
   `{embedding_model, dimensions}` in field metadata. Added without rewriting data the first time a
   model embeds. Each gets its own `IVF_HNSW_FLAT` index (`num_partitions=1`).
   `optimize_indices()` runs after every write.
-- Not `IVF_RQ`: the DuckDB extension reads pylance RQ indexes wrongly.
+- Not `IVF_RQ` yet: extension 1.5.5 read pylance RQ indexes wrongly. Extension 2.0.0 returns the same
+  neighbours as pylance (see `scripts/probe_lance_types.py`), so switching is now an option.
 - Switching models adds a new column. Existing chunks are embedded for it only when an operator runs
   `python -m extralit_server retrieval backfill`. Search reads only the configured model's column;
   rows still `NULL` are skipped. Drop a retired column with `ChunkStore.drop_vector_column`.
@@ -70,8 +71,10 @@ namespace (`ATTACH root AS ns (TYPE LANCE, READ_ONLY false)`; `s3://` roots firs
 - The vector leg is skipped without an embedder or when no store has a column for the model. The
   response then carries `scores.vector = null` on every hit.
 - Scores: `bm25` (higher is better), `vector` (distance, lower is closer), `rrf` (fused).
-- The `kind` column is a plain string: the extension returns `''` for dictionary-encoded columns
-  and crashes in vector search when one is in the projection.
+- The `kind` column is a plain string. With a dictionary-encoded column, extension 2.0.0 still
+  segfaults in `lance_fts`/`lance_vector_search` and returns `''` under a filter.
+- JSON and VARIANT columns are not used for filter fields. Lance stores `arrow.json` as JSONB,
+  which DuckDB reads as BLOB. DuckDB reads VARIANT, but Lance filters have no `variant_get`.
 
 ## Queues and workers
 
@@ -87,12 +90,17 @@ only for each batch's `merge_insert`; the lock waits at most 300 s.
 
 ## DuckDB extension and pylance versions
 
-The `lance` extension comes from the `duckdb-extension-lance` wheel (pins `duckdb`), and it reads
-files written by pylance. The pairing was measured with pylance 13 and extension build `2f167ea`;
-the current lock has pylance 14.0.2 and the integration tests in
-`tests/integration/retrieval` pass with it. A pylance bump can still break an index type for the
-extension, as `IVF_RQ` already is. The integration test that queries a stored chunk's own vector and
-expects that chunk first is the guard: run it on every pylance or `duckdb-extension-lance` bump.
+The `lance` extension comes from the `duckdb-extension-lance` wheel, which pins an exact `duckdb`.
+It is loaded from the wheel's own path, because `LOAD lance` only searches `~/.duckdb/extensions`.
+The extension reads files written by pylance. The current lock has duckdb 2.0.0, extension 2.0.0
+(build `86118537da`) and pylance 14.0.3; duckdb 2.0 needs Python 3.11 or newer.
+Compared with 1.5.5 on 100k chunks, vector and hybrid queries are about 4x faster and full-text
+queries about 2.5x slower.
+
+A pylance or extension bump can break how the extension reads an index type, as it once did for
+`IVF_RQ`. The integration test that queries a stored chunk's own vector and expects that chunk
+first is the guard. Run it, and `scripts/probe_lance_types.py`, on every pylance or
+`duckdb-extension-lance` bump.
 
 HNSW is approximate: at `k=1` the self-match is not always found, so the vector leg asks for
 `candidate_k` neighbours.
