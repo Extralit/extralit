@@ -1,4 +1,4 @@
-"""`chunks` dataset beside `items`/`pages`, with one nullable vector column per embedding model."""
+"""`chunks` dataset beside `items`, with one nullable vector column per embedding model."""
 
 from __future__ import annotations
 
