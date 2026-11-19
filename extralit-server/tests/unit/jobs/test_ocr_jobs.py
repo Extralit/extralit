@@ -52,7 +52,7 @@ def job_context(tmp_path, monkeypatch):
 
     with (
         patch(f"{MODULE}.files.get_storage", AsyncMock(return_value=AsyncMock())),
-        patch(f"{MODULE}.files.read_object", AsyncMock(return_value=pdf_bytes)),
+        patch(f"{MODULE}.files.read_object", AsyncMock(return_value=pdf_bytes)) as read_object,
         patch(f"{MODULE}.default_service", return_value=service),
         patch(f"{MODULE}.LayoutStore.for_workspace", return_value=store),
         patch(f"{MODULE}.layout_storage.store_layout", store_layout),
@@ -63,7 +63,7 @@ def job_context(tmp_path, monkeypatch):
     ):
         session.return_value.__aenter__ = AsyncMock(return_value=db)
         session.return_value.__aexit__ = AsyncMock(return_value=False)
-        yield {"calls": calls, "store": store, "skip": skip, "layouts": layouts}
+        yield {"calls": calls, "store": store, "skip": skip, "layouts": layouts, "read_object": read_object}
 
 
 async def run_job(document_id=None, parser=None):
@@ -71,7 +71,7 @@ async def run_job(document_id=None, parser=None):
 
     return await async_document_layout_job(
         document_id or uuid4(),
-        "/api/v1/file/ws/pdf/doc.pdf",
+        "/api/v1/file/ws/documents/doc/source.pdf",
         "ws",
         parser,
     )
@@ -97,6 +97,13 @@ class TestLayoutJobOrdering:
 
         assert result["skipped"] == "document deleted"
         assert job_context["calls"] == []
+
+    async def test_the_parsers_read_ocr_pdf(self, job_context):
+        document_id = uuid4()
+
+        await run_job(document_id)
+
+        assert job_context["read_object"].await_args.args[1:] == ("ws", f"documents/{document_id}/ocr.pdf")
 
     async def test_pages_needing_ocr_are_surfaced(self, job_context):
         result = await run_job()

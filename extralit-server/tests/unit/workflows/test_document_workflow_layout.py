@@ -76,9 +76,16 @@ class TestLayoutJobSequencing:
         assert layout is not None
         assert layout["args"][3] == "pdf_inspector"
 
+    async def test_text_extraction_reads_ocr_pdf(self, enqueued):
+        document_id = uuid4()
+
+        await run_workflow(document_id=document_id)
+
+        text = prepared_for(enqueued, "text_extraction")
+        assert text["args"][1] == f"/api/v1/file/ws/documents/{document_id}/ocr.pdf"
+
     async def test_layout_job_depends_on_preprocessing(self, enqueued):
-        # Preprocessing rotates pages and overwrites the PDF in place; running layout first
-        # would persist bboxes describing a PDF that nobody renders.
+        # Layout parses `ocr.pdf`, which only exists once preprocessing has written it.
         await run_workflow(layout_parser="pdf_inspector")
 
         layout = prepared_for(enqueued, "document_layout")
