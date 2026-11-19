@@ -55,6 +55,9 @@ from extralit_server.api.handlers.v1 import (
     responses as responses_v1,
 )
 from extralit_server.api.handlers.v1 import (
+    search as search_v1,
+)
+from extralit_server.api.handlers.v1 import (
     settings as settings_v1,
 )
 from extralit_server.api.handlers.v1 import (
@@ -117,6 +120,7 @@ def create_api_v1():
         imports_v1.router,
         github_auth_v1.router,
         chat_v1.router,
+        search_v1.router,
     ]:
         api_v1.include_router(router)
 

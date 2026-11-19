@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 import numpy as np
@@ -10,6 +11,7 @@ import pytest
 
 from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA
 from extralit_server.contexts.ocr.layout_store import LayoutStore
+from extralit_server.contexts.ocr.storage import delete_layout
 from extralit_server.contexts.retrieval.arrow import CHUNK_SCHEMA, vector_column, vector_field
 from extralit_server.contexts.retrieval.store import ChunkStore, DimensionMismatchError
 from extralit_server.settings import settings
@@ -266,3 +268,15 @@ def test_dropping_a_colliding_model_leaves_the_stored_one(store, doc):
     assert store.vector_columns() == {"x:m-1": vector_column("x:m-1")}
     with pytest.raises(DimensionMismatchError):
         store.unembedded("x:m_1")
+
+
+class TestDeleteLayoutDropsChunks:
+    @pytest.mark.asyncio
+    async def test_delete_layout_removes_the_documents_chunks(self, store, doc):
+        other = str(uuid4())
+        store.replace_chunks(doc, chunks(doc, ["a", "b"]))
+        store.replace_chunks(other, chunks(other, ["keep"]))
+        with patch("extralit_server.contexts.ocr.storage.files.delete_object", AsyncMock()):
+            await delete_layout(AsyncMock(), "ws-chunks", doc, store=store.layout)
+
+        assert store.open().to_table(columns=["text"]).column(0).to_pylist() == ["keep"]

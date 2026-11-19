@@ -56,6 +56,22 @@ services:
       - redis
     command: sh -c 'python -m extralit_server worker --num-workers $${BACKGROUND_NUM_WORKERS}'
 
+  embed-worker:
+    image: extralitdev/extralit-server:latest
+    profiles:
+      - no-auto-start
+    environment:
+      <<: *common-variables
+    networks:
+      - extralit
+    volumes:
+      - extralitdata:/var/lib/extralit
+    depends_on:
+      - postgres
+      - elasticsearch
+      - redis
+    command: sh -c 'python -m extralit_server worker --queues embed --num-workers $${EXTRALIT_EMBED_WORKERS:-1}'
+
   postgres:
     image: postgres:14
     profiles:

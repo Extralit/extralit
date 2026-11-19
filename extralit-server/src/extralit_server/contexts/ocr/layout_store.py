@@ -224,6 +224,23 @@ class LayoutStore:
     def load_items(self, document_id: UUID | str, columns=None, where: Optional[str] = None) -> pa.Table:
         return self._read(ITEMS_DATASET, document_id, columns=columns, where=where)
 
+    def source_hashes(self, name: str, document_id: Optional[UUID | str] = None) -> dict[str, set[Optional[str]]]:
+        """Document id -> the `source_hash` values its rows in `name` carry; one document when given."""
+        dataset = self.open(name)
+        hashes: dict[str, set[Optional[str]]] = {}
+        if dataset is None:
+            return hashes
+        condition = _document_filter(document_id) if document_id is not None else None
+        if "source_hash" not in dataset.schema.names:
+            table = dataset.to_table(columns=["document_id"], filter=condition)
+            return {d: {None} for d in set(table.column("document_id").to_pylist())}
+        table = dataset.to_table(columns=["document_id", "source_hash"], filter=condition)
+        for document_id, source_hash in zip(
+            table.column("document_id").to_pylist(), table.column("source_hash").to_pylist(), strict=True
+        ):
+            hashes.setdefault(document_id, set()).add(source_hash)
+        return hashes
+
     def source(self, name: str) -> Any:
         """The dataset, or an empty table of the right schema when nothing has been written yet."""
         dataset = self.open(name)
