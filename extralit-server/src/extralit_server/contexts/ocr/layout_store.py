@@ -57,6 +57,14 @@ def _document_filter(document_id: UUID | str) -> str:
     return f"document_id = '{UUID(str(document_id))}'"
 
 
+def add_missing_columns(dataset: lance.LanceDataset, schema: pa.Schema) -> lance.LanceDataset:
+    """Give a dataset written before a column existed that column, all null; caller holds the workspace lock."""
+    missing = [field.with_nullable(True) for field in schema if field.name not in dataset.schema.names]
+    if missing:
+        dataset.add_columns(pa.schema(missing))
+    return dataset
+
+
 class LayoutStore:
     """Reader and writer of one workspace's layout datasets.
 
@@ -158,6 +166,8 @@ class LayoutStore:
                 # Another worker created it between the open and the write; join it instead.
                 dataset = lance.dataset(self.uri(name), storage_options=self.storage_options)
 
+        # Before the delete: an append that the old schema rejects would leave the document with no rows.
+        add_missing_columns(dataset, self._schemas[name])
         dataset.delete(_document_filter(document_id))
         if data.num_rows == 0:
             return lance.dataset(self.uri(name), storage_options=self.storage_options).version
@@ -223,6 +233,23 @@ class LayoutStore:
 
     def load_items(self, document_id: UUID | str, columns=None, where: Optional[str] = None) -> pa.Table:
         return self._read(ITEMS_DATASET, document_id, columns=columns, where=where)
+
+    def source_hashes(self, name: str, document_id: Optional[UUID | str] = None) -> dict[str, set[Optional[str]]]:
+        """Document id -> the `source_hash` values its rows in `name` carry; one document when given."""
+        dataset = self.open(name)
+        hashes: dict[str, set[Optional[str]]] = {}
+        if dataset is None:
+            return hashes
+        condition = _document_filter(document_id) if document_id is not None else None
+        if "source_hash" not in dataset.schema.names:
+            table = dataset.to_table(columns=["document_id"], filter=condition)
+            return {d: {None} for d in set(table.column("document_id").to_pylist())}
+        table = dataset.to_table(columns=["document_id", "source_hash"], filter=condition)
+        for document_id, source_hash in zip(
+            table.column("document_id").to_pylist(), table.column("source_hash").to_pylist(), strict=True
+        ):
+            hashes.setdefault(document_id, set()).add(source_hash)
+        return hashes
 
     def source(self, name: str) -> Any:
         """The dataset, or an empty table of the right schema when nothing has been written yet."""

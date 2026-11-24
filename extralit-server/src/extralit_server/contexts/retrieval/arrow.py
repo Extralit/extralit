@@ -25,6 +25,7 @@ CHUNK_SCHEMA = pa.schema(
         ("page_start", pa.int32()),
         ("page_end", pa.int32()),
         ("chunker_fingerprint", pa.string()),
+        ("source_hash", pa.string()),
     ]
 )
 

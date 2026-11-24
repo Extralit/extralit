@@ -151,6 +151,7 @@ constraint-dependencies = [
 extralit = "extralit.cli.app:app"
 
 [tool.pytest.ini_options]
+addopts = "--tb=short -q -p no:warnings"
 testpaths = ["tests"]
 env = ["HF_HUB_DISABLE_TELEMETRY=1"]
 markers = [

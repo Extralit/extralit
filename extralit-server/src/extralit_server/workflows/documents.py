@@ -10,6 +10,7 @@ from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.document_jobs import analysis_and_preprocess_job
 from extralit_server.jobs.ocr_jobs import async_document_layout_job
 from extralit_server.jobs.queues import DEFAULT_QUEUE, OCR_QUEUE, REDIS_CONNECTION
+from extralit_server.jobs.retrieval_jobs import async_document_chunk_job
 from extralit_server.models.database import DocumentWorkflow
 
 _LOGGER = logging.getLogger(__name__)
@@ -114,7 +115,21 @@ async def create_document_workflow(
         result_ttl=JOB_RESULT_TTL,
         meta=meta("document_layout"),
     )
-    group.enqueue_many(queue=OCR_QUEUE, job_datas=[layout_job_data])
+    layout_jobs = group.enqueue_many(queue=OCR_QUEUE, job_datas=[layout_job_data])
+
+    # allow_failure: a DEFERRED job behind a failed layout would hang `wait`; it fails on a missing 1.docling.json or is a no-op on the old one.
+    # The chunk job enqueues the embed job itself when a model is configured, and is retried if that enqueue fails.
+    chunk_job_data = OCR_QUEUE.prepare_data(
+        async_document_chunk_job,
+        (document_id, workspace_name, str(workflow.id)),
+        timeout=1800,
+        job_id=f"document_chunks_{document_id}_{run_suffix}",
+        depends_on=Dependency(jobs=[layout_jobs[0]], allow_failure=True) if layout_jobs else None,
+        retry=Retry(max=2, interval=[30, 60]),
+        result_ttl=JOB_RESULT_TTL,
+        meta=meta("document_chunks"),
+    )
+    group.enqueue_many(queue=OCR_QUEUE, job_datas=[chunk_job_data])
 
     # Step 6: Future table extraction job (conditional based on analysis results)
     # This will be added when table extraction is implemented

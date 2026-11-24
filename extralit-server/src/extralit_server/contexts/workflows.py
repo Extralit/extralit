@@ -2,12 +2,13 @@
 
 import logging
 from typing import Any, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
+from rq import Queue, Retry
 from rq.command import send_stop_job_command
 from rq.exceptions import NoSuchJobError
 from rq.group import Group
-from rq.job import Job, JobStatus
+from rq.job import Dependency, Job, JobStatus
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -602,13 +603,32 @@ async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWo
 
         failed_jobs = [job for job in jobs if job.is_failed]
         restarted_jobs = []
+        # Old job id -> the id that now re-runs it; a job downstream of a re-run re-runs after it.
+        rerun: dict[str, str] = {}
 
-        for job in failed_jobs:
+        for job in _in_dependency_order(jobs):
+            upstream = [rerun[d] for d in job.dependency_ids if d in rerun]
             try:
-                # Requeue the failed job
-                job.requeue()
-                restarted_jobs.append(job.id)
-                _LOGGER.info(f"Restarted failed job {job.id} in workflow {workflow.id}")
+                if upstream:
+                    # Requeueing a finished dependent is impossible and a failed one would not wait.
+                    rerun[job.id] = _rerun_after(group, job, upstream)
+                    try:
+                        status = job.get_status(refresh=True)
+                        if status == JobStatus.STARTED:
+                            send_stop_job_command(connection=REDIS_CONNECTION, job_id=job.id)
+                        elif status in (JobStatus.QUEUED, JobStatus.DEFERRED, JobStatus.SCHEDULED):
+                            job.cancel()
+                    except Exception as e:
+                        _LOGGER.warning(f"Could not stop superseded job {job.id}: {e}")
+                    # Status and the next restart read every job in the group, so the superseded one leaves it.
+                    group.delete_job(job.id)
+                elif job.is_failed:
+                    job.requeue()
+                    rerun[job.id] = job.id
+                else:
+                    continue
+                restarted_jobs.append(rerun[job.id])
+                _LOGGER.info(f"Restarted job {job.id} in workflow {workflow.id} as {rerun[job.id]}")
             except Exception as e:
                 # Log individual job restart failures but continue
                 _LOGGER.warning(f"Failed to restart job {job.id}: {e}")
@@ -625,6 +645,43 @@ async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWo
     except Exception as e:
         _LOGGER.error(f"Error restarting failed jobs in workflow {workflow.id}: {e}")
         return {"success": False, "error": str(e), "restarted_jobs": [], "total_failed": 0}
+
+
+def _in_dependency_order(jobs: list[Job]) -> list[Job]:
+    """Upstream jobs first; dependencies outside the group are ignored."""
+    by_id = {job.id: job for job in jobs}
+    ordered: list[Job] = []
+    seen: set[str] = set()
+
+    def visit(job: Job) -> None:
+        if job.id in seen:
+            return
+        seen.add(job.id)
+        for dependency_id in job.dependency_ids:
+            if dependency_id in by_id:
+                visit(by_id[dependency_id])
+        ordered.append(job)
+
+    for job in jobs:
+        visit(job)
+    return ordered
+
+
+def _rerun_after(group: Group, job: Job, upstream: list[str]) -> str:
+    """Enqueue a copy of `job` in `group` that waits for the `upstream` re-runs."""
+    queue = Queue(job.origin, connection=REDIS_CONNECTION)
+    data = queue.prepare_data(
+        job.func_name,
+        job.args,
+        job.kwargs,
+        timeout=job.timeout,
+        job_id=f"{job.id.split('__rerun_')[0]}__rerun_{uuid4().hex[:8]}",
+        depends_on=Dependency(jobs=upstream, allow_failure=True),
+        retry=Retry(max=2, interval=[30, 60]),
+        result_ttl=job.result_ttl,
+        meta=dict(job.meta or {}),
+    )
+    return group.enqueue_many(queue=queue, job_datas=[data])[0].id
 
 
 async def restart_failed_workflow(db: AsyncSession, document_id: UUID, partial_restart: bool = True) -> dict[str, Any]:

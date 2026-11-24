@@ -7,6 +7,7 @@ one scan. Both live in S3 rather than `documents.metadata_`, which every documen
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 from typing import Any, Optional
@@ -21,6 +22,11 @@ from extralit_server.contexts.ocr.arrow import items_table
 from extralit_server.contexts.ocr.layout_store import LayoutStore
 
 _LOGGER = logging.getLogger("extralit_server.contexts.ocr.storage")
+
+
+def layout_hash(raw: bytes) -> str:
+    """Stamp carried by every item and chunk row built from this exact `1.docling.json`."""
+    return hashlib.sha256(raw).hexdigest()
 
 
 def layout_object_path(document_id: UUID | str, index: int = 1) -> str:
@@ -44,16 +50,18 @@ async def store_layout(
     layout_url = layout_object_path(document_id)
     store = store or LayoutStore.for_workspace(workspace_name)
 
+    raw = json.dumps(doc.export_to_dict(), ensure_ascii=False).encode("utf-8")
+    source_hash = layout_hash(raw)
     await files.put_object(
         storage,
         workspace_name,
         layout_url,
-        json.dumps(doc.export_to_dict(), ensure_ascii=False),
+        raw,
         content_type="application/json",
         metadata={"docling_version": doc.version, "document_id": document_id},
     )
 
-    items = items_table(doc, document_id)
+    items = items_table(doc, document_id, source_hash)
     async with store.locked():
         versions = await to_thread.run_sync(store.replace_document, document_id, items)
         await to_thread.run_sync(store.maybe_compact)
@@ -61,6 +69,7 @@ async def store_layout(
     return {
         "layout_url": layout_url,
         "items_uri": store.items_uri(),
+        "source_hash": source_hash,
         **versions,
     }
 
@@ -96,5 +105,17 @@ async def load_layout(
     A document written by a newer docling-core fails validation outright — the version validator
     demands an equal major and a minor no higher than the SDK's.
     """
+    doc, _ = await read_layout(storage, workspace_name, document_id, object_path)
+    return doc
+
+
+async def read_layout(
+    storage: ObjectStorage,
+    workspace_name: str,
+    document_id: UUID | str,
+    object_path: Optional[str] = None,
+) -> tuple[DoclingDocument, str]:
+    """`load_layout` plus the hash of the bytes it parsed."""
     key = object_path or layout_object_path(document_id)
-    return DoclingDocument.model_validate_json(await files.read_object(storage, workspace_name, key))
+    raw = await files.read_object(storage, workspace_name, key)
+    return DoclingDocument.model_validate_json(raw), layout_hash(raw)

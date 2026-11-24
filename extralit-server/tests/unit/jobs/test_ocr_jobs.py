@@ -36,9 +36,11 @@ def job_context(tmp_path, monkeypatch):
     )
     service = ParserService({"pymupdf": StubParser(), "liteparse": StubParser()}, triage=lambda _: triage)
     layouts = []
+    documents = []
 
     async def store_layout(s3_client, workspace_name, document_id, document, store=None):
         calls.append(("store_layout", store._lock_depth))
+        documents.append(document)
         return {"layout_url": "documents/x/1.docling.json", "items_uri": "items"}
 
     async def update_metadata(db, document_id, mutate):
@@ -49,6 +51,7 @@ def job_context(tmp_path, monkeypatch):
         return None
 
     db = MagicMock()
+    db.scalar = AsyncMock(return_value="paper.pdf")
 
     with (
         patch(f"{MODULE}.files.get_storage", AsyncMock(return_value=AsyncMock())),
@@ -69,6 +72,7 @@ def job_context(tmp_path, monkeypatch):
             "store": store,
             "skip": skip,
             "layouts": layouts,
+            "documents": documents,
             "read_object": read_object,
             "list_files": list_files,
         }
@@ -137,6 +141,13 @@ class TestLayoutJobOrdering:
         result = await run_job()
 
         assert result["pages_needing_ocr"] == [2]
+
+
+class TestOriginFilename:
+    async def test_the_origin_is_the_uploaded_name_not_ocr_pdf(self, job_context):
+        await run_job()
+
+        assert job_context["documents"][0].origin.filename == "paper.pdf"
 
 
 class TestExecutedPlanMetadata:
