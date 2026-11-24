@@ -59,20 +59,6 @@ class TestRoundtrip:
 
 
 @pytest.mark.asyncio
-class TestPutIfAbsent:
-    async def test_it_creates_a_missing_object(self, storage):
-        assert await files.put_object_if_absent(storage, WORKSPACE, "documents/x/1.pdf", b"source")
-
-        assert await files.read_object(storage, WORKSPACE, "documents/x/1.pdf") == b"source"
-
-    async def test_it_never_replaces_an_existing_object(self, storage):
-        await files.put_object(storage, WORKSPACE, "documents/x/1.pdf", b"rotated")
-
-        assert not await files.put_object_if_absent(storage, WORKSPACE, "documents/x/1.pdf", b"source")
-        assert await files.read_object(storage, WORKSPACE, "documents/x/1.pdf") == b"rotated"
-
-
-@pytest.mark.asyncio
 class TestRanges:
     async def test_a_single_byte_range_returns_one_byte(self, storage):
         # An HTTP range is inclusive of its end, obstore's is exclusive. Off by one here

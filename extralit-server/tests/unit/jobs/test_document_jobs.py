@@ -285,6 +285,19 @@ class TestUrlOnlyDocuments:
         assert keys[0] == f"{PREFIX}/1_orig.pdf" and keys[-1] == f"{PREFIX}/1.pdf"
         assert files.read_object.await_args_list[1].args[2] == f"{PREFIX}/1_orig.pdf"
 
+    async def test_a_proxy_url_into_another_workspace_is_never_read(self, job_context):
+        from extralit_server.contexts import files as real_files
+
+        files = job_context["files"]
+        files.list_document_files.return_value = {}
+        files.split_document_url = real_files.split_document_url
+
+        with pytest.raises(FileNotFoundError, match="is not an object in workspace"):
+            await analysis_and_preprocess_job(DOCUMENT_ID, "/api/v1/file/private-ws/secret.pdf", "ref", WORKSPACE)
+
+        files.read_object.assert_not_awaited()
+        assert job_context["written"] == []
+
     async def test_an_external_url_without_an_upload_fails_clearly(self, job_context):
         from extralit_server.contexts import files as real_files
 
@@ -292,7 +305,7 @@ class TestUrlOnlyDocuments:
         files.list_document_files.return_value = {}
         files.split_document_url = real_files.split_document_url
 
-        with pytest.raises(FileNotFoundError, match="not an object in this server's storage"):
+        with pytest.raises(FileNotFoundError, match="is not an object in workspace"):
             await analysis_and_preprocess_job(DOCUMENT_ID, "https://example.org/a.pdf", "ref", WORKSPACE)
 
 

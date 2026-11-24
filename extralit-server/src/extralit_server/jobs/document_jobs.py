@@ -180,8 +180,9 @@ async def _original_pdf_key(
             url_workspace, url_key = files.split_document_url(s3_url)
         except ValueError:
             url_workspace = url_key = None
-        if url_key is not None:
-            data = await files.read_object(storage, url_workspace, url_key)
+        # Only the document's own workspace: anything else would let a member copy another workspace's objects.
+        if url_key is not None and url_workspace == workspace_name:
+            data = await files.read_object(storage, workspace_name, url_key)
             extension, content_type = files.sniff_file_type(data, url_key.rsplit("/", 1)[-1])
             key = files.get_original_s3_object_path(document_id, extension)
             await files.put_object(storage, workspace_name, key, data, content_type=content_type)
@@ -189,7 +190,7 @@ async def _original_pdf_key(
     if first is None:
         raise FileNotFoundError(
             f"Document {document_id} has no uploaded file 1 under {files.document_prefix(document_id)}"
-            f" and its URL {s3_url!r} is not an object in this server's storage"
+            f" and its URL {s3_url!r} is not an object in workspace {workspace_name!r}"
         )
     if not first.is_pdf:
         raise ValueError(f"Document {document_id} file 1 is a .{first.extension} upload; only PDFs are processed")
