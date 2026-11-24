@@ -612,6 +612,10 @@ async def restart_failed_jobs_in_workflow(db: AsyncSession, workflow: DocumentWo
                 if upstream:
                     # Requeueing a finished dependent is impossible and a failed one would not wait.
                     rerun[job.id] = _rerun_after(group, job, upstream)
+                    if job.get_status(refresh=True) in ("queued", "deferred", "scheduled"):
+                        job.cancel()
+                    # Status and the next restart read every job in the group, so the superseded one leaves it.
+                    group.delete_job(job.id)
                 elif job.is_failed:
                     job.requeue()
                     rerun[job.id] = job.id

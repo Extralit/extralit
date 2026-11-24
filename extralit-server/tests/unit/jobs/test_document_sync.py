@@ -336,7 +336,11 @@ class TestDelete:
 
 class TestRestart:
     def test_restarting_a_failed_layout_reruns_the_chunk_job_that_already_ran_on_the_old_layout(self, env):
-        from extralit_server.contexts.workflows import restart_failed_jobs_in_workflow
+        from extralit_server.contexts.workflows import (
+            get_workflow_status_from_group,
+            is_workflow_resumable,
+            restart_failed_jobs_in_workflow,
+        )
 
         document_id = uuid4()
         asyncio.run(store_layout(ObjectStorage(), WORKSPACE, document_id, rebuilt(["old text"])))
@@ -361,6 +365,12 @@ class TestRestart:
         assert store.layout.source_hashes(ITEMS_DATASET)[str(document_id)] == expected
         assert store.layout.source_hashes("chunks")[str(document_id)] == expected
         assert "old text" not in store.open().to_table(columns=["text"]).column(0).to_pylist()
+        assert get_workflow_status_from_group(group.name)["failed_jobs"] == 0
+        assert not is_workflow_resumable(group.name)
+        assert sorted(job.meta["workflow_step"] for job in group.get_jobs()) == sorted(steps)
+        with patch("extralit_server.contexts.workflows.update_workflow_status", AsyncMock()):
+            again = asyncio.run(restart_failed_jobs_in_workflow(MagicMock(), workflow))
+        assert again["restarted_jobs"] == []
 
 
 class TestColumnsAddedLater:
