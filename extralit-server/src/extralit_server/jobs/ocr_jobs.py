@@ -42,7 +42,7 @@ async def async_document_layout_job(
 
     Args:
         document_id: UUID of the document to process
-        s3_url: proxy URL of the document's PDF; the parsers read `ocr.pdf`, not this
+        s3_url: proxy URL of the document's PDF; the parsers read `1.pdf`, not this
         workspace_name: workspace the artifacts are written to
         parser: force one parser for every page; None routes per page
         pages: 1-indexed page allowlist; None processes every page
@@ -64,7 +64,7 @@ async def async_document_layout_job(
     try:
         # Shared client — do not enter it as a context manager, that would close it for everyone.
         storage = await files.get_storage()
-        # Bboxes must refer to the PDF the viewer shows, which is the preprocessed `ocr.pdf`.
+        # Bboxes must refer to the PDF the viewer shows, which is the preprocessed `1.pdf`.
         ocr_key = files.get_ocr_pdf_s3_object_path(document_id)
         try:
             pdf_bytes = await files.read_object(storage, workspace_name, ocr_key)
@@ -80,7 +80,7 @@ async def async_document_layout_job(
         parser_name = "+".join(sorted(plan.pages_by_parser)) or (parser or "")
         _LOGGER.info(f"Extracting layout for document {document_id} with parser {parser_name}")
 
-        # The uploaded name, not the object key's basename (`ocr.pdf`).
+        # The uploaded name, not the object key's basename (`1.pdf`).
         async with AsyncSessionLocal() as db:
             filename = await db.scalar(select(Document.file_name).where(Document.id == document_id))
         doc = await asyncio.to_thread(

@@ -161,6 +161,25 @@ class TestIsContained:
 
         assert not is_contained(block, block.bbox, [table], ctx)
 
+    def test_a_value_repeated_in_unboxed_cells_of_other_rows_still_matches(self, ctx):
+        cells = [make_cell("Yes", row=r, col=0) for r in range(4)] + [make_cell("5", row=0, col=1)]
+        table = LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300, left=0, right=500), cells=cells)
+        block = _text(bbox(t=150, b=170, left=10, right=200), "Yes 5")
+
+        assert is_contained(block, block.bbox, [table], ctx)
+
+    def test_a_wordless_symbol_the_table_does_not_carry_is_kept(self, ctx):
+        table = _table(bbox(t=100, b=300, left=0, right=500), "cell")
+        block = _text(bbox(t=150, b=170, left=10, right=200), "≤")
+
+        assert not is_contained(block, block.bbox, [table], ctx)
+
+    def test_a_wordless_symbol_the_table_carries_is_contained(self, ctx):
+        table = _table(bbox(t=100, b=300, left=0, right=500), "≤")
+        block = _text(bbox(t=150, b=170, left=10, right=200), "≤")
+
+        assert is_contained(block, block.bbox, [table], ctx)
+
     def test_a_table_without_cells_absorbs_no_text(self, ctx):
         table = LayoutBlock(label=DocItemLabel.TABLE, bbox=bbox(t=100, b=300, left=0, right=500))
         block = _text(bbox(t=150, b=170, left=10, right=200), "real prose")

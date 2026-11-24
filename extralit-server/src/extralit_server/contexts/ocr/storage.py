@@ -1,6 +1,6 @@
 """Object-storage layout for extracted document layout.
 
-Canonical JSON (`documents/{id}/docling.json`) is the source of truth, page sizes included; the
+Canonical JSON (`documents/{id}/{i}.docling.json`) is the source of truth, page sizes included; the
 item rows live in the workspace's Lance datasets (see `layout_store`) so a corpus-wide question is
 one scan. Both live in S3 rather than `documents.metadata_`, which every document listing returns.
 """
@@ -25,13 +25,13 @@ _LOGGER = logging.getLogger("extralit_server.contexts.ocr.storage")
 
 
 def layout_hash(raw: bytes) -> str:
-    """Stamp carried by every item and chunk row built from this exact `docling.json`."""
+    """Stamp carried by every item and chunk row built from this exact `1.docling.json`."""
     return hashlib.sha256(raw).hexdigest()
 
 
-def layout_object_path(document_id: UUID | str) -> str:
-    """Key of the document's canonical `DoclingDocument` JSON."""
-    return files.get_docling_json_s3_object_path(document_id)
+def layout_object_path(document_id: UUID | str, index: int = 1) -> str:
+    """Key of the canonical `DoclingDocument` JSON parsed from file `index` of the document."""
+    return files.get_docling_json_s3_object_path(document_id, index)
 
 
 async def store_layout(

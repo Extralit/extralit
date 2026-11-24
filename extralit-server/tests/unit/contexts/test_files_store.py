@@ -59,6 +59,20 @@ class TestRoundtrip:
 
 
 @pytest.mark.asyncio
+class TestPutIfAbsent:
+    async def test_it_creates_a_missing_object(self, storage):
+        assert await files.put_object_if_absent(storage, WORKSPACE, "documents/x/1.pdf", b"source")
+
+        assert await files.read_object(storage, WORKSPACE, "documents/x/1.pdf") == b"source"
+
+    async def test_it_never_replaces_an_existing_object(self, storage):
+        await files.put_object(storage, WORKSPACE, "documents/x/1.pdf", b"rotated")
+
+        assert not await files.put_object_if_absent(storage, WORKSPACE, "documents/x/1.pdf", b"source")
+        assert await files.read_object(storage, WORKSPACE, "documents/x/1.pdf") == b"rotated"
+
+
+@pytest.mark.asyncio
 class TestRanges:
     async def test_a_single_byte_range_returns_one_byte(self, storage):
         # An HTTP range is inclusive of its end, obstore's is exclusive. Off by one here
@@ -140,7 +154,7 @@ class TestContentType:
 
     async def test_document_pdfs_are_served_as_pdf_without_stored_attributes(self, storage):
         # LocalStore cannot persist attributes, so the `.pdf` extension is all that types the key.
-        for key in (files.get_pdf_s3_object_path(DOC_ID), files.get_ocr_pdf_s3_object_path(DOC_ID)):
+        for key in (files.get_original_s3_object_path(DOC_ID, "pdf"), files.get_ocr_pdf_s3_object_path(DOC_ID)):
             await files.put_object(storage, WORKSPACE, key, b"%PDF-1.4", content_type="application/pdf")
 
             file = await files.get_object(storage, WORKSPACE, key)
@@ -188,7 +202,7 @@ class TestPutDocumentFile:
 
         assert url is not None
         assert url.startswith(f"/api/v1/file/{WORKSPACE}/documents/")
-        assert url.endswith("/source.pdf")
+        assert url.endswith("/1_orig.pdf")
 
 
 @pytest.mark.asyncio
@@ -211,13 +225,45 @@ class TestWorkspacePrefix:
 @pytest.mark.asyncio
 class TestPrefixDelete:
     async def test_only_keys_under_the_prefix_are_deleted(self, storage):
-        for key in ("documents/a/source.pdf", "documents/a/ocr.pdf", "documents/ab/source.pdf"):
+        for key in ("documents/a/1_orig.pdf", "documents/a/1.pdf", "documents/ab/1_orig.pdf"):
             await files.put_object(storage, WORKSPACE, key, b"x")
 
         await files.delete_object_prefix(storage, WORKSPACE, "documents/a/")
 
         remaining = [o.object_name for o in (await files.list_objects(storage, WORKSPACE)).objects]
-        assert remaining == ["documents/ab/source.pdf"]
+        assert remaining == ["documents/ab/1_orig.pdf"]
 
     async def test_a_missing_prefix_is_a_no_op(self, storage):
         await files.delete_object_prefix(storage, WORKSPACE, "documents/missing/")
+
+
+class TestHeaderSafeMetadata:
+    @pytest.mark.parametrize("value", ["Smith 2020.pdf", "a-b_c (1).pdf"])
+    def test_printable_ascii_is_kept(self, value):
+        assert files.header_safe(value) == value
+
+    @pytest.mark.parametrize("value", ["Müller \u2013 2020.pdf", "100%.pdf", "two\nlines", "论文.pdf"])
+    def test_anything_else_is_percent_encoded_and_round_trips(self, value):
+        from urllib.parse import unquote
+
+        encoded = files.header_safe(value)
+
+        assert all(32 <= ord(c) < 127 for c in encoded)
+        assert unquote(encoded) == value
+
+    @pytest.mark.asyncio
+    async def test_s3_puts_send_only_ascii_metadata(self):
+        from unittest.mock import AsyncMock, MagicMock
+
+        store = MagicMock()
+        store.put_async = AsyncMock(return_value={"e_tag": "x"})
+        storage = MagicMock()
+        storage.for_workspace.return_value = store
+
+        await files.put_object(
+            storage, WORKSPACE, "k.pdf", b"x", "application/pdf", {"original_filename": "Müller.pdf"}
+        )
+
+        attributes = store.put_async.await_args.kwargs["attributes"]
+        assert attributes["original_filename"] == "M%C3%BCller.pdf"
+        assert attributes["Content-Type"] == "application/pdf"

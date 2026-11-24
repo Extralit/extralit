@@ -84,8 +84,8 @@ async def create_document_workflow(
 
     analysis_jobs = group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
 
-    # Preprocessing writes `ocr.pdf`, which every parser reads, so dependents wait on it.
-    # allow_failure: otherwise a failed analysis strands them in DEFERRED; they then fail on the missing `ocr.pdf`.
+    # Preprocessing writes `1.pdf`, which every parser reads, so dependents wait on it.
+    # allow_failure: a failed analysis publishes `1_orig.pdf` as `1.pdf` (see `_publish_source_as_ocr_pdf`), so dependents still run.
     ocr_url = files.get_proxy_document_url(workspace_name, files.get_ocr_pdf_s3_object_path(document_id))
     on_analysis = Dependency(jobs=[analysis_jobs[0]], allow_failure=True) if analysis_jobs else None
 
@@ -117,7 +117,7 @@ async def create_document_workflow(
     )
     layout_jobs = group.enqueue_many(queue=OCR_QUEUE, job_datas=[layout_job_data])
 
-    # allow_failure: a DEFERRED job behind a failed layout would hang `wait`; it fails on a missing docling.json or is a no-op on the old one.
+    # allow_failure: a DEFERRED job behind a failed layout would hang `wait`; it fails on a missing 1.docling.json or is a no-op on the old one.
     # The chunk job enqueues the embed job itself when a model is configured, and is retried if that enqueue fails.
     chunk_job_data = OCR_QUEUE.prepare_data(
         async_document_chunk_job,

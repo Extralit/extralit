@@ -1,4 +1,4 @@
-"""docling.json -> items -> chunks sync: real RQ queue and worker on Redis, local `file://` storage, no database."""
+"""1.docling.json -> items -> chunks sync: real RQ queue and worker on Redis, local `file://` storage, no database."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from uuid import uuid4
 
 import pytest
 from docling_core.types.doc import BoundingBox, CoordOrigin, DocItemLabel, RefItem, Size
-from rq import SimpleWorker
+from rq import Retry, SimpleWorker
 from rq.job import Job
 
 from extralit_server.api.schemas.v1.document.metadata import TriageMetadata
@@ -47,7 +47,7 @@ class BlockParser:
 
 
 def noop_analysis(*args, **kwargs):
-    """Stands in for the analysis job: `ocr.pdf` is put in storage by the test."""
+    """Stands in for the analysis job: `1.pdf` is put in storage by the test."""
     return None
 
 
@@ -116,7 +116,11 @@ def upload_ocr_pdf(document_id) -> None:
 def start_workflow(document_id):
     return asyncio.run(
         create_document_workflow(
-            document_id, f"/api/v1/file/{WORKSPACE}/documents/{document_id}/source.pdf", "Ref2020", WORKSPACE, uuid4()
+            document_id,
+            f"/api/v1/file/{WORKSPACE}/{files.get_original_s3_object_path(document_id, 'pdf')}",
+            "Ref2020",
+            WORKSPACE,
+            uuid4(),
         )
     )
 
@@ -169,7 +173,7 @@ class TestEnqueueChain:
 
     def test_a_failed_layout_fails_the_chunk_job_visibly_and_writes_nothing(self, env):
         document_id = uuid4()
-        group = start_workflow(document_id)  # no ocr.pdf: the layout job fails
+        group = start_workflow(document_id)  # no 1.pdf: the layout job fails
 
         run_workers()
 
@@ -177,6 +181,38 @@ class TestEnqueueChain:
         assert steps["document_layout"].get_status(refresh=True) != "finished"
         assert steps["document_chunks"].get_status(refresh=True) != "finished"
         assert ChunkStore.for_workspace(WORKSPACE).open() is None
+
+
+class TestNonPdfUpload:
+    def test_the_chunk_job_ends_cleanly_without_retries_and_writes_nothing(self, env):
+        from extralit_server.jobs.retrieval_jobs import async_document_chunk_job
+
+        document_id = uuid4()
+        asyncio.run(
+            files.put_object(
+                ObjectStorage(), WORKSPACE, files.get_original_s3_object_path(document_id, "docx"), b"PK", "x/y"
+            )
+        )
+
+        job = OCR_QUEUE.enqueue(async_document_chunk_job, document_id, WORKSPACE, retry=Retry(max=2, interval=[1, 1]))
+        run_workers()
+
+        assert job.get_status(refresh=True) == "finished"
+        assert "only PDFs are processed" in job.return_value()["skipped"]
+        assert ChunkStore.for_workspace(WORKSPACE).open() is None
+
+    def test_a_pdf_without_docling_json_still_fails_the_chunk_job(self, env):
+        from extralit_server.jobs.retrieval_jobs import async_document_chunk_job
+
+        document_id = uuid4()
+        asyncio.run(
+            files.put_object(
+                ObjectStorage(), WORKSPACE, files.get_original_s3_object_path(document_id, "pdf"), b"%PDF", "x/y"
+            )
+        )
+
+        with pytest.raises(Exception):
+            asyncio.run(async_document_chunk_job(document_id, WORKSPACE))
 
 
 class TestFailuresAreNotSwallowed:
@@ -206,7 +242,7 @@ class TestFailuresAreNotSwallowed:
         document_id = uuid4()
         asyncio.run(store_layout(ObjectStorage(), WORKSPACE, document_id, rebuilt(["alpha", "beta"])))
         store = ChunkStore.for_workspace(WORKSPACE)
-        # Crash between the layout job's two writes: docling.json is newer than the rows.
+        # Crash between the layout job's two writes: 1.docling.json is newer than the rows.
         store.layout.replace_document(document_id, items_table(rebuilt(["old"]), str(document_id), "stale"))
 
         asyncio.run(async_document_chunk_job(document_id, WORKSPACE))
@@ -278,7 +314,13 @@ class TestDelete:
             doc = rebuilt(texts)
             asyncio.run(store_layout(storage, WORKSPACE, document_id, doc))
             asyncio.run(
-                files.put_object(storage, WORKSPACE, f"documents/{document_id}/source.pdf", b"%PDF", "application/pdf")
+                files.put_object(
+                    storage,
+                    WORKSPACE,
+                    files.get_original_s3_object_path(document_id, "pdf"),
+                    b"%PDF",
+                    "application/pdf",
+                )
             )
             store.replace_chunks(document_id, chunk_document(doc, document_id, "Ref", layout_hash(b"x")))
 

@@ -7,15 +7,15 @@ Code lives in `extralit-server/src/extralit_server/contexts/retrieval/` and
 ## Storage layout
 
 ```
-documents/{id}/source.pdf      upload
-documents/{id}/ocr.pdf         analysis job; every parser reads this
-documents/{id}/docling.json    layout job; the source of truth
+documents/{id}/1_orig.{ext}   upload, as sent (only PDFs are processed)
+documents/{id}/1.pdf          analysis job (ocrmypdf output); every parser reads this
+documents/{id}/1.docling.json  layout job; the source of truth
 documents/{id}/thumbnail.png
-layout/items.lance             one row per (item, provenance), workspace-wide
-layout/chunks.lance            one row per chunk, one nullable vector__{slug} column per model
+layout/items.lance           one row per (item, provenance), workspace-wide
+layout/chunks.lance          one row per chunk, one nullable vector__{slug} column per model
 ```
 
-Only `docling.json` is authoritative: `items` and `chunks` are derived from it and rebuilt from it.
+Files are numbered `1..n`; only file 1 is used today. Only `1.docling.json` is authoritative: `items` and `chunks` are derived from it and rebuilt from it.
 
 ## Sync chain
 
@@ -23,10 +23,10 @@ Only `docling.json` is authoritative: `items` and `chunks` are derived from it a
 in one go, linked by RQ job dependencies in one RQ `Group`:
 
 ```
-analysis_and_preprocess_job (default)         writes ocr.pdf
+analysis_and_preprocess_job (default)         writes 1.pdf
         │ depends_on, allow_failure
         ▼
-async_document_layout_job (ocr)               writes docling.json, then items
+async_document_layout_job (ocr)               writes 1.docling.json, then items
         │ depends_on, allow_failure
         ▼
 async_document_chunk_job (ocr)                writes chunks
@@ -40,9 +40,10 @@ POST /api/v1/workspaces/{name}/search
 
 | Failure | Result |
 |---|---|
-| Analysis fails | RQ retries it (3 times). Layout still runs and fails on the missing `ocr.pdf` with a message naming the analysis job |
-| Layout fails | RQ retries it (2 times). The chunk job then runs anyway: it fails on a missing `docling.json`, or re-chunks the unchanged old one. Items and chunks never end up half-new |
-| Layout succeeds but its worker dies between the `docling.json` and `items` writes | The chunk job sees items whose hash differs from `docling.json` and rewrites items and chunks together |
+| Analysis fails | RQ retries it (3 times). Layout still runs and fails on the missing `1.pdf` with a message naming the analysis job |
+| Non-PDF upload | Analysis fails with "only PDFs are processed" and writes no `1.pdf` or `1.docling.json`. Layout fails on the missing `1.pdf`. The chunk job sees file 1 is not a PDF and finishes with `skipped`, without retrying. Backfill ignores it |
+| Layout fails | RQ retries it (2 times). The chunk job then runs anyway: it fails on a missing `1.docling.json`, or re-chunks the unchanged old one. Items and chunks never end up half-new |
+| Layout succeeds but its worker dies between the `1.docling.json` and `items` writes | The chunk job sees items whose hash differs from `1.docling.json` and rewrites items and chunks together |
 | Chunk job fails, or its embed enqueue raises | The job fails and RQ retries it (2 times); replacing chunks is idempotent. `retrieval backfill` finds what is still stale afterwards |
 | Embed job fails | RQ retries it; rows stay `NULL` and search skips them. `retrieval backfill` re-enqueues |
 
@@ -51,10 +52,9 @@ depends on it.
 
 ## Drift detection
 
-`source_hash` is the sha256 of the exact `docling.json` bytes. The layout job stamps it on every
+`source_hash` is the sha256 of the exact `1.docling.json` bytes. The layout job stamps it on every
 `items` row; the chunk job stamps the same value on every `chunks` row, from the file it just read.
-The layout API and search never check it. `python -m extralit_server retrieval backfill` reads each
-document's `docling.json`, compares its hash and `chunker_fingerprint` with the chunks, and
+The layout API and search never check it. `python -m extralit_server retrieval backfill` lists each document's files (`files.list_document_files`) and reads its `1.docling.json`, compares its hash and `chunker_fingerprint` with the chunks, and
 enqueues a chunk job for each mismatch. A second run enqueues nothing. Datasets written before the
 column existed read as all-stale; there is no deployment to migrate.
 
@@ -62,7 +62,7 @@ column existed read as all-stale; there is no deployment to migrate.
   chunk is split; the embedder truncates (`EmbeddingSettings(truncate=True)`).
 - `chunk_id = xxh64(document_id, text, n)`, so re-chunking keeps the ids, and the vectors, of
   unchanged chunks. `item_refs` are positional (`#/texts/41`); a re-parse updates them in place
-  through `merge_insert`, so they always resolve against the current `docling.json`.
+  through `merge_insert`, so they always resolve against the current `1.docling.json`.
 - Chunks live in the workspace layout root next to `items`, under the same Redis lock.
 - Deleting a document removes `documents/{id}/`, its items and its chunks (and their vectors).
 - `chunks.type` is `text`, `table` or `figure`. It is a plain string; search filters and the API use

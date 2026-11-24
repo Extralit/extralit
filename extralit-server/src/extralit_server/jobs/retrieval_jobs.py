@@ -36,13 +36,19 @@ _LOGGER = logging.getLogger(__name__)
 async def async_document_chunk_job(
     document_id: UUID, workspace_name: str, workflow_id: Optional[str] = None
 ) -> dict[str, Any]:
-    """Chunk the stored `docling.json` and replace the document's chunks, restoring its items if they lag it."""
+    """Chunk the stored `1.docling.json` and replace the document's chunks, restoring its items if they lag it."""
     document_id = UUID(str(document_id))
     current_job = get_current_job()
     if workflow_id is None and current_job is not None:
         workflow_id = (current_job.meta or {}).get("workflow_id")
 
     storage = await files.get_storage()
+    first = (await files.list_document_files(storage, workspace_name, document_id)).get(1)
+    if first is not None and not first.is_pdf:
+        # Terminal, not an error: there is no 1.docling.json to wait for, so a retry cannot help.
+        reason = f"file 1 is a .{first.extension} upload; only PDFs are processed"
+        _LOGGER.info(f"Document {document_id} has no chunks: {reason}")
+        return {"document_id": str(document_id), "skipped": reason}
     doc, source_hash = await layout_storage.read_layout(storage, workspace_name, document_id)
 
     async with AsyncSessionLocal() as db:
@@ -65,7 +71,7 @@ async def async_document_chunk_job(
         if store.layout.source_hashes(ITEMS_DATASET, document_id).get(str(document_id)) == {source_hash}:
             await to_thread.run_sync(store.replace_chunks, document_id, table)
         else:
-            # A crash between the layout job's two writes leaves items behind docling.json; heal both together.
+            # A crash between the layout job's two writes leaves items behind 1.docling.json; heal both together.
             items = items_table(doc, str(document_id), source_hash)
             await to_thread.run_sync(store.layout.replace_document, document_id, items, {CHUNKS_DATASET: table})
 

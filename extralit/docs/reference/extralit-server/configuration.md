@@ -80,7 +80,7 @@ The following environment variables are useful only when PostgreSQL is used:
 
 ### Object storage
 
-- `EXTRALIT_STORAGE_URL`: Root of object storage. Every workspace is a directory under it, holding `documents/{document_id}/` (`source.pdf`, `ocr.pdf`, `docling.json`, `thumbnail.png`), the `layout/` Lance datasets and `schemas/` (Default: `file://$EXTRALIT_HOME_PATH/storage`). Accepted forms:
+- `EXTRALIT_STORAGE_URL`: Root of object storage. Every workspace is a directory under it, holding `documents/{document_id}/` (per uploaded file `i`: `{i}_orig.{ext}` as uploaded, and for PDFs the ocrmypdf output `{i}.pdf` and the parsed `{i}.docling.json`; plus one `thumbnail.png`), the `layout/` Lance datasets and `schemas/` (Default: `file://$EXTRALIT_HOME_PATH/storage`). Accepted forms:
     - `file:///path/to/dir` — local disk.
     - `s3://bucket[/prefix]` — AWS S3.
     - `http(s)://host[:port]/bucket[/prefix]` — MinIO, Cloudflare R2 (`https://<ACCOUNT_ID>.r2.cloudflarestorage.com/bucket`) or any S3-compatible endpoint, addressed path-style.
@@ -91,7 +91,7 @@ The following environment variables are useful only when PostgreSQL is used:
 - `EXTRALIT_S3_REGION`: Region for request signing (Default: `us-east-1`; use `auto` for R2).
 
 !!! note "Migrating from bucket-per-workspace"
-    Servers before this setting created one bucket per workspace. Copy each into the new root before switching, e.g. `mc mirror minio/<workspace> minio/<bucket>/<prefix>/<workspace>`; the object keys are unchanged.
+    Servers before this setting created one bucket per workspace. Copy each into the new root before switching, e.g. `mc mirror minio/<workspace> minio/<bucket>/<prefix>/<workspace>`. Mirroring copies the old keys (`pdf/{id}`, `thumbnails/{id}`) as they are; it does not move document artifacts into the current `documents/{id}/` layout, so documents uploaded before that change will not be found under it.
 
     **Local storage moved too.** It used to sit directly under `$EXTRALIT_HOME_PATH/<workspace>/`, alongside `extralit.db` and `lance/`; the default root is now the `storage/` subdirectory. Move each workspace into it — `mkdir -p $EXTRALIT_HOME_PATH/storage && mv $EXTRALIT_HOME_PATH/<workspace> $EXTRALIT_HOME_PATH/storage/` — or keep the old layout by setting `EXTRALIT_STORAGE_URL=file://$EXTRALIT_HOME_PATH`. Nothing is deleted if you skip this, but the server will not find the existing files.
 

@@ -1,4 +1,4 @@
-"""Re-chunk documents whose chunks do not match their `docling.json` or chunker version, then embed what is missing."""
+"""Re-chunk documents whose chunks do not match their `1.docling.json` or chunker version, then embed what is missing."""
 
 from __future__ import annotations
 
@@ -44,18 +44,6 @@ async def backfill(workspace: Optional[str] = None) -> list[WorkspaceBackfill]:
             }
             for workspace_id, _ in workspaces
         }
-        documents = {
-            workspace_id: [
-                document_id
-                for document_id, metadata in (
-                    await db.execute(
-                        select(Document.id, Document.metadata_).where(Document.workspace_id == workspace_id)
-                    )
-                ).all()
-                if ((metadata or {}).get("layout_metadata") or {}).get("layout_url")
-            ]
-            for workspace_id, _ in workspaces
-        }
 
     storage = await files.get_storage()
     reports = []
@@ -69,12 +57,15 @@ async def backfill(workspace: Optional[str] = None) -> list[WorkspaceBackfill]:
                     await to_thread.run_sync(store.layout.delete_document, document_id)
             _LOGGER.info(f"Pruned rows of {len(orphans)} deleted documents from workspace {name}")
         stale = []
-        for document_id in documents[workspace_id]:
+        for document_id in sorted(existing[workspace_id]):
             try:
-                raw = await files.read_object(storage, name, layout_storage.layout_object_path(document_id))
-                source_hash = layout_storage.layout_hash(raw)
+                first = (await files.list_document_files(storage, name, document_id)).get(1)
+                # Not parsed yet, or not a PDF: there is no 1.docling.json to drift from.
+                if first is None or not first.is_pdf or first.docling_json_key is None:
+                    continue
+                source_hash = layout_storage.layout_hash(await files.read_object(storage, name, first.docling_json_key))
             except Exception as error:
-                _LOGGER.warning(f"Skipping document {document_id}: docling.json unreadable: {error}")
+                _LOGGER.warning(f"Skipping document {document_id}: layout JSON unreadable: {error}")
                 continue
             if stamps.get(str(document_id)) != {(source_hash, CHUNKER_FINGERPRINT)}:
                 stale.append(document_id)

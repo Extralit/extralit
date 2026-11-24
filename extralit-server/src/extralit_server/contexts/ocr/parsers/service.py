@@ -9,6 +9,7 @@ from a later task on the same page are slotted in by position (see `merge_blocks
 
 from __future__ import annotations
 
+import logging
 from collections import defaultdict
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
@@ -29,6 +30,8 @@ from extralit_server.contexts.ocr.docling_builder import (
 )
 from extralit_server.contexts.ocr.parsers.pdf_inspector import page_sizes as _page_sizes
 from extralit_server.contexts.ocr.triage import triage_pdf
+
+_LOGGER = logging.getLogger(__name__)
 
 OCR_PARSER = "liteparse"
 DIGITAL_PARSER = "pymupdf"
@@ -158,7 +161,11 @@ class ParserService:
         parser: Optional[str] = None,
     ) -> ParsePlan:
         """Route pages to parsers; `parser` forces one parser for every page (liteparse still OCRs flagged pages)."""
-        triage = self._triage(pdf_bytes)
+        try:
+            triage = self._triage(pdf_bytes)
+        except Exception as error:
+            _LOGGER.warning(f"PDF triage failed, routing every page to the digital parser: {error}")
+            triage = TriageMetadata(pdf_type="unknown")
         page_count = triage.page_count or len(self._page_sizes(pdf_bytes))
         allowed = None if pages is None else set(pages)
         wanted = [p for p in range(1, page_count + 1) if allowed is None or p in allowed]
@@ -197,16 +204,18 @@ class ParserService:
             for page_no, blocks in parsers[task.parser].parse_pages(pdf_bytes, task.pages, ocr=task.ocr).items():
                 height = sizes[page_no].height if page_no in sizes else 0.0
                 if task.bbox is not None:
+                    region = flip_to_top_left(task.bbox, height)
                     blocks = [
                         b
                         for b in blocks
-                        if _top_left_box(b, height).intersection_over_self(task.bbox) >= CONTAINMENT_THRESHOLD
+                        if _top_left_box(b, height).intersection_over_self(region) >= CONTAINMENT_THRESHOLD
                     ]
                 merged[page_no] = merge_blocks(merged.get(page_no, []), blocks, height)
 
+        planned = {page for task in plan.tasks for page in task.pages}
         return build_document(
             merged,
-            page_sizes=sizes,
+            page_sizes={page: size for page, size in sizes.items() if page in planned},
             name=name,
             filename=filename,
             binary_hash=content_hash(pdf_bytes),

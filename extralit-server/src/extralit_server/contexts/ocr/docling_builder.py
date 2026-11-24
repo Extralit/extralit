@@ -146,8 +146,9 @@ def _carries_text(block_words: list[str], container: LayoutBlock, box: BoundingB
             return not block_set.isdisjoint(_tokens(cell.text))
         return box.intersection_over_self(clamp_to_page(flip_to_top_left(cell.bbox, ctx.height), ctx)) > 0
 
-    under = [cell for cell in container.cells or [] if touches(cell)]
-    cell_words = [w for cell in under for w in _tokens(cell.text)]
+    # Each distinct cell text once, so a value repeated in other rows does not inflate the cell side.
+    under = {cell.text.strip(): cell for cell in container.cells or [] if touches(cell)}
+    cell_words = [w for text in under for w in _tokens(text)]
     if not cell_words:
         return False
     known = set(cell_words)
@@ -166,8 +167,12 @@ def is_contained(block: LayoutBlock, bbox: BoundingBox, containers: Sequence[Lay
         container_box = clamp_to_page(flip_to_top_left(container.bbox, ctx.height), ctx)
         if bbox.intersection_over_self(container_box) < CONTAINMENT_THRESHOLD:
             continue
-        if container.label in PICTURE_LABELS or not words:
+        if container.label in PICTURE_LABELS:
             return True
+        if not words:
+            if any(cell.text.strip() == block.text.strip() for cell in container.cells or []):
+                return True
+            continue
         if _carries_text(words, container, bbox, ctx):
             return True
     return False

@@ -435,7 +435,6 @@ async def process_bulk_upload(
                             document_id=document_new.id,  # type: ignore[arg-type]
                             file_data=await file.read(),
                             filename=filename,
-                            content_type=file.content_type or "application/octet-stream",
                         )
 
                         if file_url:

@@ -41,7 +41,7 @@ def job_context(tmp_path, monkeypatch):
     async def store_layout(s3_client, workspace_name, document_id, document, store=None):
         calls.append(("store_layout", store._lock_depth))
         documents.append(document)
-        return {"layout_url": "documents/x/docling.json", "items_uri": "items"}
+        return {"layout_url": "documents/x/1.docling.json", "items_uri": "items"}
 
     async def update_metadata(db, document_id, mutate):
         calls.append(("update_metadata", store._lock_depth))
@@ -81,7 +81,7 @@ async def run_job(document_id=None, parser=None):
 
     return await async_document_layout_job(
         document_id or uuid4(),
-        "/api/v1/file/ws/documents/doc/source.pdf",
+        "/api/v1/file/ws/documents/doc/1_orig.pdf",
         "ws",
         parser,
     )
@@ -108,21 +108,21 @@ class TestLayoutJobOrdering:
         assert result["skipped"] == "document deleted"
         assert job_context["calls"] == []
 
-    async def test_a_missing_ocr_pdf_names_the_file_and_the_analysis_job(self, job_context):
+    async def test_a_missing_1_pdf_names_the_file_and_the_analysis_job(self, job_context):
         document_id = uuid4()
         job_context["read_object"].side_effect = FileNotFoundError("not found")
 
-        with pytest.raises(FileNotFoundError, match=rf"documents/{document_id}/ocr.pdf.*analysis_and_preprocess_job"):
+        with pytest.raises(FileNotFoundError, match=rf"documents/{document_id}/1\.pdf.*analysis_and_preprocess_job"):
             await run_job(document_id)
 
         assert job_context["calls"] == []
 
-    async def test_the_parsers_read_ocr_pdf(self, job_context):
+    async def test_the_parsers_read_1_pdf(self, job_context):
         document_id = uuid4()
 
         await run_job(document_id)
 
-        assert job_context["read_object"].await_args.args[1:] == ("ws", f"documents/{document_id}/ocr.pdf")
+        assert job_context["read_object"].await_args.args[1:] == ("ws", f"documents/{document_id}/1.pdf")
 
     async def test_pages_needing_ocr_are_surfaced(self, job_context):
         result = await run_job()
