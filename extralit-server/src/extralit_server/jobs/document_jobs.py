@@ -39,7 +39,7 @@ async def analysis_and_preprocess_job(
 
     Args:
         document_id: UUID of the document to process
-        s3_url: proxy URL of the document's PDF; unused, the job finds `1_orig.pdf` by document id
+        s3_url: proxy URL of the document's PDF; copied in as file 1 only when nothing was uploaded
         reference: Reference key for tracking
         workspace_name: Name of the workspace where the document is stored
 
@@ -62,7 +62,7 @@ async def analysis_and_preprocess_job(
 
     try:
         storage = await files.get_storage()
-        original = await _original_pdf_key(storage, workspace_name, document_id)
+        original = await _original_pdf_key(storage, workspace_name, document_id, s3_url)
         source = await files.read_object(storage, workspace_name, original)
         # The object keys are fixed names, so the uploaded name comes from the row, not the URL.
         async with AsyncSessionLocal() as db:
@@ -162,43 +162,69 @@ async def analysis_and_preprocess_job(
         _LOGGER.error(f"Error in analysis_and_preprocess_job for document {document_id}: {e}")
         current_job.meta["error"] = str(e)
         current_job.save_meta()
-        await _publish_source_as_ocr_pdf(document_id, workspace_name)
+        await _publish_source_as_ocr_pdf(document_id, workspace_name, s3_url, current_job.meta.get("workflow_id"))
         raise
 
 
-async def _original_pdf_key(storage: files.ObjectStorage, workspace_name: str, document_id: UUID) -> str:
-    """Key of file 1 as uploaded; raises when it is missing or not a PDF, the only type processed."""
+async def _original_pdf_key(
+    storage: files.ObjectStorage, workspace_name: str, document_id: UUID, s3_url: str | None
+) -> str:
+    """Key of file 1 as uploaded; raises when it is missing or not a PDF, the only type processed.
+
+    A document created from a proxy URL rather than an upload gets that object copied in as file 1,
+    so `documents.url`, `1.pdf` and the layout bboxes still describe the same pages.
+    """
     first = (await files.list_document_files(storage, workspace_name, document_id)).get(1)
+    if first is None and s3_url:
+        try:
+            url_workspace, url_key = files.split_document_url(s3_url)
+        except ValueError:
+            url_workspace = url_key = None
+        # Only the document's own workspace: anything else would let a member copy another workspace's objects.
+        if url_key is not None and url_workspace == workspace_name:
+            data = await files.read_object(storage, workspace_name, url_key)
+            extension, content_type = files.sniff_file_type(data, url_key.rsplit("/", 1)[-1])
+            key = files.get_original_s3_object_path(document_id, extension)
+            await files.put_object(storage, workspace_name, key, data, content_type=content_type)
+            first = files.DocumentFile(index=1, original_key=key, extension=extension)
     if first is None:
         raise FileNotFoundError(
             f"Document {document_id} has no uploaded file 1 under {files.document_prefix(document_id)}"
+            f" and its URL {s3_url!r} is not an object in workspace {workspace_name!r}"
         )
     if not first.is_pdf:
         raise ValueError(f"Document {document_id} file 1 is a .{first.extension} upload; only PDFs are processed")
     return first.original_key
 
 
-async def _publish_source_as_ocr_pdf(document_id: UUID, workspace_name: str) -> None:
-    """Give dependents a readable `1.pdf` when analysis fails before writing one.
+async def _publish_source_as_ocr_pdf(
+    document_id: UUID, workspace_name: str, s3_url: str | None, workflow_id: str | None
+) -> None:
+    """Keep `1.pdf` and `documents.url` describing the same pages after analysis fails.
 
-    The copy is the unrotated `1_orig.pdf`, which `documents.url` still points at, so the viewer,
-    text extraction and layout bboxes keep referring to the same pages. An existing `1.pdf` (from
-    an earlier successful run) is never replaced, and a later successful retry overwrites the copy.
-    A non-PDF upload gets no `1.pdf`.
+    If `documents.url` already points at `1.pdf`, an earlier run committed it and it is left alone.
+    Otherwise the viewer shows the unrotated original, so `1.pdf` becomes a copy of it, which also
+    replaces a rotated `1.pdf` this run wrote but never committed. A non-PDF upload gets no `1.pdf`.
     """
     try:
         storage = await files.get_storage()
-        original = await _original_pdf_key(storage, workspace_name, document_id)
+        ocr_key = files.get_ocr_pdf_s3_object_path(document_id)
+        async with AsyncSessionLocal() as db:
+            if await writer_skip_reason(db, document_id, workflow_id) is not None:
+                return
+            url = await db.scalar(select(Document.url).where(Document.id == document_id))
+        if url == files.get_proxy_document_url(workspace_name, ocr_key):
+            return
+        original = await _original_pdf_key(storage, workspace_name, document_id, s3_url)
         source = await files.read_object(storage, workspace_name, original)
-        created = await files.put_object_if_absent(
+        await files.put_object(
             storage,
             workspace_name,
-            files.get_ocr_pdf_s3_object_path(document_id),
+            ocr_key,
             source,
             content_type="application/pdf",
             metadata={"processing_applied": "none"},
         )
-        if created:
-            _LOGGER.warning(f"Analysis failed for document {document_id}; published 1_orig.pdf as 1.pdf")
+        _LOGGER.warning(f"Analysis failed for document {document_id}; published 1_orig.pdf as 1.pdf")
     except Exception as error:
         _LOGGER.error(f"Could not publish a fallback 1.pdf for document {document_id}: {error}")

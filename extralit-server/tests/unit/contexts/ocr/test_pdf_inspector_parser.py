@@ -223,3 +223,36 @@ class TestPageSelection:
 
         assert doc.texts == []
         assert 1 not in doc.pages
+
+
+def _pdf_with_boxes(mediabox, cropbox) -> bytes:
+    import io
+
+    import pikepdf
+
+    pdf = pikepdf.new()
+    pdf.add_blank_page(page_size=(mediabox[2], mediabox[3]))
+    page = pdf.pages[0]
+    page.mediabox = pikepdf.Array(mediabox)
+    page.cropbox = pikepdf.Array(cropbox)
+    out = io.BytesIO()
+    pdf.save(out)
+    return out.getvalue()
+
+
+class TestVisiblePageBox:
+    @pytest.mark.parametrize(
+        ("cropbox", "expected"),
+        [
+            ([-10, -20, 622, 812], (612.0, 792.0)),
+            ([0, 100, 612, 792], (612.0, 692.0)),
+            ([700, 900, 800, 1000], (612.0, 792.0)),
+            ([612, 792, 0, 0], (612.0, 792.0)),
+        ],
+    )
+    def test_size_is_the_cropbox_clipped_to_the_mediabox(self, cropbox, expected):
+        from extralit_server.contexts.ocr.parsers.pdf_inspector import page_sizes
+
+        size = page_sizes(_pdf_with_boxes([0, 0, 612, 792], cropbox))[1]
+
+        assert (size.width, size.height) == expected
