@@ -3621,8 +3621,6 @@ export interface components {
             headings: string[];
             /** Item Refs */
             item_refs: string[];
-            /** Kind */
-            type: string;
             /** Page End */
             page_end?: number | null;
             /** Page Start */
@@ -3632,6 +3630,8 @@ export interface components {
             scores: components["schemas"]["SearchScores"];
             /** Text */
             text: string;
+            /** Type */
+            type: string;
         };
         /** SearchRecord */
         SearchRecord: {
@@ -3660,8 +3660,6 @@ export interface components {
         SearchRequest: {
             /** Document Ids */
             document_ids?: string[];
-            /** Kinds */
-            types?: ("text" | "table" | "figure")[];
             /**
              * Limit
              * @default 10
@@ -3673,6 +3671,8 @@ export interface components {
             query: string;
             /** References */
             references?: string[];
+            /** Types */
+            types?: ("text" | "table" | "figure")[];
         };
         /** SearchResponse */
         SearchResponse: {
