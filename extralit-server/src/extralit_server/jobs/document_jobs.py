@@ -71,7 +71,8 @@ async def analysis_and_preprocess_job(
 
         # Rotation runs on every PDF: ocrmypdf's OSD is the only thing that knows which scanned
         # pages are sideways, and under skip_text a born-digital page passes through untouched.
-        processing_response = PDFPreprocessor().preprocess(source, filename)
+        # The preprocessor gates on a `.pdf` name, which the stored key always has and `file_name` may not.
+        processing_response = PDFPreprocessor().preprocess(source, original.rsplit("/", 1)[-1])
         if not processing_response.metadata.rotation_ran:
             _LOGGER.warning(f"Rotation did not run for document {document_id}: {processing_response.metadata.error}")
         pdf_data = processing_response.processed_data
