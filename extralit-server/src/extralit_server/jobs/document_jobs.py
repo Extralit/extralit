@@ -159,4 +159,29 @@ async def analysis_and_preprocess_job(
         _LOGGER.error(f"Error in analysis_and_preprocess_job for document {document_id}: {e}")
         current_job.meta["error"] = str(e)
         current_job.save_meta()
+        await _publish_source_as_ocr_pdf(document_id, workspace_name)
         raise
+
+
+async def _publish_source_as_ocr_pdf(document_id: UUID, workspace_name: str) -> None:
+    """Give dependents a readable `ocr.pdf` when analysis fails before writing one.
+
+    The copy is the unrotated `source.pdf`, which `documents.url` still points at, so the viewer,
+    text extraction and layout bboxes keep referring to the same pages. An existing `ocr.pdf` (from
+    an earlier successful run) is never replaced, and a later successful retry overwrites the copy.
+    """
+    try:
+        storage = await files.get_storage()
+        source = await files.read_object(storage, workspace_name, files.get_pdf_s3_object_path(document_id))
+        created = await files.put_object_if_absent(
+            storage,
+            workspace_name,
+            files.get_ocr_pdf_s3_object_path(document_id),
+            source,
+            content_type="application/pdf",
+            metadata={"processing_applied": "none"},
+        )
+        if created:
+            _LOGGER.warning(f"Analysis failed for document {document_id}; published source.pdf as ocr.pdf")
+    except Exception as error:
+        _LOGGER.error(f"Could not publish a fallback ocr.pdf for document {document_id}: {error}")

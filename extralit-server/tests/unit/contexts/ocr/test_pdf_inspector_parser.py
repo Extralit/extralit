@@ -47,6 +47,29 @@ class TestRegistry:
         assert list(blocks) == [1]
         assert blocks[1]
 
+    def test_page_parser_returns_top_left_boxes(self, untagged_bytes):
+        blocks = get_parser("pdf_inspector").parse_pages(untagged_bytes, [1], ocr=False)[1]
+
+        assert {b.bbox.coord_origin for b in blocks} == {CoordOrigin.TOPLEFT}
+        assert all(b.bbox.t < b.bbox.b for b in blocks)
+        cells = [c for b in blocks for c in b.cells or [] if c.bbox is not None]
+        assert {c.bbox.coord_origin for c in cells} <= {CoordOrigin.TOPLEFT}
+
+    def test_page_size_follows_the_crop_box(self, untagged_bytes):
+        import io
+
+        import pikepdf
+
+        from extralit_server.contexts.ocr.parsers.pdf_inspector import page_sizes
+
+        with pikepdf.open(io.BytesIO(untagged_bytes)) as pdf:
+            pdf.pages[0].CropBox = pikepdf.Array([0, 0, 300, 400])
+            out = io.BytesIO()
+            pdf.save(out)
+
+        size = page_sizes(out.getvalue())[1]
+        assert (size.width, size.height) == (300, 400)
+
     def test_unknown_parser_raises(self):
         with pytest.raises(ValueError, match="unknown"):
             get_parser("nope")

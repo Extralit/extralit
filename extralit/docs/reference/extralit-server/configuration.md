@@ -91,7 +91,7 @@ The following environment variables are useful only when PostgreSQL is used:
 - `EXTRALIT_S3_REGION`: Region for request signing (Default: `us-east-1`; use `auto` for R2).
 
 !!! note "Migrating from bucket-per-workspace"
-    Servers before this setting created one bucket per workspace. Copy each into the new root before switching, e.g. `mc mirror minio/<workspace> minio/<bucket>/<prefix>/<workspace>`; the object keys are unchanged.
+    Servers before this setting created one bucket per workspace. Copy each into the new root before switching, e.g. `mc mirror minio/<workspace> minio/<bucket>/<prefix>/<workspace>`. Mirroring copies the old keys (`pdf/{id}`, `thumbnails/{id}`) as they are; it does not move document artifacts into the current `documents/{id}/` layout, so documents uploaded before that change will not be found under it.
 
     **Local storage moved too.** It used to sit directly under `$EXTRALIT_HOME_PATH/<workspace>/`, alongside `extralit.db` and `lance/`; the default root is now the `storage/` subdirectory. Move each workspace into it — `mkdir -p $EXTRALIT_HOME_PATH/storage && mv $EXTRALIT_HOME_PATH/<workspace> $EXTRALIT_HOME_PATH/storage/` — or keep the old layout by setting `EXTRALIT_STORAGE_URL=file://$EXTRALIT_HOME_PATH`. Nothing is deleted if you skip this, but the server will not find the existing files.
 
