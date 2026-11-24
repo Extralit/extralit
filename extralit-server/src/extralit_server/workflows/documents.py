@@ -83,8 +83,8 @@ async def create_document_workflow(
 
     analysis_jobs = group.enqueue_many(queue=DEFAULT_QUEUE, job_datas=[analysis_job_data])
 
-    # Preprocessing writes `ocr.pdf`, which every parser reads, so dependents wait on it.
-    # allow_failure: a failed analysis publishes `source.pdf` as `ocr.pdf` (see `_publish_source_as_ocr_pdf`), so dependents still run.
+    # Preprocessing writes `1.pdf`, which every parser reads, so dependents wait on it.
+    # allow_failure: a failed analysis publishes `1_orig.pdf` as `1.pdf` (see `_publish_source_as_ocr_pdf`), so dependents still run.
     ocr_url = files.get_proxy_document_url(workspace_name, files.get_ocr_pdf_s3_object_path(document_id))
     on_analysis = Dependency(jobs=[analysis_jobs[0]], allow_failure=True) if analysis_jobs else None
 
