@@ -137,7 +137,15 @@ class TestOriginalFilename:
         )
 
         assert {w["metadata"]["original_filename"] for w in job_context["written"]} == {UPLOADED_NAME}
-        assert job_context["preprocessor"].preprocess.call_args.args[1] == UPLOADED_NAME
+        assert job_context["analyzer"].analyze_pdf_layout.call_args.args[1] == UPLOADED_NAME
+
+    @pytest.mark.parametrize("file_name", ["paper", "paper.bin", UPLOADED_NAME, None])
+    async def test_rotation_is_gated_on_the_stored_key_not_the_uploaded_name(self, job_context, file_name):
+        job_context["db"].scalar.return_value = file_name
+
+        await run_job()
+
+        assert job_context["preprocessor"].preprocess.call_args.args[1] == "1_orig.pdf"
 
     async def test_a_document_without_a_file_name_falls_back_to_a_fixed_name(self, job_context):
         job_context["db"].scalar.return_value = None

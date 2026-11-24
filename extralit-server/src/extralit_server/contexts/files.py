@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
 from typing import Any, BinaryIO
+from urllib.parse import quote
 from uuid import UUID
 
 import obstore
@@ -143,6 +144,15 @@ def content_type_of(key: str, attributes: Any = None) -> str:
 
     guessed, _ = mimetypes.guess_type(key)
     return guessed or "application/octet-stream"
+
+
+# Printable ASCII minus `%`, so an encoded value cannot be confused with a literal one.
+_HEADER_SAFE = "".join(chr(c) for c in range(32, 127) if chr(c) != "%")
+
+
+def header_safe(value: str) -> str:
+    """S3 sends user metadata as US-ASCII headers; percent-encode anything else (decode with `unquote`)."""
+    return value if all(32 <= ord(c) < 127 and c != "%" for c in value) else quote(value, safe=_HEADER_SAFE)
 
 
 def _user_metadata(attributes: Any = None) -> dict[str, str]:
@@ -360,7 +370,7 @@ async def _put(
     metadata: dict[str, Any] | None = None,
     mode: str = "overwrite",
 ):
-    attributes = {"Content-Type": content_type, **{k: str(v) for k, v in (metadata or {}).items()}}
+    attributes = {"Content-Type": content_type, **{k: header_safe(str(v)) for k, v in (metadata or {}).items()}}
     store = storage.for_workspace(workspace)
     if isinstance(store, LocalStore):
         # LocalStore rejects attributes outright; the content type is recovered from the key.

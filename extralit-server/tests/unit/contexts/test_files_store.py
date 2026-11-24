@@ -235,3 +235,35 @@ class TestPrefixDelete:
 
     async def test_a_missing_prefix_is_a_no_op(self, storage):
         await files.delete_object_prefix(storage, WORKSPACE, "documents/missing/")
+
+
+class TestHeaderSafeMetadata:
+    @pytest.mark.parametrize("value", ["Smith 2020.pdf", "a-b_c (1).pdf"])
+    def test_printable_ascii_is_kept(self, value):
+        assert files.header_safe(value) == value
+
+    @pytest.mark.parametrize("value", ["Müller \u2013 2020.pdf", "100%.pdf", "two\nlines", "论文.pdf"])
+    def test_anything_else_is_percent_encoded_and_round_trips(self, value):
+        from urllib.parse import unquote
+
+        encoded = files.header_safe(value)
+
+        assert all(32 <= ord(c) < 127 for c in encoded)
+        assert unquote(encoded) == value
+
+    @pytest.mark.asyncio
+    async def test_s3_puts_send_only_ascii_metadata(self):
+        from unittest.mock import AsyncMock, MagicMock
+
+        store = MagicMock()
+        store.put_async = AsyncMock(return_value={"e_tag": "x"})
+        storage = MagicMock()
+        storage.for_workspace.return_value = store
+
+        await files.put_object(
+            storage, WORKSPACE, "k.pdf", b"x", "application/pdf", {"original_filename": "Müller.pdf"}
+        )
+
+        attributes = store.put_async.await_args.kwargs["attributes"]
+        assert attributes["original_filename"] == "M%C3%BCller.pdf"
+        assert attributes["Content-Type"] == "application/pdf"
