@@ -211,6 +211,26 @@ class TestFailures:
 
         assert job_context["job"].meta["error"] == "s3 down"
 
+    async def test_a_failed_analysis_publishes_source_pdf_as_ocr_pdf(self, job_context):
+        files = job_context["files"]
+        files.put_object_if_absent = AsyncMock(return_value=True)
+        job_context["analyzer"].analyze_pdf_layout.side_effect = TimeoutError("margins took too long")
+
+        with pytest.raises(TimeoutError):
+            await run_job()
+
+        files.put_object_if_absent.assert_awaited_once()
+        _, workspace, key, data = files.put_object_if_absent.await_args.args
+        assert (workspace, key, data) == (WORKSPACE, f"documents/{DOCUMENT_ID}/ocr.pdf", b"%PDF original")
+        assert job_context["update_metadata"].await_count == 0
+
+    async def test_the_fallback_failing_does_not_mask_the_original_error(self, job_context):
+        job_context["files"].put_object_if_absent = AsyncMock(side_effect=RuntimeError("s3 down"))
+        job_context["analyzer"].analyze_pdf_layout.side_effect = TimeoutError("margins took too long")
+
+        with pytest.raises(TimeoutError):
+            await run_job()
+
 
 @pytest.mark.asyncio
 class TestSupersededRuns:

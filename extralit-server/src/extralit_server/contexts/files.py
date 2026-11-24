@@ -9,6 +9,7 @@ from uuid import UUID
 
 import obstore
 from fastapi import HTTPException
+from obstore.exceptions import AlreadyExistsError
 from obstore.exceptions import BaseError as ObjectStoreError
 from obstore.store import LocalStore, S3Store
 
@@ -290,14 +291,31 @@ async def _put(
     data: bytes,
     content_type: str,
     metadata: dict[str, Any] | None = None,
+    mode: str = "overwrite",
 ):
     attributes = {"Content-Type": content_type, **{k: str(v) for k, v in (metadata or {}).items()}}
     store = storage.for_workspace(workspace)
     if isinstance(store, LocalStore):
         # LocalStore rejects attributes outright; the content type is recovered from the key.
-        return await store.put_async(key, data)
+        return await store.put_async(key, data, mode=mode)
 
-    return await store.put_async(key, data, attributes=attributes)
+    return await store.put_async(key, data, attributes=attributes, mode=mode)
+
+
+async def put_object_if_absent(
+    storage: ObjectStorage,
+    workspace: str,
+    object: str,
+    data: bytes,
+    content_type: str = "application/octet-stream",
+    metadata: dict[str, Any] | None = None,
+) -> bool:
+    """Create an object only if no object has that key; False when one already exists."""
+    try:
+        await _put(storage, workspace, object, data, content_type, metadata, mode="create")
+    except AlreadyExistsError:
+        return False
+    return True
 
 
 async def put_object(

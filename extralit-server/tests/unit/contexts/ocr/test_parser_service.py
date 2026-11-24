@@ -161,6 +161,21 @@ class TestPlanDetails:
             ParseTask(pages=(2,), parser="liteparse", ocr=True),
         )
 
+    def test_a_triage_failure_routes_every_page_to_the_digital_parser(self):
+        def broken(_):
+            raise RuntimeError("triage exploded")
+
+        service = ParserService(
+            {"pymupdf": FakeParser(), "liteparse": FakeParser()},
+            triage=broken,
+            page_sizes=lambda _: dict.fromkeys(range(1, 3), PAGE),
+        )
+
+        plan = service.plan(b"%PDF")
+
+        assert plan.tasks == (ParseTask(pages=(1, 2), parser="pymupdf", ocr=False),)
+        assert plan.pages_needing_ocr == ()
+
     def test_an_unknown_named_parser_raises(self):
         service = _service({"pymupdf": FakeParser()}, TriageMetadata(pdf_type="mixed"))
 
@@ -244,6 +259,25 @@ class TestParse:
         parser = FakeParser({1: [_text(10, 10, "inside"), _text(150, 10, "outside"), _text(45, 10, "straddling")]})
         service = _service({"a": parser}, TriageMetadata(pdf_type="mixed"))
         region = BoundingBox(l=0, t=0, r=100, b=50, coord_origin=CoordOrigin.TOPLEFT)
+        plan = ParsePlan(tasks=(ParseTask(pages=(1,), parser="a", ocr=False, bbox=region),))
+
+        doc = service.parse(b"%PDF", plan, name="doc")
+
+        assert [t.text for t in doc.texts] == ["inside"]
+
+    def test_only_planned_pages_are_registered(self):
+        service = _service({"a": FakeParser()}, TriageMetadata(pdf_type="mixed"), page_count=3)
+        plan = ParsePlan(tasks=(ParseTask(pages=(2,), parser="a", ocr=False),))
+
+        doc = service.parse(b"%PDF", plan, name="doc")
+
+        assert set(doc.pages) == {2}
+
+    def test_a_bottom_left_region_is_flipped_before_filtering(self):
+        parser = FakeParser({1: [_text(10, 10, "inside"), _text(150, 10, "outside")]})
+        service = _service({"a": parser}, TriageMetadata(pdf_type="mixed"), page_count=1)
+        # Top 50pt of a 200pt page, in PDF-native coordinates.
+        region = BoundingBox(l=0, t=200, r=100, b=150, coord_origin=CoordOrigin.BOTTOMLEFT)
         plan = ParsePlan(tasks=(ParseTask(pages=(1,), parser="a", ocr=False, bbox=region),))
 
         doc = service.parse(b"%PDF", plan, name="doc")
