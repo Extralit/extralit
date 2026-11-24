@@ -43,7 +43,7 @@ dependencies = [
     "oauthlib >= 4.0.1",
     "social-auth-core >= 6.2.0",
     # LiteLLM for chat integration
-    "litellm>=1.80.0,<=1.105.0",
+    "litellm>=1.80.0,<=1.110.2",
     # GitHub Copilot OAuth device flow + token file locking
     "authlib>=1.9.5",
     "filelock>=4.1.0",
