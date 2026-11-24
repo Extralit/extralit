@@ -1,9 +1,13 @@
 import hashlib
 import logging
 import mimetypes
+import re
 import shutil
+from dataclasses import dataclass
 from datetime import timedelta
+from pathlib import Path
 from typing import Any, BinaryIO
+from urllib.parse import quote
 from uuid import UUID
 
 import obstore
@@ -15,13 +19,9 @@ from extralit_server.api.schemas.v1.files import FileObjectResponse, ListObjects
 from extralit_server.helpers import shared_resources
 from extralit_server.settings import settings
 
-# LocalStore cannot persist attributes (obstore raises NotImplementedError for `put_opts` with
-# attributes), so in local mode the content type has to be recovered from the key. These are the
-# extension-less prefixes minted below; everything else is guessed from the filename.
+# LocalStore cannot persist attributes, so in local mode the content type comes from the key.
+# Extension-less prefixes are listed here; everything else is guessed from the filename.
 _CONTENT_TYPE_BY_PREFIX = {
-    "pdf/": "application/pdf",
-    "thumbnails/": "image/png",
-    "layout/": "application/json",
     "schemas/": "application/json",
 }
 
@@ -145,6 +145,15 @@ def content_type_of(key: str, attributes: Any = None) -> str:
     return guessed or "application/octet-stream"
 
 
+# Printable ASCII minus `%`, so an encoded value cannot be confused with a literal one.
+_HEADER_SAFE = "".join(chr(c) for c in range(32, 127) if chr(c) != "%")
+
+
+def header_safe(value: str) -> str:
+    """S3 sends user metadata as US-ASCII headers; percent-encode anything else (decode with `unquote`)."""
+    return quote(value, safe=_HEADER_SAFE)
+
+
 def _user_metadata(attributes: Any = None) -> dict[str, str]:
     return {key: value for key, value in dict(attributes or {}).items() if key != "Content-Type"}
 
@@ -166,37 +175,103 @@ def compute_hash(data: bytes) -> str:
     return hashlib.md5(data).hexdigest()
 
 
-def get_pdf_s3_object_path(id: UUID | str) -> str:
+DOCUMENTS_PREFIX = "documents"
+THUMBNAIL = "thumbnail.png"
+PDF = "pdf"
+_EXTENSION = re.compile(r"^[a-z0-9]{1,10}$")
+_ORIGINAL = re.compile(r"^(?P<index>[1-9][0-9]*)_orig\.(?P<extension>[a-z0-9]{1,10})$")
+_PROCESSED_PDF = re.compile(r"^(?P<index>[1-9][0-9]*)\.pdf$")
+_DOCLING_JSON = re.compile(r"^(?P<index>[1-9][0-9]*)\.docling\.json$")
+
+
+def document_prefix(id: UUID | str) -> str:
+    """The directory holding every object of one document; anything but a UUID raises ValueError."""
     if not id:
-        raise Exception("id cannot be None")
+        raise ValueError("id cannot be None")
+    return f"{DOCUMENTS_PREFIX}/{UUID(str(id))}/"
 
-    elif isinstance(id, UUID):
-        object_path = f"pdf/{id!s}"
-    else:
-        object_path = f"pdf/{id}"
 
-    return object_path
+def _file_index(index: int) -> int:
+    # bool is an int subclass, and `True` as a file index is always a bug.
+    if not isinstance(index, int) or isinstance(index, bool) or index < 1:
+        raise ValueError(f"File index must be a positive integer, got {index!r}")
+    return index
+
+
+def _extension(extension: str) -> str:
+    extension = extension.lower().lstrip(".")
+    if not _EXTENSION.match(extension):
+        raise ValueError(f"Invalid file extension: {extension!r}")
+    return extension
+
+
+def get_original_s3_object_path(id: UUID | str, extension: str, index: int = 1) -> str:
+    """File `index` of the document exactly as uploaded: `{index}_orig.{extension}`."""
+    return f"{document_prefix(id)}{_file_index(index)}_orig.{_extension(extension)}"
+
+
+def get_ocr_pdf_s3_object_path(id: UUID | str, index: int = 1) -> str:
+    """The ocrmypdf output for PDF file `index`, which the parsers and the viewer read: `{index}.pdf`."""
+    return f"{document_prefix(id)}{_file_index(index)}.pdf"
+
+
+def get_docling_json_s3_object_path(id: UUID | str, index: int = 1) -> str:
+    """The canonical `DoclingDocument` JSON parsed from PDF file `index`: `{index}.docling.json`."""
+    return f"{document_prefix(id)}{_file_index(index)}.docling.json"
 
 
 def get_thumbnail_s3_object_path(id: UUID | str) -> str:
-    """
-    Generate S3 object path for document thumbnail images.
+    """The first-page thumbnail image of file 1."""
+    return document_prefix(id) + THUMBNAIL
 
-    Args:
-        id: Document UUID or string identifier
 
-    Returns:
-        S3 object path for thumbnail (e.g., "thumbnails/{document_id}")
-    """
-    if not id:
-        raise Exception("id cannot be None")
+def sniff_file_type(data: bytes, filename: str | None = None) -> tuple[str, str]:
+    """The (extension, content type) of an upload, from its bytes for PDFs and its name otherwise."""
+    # The PDF spec tolerates junk before the header, and readers look for it in the first 1 KiB.
+    if b"%PDF-" in data[:1024]:
+        return PDF, "application/pdf"
+    suffix = (filename or "").rsplit(".", 1)[-1].lower() if "." in (filename or "") else ""
+    extension = suffix if _EXTENSION.match(suffix) and suffix != PDF else "bin"
+    content_type, _ = mimetypes.guess_type(f"file.{extension}")
+    return extension, content_type or "application/octet-stream"
 
-    elif isinstance(id, UUID):
-        object_path = f"thumbnails/{id!s}"
-    else:
-        object_path = f"thumbnails/{id}"
 
-    return object_path
+@dataclass(frozen=True)
+class DocumentFile:
+    """One uploaded file of a document and the artifacts derived from it."""
+
+    index: int
+    original_key: str
+    extension: str
+    ocr_pdf_key: str | None = None
+    docling_json_key: str | None = None
+
+    @property
+    def is_pdf(self) -> bool:
+        return self.extension == PDF
+
+
+async def list_document_files(
+    storage: ObjectStorage, workspace: str, document_id: UUID | str
+) -> dict[int, DocumentFile]:
+    """The document's files by index, read from its directory; derived objects without an original are ignored."""
+    prefix = document_prefix(document_id)
+    originals: dict[int, tuple[str, str]] = {}
+    derived: dict[int, dict[str, str]] = {}
+    async for batch in storage.for_workspace(workspace).list(prefix):
+        for meta in batch:
+            key = meta["path"]
+            name = key[len(prefix) :]
+            if match := _ORIGINAL.match(name):
+                originals[int(match["index"])] = (key, match["extension"])
+            elif match := _PROCESSED_PDF.match(name):
+                derived.setdefault(int(match["index"]), {})["ocr_pdf_key"] = key
+            elif match := _DOCLING_JSON.match(name):
+                derived.setdefault(int(match["index"]), {})["docling_json_key"] = key
+    return {
+        index: DocumentFile(index=index, original_key=key, extension=extension, **derived.get(index, {}))
+        for index, (key, extension) in sorted(originals.items())
+    }
 
 
 def get_proxy_document_url(workspace: str, object_path: str) -> str:
@@ -293,7 +368,7 @@ async def _put(
     content_type: str,
     metadata: dict[str, Any] | None = None,
 ):
-    attributes = {"Content-Type": content_type, **{k: str(v) for k, v in (metadata or {}).items()}}
+    attributes = {"Content-Type": content_type, **{k: header_safe(str(v)) for k, v in (metadata or {}).items()}}
     store = storage.for_workspace(workspace)
     if isinstance(store, LocalStore):
         # LocalStore rejects attributes outright; the content type is recovered from the key.
@@ -359,21 +434,27 @@ async def delete_workspace_objects(storage: ObjectStorage, workspace: str) -> No
         storage.forget(workspace)
 
 
-async def delete_document_artifacts(storage: ObjectStorage, workspace: str, document_id: UUID | str) -> None:
-    """Remove every artifact of a document: PDF, thumbnail, layout JSON and layout rows.
+async def delete_object_prefix(storage: ObjectStorage, workspace: str, prefix: str) -> None:
+    """Delete every object under `prefix`."""
+    store = storage.for_workspace(workspace)
+    async for batch in store.list(prefix):
+        await store.delete_async([meta["path"] for meta in batch])
+    if isinstance(store, LocalStore):
+        shutil.rmtree(Path(store.prefix) / prefix, ignore_errors=True)
 
-    Best effort — the DB rows are already gone by the time this runs, so a storage hiccup leaves a
-    leaked object rather than a document the caller cannot delete. A leak here is negligible and can
-    be ignored: the objects are unreachable and layout rows only survive until the document is
-    re-parsed or a sweeper runs.
+
+async def delete_document_artifacts(storage: ObjectStorage, workspace: str, document_id: UUID | str) -> None:
+    """Remove the document's directory (PDFs, thumbnail, layout JSON) and its layout rows.
+
+    Best effort: the DB rows are already gone, so a storage hiccup leaks an unreachable object
+    rather than leaving a document the caller cannot delete.
     """
     from extralit_server.contexts.ocr import storage as layout_storage
 
-    for object_path in (get_pdf_s3_object_path(document_id), get_thumbnail_s3_object_path(document_id)):
-        try:
-            await delete_object(storage, workspace, object_path)
-        except Exception as e:
-            _LOGGER.warning(f"Could not delete {object_path} for document {document_id}: {e}")
+    try:
+        await delete_object_prefix(storage, workspace, document_prefix(document_id))
+    except Exception as e:
+        _LOGGER.warning(f"Could not delete objects of document {document_id}: {e}")
 
     try:
         await layout_storage.delete_layout(storage, workspace, document_id)
@@ -387,16 +468,17 @@ async def put_document_file(
     document_id: UUID,
     file_data: bytes,
     filename: str,
-    content_type: str = "application/pdf",
     metadata: dict[str, Any] | None = None,
+    index: int = 1,
 ) -> str | None:
     """
-    Upload a document file with deduplication.
+    Store an upload as `{index}_orig.{ext}`, typed from its bytes (PDF) or its name, with deduplication.
 
     Returns:
         The proxy object URL if the file was uploaded, None if an identical file already exists.
     """
-    object_path = get_pdf_s3_object_path(document_id)
+    extension, content_type = sniff_file_type(file_data, filename)
+    object_path = get_original_s3_object_path(document_id, extension, index)
 
     try:
         existing_files = await list_objects(storage, workspace_name, prefix=object_path, recursive=False)
@@ -423,13 +505,18 @@ async def put_document_file(
         raise HTTPException(status_code=500, detail=f"Error uploading document: {e!s}")
 
 
+async def read_object(storage: ObjectStorage, workspace: str, object_path: str) -> bytes:
+    """Download the whole body of one object."""
+    result = await storage.for_workspace(workspace).get_async(object_path)
+    return bytes(await result.bytes_async())
+
+
 async def download_file_content(storage: ObjectStorage, document_url: str) -> bytes:
     """Download the whole body behind a `/api/v1/file/{workspace}/{object}` URL."""
     workspace, object_path = split_document_url(document_url)
 
     try:
-        result = await storage.for_workspace(workspace).get_async(object_path)
-        return bytes(await result.bytes_async())
+        return await read_object(storage, workspace, object_path)
     except FileNotFoundError:
         _LOGGER.error(f"File not found: {document_url}")
         raise HTTPException(status_code=404, detail=f"File not found: {document_url}")

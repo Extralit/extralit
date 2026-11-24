@@ -41,10 +41,32 @@ class TestRegistry:
     def test_pdf_inspector_is_always_registered(self):
         assert "pdf_inspector" in list_parsers()
 
-    def test_get_parser_returns_a_callable(self, untagged_bytes):
-        doc = get_parser("pdf_inspector")(untagged_bytes, name="sample")
+    def test_get_parser_returns_a_page_parser(self, untagged_bytes):
+        blocks = get_parser("pdf_inspector").parse_pages(untagged_bytes, [1, 99], ocr=False)
 
-        assert doc.name == "sample"
+        assert list(blocks) == [1]
+        assert blocks[1]
+
+    def test_page_parser_returns_top_left_boxes(self, untagged_bytes):
+        blocks = get_parser("pdf_inspector").parse_pages(untagged_bytes, [1], ocr=False)[1]
+
+        assert {b.bbox.coord_origin for b in blocks} == {CoordOrigin.TOPLEFT}
+        assert all(b.bbox.t < b.bbox.b for b in blocks)
+
+    def test_page_size_follows_the_crop_box(self, untagged_bytes):
+        import io
+
+        import pikepdf
+
+        from extralit_server.contexts.ocr.parsers.pdf_inspector import page_sizes
+
+        with pikepdf.open(io.BytesIO(untagged_bytes)) as pdf:
+            pdf.pages[0].CropBox = pikepdf.Array([0, 0, 300, 400])
+            out = io.BytesIO()
+            pdf.save(out)
+
+        size = page_sizes(out.getvalue())[1]
+        assert (size.width, size.height) == (300, 400)
 
     def test_unknown_parser_raises(self):
         with pytest.raises(ValueError, match="unknown"):
@@ -199,3 +221,36 @@ class TestPageSelection:
 
         assert doc.texts == []
         assert 1 not in doc.pages
+
+
+def _pdf_with_boxes(mediabox, cropbox) -> bytes:
+    import io
+
+    import pikepdf
+
+    pdf = pikepdf.new()
+    pdf.add_blank_page(page_size=(mediabox[2], mediabox[3]))
+    page = pdf.pages[0]
+    page.mediabox = pikepdf.Array(mediabox)
+    page.cropbox = pikepdf.Array(cropbox)
+    out = io.BytesIO()
+    pdf.save(out)
+    return out.getvalue()
+
+
+class TestVisiblePageBox:
+    @pytest.mark.parametrize(
+        ("cropbox", "expected"),
+        [
+            ([-10, -20, 622, 812], (612.0, 792.0)),
+            ([0, 100, 612, 792], (612.0, 692.0)),
+            ([700, 900, 800, 1000], (612.0, 792.0)),
+            ([612, 792, 0, 0], (612.0, 792.0)),
+        ],
+    )
+    def test_size_is_the_cropbox_clipped_to_the_mediabox(self, cropbox, expected):
+        from extralit_server.contexts.ocr.parsers.pdf_inspector import page_sizes
+
+        size = page_sizes(_pdf_with_boxes([0, 0, 612, 792], cropbox))[1]
+
+        assert (size.width, size.height) == expected

@@ -10,7 +10,7 @@ import pyarrow as pa
 import pytest
 
 from extralit_server.contexts import files
-from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA, PAGE_SCHEMA
+from extralit_server.contexts.ocr.arrow import ITEM_SCHEMA
 from extralit_server.contexts.ocr.layout_store import (
     ITEMS_DATASET,
     LAYOUT_PREFIX,
@@ -53,13 +53,6 @@ def items(document_id: str, count: int = 3, label: str = "text") -> pa.Table:
     )
 
 
-def pages(document_id: str, count: int = 1) -> pa.Table:
-    return pa.Table.from_pylist(
-        [{"document_id": document_id, "page_no": i + 1, "width": 612.0, "height": 792.0} for i in range(count)],
-        schema=PAGE_SCHEMA,
-    )
-
-
 @pytest.fixture
 def local_store(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "storage_url", tmp_path.as_uri())
@@ -93,7 +86,10 @@ class TestAddressing:
 
         store = LayoutStore.for_workspace(WORKSPACE)
 
-        for key in (files.get_pdf_s3_object_path(document_id), files.get_thumbnail_s3_object_path(document_id)):
+        for key in (
+            files.get_original_s3_object_path(document_id, "pdf"),
+            files.get_thumbnail_s3_object_path(document_id),
+        ):
             assert store.root_uri.startswith(f"s3://extralit/{WORKSPACE}/")
             assert not key.startswith("/")
 
@@ -102,47 +98,43 @@ class TestReplace:
     def test_a_second_replace_leaves_one_vintage(self, local_store):
         document_id = str(uuid4())
 
-        local_store.replace_document(document_id, items(document_id, 3), pages(document_id, 1))
-        local_store.replace_document(document_id, items(document_id, 5), pages(document_id, 2))
+        local_store.replace_document(document_id, items(document_id, 3))
+        local_store.replace_document(document_id, items(document_id, 5))
 
         assert local_store.load_items(document_id).num_rows == 5
-        assert local_store.load_pages(document_id).num_rows == 2
 
     def test_other_documents_are_untouched(self, local_store):
         keeper, replaced = str(uuid4()), str(uuid4())
 
-        local_store.replace_document(keeper, items(keeper, 4), pages(keeper))
-        local_store.replace_document(replaced, items(replaced, 2), pages(replaced))
-        local_store.replace_document(replaced, items(replaced, 1), pages(replaced))
+        local_store.replace_document(keeper, items(keeper, 4))
+        local_store.replace_document(replaced, items(replaced, 2))
+        local_store.replace_document(replaced, items(replaced, 1))
 
         assert local_store.load_items(keeper).num_rows == 4
         assert local_store.load_items(replaced).num_rows == 1
 
     def test_a_zero_row_document_still_clears_its_old_rows(self, local_store):
         document_id = str(uuid4())
-        local_store.replace_document(document_id, items(document_id, 3), pages(document_id))
+        local_store.replace_document(document_id, items(document_id, 3))
 
         empty_items = pa.Table.from_pylist([], schema=ITEM_SCHEMA)
-        empty_pages = pa.Table.from_pylist([], schema=PAGE_SCHEMA)
-        local_store.replace_document(document_id, empty_items, empty_pages)
+        local_store.replace_document(document_id, empty_items)
 
         assert local_store.load_items(document_id).num_rows == 0
-        assert local_store.load_pages(document_id).num_rows == 0
 
     def test_replace_reports_the_dataset_versions(self, local_store):
         document_id = str(uuid4())
 
-        versions = local_store.replace_document(document_id, items(document_id), pages(document_id))
+        versions = local_store.replace_document(document_id, items(document_id))
 
         assert versions["items_version"] >= 1
-        assert versions["pages_version"] >= 1
 
     def test_concurrent_replaces_of_one_document_neither_lose_nor_duplicate_rows(self, local_store, monkeypatch):
         # Replacing is a delete commit then an append commit. Both writers are held at the append
         # until the other has passed its delete, which is exactly the interleaving that doubles
         # rows when the workspace lock is not held.
         document_id = str(uuid4())
-        local_store.replace_document(document_id, items(document_id, 2), pages(document_id))
+        local_store.replace_document(document_id, items(document_id, 2))
         original_write = LayoutStore._write
         arrivals = {"count": 0}
         counter_lock = threading.Lock()
@@ -165,7 +157,7 @@ class TestReplace:
             try:
                 barrier.wait(timeout=30)
                 with store.locked_sync():
-                    store.replace_document(document_id, items(document_id, count), pages(document_id))
+                    store.replace_document(document_id, items(document_id, count))
             except Exception as error:  # surfaced below; a raise here would be swallowed
                 errors.append(error)
 
@@ -180,15 +172,14 @@ class TestReplace:
 
 
 class TestDelete:
-    def test_delete_removes_items_and_pages(self, local_store):
+    def test_delete_removes_the_documents_items(self, local_store):
         document_id, other = str(uuid4()), str(uuid4())
-        local_store.replace_document(document_id, items(document_id, 3), pages(document_id, 2))
-        local_store.replace_document(other, items(other, 1), pages(other, 1))
+        local_store.replace_document(document_id, items(document_id, 3))
+        local_store.replace_document(other, items(other, 1))
 
         local_store.delete_document(document_id)
 
         assert local_store.load_items(document_id).num_rows == 0
-        assert local_store.load_pages(document_id).num_rows == 0
         assert local_store.load_items(other).num_rows == 1
 
     def test_delete_on_a_missing_dataset_is_a_no_op(self, local_store):
@@ -204,7 +195,7 @@ class TestReads:
 
     def test_projection_and_filter_are_pushed_down(self, local_store):
         document_id = str(uuid4())
-        local_store.replace_document(document_id, items(document_id, 4), pages(document_id))
+        local_store.replace_document(document_id, items(document_id, 4))
 
         table = local_store.load_items(document_id, columns=["self_ref", "page_no"], where="reading_order < 2")
 
@@ -213,20 +204,17 @@ class TestReads:
 
     def test_duckdb_views_aggregate_across_documents(self, local_store):
         first, second = str(uuid4()), str(uuid4())
-        local_store.replace_document(first, items(first, 3, label="text"), pages(first))
-        local_store.replace_document(second, items(second, 2, label="table"), pages(second))
+        local_store.replace_document(first, items(first, 3, label="text"))
+        local_store.replace_document(second, items(second, 2, label="table"))
 
         with duckdb_connection([WORKSPACE]) as connection:
             counts = dict(connection.execute("select label, count(*) from items group by label").fetchall())
-            page_count = connection.execute("select count(*) from pages").fetchone()[0]
 
         assert counts == {"text": 3, "table": 2}
-        assert page_count == 2
 
     def test_duckdb_views_exist_before_anything_is_written(self, local_store):
         with duckdb_connection([WORKSPACE]) as connection:
             assert connection.execute("select count(*) from items").fetchone()[0] == 0
-            assert connection.execute("select count(*) from pages").fetchone()[0] == 0
 
 
 class TestCompaction:
@@ -234,7 +222,7 @@ class TestCompaction:
         monkeypatch.setattr("extralit_server.contexts.ocr.layout_store.COMPACT_FRAGMENT_THRESHOLD", 3)
         document_ids = [str(uuid4()) for _ in range(6)]
         for document_id in document_ids:
-            local_store.replace_document(document_id, items(document_id, 2), pages(document_id))
+            local_store.replace_document(document_id, items(document_id, 2))
 
         before = fragment_count(local_store, ITEMS_DATASET)
         local_store.maybe_compact()
@@ -246,7 +234,7 @@ class TestCompaction:
 
     def test_a_broken_compaction_never_reaches_the_caller(self, local_store, monkeypatch):
         document_id = str(uuid4())
-        local_store.replace_document(document_id, items(document_id), pages(document_id))
+        local_store.replace_document(document_id, items(document_id))
         monkeypatch.setattr(LayoutStore, "open", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("boom")))
 
         local_store.maybe_compact()

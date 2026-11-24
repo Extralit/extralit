@@ -28,8 +28,19 @@ class TestRegistry:
     def test_pymupdf_is_registered_when_the_extra_is_installed(self):
         assert "pymupdf" in list_parsers()
 
-    def test_get_parser_resolves_it(self, pdf_bytes):
-        assert get_parser("pymupdf")(pdf_bytes, name="sample").name == "sample"
+    def test_get_parser_resolves_a_page_parser(self, pdf_bytes):
+        blocks = get_parser("pymupdf").parse_pages(pdf_bytes, [1, 99], ocr=False)
+
+        assert list(blocks) == [1]
+        assert blocks[1]
+
+    def test_ocr_flag_does_not_change_the_output(self, pdf_bytes):
+        parser = get_parser("pymupdf")
+
+        assert parser.parse_pages(pdf_bytes, [1], ocr=True) == parser.parse_pages(pdf_bytes, [1], ocr=False)
+
+    def test_no_pages_means_no_output(self, pdf_bytes):
+        assert get_parser("pymupdf").parse_pages(pdf_bytes, [], ocr=False) == {}
 
 
 class TestGeometry:
@@ -155,3 +166,26 @@ class TestParserAgreement:
         other = next(t for t in parse_pi(pdf_bytes, name="s").texts if "Study of Layout" in t.text)
 
         assert mine.prov[0].bbox.intersection_over_self(other.prov[0].bbox) > 0.6
+
+
+class TestCroppedPage:
+    def test_service_page_size_matches_pymupdf_page_rect(self, pdf_bytes):
+        import io
+
+        import pikepdf
+        import pymupdf
+
+        from extralit_server.contexts.ocr.parsers.registry import default_service
+
+        with pikepdf.open(io.BytesIO(pdf_bytes)) as pdf:
+            pdf.pages[0].CropBox = pikepdf.Array([0, 0, 300, 400])
+            out = io.BytesIO()
+            pdf.save(out)
+        cropped = out.getvalue()
+
+        service = default_service()
+        doc = service.parse(cropped, service.plan(cropped, parser="pymupdf"), name="cropped")
+
+        with pymupdf.open(stream=cropped, filetype="pdf") as pdf:
+            rect = pdf[0].rect
+        assert (doc.pages[1].size.width, doc.pages[1].size.height) == pytest.approx((rect.width, rect.height))

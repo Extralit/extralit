@@ -13,6 +13,7 @@ import io
 import logging
 from collections import Counter, defaultdict
 from collections.abc import Sequence
+from dataclasses import replace
 from typing import Any, Optional
 
 import pdf_inspector
@@ -24,6 +25,7 @@ from extralit_server.contexts.ocr.docling_builder import (
     PageContext,
     append_blocks,
     content_hash,
+    flip_to_top_left,
     new_document,
 )
 from extralit_server.contexts.ocr.tables import make_cell
@@ -58,12 +60,23 @@ def role_to_label(role: str) -> tuple[DocItemLabel, Optional[int]]:
     return _ROLE_LABELS.get(role, (DocItemLabel.TEXT, None))
 
 
+def _normalized_box(box: Any) -> list[float]:
+    x0, y0, x1, y1 = (float(v) for v in box)
+    return [min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)]
+
+
 def page_sizes(pdf_bytes: bytes) -> dict[int, Size]:
-    """Read each page's MediaBox, keyed by docling's 1-indexed page_no."""
+    """Read each page's visible size (CropBox ∩ MediaBox, else MediaBox), keyed by 1-indexed page_no.
+
+    pdf-inspector (>=1.18), pymupdf's `page.rect` and liteparse all use that visible box, so the size must too.
+    """
     sizes: dict[int, Size] = {}
     with pikepdf.open(io.BytesIO(pdf_bytes)) as pdf:
         for index, page in enumerate(pdf.pages, start=1):
-            box = [float(v) for v in page.MediaBox]
+            crop, media = _normalized_box(page.cropbox), _normalized_box(page.mediabox)
+            box = [max(crop[0], media[0]), max(crop[1], media[1]), min(crop[2], media[2]), min(crop[3], media[3])]
+            if box[2] <= box[0] or box[3] <= box[1]:
+                box = media
             width, height = abs(box[2] - box[0]), abs(box[3] - box[1])
             if int(page.get("/Rotate", 0) or 0) % 180 == 90:
                 width, height = height, width
@@ -252,6 +265,35 @@ def _blocks_for_page(
     # Reading order: top of the page down, ties broken left to right (still bottom-left coords).
     blocks.sort(key=lambda b: (-b.bbox.t, b.bbox.l))
     return blocks
+
+
+def _to_top_left(block: LayoutBlock, height: float) -> LayoutBlock:
+    cells = None
+    if block.cells is not None:
+        cells = [
+            c.model_copy(update={"bbox": flip_to_top_left(c.bbox, height)}) if c.bbox is not None else c
+            for c in block.cells
+        ]
+    return replace(block, bbox=flip_to_top_left(block.bbox, height), cells=cells)
+
+
+class PdfInspectorParser:
+    """`PageParser` over pdf-inspector; it reads the text layer, so `ocr` has no effect."""
+
+    def parse_pages(self, pdf_bytes: bytes, pages: Sequence[int], *, ocr: bool) -> dict[int, list[LayoutBlock]]:
+        """Parse the given 1-indexed pages into top-left-origin blocks, keyed by page number."""
+        if not pages:
+            return {}
+        sizes = page_sizes(pdf_bytes)
+        roles = _structure_roles(pdf_bytes)
+        by_page: dict[int, list[Any]] = defaultdict(list)
+        for item in pdf_inspector.extract_text_with_positions_bytes(pdf_bytes):
+            by_page[item.page].append(item)
+        return {
+            p: [_to_top_left(b, sizes[p].height) for b in _blocks_for_page(by_page.get(p, []), roles, p)]
+            for p in sorted(set(pages))
+            if p in sizes
+        }
 
 
 def parse(

@@ -1,5 +1,6 @@
 """Document layout extraction jobs."""
 
+import asyncio
 import logging
 from collections.abc import Sequence
 from typing import Any, Optional
@@ -13,27 +14,12 @@ from extralit_server.contexts import files
 from extralit_server.contexts.document.metadata import update_processing_metadata
 from extralit_server.contexts.ocr import storage as layout_storage
 from extralit_server.contexts.ocr.layout_store import LayoutStore
-from extralit_server.contexts.ocr.parsers.pdf_inspector import classify
-from extralit_server.contexts.ocr.parsers.registry import default_parser_name, get_parser
+from extralit_server.contexts.ocr.parsers.registry import default_service
 from extralit_server.contexts.workflows import writer_skip_reason
 from extralit_server.database import AsyncSessionLocal
 from extralit_server.jobs.queues import OCR_QUEUE, REDIS_CONNECTION
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def route_parser(pdf_bytes: bytes) -> tuple[str, dict[str, Any]]:
-    """Pick a parser and record what classification saw.
-
-    `pages_needing_ocr` is surfaced rather than acted on, so scanned pages show up as an
-    explicit gap instead of silently producing an empty layout.
-    """
-    try:
-        classification = classify(pdf_bytes)
-    except Exception as e:
-        _LOGGER.warning(f"PDF classification failed, falling back to the default parser: {e}")
-        classification = {"pages_needing_ocr": [], "page_count": 0, "pdf_type": "unknown"}
-    return default_parser_name(), classification
 
 
 @job(
@@ -54,9 +40,9 @@ async def async_document_layout_job(
 
     Args:
         document_id: UUID of the document to process
-        s3_url: proxy URL of the PDF, as stored on the document
+        s3_url: proxy URL of the document's PDF; only its filename is used, the parsers read `1.pdf`
         workspace_name: workspace the artifacts are written to
-        parser: layout parser name; None routes automatically
+        parser: force one parser for every page; None routes per page
         pages: 1-indexed page allowlist; None processes every page
 
     Returns:
@@ -76,17 +62,29 @@ async def async_document_layout_job(
     try:
         # Shared client — do not enter it as a context manager, that would close it for everyone.
         storage = await files.get_storage()
-        pdf_bytes = await files.download_file_content(storage, s3_url)
+        # Bboxes must refer to the PDF the viewer shows, which is the preprocessed `1.pdf`.
+        ocr_key = files.get_ocr_pdf_s3_object_path(document_id)
+        try:
+            pdf_bytes = await files.read_object(storage, workspace_name, ocr_key)
+        except FileNotFoundError as e:
+            first = (await files.list_document_files(storage, workspace_name, document_id)).get(1)
+            if first is not None and not first.is_pdf:
+                reason = f"file 1 is a .{first.extension} upload; only PDFs are processed"
+                _LOGGER.info(f"Layout skipped for document {document_id}: {reason}")
+                return {"document_id": str(document_id), "skipped": reason}
+            raise FileNotFoundError(
+                f"{ocr_key} is missing in workspace {workspace_name!r}: it is written by analysis_and_preprocess_job, "
+                f"which must succeed for document {document_id} before layout can run"
+            ) from e
 
-        routed, classification = route_parser(pdf_bytes)
-        parser_name = parser or routed
+        # Both calls are CPU-bound and sync (liteparse holds the GIL for long stretches), so keep them off the loop.
+        service = default_service()
+        plan = await asyncio.to_thread(service.plan, pdf_bytes, pages=pages, parser=parser)
+        parser_name = "+".join(sorted(plan.pages_by_parser)) or (parser or "")
         _LOGGER.info(f"Extracting layout for document {document_id} with parser {parser_name}")
 
-        doc = get_parser(parser_name)(
-            pdf_bytes,
-            name=str(document_id),
-            pages=pages,
-            filename=s3_url.split("/")[-1],
+        doc = await asyncio.to_thread(
+            service.parse, pdf_bytes, plan, name=str(document_id), filename=s3_url.split("/")[-1]
         )
 
         # Ordering closes the delete-vs-running-job race: nothing may write rows for a document
@@ -108,7 +106,10 @@ async def async_document_layout_job(
             docling_version=doc.version,
             num_items=sum(1 for _ in doc.iterate_items(with_groups=False)),
             num_pages=len(doc.pages),
-            pages_needing_ocr=classification.get("pages_needing_ocr", []),
+            pages_needing_ocr=list(plan.pages_needing_ocr),
+            parsers=plan.pages_by_parser,
+            ocr_pages=plan.ocr_pages,
+            ocr_skipped_pages=plan.ocr_skipped_pages,
         )
 
         # Outside the workspace lock: the row lock only serializes writers of this JSON column.
