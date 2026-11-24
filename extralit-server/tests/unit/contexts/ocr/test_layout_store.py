@@ -86,7 +86,10 @@ class TestAddressing:
 
         store = LayoutStore.for_workspace(WORKSPACE)
 
-        for key in (files.get_pdf_s3_object_path(document_id), files.get_thumbnail_s3_object_path(document_id)):
+        for key in (
+            files.get_original_s3_object_path(document_id, "pdf"),
+            files.get_thumbnail_s3_object_path(document_id),
+        ):
             assert store.root_uri.startswith(f"s3://extralit/{WORKSPACE}/")
             assert not key.startswith("/")
 

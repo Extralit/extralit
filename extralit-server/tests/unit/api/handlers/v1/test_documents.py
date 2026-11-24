@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from extralit_server.contexts.files import get_pdf_s3_object_path, get_proxy_document_url
+from extralit_server.contexts.files import get_original_s3_object_path, get_proxy_document_url
 from extralit_server.models.database import Document
 from tests.factories import DocumentFactory, UserFactory, WorkspaceFactory, WorkspaceUserFactory
 
@@ -49,7 +49,7 @@ async def test_upload_document(async_client: AsyncClient, db: AsyncSession, owne
         # Check if the document was created in the database with the correct URL
         result = await db.execute(select(Document))
         documents = result.scalars().all()
-        object_path = get_pdf_s3_object_path(document_json["id"])
+        object_path = get_original_s3_object_path(document_json["id"], "pdf")
         s3_url = get_proxy_document_url(workspace.name, object_path)
         assert [document.url for document in documents] == [s3_url]
 
@@ -297,3 +297,70 @@ async def test_delete_documents_succeeds_when_layout_cleanup_fails(
 
     assert response.status_code == 200, response.json()
     assert response.json() == 1
+
+
+@pytest.fixture
+def local_storage(tmp_path, monkeypatch):
+    from extralit_server.contexts import files
+    from extralit_server.helpers import shared_resources
+
+    monkeypatch.setattr(files.settings, "storage_url", tmp_path.as_uri())
+    storage = files.ObjectStorage()
+    monkeypatch.setitem(shared_resources, "storage", storage)
+    return storage
+
+
+async def _upload(async_client, owner_auth_header, workspace, filename, data, content_type):
+    with patch(
+        "extralit_server.api.handlers.v1.documents.create_document_workflow", new_callable=AsyncMock
+    ) as workflow:
+        response = await async_client.post(
+            "/api/v1/documents",
+            data={
+                "document_create": json.dumps(
+                    {"reference": f"ref-{uuid4().hex[:6]}", "workspace_id": str(workspace.id)}
+                )
+            },
+            files={"file_data": (filename, data, content_type)},
+            headers=owner_auth_header,
+        )
+    assert response.status_code == 201, response.json()
+    return UUID(response.json()), workflow
+
+
+@pytest.mark.asyncio
+class TestUploadObjectLayout:
+    async def test_a_pdf_is_stored_as_1_orig_pdf_whatever_its_name(
+        self, async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict, local_storage
+    ):
+        from extralit_server.contexts import files
+
+        workspace = await WorkspaceFactory.create()
+        document_id, workflow = await _upload(
+            async_client, owner_auth_header, workspace, "paper.PDF", b"%PDF-1.4 body", "application/octet-stream"
+        )
+
+        listed = await files.list_document_files(local_storage, workspace.name, document_id)
+        assert listed[1].original_key == f"documents/{document_id}/1_orig.pdf"
+        stored = await files.get_object(local_storage, workspace.name, listed[1].original_key)
+        assert stored.metadata.content_type == "application/pdf"
+        assert workflow.await_args.kwargs["s3_url"].endswith(f"documents/{document_id}/1_orig.pdf")
+
+    async def test_a_non_pdf_is_stored_as_1_orig_ext_and_its_workflow_still_starts(
+        self, async_client: AsyncClient, db: AsyncSession, owner_auth_header: dict, local_storage
+    ):
+        # Current behaviour, kept: the upload is accepted and the workflow starts; analysis then fails on it.
+        from extralit_server.contexts import files
+
+        workspace = await WorkspaceFactory.create()
+        document_id, workflow = await _upload(
+            async_client, owner_auth_header, workspace, "supplement.xlsx", b"PK\x03\x04 sheet", "application/pdf"
+        )
+
+        listed = await files.list_document_files(local_storage, workspace.name, document_id)
+        assert list(listed) == [1]
+        assert listed[1].original_key == f"documents/{document_id}/1_orig.xlsx"
+        assert listed[1].ocr_pdf_key is None and listed[1].docling_json_key is None
+        stored = await files.get_object(local_storage, workspace.name, listed[1].original_key)
+        assert stored.metadata.content_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        workflow.assert_awaited_once()
