@@ -311,13 +311,14 @@ class TestUrlOnlyDocuments:
 
 @pytest.mark.asyncio
 class TestNonPdfUploads:
-    async def test_a_non_pdf_upload_fails_analysis_and_gets_no_processed_pdf(self, job_context):
+    async def test_a_non_pdf_upload_skips_analysis_and_gets_no_processed_pdf(self, job_context):
         files = job_context["files"]
         files.list_document_files.return_value = {
             1: DocumentFile(index=1, original_key=f"{PREFIX}/1_orig.xlsx", extension="xlsx")
         }
-        with pytest.raises(ValueError, match=r"file 1 is a \.xlsx upload; only PDFs are processed"):
-            await run_job()
+        result = await run_job()
+
+        assert "file 1 is a .xlsx upload; only PDFs are processed" in result["skipped"]
 
         assert job_context["written"] == []
         files.read_object.assert_not_awaited()

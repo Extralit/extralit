@@ -13,7 +13,7 @@ from typing import Any, Optional
 import pyarrow as pa
 import xxhash
 from docling_core.transforms.serializer.markdown import MarkdownDocSerializer, MarkdownParams, MarkdownTableSerializer
-from docling_core.types.doc import DocItemLabel, DoclingDocument
+from docling_core.types.doc import DoclingDocument
 from docling_core.types.doc.document import DocItem, FloatingItem, PictureItem, SectionHeaderItem, TableItem, TitleItem
 
 from extralit_server.contexts.retrieval.arrow import CHUNK_SCHEMA
@@ -63,13 +63,8 @@ def chunk_document(
     rows: list[dict[str, Any]] = []
 
     for item, _depth in doc.iterate_items(with_groups=False):
-        if isinstance(item, (SectionHeaderItem, TitleItem)) and item.label in (
-            DocItemLabel.SECTION_HEADER,
-            DocItemLabel.TITLE,
-        ):
+        if isinstance(item, (SectionHeaderItem, TitleItem)):
             _open_headings(headings, item)
-            continue
-        if not isinstance(item, DocItem):
             continue
 
         # A caption linked to its owner serializes as '' and an uncaptioned picture likewise.

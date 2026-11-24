@@ -69,6 +69,11 @@ async def async_document_layout_job(
         try:
             pdf_bytes = await files.read_object(storage, workspace_name, ocr_key)
         except FileNotFoundError as e:
+            first = (await files.list_document_files(storage, workspace_name, document_id)).get(1)
+            if first is not None and not first.is_pdf:
+                reason = f"file 1 is a .{first.extension} upload; only PDFs are processed"
+                _LOGGER.info(f"Layout skipped for document {document_id}: {reason}")
+                return {"document_id": str(document_id), "skipped": reason}
             raise FileNotFoundError(
                 f"{ocr_key} is missing in workspace {workspace_name!r}: it is written by analysis_and_preprocess_job, "
                 f"which must succeed for document {document_id} before layout can run"

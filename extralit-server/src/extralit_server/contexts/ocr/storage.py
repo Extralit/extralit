@@ -117,6 +117,5 @@ async def read_layout(
 ) -> tuple[DoclingDocument, str]:
     """`load_layout` plus the hash of the bytes it parsed."""
     key = object_path or layout_object_path(document_id)
-    file = await files.get_object(storage, workspace_name, key)
-    raw = bytes(await file.response.bytes_async())
-    return DoclingDocument.model_validate(json.loads(raw)), layout_hash(raw)
+    raw = await files.read_object(storage, workspace_name, key)
+    return DoclingDocument.model_validate_json(raw), layout_hash(raw)

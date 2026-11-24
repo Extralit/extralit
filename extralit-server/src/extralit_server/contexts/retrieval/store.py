@@ -78,8 +78,13 @@ class ChunkStore:
 
     def _optimize(self) -> None:
         dataset = self.open()
-        if dataset is not None:
+        if dataset is None:
+            return
+        try:
             dataset.optimize.optimize_indices()
+        except Exception as error:
+            # Rows are committed and searchable unindexed, so a failed index merge must not fail the write.
+            _LOGGER.warning(f"Index optimization of chunks at {self.layout.root_uri} failed: {error}")
 
     # --- vectors -------------------------------------------------------------------------------
 

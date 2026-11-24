@@ -56,6 +56,7 @@ def job_context(tmp_path, monkeypatch):
     with (
         patch(f"{MODULE}.files.get_storage", AsyncMock(return_value=AsyncMock())),
         patch(f"{MODULE}.files.read_object", AsyncMock(return_value=pdf_bytes)) as read_object,
+        patch(f"{MODULE}.files.list_document_files", AsyncMock(return_value={})) as list_files,
         patch(f"{MODULE}.default_service", return_value=service),
         patch(f"{MODULE}.LayoutStore.for_workspace", return_value=store),
         patch(f"{MODULE}.layout_storage.store_layout", store_layout),
@@ -73,6 +74,7 @@ def job_context(tmp_path, monkeypatch):
             "layouts": layouts,
             "documents": documents,
             "read_object": read_object,
+            "list_files": list_files,
         }
 
 
@@ -115,6 +117,17 @@ class TestLayoutJobOrdering:
         with pytest.raises(FileNotFoundError, match=rf"documents/{document_id}/1\.pdf.*analysis_and_preprocess_job"):
             await run_job(document_id)
 
+        assert job_context["calls"] == []
+
+    async def test_a_non_pdf_upload_is_skipped_without_raising(self, job_context):
+        from extralit_server.contexts.files import DocumentFile
+
+        job_context["read_object"].side_effect = FileNotFoundError("not found")
+        job_context["list_files"].return_value = {1: DocumentFile(1, "documents/doc/1_orig.docx", "docx")}
+
+        result = await run_job()
+
+        assert "only PDFs are processed" in result["skipped"]
         assert job_context["calls"] == []
 
     async def test_the_parsers_read_1_pdf(self, job_context):
