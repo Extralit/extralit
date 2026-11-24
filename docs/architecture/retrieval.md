@@ -4,6 +4,10 @@ How an uploaded PDF becomes searchable chunks: analysis → layout → chunk →
 Code lives in `extralit-server/src/extralit_server/contexts/retrieval/` and
 `jobs/retrieval_jobs.py`.
 
+Retrieval is reached only through the search endpoint (`POST /api/v1/workspaces/{name}/search`).
+The litellm-based chat endpoint (`/api/v1/chat`, `/api/v1/chat/models`) was removed; embedding and
+LLM calls go through pydantic-ai.
+
 ## Storage layout
 
 ```
