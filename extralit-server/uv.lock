@@ -1446,7 +1446,7 @@ requires-dist = [
     { name = "opentelemetry-api", specifier = ">=1.45.2" },
     { name = "packaging", specifier = ">=23.2" },
     { name = "pandera", extras = ["io"], specifier = ">=0.32.0" },
-    { name = "pdf-inspector", specifier = ">=1.14.2" },
+    { name = "pdf-inspector", specifier = ">=1.18.0" },
     { name = "pdf2image", specifier = ">=1.17.0" },
     { name = "pillow", specifier = ">=10.1.0" },
     { name = "psutil", specifier = ">=5.8,<7.3" },
