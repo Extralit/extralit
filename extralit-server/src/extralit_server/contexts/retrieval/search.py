@@ -185,17 +185,13 @@ def _run(
     limit: int,
     settings: RetrievalSettings,
 ) -> list[ChunkHit]:
-    tables = []
+    found = [(s, s.vector_columns().get(model) if model else None) for s in stores if s.open() is not None]
+    if not found:
+        return []
     with _CONNECTION_LOCK:
         connection = _connection()
-        for store in stores:
-            if store.open() is None:
-                continue
-            column = store.vector_columns().get(model) if model else None
-            tables.append((_attach(connection, store), column))
+        tables = [(_attach(connection, store), column) for store, column in found]
         cursor = connection.cursor()
-    if not tables:
-        return []
     try:
         fts, fts_params, vec, vec_params = _legs(tables, query, vector, filter_, max(settings.candidate_k, limit))
         sql = fuse_sql(fts, vec, settings.rrf_k, limit)
