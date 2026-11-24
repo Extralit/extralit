@@ -57,6 +57,14 @@ def _document_filter(document_id: UUID | str) -> str:
     return f"document_id = '{UUID(str(document_id))}'"
 
 
+def add_missing_columns(dataset: lance.LanceDataset, schema: pa.Schema) -> lance.LanceDataset:
+    """Give a dataset written before a column existed that column, all null; caller holds the workspace lock."""
+    missing = [field.with_nullable(True) for field in schema if field.name not in dataset.schema.names]
+    if missing:
+        dataset.add_columns(pa.schema(missing))
+    return dataset
+
+
 class LayoutStore:
     """Reader and writer of one workspace's layout datasets.
 
@@ -158,6 +166,8 @@ class LayoutStore:
                 # Another worker created it between the open and the write; join it instead.
                 dataset = lance.dataset(self.uri(name), storage_options=self.storage_options)
 
+        # Before the delete: an append that the old schema rejects would leave the document with no rows.
+        add_missing_columns(dataset, self._schemas[name])
         dataset.delete(_document_filter(document_id))
         if data.num_rows == 0:
             return lance.dataset(self.uri(name), storage_options=self.storage_options).version

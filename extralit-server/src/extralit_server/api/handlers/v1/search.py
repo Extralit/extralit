@@ -18,6 +18,8 @@ from extralit_server.security import auth
 
 router = APIRouter(tags=["search"])
 
+MAX_CANDIDATES = 1000
+
 
 @router.post("/workspaces/{workspace_name}/search")
 async def search_workspace(
@@ -33,27 +35,33 @@ async def search_workspace(
     await authorize(current_user, DocumentPolicy.get_by_workspace(workspace.id))
 
     settings = RetrievalSettings()
-    hits = await hybrid_search(
-        [ChunkStore.for_workspace(workspace.name)],
-        body.query,
-        embedder=get_embedder(settings),
-        filters=SearchFilters(
-            document_ids=body.document_ids, references=body.references, pages=body.pages, types=body.types
-        ),
-        limit=body.limit,
-        settings=settings,
+    store = ChunkStore.for_workspace(workspace.name)
+    embedder = get_embedder(settings)
+    filters = SearchFilters(
+        document_ids=body.document_ids, references=body.references, pages=body.pages, types=body.types
     )
-    # A delete whose chunk cleanup failed leaves rows behind until `retrieval backfill` prunes them.
-    live = set(
-        (
-            await db.execute(
-                select(Document.id).where(
-                    Document.workspace_id == workspace.id, Document.id.in_({UUID(h.document_id) for h in hits})
+    # A delete whose chunk cleanup failed leaves rows behind until `retrieval backfill` prunes them,
+    # so dropped orphans are refilled by asking for more until `limit` live hits or the candidates run out.
+    requested = body.limit
+    while True:
+        candidates = await hybrid_search(
+            [store], body.query, embedder=embedder, filters=filters, limit=requested, settings=settings
+        )
+        live = set(
+            (
+                await db.execute(
+                    select(Document.id).where(
+                        Document.workspace_id == workspace.id,
+                        Document.id.in_({UUID(h.document_id) for h in candidates}),
+                    )
                 )
-            )
-        ).scalars()
-    )
-    hits = [h for h in hits if UUID(h.document_id) in live]
+            ).scalars()
+        )
+        hits = [h for h in candidates if UUID(h.document_id) in live]
+        if len(hits) >= body.limit or len(candidates) < requested or requested >= MAX_CANDIDATES:
+            break
+        requested = min(requested * 4, MAX_CANDIDATES)
+    hits = hits[: body.limit]
     return SearchResponse(
         hits=[
             SearchHit(

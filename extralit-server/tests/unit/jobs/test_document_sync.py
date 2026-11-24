@@ -332,3 +332,60 @@ class TestDelete:
         assert store.open().to_table(filter=f"document_id = '{drop}'").num_rows == 0
         assert store.layout.load_items(keep).num_rows > 0
         assert store.open().to_table(filter=f"document_id = '{keep}'").num_rows == 1
+
+
+class TestRestart:
+    def test_restarting_a_failed_layout_reruns_the_chunk_job_that_already_ran_on_the_old_layout(self, env):
+        from extralit_server.contexts.workflows import restart_failed_jobs_in_workflow
+
+        document_id = uuid4()
+        asyncio.run(store_layout(ObjectStorage(), WORKSPACE, document_id, rebuilt(["old text"])))
+        group = start_workflow(document_id)  # no 1.pdf: the layout job fails
+        steps = jobs_by_step(group)
+        steps["document_layout"].retries_left = 0
+        steps["document_layout"].save()
+        run_workers()
+        assert steps["document_layout"].get_status(refresh=True) == "failed"
+        assert steps["document_chunks"].get_status(refresh=True) == "finished"
+
+        upload_ocr_pdf(document_id)
+        workflow = MagicMock(group_id=group.name)
+        with patch("extralit_server.contexts.workflows.update_workflow_status", AsyncMock()):
+            result = asyncio.run(restart_failed_jobs_in_workflow(MagicMock(), workflow))
+        run_workers()
+
+        assert len(result["restarted_jobs"]) >= 2
+        assert steps["document_layout"].get_status(refresh=True) == "finished"
+        store = ChunkStore.for_workspace(WORKSPACE)
+        expected = {docling_hash(document_id)}
+        assert store.layout.source_hashes(ITEMS_DATASET)[str(document_id)] == expected
+        assert store.layout.source_hashes("chunks")[str(document_id)] == expected
+        assert "old text" not in store.open().to_table(columns=["text"]).column(0).to_pylist()
+
+
+class TestColumnsAddedLater:
+    def test_items_and_chunks_written_before_source_hash_are_migrated_not_emptied(self, env):
+        import lance
+        import pyarrow as pa
+
+        from tests.unit.contexts.retrieval.test_store import vectors
+
+        document_id = str(uuid4())
+        store = ChunkStore.for_workspace(WORKSPACE)
+        doc = rebuilt(["alpha", "beta"])
+        old_items = items_table(doc, document_id).drop_columns(["source_hash"])
+        old_chunks = chunk_document(doc, document_id, "Ref").drop_columns(["source_hash"])
+        lance.write_dataset(old_items, store.layout.uri(ITEMS_DATASET), mode="create")
+        lance.write_dataset(old_chunks, store.layout.uri("chunks"), mode="create")
+        ids = old_chunks.column("chunk_id").to_pylist()
+        store.upsert_vectors("test:model", vectors("test:model", ids, 4))
+
+        store.layout.replace_document(
+            document_id, items_table(doc, document_id, "h1"), {"chunks": chunk_document(doc, document_id, "Ref", "h1")}
+        )
+
+        assert store.layout.source_hashes(ITEMS_DATASET)[document_id] == {"h1"}
+        rows = store.open().to_table(columns=["source_hash", "vector__test_model"]).to_pylist()
+        assert len(rows) == 2
+        assert all(r["source_hash"] == "h1" and r["vector__test_model"] is not None for r in rows)
+        assert isinstance(store.open().schema.field("source_hash").type, pa.DataType)

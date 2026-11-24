@@ -9,7 +9,7 @@ from uuid import UUID
 import lance
 import pyarrow as pa
 
-from extralit_server.contexts.ocr.layout_store import LayoutStore, _document_filter
+from extralit_server.contexts.ocr.layout_store import LayoutStore, _document_filter, add_missing_columns
 from extralit_server.contexts.retrieval.arrow import (
     CHUNK_SCHEMA,
     CHUNKS_DATASET,
@@ -58,6 +58,7 @@ class ChunkStore:
                 table, self.layout.uri(CHUNKS_DATASET), mode="create", storage_options=self.layout.storage_options
             )
         else:
+            add_missing_columns(dataset, CHUNK_SCHEMA)
             (
                 dataset.merge_insert("chunk_id")
                 .when_matched_update_all()

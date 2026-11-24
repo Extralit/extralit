@@ -6,7 +6,9 @@ import pytest
 from httpx import AsyncClient
 from pydantic_ai import Embedder
 
+from extralit_server.api.handlers.v1 import search as search_handler
 from extralit_server.constants import API_KEY_HEADER_NAME
+from extralit_server.contexts.retrieval.search import hybrid_search
 from extralit_server.contexts.retrieval.store import ChunkStore
 from extralit_server.settings import settings
 from tests.factories import AnnotatorFactory, DocumentFactory, WorkspaceFactory
@@ -45,6 +47,28 @@ class TestSearchWorkspace:
         )
 
         assert {hit["document_id"] for hit in response.json()["hits"]} == {document_id}
+
+    async def test_an_orphan_ranked_first_does_not_hide_a_live_hit_under_limit_one(
+        self, async_client: AsyncClient, owner_auth_header, workspace_with_chunks
+    ):
+        workspace, document_id = workspace_with_chunks
+        store = ChunkStore.for_workspace(workspace.name)
+        embedder = search_handler.get_embedder(None)
+        for _ in range(3):
+            orphan = str(uuid4())
+            table = chunk_rows(orphan, "Ref-A", ["quokka"])
+            store.replace_chunks(orphan, table)
+            await embed(embedder, store, table)
+        top = await hybrid_search([store], "quokka", embedder=embedder, limit=1)
+        assert top[0].document_id != document_id
+
+        response = await async_client.post(
+            f"/api/v1/workspaces/{workspace.name}/search",
+            headers=owner_auth_header,
+            json={"query": "quokka", "limit": 1},
+        )
+
+        assert [hit["document_id"] for hit in response.json()["hits"]] == [document_id]
 
     async def test_returns_hits_with_item_refs_and_scores(
         self, async_client: AsyncClient, owner_auth_header, workspace_with_chunks
