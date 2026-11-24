@@ -8,8 +8,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@remotion/cli": "4.0.496",
-    "@remotion/media": "4.0.496",
+    "@remotion/cli": "4.0.546",
+    "@remotion/media": "4.0.546",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "remotion": "4.0.496"
