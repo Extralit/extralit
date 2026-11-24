@@ -151,7 +151,7 @@ _HEADER_SAFE = "".join(chr(c) for c in range(32, 127) if chr(c) != "%")
 
 def header_safe(value: str) -> str:
     """S3 sends user metadata as US-ASCII headers; percent-encode anything else (decode with `unquote`)."""
-    return value if all(32 <= ord(c) < 127 and c != "%" for c in value) else quote(value, safe=_HEADER_SAFE)
+    return quote(value, safe=_HEADER_SAFE)
 
 
 def _user_metadata(attributes: Any = None) -> dict[str, str]:
