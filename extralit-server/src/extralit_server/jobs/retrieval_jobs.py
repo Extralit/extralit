@@ -55,6 +55,10 @@ async def async_document_chunk_job(
     async with store.layout.locked():
         async with AsyncSessionLocal() as db:
             skip = await writer_skip_reason(db, document_id, workflow_id)
+        if skip is None:
+            current = await files.read_object(storage, workspace_name, layout_storage.layout_object_path(document_id))
+            if layout_storage.layout_hash(current) != source_hash:
+                skip = "layout changed since it was read"
         if skip is not None:
             _LOGGER.info(f"Chunks for document {document_id} were not stored: {skip}")
             return {"document_id": str(document_id), "skipped": skip}

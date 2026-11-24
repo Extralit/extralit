@@ -104,14 +104,23 @@ def probe_dict(root: Path) -> dict:
         got = dict(connection.execute("SELECT kind, count(*) FROM ns.main.chunks GROUP BY 1").fetchall())
         return {"ok": got == expected, "got": got}
 
+    fixture = base_columns(ROWS)
+    terms = {"w1", "w2", "w3"}
+    matching = sum(
+        1
+        for kind, text in zip(fixture["kind"].to_pylist(), fixture["text"].to_pylist(), strict=True)
+        if kind == "table" and terms & set(text.split())
+    )
+
     def fts():
         rows = connection.execute(
             "SELECT kind FROM lance_fts('ns.main.chunks', 'text', 'w1 w2 w3', k=20, "
             "filter := 'kind = ''table''', prefilter := true)"
         ).fetchall()
         return {
-            "ok": len(rows) > 0 and {r[0] for r in rows} == {"table"},
+            "ok": len(rows) == min(20, matching) and {r[0] for r in rows} == {"table"},
             "n": len(rows),
+            "expected_n": min(20, matching),
             "kinds": sorted({r[0] for r in rows}),
         }
 
@@ -378,19 +387,26 @@ def run_one(name: str) -> None:
 def run_all() -> None:
     report = {"versions": versions(), "probes": {}}
     for name in PROBES:
-        process = subprocess.run(
-            [sys.executable, __file__, "--probe", name], capture_output=True, text=True, timeout=1800
-        )
+        try:
+            process = subprocess.run(
+                [sys.executable, __file__, "--probe", name], capture_output=True, text=True, timeout=1800
+            )
+            stdout, errors, returncode = process.stdout, process.stderr, process.returncode
+        except subprocess.TimeoutExpired as error:
+            stdout = error.stdout.decode() if isinstance(error.stdout, bytes) else (error.stdout or "")
+            errors, returncode = "timed out after 1800 s", "timeout"
         results, started = {}, None
-        for line in process.stdout.splitlines():
+        for line in stdout.splitlines():
             if line.startswith("STEP "):
                 started = line[5:]
             elif line.startswith("RESULT "):
                 results.update(json.loads(line[7:]))
                 started = None
-        if process.returncode != 0:
-            tail = [x for x in (process.stderr or "").strip().splitlines() if "Fatal" in x or "Error" in x][-2:]
-            results[started or "probe"] = {"crash": True, "returncode": process.returncode, "stderr": tail}
+        if returncode == "timeout":
+            results[started or "probe"] = {"timeout": True, "stderr": [errors]}
+        elif returncode != 0:
+            tail = [x for x in (errors or "").strip().splitlines() if "Fatal" in x or "Error" in x][-2:]
+            results[started or "probe"] = {"crash": True, "returncode": returncode, "stderr": tail}
         report["probes"][name] = results
     print(json.dumps(report, indent=1))
 

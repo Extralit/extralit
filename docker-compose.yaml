@@ -70,7 +70,7 @@ services:
       - postgres
       - elasticsearch
       - redis
-    command: sh -c 'python -m extralit_server worker --queues embed --num-workers $${EXTRALIT_EMBED_WORKERS:-1}'
+    command: sh -c 'python -m extralit_server worker --queues embed --num-workers ${EXTRALIT_EMBED_WORKERS:-1}'
 
   postgres:
     image: postgres:14

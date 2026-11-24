@@ -74,8 +74,10 @@ def chunk_env(store):
         patch(f"{MODULE}.AsyncSessionLocal", session),
         patch(f"{MODULE}.writer_skip_reason", AsyncMock(return_value=None)) as skip,
         patch(f"{MODULE}.async_embed_chunks_job.delay") as delay,
+        patch(f"{MODULE}.files.read_object", AsyncMock(return_value=b"raw")),
+        patch(f"{MODULE}.layout_storage.layout_hash", return_value="h1") as current_hash,
     ):
-        yield {"skip": skip, "delay": delay}
+        yield {"skip": skip, "delay": delay, "current_hash": current_hash}
 
 
 class TestChunkJob:
@@ -116,6 +118,16 @@ class TestChunkJob:
         result = await async_document_chunk_job(uuid4(), "ws-jobs")
 
         assert result["skipped"] == "document deleted"
+        assert store.open() is None
+        chunk_env["delay"].assert_not_called()
+
+    async def test_layout_rewritten_after_the_read_is_not_committed(self, store, chunk_env, config):
+        from extralit_server.jobs.retrieval_jobs import async_document_chunk_job
+
+        chunk_env["current_hash"].return_value = "h2"
+        result = await async_document_chunk_job(uuid4(), "ws-jobs")
+
+        assert result["skipped"] == "layout changed since it was read"
         assert store.open() is None
         chunk_env["delay"].assert_not_called()
 

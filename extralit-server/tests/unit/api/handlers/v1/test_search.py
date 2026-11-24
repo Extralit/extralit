@@ -9,7 +9,7 @@ from pydantic_ai import Embedder
 from extralit_server.constants import API_KEY_HEADER_NAME
 from extralit_server.contexts.retrieval.store import ChunkStore
 from extralit_server.settings import settings
-from tests.factories import AnnotatorFactory, WorkspaceFactory
+from tests.factories import AnnotatorFactory, DocumentFactory, WorkspaceFactory
 from tests.hashing_embedder import HashingEmbeddingModel
 from tests.integration.retrieval.test_search import DIM, MODEL, chunk_rows, embed
 
@@ -20,7 +20,7 @@ async def workspace_with_chunks(tmp_path, monkeypatch):
     monkeypatch.setenv("EXTRALIT_RETRIEVAL_EMBEDDING_MODEL", MODEL)
     workspace = await WorkspaceFactory.create(name=f"ws-{uuid4().hex[:8]}")
     store = ChunkStore.for_workspace(workspace.name)
-    document_id = str(uuid4())
+    document_id = str((await DocumentFactory.create(workspace=workspace)).id)
     table = chunk_rows(
         document_id, "Ref-A", ["quokka habitat survey results"] + [f"filler {i} words" for i in range(10)]
     )
@@ -33,6 +33,19 @@ async def workspace_with_chunks(tmp_path, monkeypatch):
 
 @pytest.mark.asyncio
 class TestSearchWorkspace:
+    async def test_chunks_of_a_deleted_document_are_not_returned(
+        self, async_client: AsyncClient, owner_auth_header, workspace_with_chunks
+    ):
+        workspace, document_id = workspace_with_chunks
+        orphan = str(uuid4())
+        ChunkStore.for_workspace(workspace.name).replace_chunks(orphan, chunk_rows(orphan, "Ref-A", ["quokka orphan"]))
+
+        response = await async_client.post(
+            f"/api/v1/workspaces/{workspace.name}/search", headers=owner_auth_header, json={"query": "quokka"}
+        )
+
+        assert {hit["document_id"] for hit in response.json()["hits"]} == {document_id}
+
     async def test_returns_hits_with_item_refs_and_scores(
         self, async_client: AsyncClient, owner_auth_header, workspace_with_chunks
     ):

@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from sqlalchemy import select
@@ -12,6 +13,7 @@ from extralit_server.contexts.retrieval.settings import RetrievalSettings
 from extralit_server.contexts.retrieval.store import ChunkStore
 from extralit_server.database import get_async_db
 from extralit_server.models import User, Workspace
+from extralit_server.models.database import Document
 from extralit_server.security import auth
 
 router = APIRouter(tags=["search"])
@@ -41,6 +43,17 @@ async def search_workspace(
         limit=body.limit,
         settings=settings,
     )
+    # A delete whose chunk cleanup failed leaves rows behind until `retrieval backfill` prunes them.
+    live = set(
+        (
+            await db.execute(
+                select(Document.id).where(
+                    Document.workspace_id == workspace.id, Document.id.in_({UUID(h.document_id) for h in hits})
+                )
+            )
+        ).scalars()
+    )
+    hits = [h for h in hits if UUID(h.document_id) in live]
     return SearchResponse(
         hits=[
             SearchHit(

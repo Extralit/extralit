@@ -189,6 +189,10 @@ def _run(
     return [ChunkHit(*row[: len(PAYLOAD)], bm25=row[-3], vector=row[-2], rrf=row[-1]) for row in rows]
 
 
+def _has_vector_column(stores: Sequence[ChunkStore], model: str) -> bool:
+    return any(model in store.vector_columns() for store in stores)
+
+
 async def hybrid_search(
     stores: Sequence[ChunkStore],
     query: str,
@@ -206,7 +210,7 @@ async def hybrid_search(
     filter_ = build_filter(filters)
     model = settings.embedding_model
     vector = None
-    if embedder is not None and model and any(model in s.vector_columns() for s in stores):
+    if embedder is not None and model and await to_thread.run_sync(_has_vector_column, stores, model):
         result = await embedder.embed_query(query)
         vector = [float(x) for x in result.embeddings[0]]
     return await to_thread.run_sync(_run, stores, query, vector, model, filter_, limit, settings)

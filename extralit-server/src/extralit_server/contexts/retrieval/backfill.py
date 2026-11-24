@@ -6,6 +6,7 @@ import logging
 from dataclasses import dataclass
 from typing import Optional
 
+from anyio import to_thread
 from sqlalchemy import select
 
 from extralit_server.contexts import files
@@ -25,6 +26,7 @@ class WorkspaceBackfill:
     chunk_jobs: int
     embed_job: bool
     unembedded: Optional[int]
+    pruned: int = 0
 
 
 async def backfill(workspace: Optional[str] = None) -> list[WorkspaceBackfill]:
@@ -36,6 +38,12 @@ async def backfill(workspace: Optional[str] = None) -> list[WorkspaceBackfill]:
         if workspace:
             query = query.where(Workspace.name == workspace)
         workspaces = (await db.execute(query)).all()
+        existing = {
+            workspace_id: {
+                str(d) for d in (await db.scalars(select(Document.id).where(Document.workspace_id == workspace_id)))
+            }
+            for workspace_id, _ in workspaces
+        }
         documents = {
             workspace_id: [
                 document_id
@@ -54,6 +62,12 @@ async def backfill(workspace: Optional[str] = None) -> list[WorkspaceBackfill]:
     for workspace_id, name in workspaces:
         store = ChunkStore.for_workspace(name)
         stamps = _chunk_stamps(store)
+        orphans = [d for d in stamps if d not in existing[workspace_id]]
+        if orphans:
+            async with store.layout.locked():
+                for document_id in orphans:
+                    await to_thread.run_sync(store.layout.delete_document, document_id)
+            _LOGGER.info(f"Pruned rows of {len(orphans)} deleted documents from workspace {name}")
         stale = []
         for document_id in documents[workspace_id]:
             try:
@@ -67,11 +81,11 @@ async def backfill(workspace: Optional[str] = None) -> list[WorkspaceBackfill]:
         for document_id in stale:
             async_document_chunk_job.delay(document_id, name)
 
-        pending = store.unembedded(settings.embedding_model).num_rows if settings.embedding_model else None
+        pending = store.count_unembedded(settings.embedding_model) if settings.embedding_model else None
         embed = bool(pending)
         if embed:
             async_embed_chunks_job.delay(name)
-        reports.append(WorkspaceBackfill(name, len(stale), embed, pending))
+        reports.append(WorkspaceBackfill(name, len(stale), embed, pending, len(orphans)))
     return reports
 
 

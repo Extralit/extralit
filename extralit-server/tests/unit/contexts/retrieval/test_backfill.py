@@ -29,6 +29,10 @@ pytestmark = pytest.mark.asyncio
 class FakeSession:
     def __init__(self, workspaces, documents):
         self.results = [workspaces, *documents]
+        self.existing = [[document_id for document_id, _ in rows] for rows in documents]
+
+    async def scalars(self, _query):
+        return self.existing.pop(0)
 
     async def __aenter__(self):
         return self
@@ -103,6 +107,7 @@ async def test_second_run_enqueues_nothing(world):
         [(uuid4(), "ws")],
         [(document_id, {"layout_metadata": {"layout_url": "x"}}) for document_id in world["ids"]],
     ]
+    world["session"].existing = [list(world["ids"])]
     world["chunk"].reset_mock()
     world["embed"].reset_mock()
 
@@ -111,3 +116,16 @@ async def test_second_run_enqueues_nothing(world):
     world["chunk"].assert_not_called()
     world["embed"].assert_not_called()
     assert second[0].chunk_jobs == 0
+
+
+async def test_chunks_of_deleted_documents_are_pruned(world):
+    deleted = str(uuid4())
+    store = ChunkStore.for_workspace("ws")
+    store.replace_chunks(deleted, stamped(deleted, ["gone"], HASH, module.CHUNKER_FINGERPRINT))
+
+    reports = await module.backfill()
+
+    assert reports[0].pruned == 1
+    remaining = set(store.open().to_table(columns=["document_id"]).column(0).to_pylist())
+    assert deleted not in remaining
+    assert str(world["ids"][0]) in remaining

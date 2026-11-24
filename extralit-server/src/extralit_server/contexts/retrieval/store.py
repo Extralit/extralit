@@ -146,10 +146,25 @@ class ChunkStore:
         owned = self.vector_columns().get(model)
         if owned is None and column in dataset.schema.names:
             raise DimensionMismatchError(f"{column} belongs to another embedding model than {model!r}")
+        return dataset.to_table(columns=columns, filter=self._unembedded_filter(owned, document_id))
+
+    def count_unembedded(self, model: str) -> int:
+        """`len(unembedded(model))` without reading any chunk text."""
+        dataset = self.open()
+        if dataset is None:
+            return 0
+        column = vector_column(model)
+        owned = self.vector_columns().get(model)
+        if owned is None and column in dataset.schema.names:
+            raise DimensionMismatchError(f"{column} belongs to another embedding model than {model!r}")
+        return dataset.count_rows(filter=self._unembedded_filter(owned, None))
+
+    @staticmethod
+    def _unembedded_filter(owned: Optional[str], document_id: Optional[UUID | str]) -> Optional[str]:
         conditions = [f"{owned} IS NULL"] if owned else []
         if document_id is not None:
             conditions.append(_document_filter(document_id))
-        return dataset.to_table(columns=columns, filter=" AND ".join(conditions) or None)
+        return " AND ".join(conditions) or None
 
     def drop_vector_column(self, model: str) -> None:
         """Drop `model`'s column, found by field metadata so a slug collision never drops another model."""
