@@ -97,6 +97,4 @@ async def load_layout(
     demands an equal major and a minor no higher than the SDK's.
     """
     key = object_path or layout_object_path(document_id)
-    file = await files.get_object(storage, workspace_name, key)
-    raw = bytes(await file.response.bytes_async())
-    return DoclingDocument.model_validate(json.loads(raw))
+    return DoclingDocument.model_validate_json(await files.read_object(storage, workspace_name, key))

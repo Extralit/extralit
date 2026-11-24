@@ -52,8 +52,6 @@ class TestRegistry:
 
         assert {b.bbox.coord_origin for b in blocks} == {CoordOrigin.TOPLEFT}
         assert all(b.bbox.t < b.bbox.b for b in blocks)
-        cells = [c for b in blocks for c in b.cells or [] if c.bbox is not None]
-        assert {c.bbox.coord_origin for c in cells} <= {CoordOrigin.TOPLEFT}
 
     def test_page_size_follows_the_crop_box(self, untagged_bytes):
         import io

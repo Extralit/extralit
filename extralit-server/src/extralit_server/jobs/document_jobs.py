@@ -158,12 +158,19 @@ async def analysis_and_preprocess_job(
 
         return combined_result
 
+    except NotPdfError as e:
+        _LOGGER.info(f"Analysis skipped: {e}")
+        return {"document_id": str(document_id), "skipped": str(e)}
     except Exception as e:
         _LOGGER.error(f"Error in analysis_and_preprocess_job for document {document_id}: {e}")
         current_job.meta["error"] = str(e)
         current_job.save_meta()
         await _publish_source_as_ocr_pdf(document_id, workspace_name, s3_url, current_job.meta.get("workflow_id"))
         raise
+
+
+class NotPdfError(ValueError):
+    """File 1 is not a PDF, the only type processed, so a retry cannot help."""
 
 
 async def _original_pdf_key(
@@ -193,7 +200,7 @@ async def _original_pdf_key(
             f" and its URL {s3_url!r} is not an object in workspace {workspace_name!r}"
         )
     if not first.is_pdf:
-        raise ValueError(f"Document {document_id} file 1 is a .{first.extension} upload; only PDFs are processed")
+        raise NotPdfError(f"Document {document_id} file 1 is a .{first.extension} upload; only PDFs are processed")
     return first.original_key
 
 
