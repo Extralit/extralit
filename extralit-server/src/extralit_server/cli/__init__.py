@@ -3,6 +3,7 @@ import typer
 from .database import app as database_app
 from .openapi_dump import openapi_dump
 from .search_engine import app as search_engine_app
+from .hub import app as hub_auth_app
 from .start import start
 from .worker import worker
 
@@ -10,6 +11,7 @@ app = typer.Typer(help="Commands for Extralit server management", no_args_is_hel
 
 app.add_typer(database_app, name="database")
 app.add_typer(search_engine_app, name="search-engine")
+app.add_typer(hub_auth_app, name="hub-auth")
 app.command(name="worker", help="Starts rq workers")(worker)
 app.command(name="start", help="Starts the Extralit server")(start)
 app.command(name="openapi-dump", help="Dump the /api/v1 OpenAPI schema as JSON")(openapi_dump)
