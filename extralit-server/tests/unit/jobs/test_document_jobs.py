@@ -223,25 +223,90 @@ class TestFailures:
         assert job_context["job"].meta["error"] == "s3 down"
 
     async def test_a_failed_analysis_publishes_1_orig_pdf_as_1_pdf(self, job_context):
-        files = job_context["files"]
-        files.put_object_if_absent = AsyncMock(return_value=True)
         job_context["analyzer"].analyze_pdf_layout.side_effect = TimeoutError("margins took too long")
 
         with pytest.raises(TimeoutError):
             await run_job()
 
-        files.put_object_if_absent.assert_awaited_once()
-        _, workspace, key, data = files.put_object_if_absent.await_args.args
-        assert (workspace, key, data) == (WORKSPACE, f"{PREFIX}/1.pdf", b"%PDF original")
+        assert [(w["key"], w["data"]) for w in job_context["written"]] == [(f"{PREFIX}/1.pdf", b"%PDF original")]
         assert job_context["files"].read_object.await_args.args[2] == f"{PREFIX}/1_orig.pdf"
         assert job_context["update_metadata"].await_count == 0
 
-    async def test_the_fallback_failing_does_not_mask_the_original_error(self, job_context):
-        job_context["files"].put_object_if_absent = AsyncMock(side_effect=RuntimeError("s3 down"))
+    async def test_a_rotated_pdf_whose_url_never_committed_is_replaced_by_the_original(self, job_context):
+        job_context["update_metadata"].side_effect = RuntimeError("db down")
+
+        with pytest.raises(RuntimeError, match="db down"):
+            await run_job()
+
+        writes = [(w["key"], w["data"]) for w in job_context["written"] if w["key"].endswith("1.pdf")]
+        assert writes == [(f"{PREFIX}/1.pdf", b"%PDF rotated"), (f"{PREFIX}/1.pdf", b"%PDF original")]
+
+    async def test_a_1_pdf_committed_by_an_earlier_run_is_kept(self, job_context):
+        job_context["db"].scalar.return_value = f"/api/v1/file/{WORKSPACE}/{PREFIX}/1.pdf"
         job_context["analyzer"].analyze_pdf_layout.side_effect = TimeoutError("margins took too long")
 
         with pytest.raises(TimeoutError):
             await run_job()
+
+        assert job_context["written"] == []
+
+    async def test_a_superseded_run_publishes_nothing_on_failure(self, job_context):
+        job_context["analyzer"].analyze_pdf_layout.side_effect = TimeoutError("margins took too long")
+        job_context["skip"].return_value = "workflow superseded"
+
+        with pytest.raises(TimeoutError):
+            await run_job()
+
+        assert job_context["written"] == []
+
+    async def test_the_fallback_failing_does_not_mask_the_original_error(self, job_context):
+        job_context["files"].put_object = AsyncMock(side_effect=RuntimeError("s3 down"))
+        job_context["analyzer"].analyze_pdf_layout.side_effect = TimeoutError("margins took too long")
+
+        with pytest.raises(TimeoutError):
+            await run_job()
+
+
+@pytest.mark.asyncio
+class TestUrlOnlyDocuments:
+    async def test_a_proxy_url_without_an_upload_is_copied_in_as_file_1(self, job_context):
+        from extralit_server.contexts import files as real_files
+
+        files = job_context["files"]
+        files.list_document_files.return_value = {}
+        files.read_object.return_value = b"%PDF-1.7 from url"
+        for name in ("split_document_url", "sniff_file_type", "get_original_s3_object_path", "DocumentFile"):
+            setattr(files, name, getattr(real_files, name))
+
+        await analysis_and_preprocess_job(DOCUMENT_ID, f"/api/v1/file/{WORKSPACE}/papers/a.pdf", "ref", WORKSPACE)
+
+        assert files.read_object.await_args_list[0].args[1:] == (WORKSPACE, "papers/a.pdf")
+        keys = [w["key"] for w in job_context["written"]]
+        assert keys[0] == f"{PREFIX}/1_orig.pdf" and keys[-1] == f"{PREFIX}/1.pdf"
+        assert files.read_object.await_args_list[1].args[2] == f"{PREFIX}/1_orig.pdf"
+
+    async def test_a_proxy_url_into_another_workspace_is_never_read(self, job_context):
+        from extralit_server.contexts import files as real_files
+
+        files = job_context["files"]
+        files.list_document_files.return_value = {}
+        files.split_document_url = real_files.split_document_url
+
+        with pytest.raises(FileNotFoundError, match="is not an object in workspace"):
+            await analysis_and_preprocess_job(DOCUMENT_ID, "/api/v1/file/private-ws/secret.pdf", "ref", WORKSPACE)
+
+        files.read_object.assert_not_awaited()
+        assert job_context["written"] == []
+
+    async def test_an_external_url_without_an_upload_fails_clearly(self, job_context):
+        from extralit_server.contexts import files as real_files
+
+        files = job_context["files"]
+        files.list_document_files.return_value = {}
+        files.split_document_url = real_files.split_document_url
+
+        with pytest.raises(FileNotFoundError, match="is not an object in workspace"):
+            await analysis_and_preprocess_job(DOCUMENT_ID, "https://example.org/a.pdf", "ref", WORKSPACE)
 
 
 @pytest.mark.asyncio
@@ -251,13 +316,10 @@ class TestNonPdfUploads:
         files.list_document_files.return_value = {
             1: DocumentFile(index=1, original_key=f"{PREFIX}/1_orig.xlsx", extension="xlsx")
         }
-        files.put_object_if_absent = AsyncMock(return_value=True)
-
         with pytest.raises(ValueError, match=r"file 1 is a \.xlsx upload; only PDFs are processed"):
             await run_job()
 
         assert job_context["written"] == []
-        files.put_object_if_absent.assert_not_awaited()
         files.read_object.assert_not_awaited()
         job_context["preprocessor"].preprocess.assert_not_called()
         assert job_context["update_metadata"].await_count == 0

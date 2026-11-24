@@ -60,15 +60,23 @@ def role_to_label(role: str) -> tuple[DocItemLabel, Optional[int]]:
     return _ROLE_LABELS.get(role, (DocItemLabel.TEXT, None))
 
 
-def page_sizes(pdf_bytes: bytes) -> dict[int, Size]:
-    """Read each page's visible size (CropBox, else MediaBox), keyed by docling's 1-indexed page_no.
+def _normalized_box(box: Any) -> list[float]:
+    x0, y0, x1, y1 = (float(v) for v in box)
+    return [min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)]
 
-    pymupdf's `page.rect` and liteparse's coordinates follow the CropBox, so the page size must too.
+
+def page_sizes(pdf_bytes: bytes) -> dict[int, Size]:
+    """Read each page's visible size (CropBox ∩ MediaBox, else MediaBox), keyed by 1-indexed page_no.
+
+    pdf-inspector (>=1.18), pymupdf's `page.rect` and liteparse all use that visible box, so the size must too.
     """
     sizes: dict[int, Size] = {}
     with pikepdf.open(io.BytesIO(pdf_bytes)) as pdf:
         for index, page in enumerate(pdf.pages, start=1):
-            box = [float(v) for v in page.cropbox]
+            crop, media = _normalized_box(page.cropbox), _normalized_box(page.mediabox)
+            box = [max(crop[0], media[0]), max(crop[1], media[1]), min(crop[2], media[2]), min(crop[3], media[3])]
+            if box[2] <= box[0] or box[3] <= box[1]:
+                box = media
             width, height = abs(box[2] - box[0]), abs(box[3] - box[1])
             if int(page.get("/Rotate", 0) or 0) % 180 == 90:
                 width, height = height, width
