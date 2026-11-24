@@ -45,7 +45,7 @@ class TestStoreLayout:
         with patch.object(storage.files, "put_object", AsyncMock()) as put_object:
             paths = await storage.store_layout(AsyncMock(), WORKSPACE, DOCUMENT_ID, doc)
 
-        assert paths["layout_url"] == f"documents/{DOCUMENT_ID}/docling.json"
+        assert paths["layout_url"] == f"documents/{DOCUMENT_ID}/1.docling.json"
         assert paths["items_uri"] == store.items_uri()
         assert paths["items_version"] == 1
         assert put_object.await_count == 1
@@ -74,7 +74,7 @@ class TestDeleteLayout:
             await storage.delete_layout(AsyncMock(), WORKSPACE, DOCUMENT_ID)
 
         deleted = {call.args[2] for call in delete_object.await_args_list}
-        assert deleted == {f"documents/{DOCUMENT_ID}/docling.json"}
+        assert deleted == {f"documents/{DOCUMENT_ID}/1.docling.json"}
         assert store.load_items(DOCUMENT_ID).num_rows == 0
 
     async def test_survives_a_missing_object(self, store):

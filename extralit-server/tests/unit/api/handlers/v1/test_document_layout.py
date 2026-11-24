@@ -58,7 +58,7 @@ async def make_document(db: AsyncSession, layout_metadata: dict | None) -> Docum
 
 
 LAYOUT_METADATA = {
-    "layout_url": "documents/doc/docling.json",
+    "layout_url": "documents/doc/1.docling.json",
     "parser": "pdf_inspector",
     "docling_version": CURRENT_VERSION,
     "num_items": 4,

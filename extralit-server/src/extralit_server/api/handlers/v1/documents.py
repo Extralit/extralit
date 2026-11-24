@@ -85,7 +85,6 @@ async def add_document(
             document_id=document_new.id,  # type: ignore[arg-type]
             file_data=await file_data.read(),
             filename=file_data.filename or "",
-            content_type=file_data.content_type or "application/octet-stream",
         )
 
         if file_url:

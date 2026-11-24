@@ -1,14 +1,18 @@
 import hashlib
 import logging
 import mimetypes
+import re
 import shutil
+from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import Path
 from typing import Any, BinaryIO
+from urllib.parse import quote
 from uuid import UUID
 
 import obstore
 from fastapi import HTTPException
+from obstore.exceptions import AlreadyExistsError
 from obstore.exceptions import BaseError as ObjectStoreError
 from obstore.store import LocalStore, S3Store
 
@@ -142,6 +146,15 @@ def content_type_of(key: str, attributes: Any = None) -> str:
     return guessed or "application/octet-stream"
 
 
+# Printable ASCII minus `%`, so an encoded value cannot be confused with a literal one.
+_HEADER_SAFE = "".join(chr(c) for c in range(32, 127) if chr(c) != "%")
+
+
+def header_safe(value: str) -> str:
+    """S3 sends user metadata as US-ASCII headers; percent-encode anything else (decode with `unquote`)."""
+    return value if all(32 <= ord(c) < 127 and c != "%" for c in value) else quote(value, safe=_HEADER_SAFE)
+
+
 def _user_metadata(attributes: Any = None) -> dict[str, str]:
     return {key: value for key, value in dict(attributes or {}).items() if key != "Content-Type"}
 
@@ -164,10 +177,12 @@ def compute_hash(data: bytes) -> str:
 
 
 DOCUMENTS_PREFIX = "documents"
-SOURCE_PDF = "source.pdf"
-OCR_PDF = "ocr.pdf"
-DOCLING_JSON = "docling.json"
 THUMBNAIL = "thumbnail.png"
+PDF = "pdf"
+_EXTENSION = re.compile(r"^[a-z0-9]{1,10}$")
+_ORIGINAL = re.compile(r"^(?P<index>[1-9][0-9]*)_orig\.(?P<extension>[a-z0-9]{1,10})$")
+_PROCESSED_PDF = re.compile(r"^(?P<index>[1-9][0-9]*)\.pdf$")
+_DOCLING_JSON = re.compile(r"^(?P<index>[1-9][0-9]*)\.docling\.json$")
 
 
 def document_prefix(id: UUID | str) -> str:
@@ -177,24 +192,87 @@ def document_prefix(id: UUID | str) -> str:
     return f"{DOCUMENTS_PREFIX}/{UUID(str(id))}/"
 
 
-def get_pdf_s3_object_path(id: UUID | str) -> str:
-    """The PDF exactly as uploaded."""
-    return document_prefix(id) + SOURCE_PDF
+def _file_index(index: int) -> int:
+    # bool is an int subclass, and `True` as a file index is always a bug.
+    if not isinstance(index, int) or isinstance(index, bool) or index < 1:
+        raise ValueError(f"File index must be a positive integer, got {index!r}")
+    return index
 
 
-def get_ocr_pdf_s3_object_path(id: UUID | str) -> str:
-    """The preprocessed (rotated) PDF that the layout parsers read."""
-    return document_prefix(id) + OCR_PDF
+def _extension(extension: str) -> str:
+    extension = extension.lower().lstrip(".")
+    if not _EXTENSION.match(extension):
+        raise ValueError(f"Invalid file extension: {extension!r}")
+    return extension
 
 
-def get_docling_json_s3_object_path(id: UUID | str) -> str:
-    """The canonical `DoclingDocument` JSON."""
-    return document_prefix(id) + DOCLING_JSON
+def get_original_s3_object_path(id: UUID | str, extension: str, index: int = 1) -> str:
+    """File `index` of the document exactly as uploaded: `{index}_orig.{extension}`."""
+    return f"{document_prefix(id)}{_file_index(index)}_orig.{_extension(extension)}"
+
+
+def get_ocr_pdf_s3_object_path(id: UUID | str, index: int = 1) -> str:
+    """The ocrmypdf output for PDF file `index`, which the parsers and the viewer read: `{index}.pdf`."""
+    return f"{document_prefix(id)}{_file_index(index)}.pdf"
+
+
+def get_docling_json_s3_object_path(id: UUID | str, index: int = 1) -> str:
+    """The canonical `DoclingDocument` JSON parsed from PDF file `index`: `{index}.docling.json`."""
+    return f"{document_prefix(id)}{_file_index(index)}.docling.json"
 
 
 def get_thumbnail_s3_object_path(id: UUID | str) -> str:
-    """The first-page thumbnail image."""
+    """The first-page thumbnail image of file 1."""
     return document_prefix(id) + THUMBNAIL
+
+
+def sniff_file_type(data: bytes, filename: str | None = None) -> tuple[str, str]:
+    """The (extension, content type) of an upload, from its bytes for PDFs and its name otherwise."""
+    # The PDF spec tolerates junk before the header, and readers look for it in the first 1 KiB.
+    if b"%PDF-" in data[:1024]:
+        return PDF, "application/pdf"
+    suffix = (filename or "").rsplit(".", 1)[-1].lower() if "." in (filename or "") else ""
+    extension = suffix if _EXTENSION.match(suffix) and suffix != PDF else "bin"
+    content_type, _ = mimetypes.guess_type(f"file.{extension}")
+    return extension, content_type or "application/octet-stream"
+
+
+@dataclass(frozen=True)
+class DocumentFile:
+    """One uploaded file of a document and the artifacts derived from it."""
+
+    index: int
+    original_key: str
+    extension: str
+    ocr_pdf_key: str | None = None
+    docling_json_key: str | None = None
+
+    @property
+    def is_pdf(self) -> bool:
+        return self.extension == PDF
+
+
+async def list_document_files(
+    storage: ObjectStorage, workspace: str, document_id: UUID | str
+) -> dict[int, DocumentFile]:
+    """The document's files by index, read from its directory; derived objects without an original are ignored."""
+    prefix = document_prefix(document_id)
+    originals: dict[int, tuple[str, str]] = {}
+    derived: dict[int, dict[str, str]] = {}
+    async for batch in storage.for_workspace(workspace).list(prefix):
+        for meta in batch:
+            key = meta["path"]
+            name = key[len(prefix) :]
+            if match := _ORIGINAL.match(name):
+                originals[int(match["index"])] = (key, match["extension"])
+            elif match := _PROCESSED_PDF.match(name):
+                derived.setdefault(int(match["index"]), {})["ocr_pdf_key"] = key
+            elif match := _DOCLING_JSON.match(name):
+                derived.setdefault(int(match["index"]), {})["docling_json_key"] = key
+    return {
+        index: DocumentFile(index=index, original_key=key, extension=extension, **derived.get(index, {}))
+        for index, (key, extension) in sorted(originals.items())
+    }
 
 
 def get_proxy_document_url(workspace: str, object_path: str) -> str:
@@ -290,14 +368,31 @@ async def _put(
     data: bytes,
     content_type: str,
     metadata: dict[str, Any] | None = None,
+    mode: str = "overwrite",
 ):
-    attributes = {"Content-Type": content_type, **{k: str(v) for k, v in (metadata or {}).items()}}
+    attributes = {"Content-Type": content_type, **{k: header_safe(str(v)) for k, v in (metadata or {}).items()}}
     store = storage.for_workspace(workspace)
     if isinstance(store, LocalStore):
         # LocalStore rejects attributes outright; the content type is recovered from the key.
-        return await store.put_async(key, data)
+        return await store.put_async(key, data, mode=mode)
 
-    return await store.put_async(key, data, attributes=attributes)
+    return await store.put_async(key, data, attributes=attributes, mode=mode)
+
+
+async def put_object_if_absent(
+    storage: ObjectStorage,
+    workspace: str,
+    object: str,
+    data: bytes,
+    content_type: str = "application/octet-stream",
+    metadata: dict[str, Any] | None = None,
+) -> bool:
+    """Create an object only if no object has that key; False when one already exists."""
+    try:
+        await _put(storage, workspace, object, data, content_type, metadata, mode="create")
+    except AlreadyExistsError:
+        return False
+    return True
 
 
 async def put_object(
@@ -391,16 +486,17 @@ async def put_document_file(
     document_id: UUID,
     file_data: bytes,
     filename: str,
-    content_type: str = "application/pdf",
     metadata: dict[str, Any] | None = None,
+    index: int = 1,
 ) -> str | None:
     """
-    Upload a document file with deduplication.
+    Store an upload as `{index}_orig.{ext}`, typed from its bytes (PDF) or its name, with deduplication.
 
     Returns:
         The proxy object URL if the file was uploaded, None if an identical file already exists.
     """
-    object_path = get_pdf_s3_object_path(document_id)
+    extension, content_type = sniff_file_type(file_data, filename)
+    object_path = get_original_s3_object_path(document_id, extension, index)
 
     try:
         existing_files = await list_objects(storage, workspace_name, prefix=object_path, recursive=False)
