@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from typing import Optional
+from uuid import UUID
 
 from anyio import to_thread
 from sqlalchemy import select
@@ -53,6 +54,15 @@ async def backfill(workspace: Optional[str] = None) -> list[WorkspaceBackfill]:
         orphans = [d for d in stamps if d not in existing[workspace_id]]
         if orphans:
             async with store.layout.locked():
+                # Re-checked under the lock: a document created after the snapshot above is not an orphan.
+                async with AsyncSessionLocal() as db:
+                    live = {
+                        str(d)
+                        for d in await db.scalars(
+                            select(Document.id).where(Document.id.in_([UUID(d) for d in orphans]))
+                        )
+                    }
+                orphans = [d for d in orphans if d not in live]
                 for document_id in orphans:
                     await to_thread.run_sync(store.layout.delete_document, document_id)
             _LOGGER.info(f"Pruned rows of {len(orphans)} deleted documents from workspace {name}")

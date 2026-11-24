@@ -31,9 +31,10 @@ class FakeSession:
     def __init__(self, workspaces, documents):
         self.workspaces = workspaces
         self.existing = [list(documents)]
+        self.live: list = []
 
     async def scalars(self, _query):
-        return self.existing.pop(0)
+        return self.existing.pop(0) if self.existing else self.live
 
     async def __aenter__(self):
         return self
@@ -130,6 +131,18 @@ async def test_second_run_enqueues_nothing(world):
     world["chunk"].assert_not_called()
     world["embed"].assert_not_called()
     assert second[0].chunk_jobs == 0
+
+
+async def test_a_document_created_after_the_snapshot_is_not_pruned(world):
+    born = str(uuid4())
+    store = ChunkStore.for_workspace("ws")
+    store.replace_chunks(born, stamped(born, ["new"], HASH, module.CHUNKER_FINGERPRINT))
+    world["session"].live = [UUID(born)]
+
+    reports = await module.backfill()
+
+    assert reports[0].pruned == 0
+    assert born in set(store.open().to_table(columns=["document_id"]).column(0).to_pylist())
 
 
 async def test_chunks_of_deleted_documents_are_pruned(world):
