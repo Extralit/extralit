@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from importlib.resources import files
@@ -101,9 +102,9 @@ def fuse_sql(fts: str, vector: Optional[str], rrf_k: int, limit: int) -> str:
     merged = ", ".join(f"coalesce(f.{c}, v.{c}) AS {c}" for c in PAYLOAD if c != "chunk_id")
     return f"""
 WITH f AS (
-    SELECT {columns}, bm25, row_number() OVER (ORDER BY bm25 DESC) AS rank FROM ({fts})
+    SELECT {columns}, bm25, row_number() OVER (ORDER BY bm25 DESC, chunk_id) AS rank FROM ({fts})
 ), v AS (
-    SELECT {columns}, distance, row_number() OVER (ORDER BY distance ASC) AS rank FROM ({vector})
+    SELECT {columns}, distance, row_number() OVER (ORDER BY distance ASC, chunk_id) AS rank FROM ({vector})
 )
 SELECT coalesce(f.chunk_id, v.chunk_id) AS chunk_id, {merged}, f.bm25, v.distance,
     coalesce(1.0 / ({int(rrf_k)} + f.rank), 0) + coalesce(1.0 / ({int(rrf_k)} + v.rank), 0) AS rrf
@@ -113,26 +114,41 @@ LIMIT {int(limit)}
 """
 
 
-def _load_lance(connection: duckdb.DuckDBPyConnection) -> None:
-    # By path: `LOAD lance` only searches ~/.duckdb/extensions, which the wheel never populates.
-    path = files("duckdb_extension_lance") / "extensions" / f"v{duckdb.__version__}" / "lance.duckdb_extension"
-    connection.execute(f"LOAD {_literal(str(path))}")
+_CONNECTION_LOCK = threading.Lock()
+_CONNECTION: Optional[duckdb.DuckDBPyConnection] = None
+_ATTACHED: dict[str, str] = {}
+
+
+def _connection() -> duckdb.DuckDBPyConnection:
+    """Process-wide connection, because loading the extension costs ~300 ms. Caller holds `_CONNECTION_LOCK`."""
+    global _CONNECTION
+    if _CONNECTION is None:
+        connection = duckdb.connect()
+        # By path: `LOAD lance` only searches ~/.duckdb/extensions, which the wheel never populates.
+        path = files("duckdb_extension_lance") / "extensions" / f"v{duckdb.__version__}" / "lance.duckdb_extension"
+        connection.execute(f"LOAD {_literal(str(path))}")
+        _CONNECTION = connection
+    return _CONNECTION
 
 
 def _vector_literal(vector: Sequence[float]) -> str:
     return f"[{', '.join(repr(float(x)) for x in vector)}]::FLOAT[{len(vector)}]"
 
 
-def _attach(connection: duckdb.DuckDBPyConnection, index: int, store: ChunkStore) -> str:
+def _attach(connection: duckdb.DuckDBPyConnection, store: ChunkStore) -> str:
+    """Attach the store's root once per process; an attached root keeps following new dataset versions."""
     root, options = store.layout.root_uri, store.layout.storage_options
-    if root.startswith("s3://") and options:
-        pairs = ", ".join(f"{_literal(k)}: {_literal(str(v))}" for k, v in options.items())
-        connection.execute(
-            f"CREATE SECRET lance_ns{index} (TYPE LANCE, SCOPE {_literal(root)}, STORAGE_OPTIONS MAP {{{pairs}}})"
-        )
-    alias = f"ns{index}"
-    connection.execute(f"ATTACH {_literal(root)} AS {alias} (TYPE LANCE, READ_ONLY false)")
-    return f"{alias}.main.chunks"
+    if root not in _ATTACHED:
+        alias = f"ns{len(_ATTACHED)}"
+        if root.startswith("s3://") and options:
+            pairs = ", ".join(f"{_literal(k)}: {_literal(str(v))}" for k, v in options.items())
+            connection.execute(
+                f"CREATE OR REPLACE SECRET lance_{alias} "
+                f"(TYPE LANCE, SCOPE {_literal(root)}, STORAGE_OPTIONS MAP {{{pairs}}})"
+            )
+        connection.execute(f"ATTACH {_literal(root)} AS {alias} (TYPE LANCE, READ_ONLY false)")
+        _ATTACHED[root] = alias
+    return f"{_ATTACHED[root]}.main.chunks"
 
 
 def _legs(
@@ -146,11 +162,10 @@ def _legs(
     payload = ", ".join(PAYLOAD)
     fts, fts_params, vec, vec_params = [], [], [], []
     for table, column in tables:
-        fts.append(
-            f"SELECT {payload}, _score AS bm25 FROM lance_fts({_literal(table)}, 'text', ?, k={k}, "
-            f"filter := ?, prefilter := true)"
-        )
-        fts_params += [query, filter_ or "true"]
+        # An always-true prefilter still costs ~40% of the FTS leg, so it is only passed when there is one.
+        prefilter = ", filter := ?, prefilter := true" if filter_ else ""
+        fts.append(f"SELECT {payload}, _score AS bm25 FROM lance_fts({_literal(table)}, 'text', ?, k={k}{prefilter})")
+        fts_params += [query, filter_] if filter_ else [query]
         if column is not None and vector is not None:
             vec_filter = f"{column} IS NOT NULL" + (f" AND ({filter_})" if filter_ else "")
             vec.append(
@@ -170,47 +185,56 @@ def _run(
     limit: int,
     settings: RetrievalSettings,
 ) -> list[ChunkHit]:
-    connection = duckdb.connect()
-    try:
-        _load_lance(connection)
-        tables = []
-        for index, store in enumerate(stores):
+    tables = []
+    with _CONNECTION_LOCK:
+        connection = _connection()
+        for store in stores:
             if store.open() is None:
                 continue
             column = store.vector_columns().get(model) if model else None
-            tables.append((_attach(connection, index, store), column))
-        if not tables:
-            return []
+            tables.append((_attach(connection, store), column))
+        cursor = connection.cursor()
+    if not tables:
+        return []
+    try:
         fts, fts_params, vec, vec_params = _legs(tables, query, vector, filter_, max(settings.candidate_k, limit))
         sql = fuse_sql(fts, vec, settings.rrf_k, limit)
-        rows = connection.execute(sql, fts_params + vec_params).fetchall()
+        rows = cursor.execute(sql, fts_params + vec_params).fetchall()
     finally:
-        connection.close()
+        cursor.close()
     return [ChunkHit(*row[: len(PAYLOAD)], bm25=row[-3], vector=row[-2], rrf=row[-1]) for row in rows]
 
 
-def _has_vector_column(stores: Sequence[ChunkStore], model: str) -> bool:
-    return any(model in store.vector_columns() for store in stores)
+async def embed_query(
+    stores: Sequence[ChunkStore], query: str, embedder: Optional[Embedder], settings: RetrievalSettings
+) -> Optional[list[float]]:
+    """The query vector, or None without an embedder or when no store has a column for the model."""
+    model = settings.embedding_model
+    if embedder is None or not model:
+        return None
+    if not await to_thread.run_sync(lambda: any(model in store.vector_columns() for store in stores)):
+        return None
+    result = await embedder.embed_query(query)
+    return [float(x) for x in result.embeddings[0]]
 
 
 async def hybrid_search(
     stores: Sequence[ChunkStore],
     query: str,
     *,
-    embedder: Optional[Embedder],
+    embedder: Optional[Embedder] = None,
+    vector: Optional[Sequence[float]] = None,
     filters: Optional[SearchFilters] = None,
     limit: int = 10,
     settings: Optional[RetrievalSettings] = None,
 ) -> list[ChunkHit]:
     """BM25 + vector hits fused by RRF; filters run inside both legs, before top-k.
 
-    The vector leg is skipped without an embedder or when no store has a column for the model.
+    Pass `vector` from `embed_query` to search repeatedly on one embedding; otherwise `embedder` computes it.
     """
     settings = settings or RetrievalSettings()
-    filter_ = build_filter(filters)
-    model = settings.embedding_model
-    vector = None
-    if embedder is not None and model and await to_thread.run_sync(_has_vector_column, stores, model):
-        result = await embedder.embed_query(query)
-        vector = [float(x) for x in result.embeddings[0]]
-    return await to_thread.run_sync(_run, stores, query, vector, model, filter_, limit, settings)
+    if vector is None:
+        vector = await embed_query(stores, query, embedder, settings)
+    return await to_thread.run_sync(
+        _run, stores, query, vector, settings.embedding_model, build_filter(filters), limit, settings
+    )

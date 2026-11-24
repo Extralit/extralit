@@ -44,8 +44,8 @@ POST /api/v1/workspaces/{name}/search
 
 | Failure | Result |
 |---|---|
-| Analysis fails | RQ retries it (3 times). Layout still runs and fails on the missing `1.pdf` with a message naming the analysis job |
-| Non-PDF upload | Analysis fails with "only PDFs are processed" and writes no `1.pdf` or `1.docling.json`. Layout fails on the missing `1.pdf`. The chunk job sees file 1 is not a PDF and finishes with `skipped`, without retrying. Backfill ignores it |
+| Analysis fails | RQ retries it (3 times). Each failed attempt copies the uploaded PDF to `1.pdf` unless an earlier run already committed one, so layout still runs, on the original without OCR or rotation. If that copy also fails, layout fails on the missing `1.pdf` with a message naming the analysis job |
+| Non-PDF upload | Analysis, layout and the chunk job each see file 1 is not a PDF and finish with `skipped: ... only PDFs are processed`, without failing or retrying. No `1.pdf` or `1.docling.json` is written. Backfill ignores it |
 | Layout fails | RQ retries it (2 times). The chunk job then runs anyway: it fails on a missing `1.docling.json`, or re-chunks the unchanged old one. Restarting the failed workflow re-runs layout and then a fresh chunk job, so chunks follow the new `1.docling.json` |
 | Layout succeeds but its worker dies between the `1.docling.json` and `items` writes | The chunk job sees items whose hash differs from `1.docling.json` and rewrites items and chunks together |
 | Chunk job fails, or its embed enqueue raises | The job fails and RQ retries it (2 times); replacing chunks is idempotent. `retrieval backfill` finds what is still stale afterwards |
@@ -109,9 +109,11 @@ Worker count: `EXTRALIT_EMBED_WORKERS` (default 1) in the compose files.
 
 ## Search
 
-`hybrid_search` runs in DuckDB with the `lance` extension. Each store root is attached as a Lance
-namespace (`ATTACH root AS ns (TYPE LANCE, READ_ONLY false)`; `s3://` roots first get a scoped
-`CREATE SECRET (TYPE LANCE, …)` from `lance_storage_options()`).
+`hybrid_search` runs in DuckDB with the `lance` extension, on one connection per process: loading
+the extension costs about 300 ms, and each search takes a cursor from it. Each store root is attached
+once as a Lance namespace (`ATTACH root AS ns (TYPE LANCE, READ_ONLY false)`; `s3://` roots first get
+a scoped `CREATE SECRET (TYPE LANCE, …)` from `lance_storage_options()`). An attached root follows
+later dataset versions, added vector columns and a recreated dataset.
 
 - Both legs take `filter := '…', prefilter := true`, so document, reference, page and type filters
   apply before top-k. A `WHERE` on the table function output would run after top-k and can return

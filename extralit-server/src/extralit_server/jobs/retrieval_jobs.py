@@ -116,6 +116,10 @@ async def async_embed_chunks_job(workspace_name: str, document_id: Optional[str]
         async with store.layout.locked():
             await to_thread.run_sync(store.upsert_vectors, settings.embedding_model, payload)
         embedded += batch.num_rows
+    if embedded:
+        # Each batch commits a fragment and nothing else compacts `chunks`.
+        async with store.layout.locked():
+            await to_thread.run_sync(store.layout.maybe_compact)
 
     current_job = get_current_job()
     if current_job is not None:

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from extralit_server.api.policies.v1 import DocumentPolicy, authorize
 from extralit_server.api.schemas.v1.search import SearchHit, SearchRequest, SearchResponse, SearchScores
 from extralit_server.contexts.retrieval.embedding import get_embedder
-from extralit_server.contexts.retrieval.search import SearchFilters, hybrid_search
+from extralit_server.contexts.retrieval.search import SearchFilters, embed_query, hybrid_search
 from extralit_server.contexts.retrieval.settings import RetrievalSettings
 from extralit_server.contexts.retrieval.store import ChunkStore
 from extralit_server.database import get_async_db
@@ -36,16 +36,15 @@ async def search_workspace(
 
     settings = RetrievalSettings()
     store = ChunkStore.for_workspace(workspace.name)
-    embedder = get_embedder(settings)
+    vector = await embed_query([store], body.query, get_embedder(settings), settings)
     filters = SearchFilters(
         document_ids=body.document_ids, references=body.references, pages=body.pages, types=body.types
     )
-    # A delete whose chunk cleanup failed leaves rows behind until `retrieval backfill` prunes them,
-    # so dropped orphans are refilled by asking for more until `limit` live hits or the candidates run out.
+    # Chunks of deleted documents are dropped, then refilled by asking for more candidates (see retrieval.md).
     requested = body.limit
     while True:
         candidates = await hybrid_search(
-            [store], body.query, embedder=embedder, filters=filters, limit=requested, settings=settings
+            [store], body.query, vector=vector, filters=filters, limit=requested, settings=settings
         )
         live = set(
             (

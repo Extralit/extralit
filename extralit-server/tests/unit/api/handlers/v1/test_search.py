@@ -1,5 +1,6 @@
 """Tests for `POST /workspaces/{name}/search`."""
 
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
@@ -62,13 +63,15 @@ class TestSearchWorkspace:
         top = await hybrid_search([store], "quokka", embedder=embedder, limit=1)
         assert top[0].document_id != document_id
 
-        response = await async_client.post(
-            f"/api/v1/workspaces/{workspace.name}/search",
-            headers=owner_auth_header,
-            json={"query": "quokka", "limit": 1},
-        )
+        with patch.object(search_handler, "embed_query", wraps=search_handler.embed_query) as embed_query:
+            response = await async_client.post(
+                f"/api/v1/workspaces/{workspace.name}/search",
+                headers=owner_auth_header,
+                json={"query": "quokka", "limit": 1},
+            )
 
         assert [hit["document_id"] for hit in response.json()["hits"]] == [document_id]
+        assert embed_query.await_count == 1
 
     async def test_returns_hits_with_item_refs_and_scores(
         self, async_client: AsyncClient, owner_auth_header, workspace_with_chunks
