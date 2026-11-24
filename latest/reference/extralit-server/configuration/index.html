@@ -4046,7 +4046,7 @@ See https://github.com/opensearch-project/k-NN/issues/1286</p>
 <h3 id="object-storage">Object storage<a class="headerlink" href="#object-storage" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
-<p><code>EXTRALIT_STORAGE_URL</code>: Root of object storage. Every workspace is a directory under it, holding its <code>pdf/</code>, <code>thumbnails/</code>, <code>layout/</code> and <code>schemas/</code> keys (Default: <code>file://$EXTRALIT_HOME_PATH/storage</code>). Accepted forms:</p>
+<p><code>EXTRALIT_STORAGE_URL</code>: Root of object storage. Every workspace is a directory under it, holding <code>documents/{document_id}/</code> (per uploaded file <code>i</code>: <code>{i}_orig.{ext}</code> as uploaded, and for PDFs the ocrmypdf output <code>{i}.pdf</code> and the parsed <code>{i}.docling.json</code>; plus one <code>thumbnail.png</code>), the <code>layout/</code> Lance datasets and <code>schemas/</code> (Default: <code>file://$EXTRALIT_HOME_PATH/storage</code>). Accepted forms:</p>
 <ul>
 <li><code>file:///path/to/dir</code> — local disk.</li>
 <li><code>s3://bucket[/prefix]</code> — AWS S3.</li>
@@ -4061,7 +4061,7 @@ See https://github.com/opensearch-project/k-NN/issues/1286</p>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Migrating from bucket-per-workspace</p>
-<p>Servers before this setting created one bucket per workspace. Copy each into the new root before switching, e.g. <code>mc mirror minio/&lt;workspace&gt; minio/&lt;bucket&gt;/&lt;prefix&gt;/&lt;workspace&gt;</code>; the object keys are unchanged.</p>
+<p>Servers before this setting created one bucket per workspace. Copy each into the new root before switching, e.g. <code>mc mirror minio/&lt;workspace&gt; minio/&lt;bucket&gt;/&lt;prefix&gt;/&lt;workspace&gt;</code>. Mirroring copies the old keys (<code>pdf/{id}</code>, <code>thumbnails/{id}</code>) as they are; it does not move document artifacts into the current <code>documents/{id}/</code> layout, so documents uploaded before that change will not be found under it.</p>
 <p><strong>Local storage moved too.</strong> It used to sit directly under <code>$EXTRALIT_HOME_PATH/&lt;workspace&gt;/</code>, alongside <code>extralit.db</code> and <code>lance/</code>; the default root is now the <code>storage/</code> subdirectory. Move each workspace into it — <code>mkdir -p $EXTRALIT_HOME_PATH/storage &amp;&amp; mv $EXTRALIT_HOME_PATH/&lt;workspace&gt; $EXTRALIT_HOME_PATH/storage/</code> — or keep the old layout by setting <code>EXTRALIT_STORAGE_URL=file://$EXTRALIT_HOME_PATH</code>. Nothing is deleted if you skip this, but the server will not find the existing files.</p>
 </div>
 <h3 id="redis">Redis<a class="headerlink" href="#redis" title="Permanent link">&para;</a></h3>
