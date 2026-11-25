@@ -103,10 +103,10 @@
     "node": ">=20.0.0"
   },
   "overrides": {
-    "@intlify/shared": "11.4.13",
-    "@intlify/core-base": "11.4.13",
-    "@intlify/message-compiler": "11.4.13",
-    "@intlify/core": "11.4.13",
+    "@intlify/shared": "11.4.23",
+    "@intlify/core-base": "11.4.23",
+    "@intlify/message-compiler": "11.4.23",
+    "@intlify/core": "11.4.23",
     "@sereneinserenade/tiptap-search-and-replace": {
       "@tiptap/core": "$@tiptap/core",
       "@tiptap/pm": "$@tiptap/pm"
